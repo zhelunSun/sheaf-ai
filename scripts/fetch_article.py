@@ -52,21 +52,27 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
 
 
 def _extract_title(soup) -> str:
-    """Extract article title with priority: og:title → meta[name=twitter:title] → #activity-name → <title>"""
+    """Extract article title with priority: og:title → twitter:title → #activity-name → <title> → h1 → first heading"""
     # 1. Open Graph title
     og = soup.find("meta", property="og:title") or soup.find("meta", attrs={"name": "og:title"})
     if og and og.get("content"):
-        return og["content"].strip()
+        content = og["content"].strip()
+        if content:
+            return content
 
     # 2. Twitter card title
     tw = soup.find("meta", attrs={"name": "twitter:title"})
     if tw and tw.get("content"):
-        return tw["content"].strip()
+        content = tw["content"].strip()
+        if content:
+            return content
 
     # 3. WeChat specific: #activity-name
     wc = soup.select_one("#activity-name")
     if wc:
-        return wc.get_text(strip=True)
+        text = wc.get_text(strip=True)
+        if text:
+            return text
 
     # 4. Regular <title> tag
     title_tag = soup.find("title")
@@ -77,7 +83,24 @@ def _extract_title(soup) -> str:
             if title.endswith(suffix):
                 title = title[:-len(suffix)]
                 break
-        return title.strip()
+        title = title.strip()
+        if title:
+            return title
+
+    # 5. First <h1> tag
+    h1 = soup.find("h1")
+    if h1:
+        text = h1.get_text(strip=True)
+        if text:
+            return text
+
+    # 6. Any heading tag (h2, h3) as last resort
+    for tag_name in ["h2", "h3"]:
+        heading = soup.find(tag_name)
+        if heading:
+            text = heading.get_text(strip=True)
+            if text and len(text) < 200:  # Sanity check
+                return text
 
     return ""
 

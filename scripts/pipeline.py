@@ -49,6 +49,76 @@ def load_prompt(name: str) -> str:
     return ""
 
 
+def _detect_platform(url: str) -> str:
+    """Detect source platform from URL pattern"""
+    url_lower = url.lower()
+    if "mp.weixin.qq.com" in url_lower:
+        return "wechat"
+    elif "twitter.com" in url_lower or "x.com" in url_lower:
+        return "twitter"
+    elif "arxiv.org" in url_lower:
+        return "paper"
+    elif "zhihu.com" in url_lower:
+        return "web"
+    elif url_lower.startswith("manual:") or not url.startswith("http"):
+        return "manual"
+    else:
+        return "web"
+
+
+def _extract_timeliness(structured: dict) -> dict:
+    """Extract timeliness info from LLM summary structured output"""
+    deadline_text = structured.get("deadline_or_timing")
+    if not deadline_text:
+        return {
+            "has_deadline": False,
+            "deadline_date": None,
+            "deadline_label": None,
+            "urgency": "evergreen"
+        }
+
+    # Try to extract ISO date from text (e.g., "2026-05-30", "2026年5月30日")
+    import re
+    date_patterns = [
+        r'(\d{4}-\d{2}-\d{2})',           # 2026-05-30
+        r'(\d{4})年(\d{1,2})月(\d{1,2})日', # 2026年5月30日
+    ]
+
+    deadline_date = None
+    for pattern in date_patterns:
+        match = re.search(pattern, deadline_text)
+        if match:
+            if len(match.groups()) == 1:
+                deadline_date = match.group(1)
+            elif len(match.groups()) == 3:
+                deadline_date = f"{match.group(1)}-{int(match.group(2)):02d}-{int(match.group(3)):02d}"
+            break
+
+    # Determine urgency
+    urgency = "upcoming"
+    if deadline_date:
+        try:
+            from datetime import date as date_type
+            deadline_dt = date_type.fromisoformat(deadline_date)
+            today = datetime.now(BJT).date()
+            days_left = (deadline_dt - today).days
+            if days_left < 0:
+                urgency = "expired"
+            elif days_left <= 7:
+                urgency = "urgent"
+            elif days_left <= 30:
+                urgency = "upcoming"
+        except (ValueError, TypeError):
+            pass
+
+    return {
+        "has_deadline": True,
+        "deadline_date": deadline_date,
+        "deadline_label": deadline_text if not deadline_date else None,
+        "urgency": urgency
+    }
+
+
 # ============================================================
 # LLM Processing
 # ============================================================
@@ -158,25 +228,58 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     date_str = now.strftime("%Y-%m-%d")
     entry_id = f"{date_str}_{str(uuid.uuid4())[:8]}"
 
-    # Build entry JSON
+    # Resolve title: LLM result → fetch result → infer from content
+    title = (
+        summary_result.get("original_title")
+        or fetch_result.get("title", "")
+    )
+    if not title and fetch_result.get("text"):
+        # Last resort: use first line of content (truncated)
+        first_line = fetch_result["text"].split("\n")[0].strip()[:100]
+        if first_line:
+            title = first_line
+
+    # Determine platform from URL
+    platform = _detect_platform(url)
+
+    # Extract timeliness from summary
+    timeliness = _extract_timeliness(summary_result.get("structured", {}))
+
+    # Build entry JSON (Schema v1)
     entry = {
         "id": entry_id,
         "url": url,
-        "title": summary_result.get("original_title", fetch_result.get("title", "")),
-        "source_author": summary_result.get("source_author", ""),
-        "publish_date": None,
-        "collected_at": now.isoformat(),
-        "fetch_method": fetch_result.get("method", "unknown"),
+        "title": title,
         "category": {
-            "primary": classify_result.get("primary_category", "unclassified"),
+            "primary": classify_result.get("primary_category", "AI技术"),
             "sub": classify_result.get("sub_category", "")
         },
         "tags": classify_result.get("tags", []),
         "importance": classify_result.get("importance", "medium"),
         "relevance_note": classify_result.get("relevance_note", ""),
         "summary": summary_result.get("one_liner", ""),
-        "status": "active",
-        "language": "zh"
+        "structured_summary": {
+            k: v for k, v in {
+                "core_argument": summary_result.get("structured", {}).get("core_argument", ""),
+                "key_data": summary_result.get("structured", {}).get("key_data", ""),
+                "relevance_to_user": summary_result.get("structured", {}).get("relevance_to_user", ""),
+                "action_items": summary_result.get("structured", {}).get("action_items", ""),
+            }.items() if v
+        },
+        "timeliness": timeliness,
+        "source": {
+            "author": summary_result.get("source_author", ""),
+            "platform": platform,
+            "publish_date": None,
+        },
+        "associations": [],
+        "metadata": {
+            "collected_at": now.isoformat(),
+            "fetch_method": fetch_result.get("method", "unknown"),
+            "language": "zh",
+            "schema_version": "1.0.0"
+        },
+        "status": "active"
     }
 
     # Store JSON entry
@@ -250,6 +353,7 @@ def _build_summary_md(entry: dict, structured: dict) -> str:
 
 def _append_index(entry: dict):
     """Append a lightweight index entry (for search)"""
+    timeliness = entry.get("timeliness", {})
     index_entry = {
         "id": entry["id"],
         "url": entry["url"],
@@ -258,8 +362,11 @@ def _append_index(entry: dict):
         "sub_category": entry["category"]["sub"],
         "tags": entry["tags"],
         "importance": entry["importance"],
-        "collected_at": entry["collected_at"],
-        "summary": entry["summary"]
+        "summary": entry["summary"],
+        "has_deadline": timeliness.get("has_deadline", False),
+        "deadline_date": timeliness.get("deadline_date"),
+        "urgency": timeliness.get("urgency", "evergreen"),
+        "collected_at": entry["metadata"]["collected_at"],
     }
     with open(INDEX_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
@@ -356,6 +463,29 @@ def query_collection(query: str, limit: int = 10) -> list:
 
     results.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
     return results[:limit]
+
+
+def query_urgent() -> list:
+    """Get all entries with upcoming/urgent deadlines"""
+    if not INDEX_FILE.exists():
+        return []
+
+    results = []
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                urgency = entry.get("urgency", "evergreen")
+                if urgency in ("urgent", "upcoming"):
+                    results.append(entry)
+            except json.JSONDecodeError:
+                continue
+
+    results.sort(key=lambda x: x.get("deadline_date", "9999"), reverse=False)
+    return results
 
 
 # ============================================================
