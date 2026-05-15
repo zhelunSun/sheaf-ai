@@ -35,7 +35,8 @@ universal-collector/
 Phase 0: 需求梳理          ✅ 已完成
 Phase 0.5: MVP 验证        ✅ 4/4 文章端到端跑通
 Phase 0.75: 战略研究        ✅ 竞品调研+定位+商业模式+OPC运营框架
-Phase 1: 增强能力           ← 正在这里
+Phase 0.76: 用户画像+产品审计   ✅ 3 Persona + 审计报告 + 优化建议
+Phase 1: 增强能力              ← 正在这里（优先级已重排）
 Phase 2: 生态联动
 Phase 3: 产品化/Skill 化
 ```
@@ -51,6 +52,19 @@ Phase 3: 产品化/Skill 化
 - [x] 关键词查询接口
 - [x] 文档与 git 版本管理
 
+### Phase 0.76 ✅ 用户画像 + 产品审计（2026-05-16）
+- [x] 3 个典型 Persona：博士生 / AI开发者-创始人 / B站-小红书创作者
+- [x] 每个 Persona 配具体的一天使用时间线 + 核心痛点 + UC 价值
+- [x] 产品设计审计报告（10 个问题，3 个 P0 + 4 个 P1 + 3 个 P2）
+- [x] 功能优先级重排：浏览器插件升 P0、新增 Schema 定义 + Onboarding
+- [x] 产出：`docs/personas-and-scenarios.md` + `docs/product-audit.md`
+
+**审计关键发现**：
+- 收录摩擦过高（3-4 步 vs 竞品 1-click）是冷启动最大障碍 → 浏览器插件升 P0
+- Agent-Native 定位未落地（MCP/Embedding/Schema 均未实现）→ MCP Server 是验证锚点
+- 缺少知识卡片 Schema 标准定义 → Agent 可消费的前提条件
+- 商业模式可行但天花板低，适合 solo lifestyle business，VC 路线需更高叙事
+
 ### Phase 0.75 ✅ 战略研究完成（2026-05-14）
 - [x] 竞品深度调研：8 个竞品交叉分析（A/B/C 三类）
 - [x] Whitespace 分析：2x2 定位图 + Gap 陈述 + 差异化主张 v1
@@ -65,15 +79,28 @@ Phase 3: 产品化/Skill 化
 - 商业模式：Open-Core 三步走（开源社区 → Skill 分发 → 云服务增值）
 - 运营方式：AI-Native OPC，1 人 + N Agent，Weekly Sprint
 
-### Phase 1 🔲 增强能力（基于战略研究重新排序）
-- [ ] **P0** Embedding 向量检索（ChromaDB）— 记忆层基础设施，对齐 Memory Layer 趋势
-- [ ] **P0** MCP Server 原型 — 生态卡位，对齐 MCP 趋势
-- [ ] **P0** URL 去重 + 内容相似度去重 — 系统可靠性基础
-- [ ] **P1** 标题提取优化（当前微信文章标题为空）
-- [ ] **P1** 人机纠偏反馈回路 — 提升分类准确率，建立用户信任
-- [ ] **P1** 浏览器插件一键收录 — 降低收藏摩擦
-- [ ] **P1** 重要性/时效性识别 — 提升检索质量
-- [ ] **P2** 定时报告（对接 WorkBuddy automation）
+### Phase 1 🔲 增强能力（基于用户画像+产品审计重排，2026-05-16）
+
+> 审计发现：收录摩擦是冷启动生死线，Agent-Native 定位需要 MCP 落地来验证，Schema 标准是知识卡片的基础。
+
+**P0 — 冷启动 + Agent-Native 验证（Phase 1 核心）**
+- [ ] **P0-0** 标题提取修复（微信文章 og:title） — 基础质量 bug，立即修
+- [ ] **P0-1** 浏览器插件一键收录 — **从 P1 提升**，收录摩擦是冷启动关键，1-click vs 当前 3-4 步
+- [ ] **P0-2** MCP Server 原型 — Agent-Native 定位的验证锚点，没有它「Agent-Native」只是口号
+- [ ] **P0-3** 知识卡片 Schema v1 定义 — 标准化知识资产格式（分类/标签/摘要/关联/时效性），这是 Agent 可消费的前提
+- [ ] **P0-4** Embedding 向量检索（ChromaDB）— 语义检索基础设施
+
+**P1 — 体验优化**
+- [ ] **P1-0** URL 去重 + 内容相似度去重 — 从 P0 降级，MVP 阶段非阻塞
+- [ ] **P1-1** 人机纠偏反馈回路 — 提升分类准确率，建立用户信任
+- [ ] **P1-2** 重要性/时效性识别 — deadline/CFP 自动提取（Persona 1 核心需求）
+- [ ] **P1-3** 首次使用引导（Onboarding） — **新增**，让新用户 5 分钟内体验核心价值闭环
+- [ ] **P1-4** Agent 查询交互规范 — 定义返回格式、检索精度、fallback 策略
+
+**P2 — 增值功能**
+- [ ] **P2-0** 定时报告（对接 WorkBuddy automation）
+- [ ] **P2-1** 多上下文/项目隔离 — 不同角色（研究者/开发者/创作者）的收藏空间
+- [ ] **P2-2** 下游任务集成 — 编辑器/写作工具的 Agent 知识注入
 
 ### Phase 2 🔲 生态联动（产品形态完善 + 融资叙事）
 
@@ -165,7 +192,8 @@ Phase 3: 产品化/Skill 化
 ## 当前待决问题
 
 1. **Sir 审阅战略简报**：`research/strategy-brief-v1.md` 是否准确？定位/商业模式/OPC 运营是否符合预期？
-2. **Phase 1 工程优先级确认**：Embedding + MCP Server 是否作为当前最高优先级？
+2. **Phase 1 工程优先级确认**：浏览器插件是否同意升为 P0？Schema v1 是否同意作为 Phase 1 前置？
 3. **开源时间决策**：何时将 UC 核心代码开源（GitHub public）？
-4. 标题提取优化（微信文章 meta og:title 提取）
-5. 用户纠偏反馈机制设计
+4. **商业模式路线选择**：solo lifestyle business vs VC-backable？决定后续产品节奏
+5. **Agent 查询体验定义**：MCP 上线前，先定义好 Agent 检索的交互规范和返回格式
+6. **Schema v1 设计**：知识卡片的标准字段（类型/标签/摘要/关联/时效性/来源元数据）

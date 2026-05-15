@@ -27,7 +27,9 @@ universal-collector/
 │   ├── positioning-v1.md
 │   ├── product-overview.md
 │   ├── ecosystem-vision.md
-│   └── opc-operations-harness.md
+│   ├── opc-operations-harness.md
+│   ├── personas-and-scenarios.md   # 用户画像 + 使用场景
+│   └── product-audit.md            # 产品设计审计报告
 │
 ├── research/          # 战略研究
 │   ├── competitor-deep-dive.md
@@ -48,7 +50,8 @@ universal-collector/
 | Phase 0: 需求梳理 | ✅ 完成 | `needs/user-needs.md` + `needs/pm-analysis.md` |
 | Phase 0.5: MVP 验证 | ✅ 完成 | 4/4 文章端到端跑通 |
 | Phase 0.75: 战略研究 | ✅ 完成 | 8 竞品分析 + 定位 + 商业模式 |
-| Phase 1: 增强能力 | 🔲 待启动 | Embedding + MCP Server + 去重 |
+| Phase 0.76: 用户画像+审计 | ✅ 完成 | 3 Persona + 审计报告 + 优先级重排 |
+| Phase 1: 增强能力 | 🔲 待启动 | 浏览器插件 + MCP Server + Schema + Embedding |
 | Phase 2: 生态联动 | 🔲 | 多源收录 + Skill 联动 |
 | Phase 3: 产品化 | 🔲 | Skill 发布 + 多用户 |
 
