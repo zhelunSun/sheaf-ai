@@ -6,46 +6,61 @@
 
 这是一个**产品 Idea 的孵化空间**，目标是把「看到好东西 → 收藏 → 吃灰」的断裂流程，变成「收藏 → 自动结构化 → 注入 Agent / 生成 Skill / 输出洞察」的闭环。
 
+## 📋 BP（商业计划书）
+
+- **[BP.md](BP.md)** — 文档版 BP，所有产品文档的输出出口
+
+## 仓库结构
+
+```
+universal-collector/
+├── BP.md              # 📋 商业计划书（输出出口）
+├── PLAN.md            # 项目计划 + 仓库维护方式
+├── CHANGELOG.md       # 变更日志
+├── AGENTS.md          # Agent 协作指南
+│
+├── needs/             # 用户调研
+│   ├── user-needs.md
+│   └── pm-analysis.md
+│
+├── docs/              # 产品文档
+│   ├── positioning-v1.md
+│   ├── product-overview.md
+│   ├── ecosystem-vision.md
+│   └── opc-operations-harness.md
+│
+├── research/          # 战略研究
+│   ├── competitor-deep-dive.md
+│   ├── whitespace-analysis.md
+│   ├── business-model-v1.md
+│   ├── strategy-brief-v1.md
+│   └── agent-trend-alignment.md
+│
+├── scripts/           # 原型代码
+├── data/              # 示例数据
+└── proposals/         # 早期概念（归档）
+```
+
 ## 当前阶段
 
 | 阶段 | 状态 | 产出 |
 |------|------|------|
-| Phase 0: 需求梳理 | **进行中** | `needs/user-needs.md` + `needs/pm-analysis.md` |
-| Phase 1: 竞品与方案调研 | 待开始 | 荣耀/Readwise/Omnivore/印象笔记等分析 |
-| Phase 2: 最小概念验证 | 待开始 | 选一个场景跑通端到端 |
-| Phase 3: 产品化/Skill 化 | 待开始 | 可发布的 Skill 或独立工具 |
-
-## 文件结构
-
-```
-universal-collector/
-├── README.md                     # 本文件：项目导航
-├── needs/
-│   ├── user-needs.md             # 用户需求视角（Phase 0-1）
-│   └── pm-analysis.md            # 产品经理视角（Phase 0-2）
-├── research/
-│   └── competitive-analysis.md   # 竞品与现有方案分析
-└── proposals/
-    └── concept-v0.md             # 产品概念雏形（待共识后撰写）
-```
+| Phase 0: 需求梳理 | ✅ 完成 | `needs/user-needs.md` + `needs/pm-analysis.md` |
+| Phase 0.5: MVP 验证 | ✅ 完成 | 4/4 文章端到端跑通 |
+| Phase 0.75: 战略研究 | ✅ 完成 | 8 竞品分析 + 定位 + 商业模式 |
+| Phase 1: 增强能力 | 🔲 待启动 | Embedding + MCP Server + 去重 |
+| Phase 2: 生态联动 | 🔲 | 多源收录 + Skill 联动 |
+| Phase 3: 产品化 | 🔲 | Skill 发布 + 多用户 |
 
 ## 与现有项目的关系
 
 | 现有项目 | 关系 |
 |---------|------|
-| `distillation-research/` | **上游技术参考**。已调研长文本蒸馏策略（Map-Reduce/GraphRAG/分层摘要）， collector 的「内容→知识资产」转化可直接复用 |
-| `0inbox/` | **临时收件箱**。目前只存放单次 skill 更新，未来可作为 collector 的原始输入端之一 |
-| `nova-reader/` | **场景重叠**。论文精读已有独立工作流，collector 聚焦「非论文类」或「轻量论文」的快速收录 |
-| `skill-factory/` | **下游输出**。Collector 产出的结构化知识，可通过 skill-factory 打包成可发布 Skill |
-| `thesis-exec/` | **用户场景**。博士论文写作是 collector 的核心用户场景之一 |
-
-## 核心问题（待回答）
-
-1. **边界问题**：collector 和 nova-reader 的边界在哪？论文走 nova-reader，其他走 collector？
-2. **开放性问题**：什么叫「比荣耀更 open」？是指数据格式开放、API 开放、还是生态可扩展？
-3. **闭环问题**：收藏的终点是什么？是生成一个 Skill？是更新一个知识库？还是产出一份周报？
-4. **人机分工**：哪些步骤必须人做（打标签？确认质量？），哪些可以全自动？
+| `nova-reader/` | **场景互补**。论文精读走 nova-reader，碎片化网络内容走 UC |
+| `skill-factory/` | **下游输出**。UC 的结构化知识可打包成可发布 Skill |
+| `thesis-exec/` | **用户场景**。博士论文写作是 UC 的核心用户场景之一 |
+| `distillation-research/` | **上游技术参考**。内容→知识资产转化策略可复用 |
 
 ---
 
-*创建日期：2026-05-13*
+*创建日期：2026-05-13 · 最近更新：2026-05-15*
