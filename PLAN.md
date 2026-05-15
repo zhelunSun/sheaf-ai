@@ -36,7 +36,7 @@ Phase 0: 需求梳理          ✅ 已完成
 Phase 0.5: MVP 验证        ✅ 4/4 文章端到端跑通
 Phase 0.75: 战略研究        ✅ 竞品调研+定位+商业模式+OPC运营框架
 Phase 0.76: 用户画像+产品审计   ✅ 3 Persona + 审计报告 + 优化建议
-Phase 1: 核心逻辑夯实          ← P0 ✅ 完成，P1 待执行
+Phase 1: 核心逻辑夯实          ← P0+P1 ✅ 完成，P2 待执行
 Phase 2: 生态联动
 Phase 3: 产品化/Skill 化
 ```
@@ -83,17 +83,17 @@ Phase 3: 产品化/Skill 化
 
 > Sir 反馈：产品形态不急（浏览器插件/悬浮球是远期），先把核心逻辑搞扎实。Embedding 不是护城河，引入时机是收藏量 50+ 之后。大愿景是 AI 时代个人知识秘书。
 
-**P0 — 核心管线逻辑（先跑通再优化）** ✅ 已完成（2026-05-17）
+**P0 — 核心管线逻辑（先跑通再优化）** ✅ 已完成（2026-05-16）
 - [x] **P0-0** 标题提取修复（微信文章 og:title） — 增加 h1/heading fallback + 回填空标题 entry
 - [x] **P0-1** 知识卡片 Schema v1 定义 — `docs/schema-v1.md` + pipeline.py 全面升级至 v1 格式
 - [x] **P0-2** 时效性识别 — summarize prompt 增强 + `_extract_timeliness()` 自动解析日期 + urgency 判定
-- [x] **P0-3** MCP Server 原型 — `scripts/mcp_server.py` stdio transport，4 个工具（search/list/get/urgent）
+- [x] **P0-3** MCP Server 原型 — `scripts/mcp_server.py` stdio transport，6 个工具
 
-**P1 — 体验优化（核心逻辑跑通后）**
-- [ ] **P1-0** 人机纠偏反馈回路 — 分类不准时用户可以纠正，提升信任
-- [ ] **P1-1** URL 去重 + 内容相似度去重 — 收藏量上来后必需
-- [ ] **P1-2** 首次使用引导（Onboarding） — 让新用户 5 分钟内体验核心价值
-- [ ] **P1-3** Agent 查询交互规范 — 定义返回格式、检索精度、fallback 策略
+**P1 — 体验优化（核心逻辑跑通后）** ✅ 已完成（2026-05-17）
+- [x] **P1-0** 人机纠偏反馈回路 — `scripts/feedback.py` + MCP `uc_correct` 工具 + feedback.jsonl 日志
+- [x] **P1-1** URL 去重 + 内容相似度去重 — URL 标准化 + content hash + 微信 s= 参数精确匹配
+- [x] **P1-2** 首次使用引导（Onboarding） — `scripts/onboarding.py` 3 篇示例 + 查询演示 + 操作指南
+- [x] **P1-3** Agent 查询交互规范 — `docs/agent-query-spec.md` 返回格式 + 错误码 + 去重 + 纠偏机制
 
 **P2 — 形态优化 + 增值功能**
 - [ ] **P2-0** 浏览器插件 / 桌面悬浮球 — 降低收录摩擦（MVP 手动粘贴够用）

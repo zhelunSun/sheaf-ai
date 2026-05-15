@@ -29,7 +29,9 @@ universal-collector/
 │   ├── ecosystem-vision.md
 │   ├── opc-operations-harness.md
 │   ├── personas-and-scenarios.md   # 用户画像 + 使用场景
-│   └── product-audit.md            # 产品设计审计报告
+│   ├── product-audit.md            # 产品设计审计报告
+│   ├── schema-v1.md                # 知识卡片 Schema v1 定义
+│   └── agent-query-spec.md         # Agent 查询交互规范
 │
 ├── research/          # 战略研究
 │   ├── competitor-deep-dive.md
@@ -39,7 +41,18 @@ universal-collector/
 │   └── agent-trend-alignment.md
 │
 ├── scripts/           # 原型代码
-├── data/              # 示例数据
+│   ├── pipeline.py     # 主管线：fetch → classify → summarize → store
+│   ├── fetch_article.py # 文章抓取（3-strategy fallback）
+│   ├── llm_client.py   # LLM 客户端（SiliconFlow/XTY 双 provider）
+│   ├── mcp_server.py    # MCP Server（6 工具，stdio transport）
+│   ├── feedback.py      # 人机纠偏模块
+│   └── onboarding.py    # 5 分钟快速体验
+│
+├── prompts/           # LLM 提示词
+│   ├── classify.md      # 分类提示词
+│   └── summarize.md     # 摘要提示词（含时效性提取）
+│
+├── data/              # 运行时数据（gitignored）
 └── proposals/         # 早期概念（归档）
 ```
 
@@ -51,7 +64,7 @@ universal-collector/
 | Phase 0.5: MVP 验证 | ✅ 完成 | 4/4 文章端到端跑通 |
 | Phase 0.75: 战略研究 | ✅ 完成 | 8 竞品分析 + 定位 + 商业模式 |
 | Phase 0.76: 用户画像+审计 | ✅ 完成 | 3 Persona + 审计报告 + 优先级重排 |
-| Phase 1: 增强能力 | 🔲 待启动 | 浏览器插件 + MCP Server + Schema + Embedding |
+| Phase 1: 核心逻辑夯实 | ✅ P0+P1 完成 | Schema v1 + MCP Server + 去重 + 纠偏 + Onboarding |
 | Phase 2: 生态联动 | 🔲 | 多源收录 + Skill 联动 |
 | Phase 3: 产品化 | 🔲 | Skill 发布 + 多用户 |
 
@@ -66,4 +79,4 @@ universal-collector/
 
 ---
 
-*创建日期：2026-05-13 · 最近更新：2026-05-15*
+*创建日期：2026-05-13 · 最近更新：2026-05-17*

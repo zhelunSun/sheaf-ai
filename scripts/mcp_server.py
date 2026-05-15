@@ -187,6 +187,63 @@ TOOLS = [
             "type": "object",
             "properties": {}
         }
+    },
+    {
+        "name": "uc_correct",
+        "description": "Submit a correction to an entry's classification or summary. Used when the user disagrees with the auto-classification.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "entry_id": {
+                    "type": "string",
+                    "description": "Entry ID to correct"
+                },
+                "corrections": {
+                    "type": "object",
+                    "description": "Fields to correct",
+                    "properties": {
+                        "category_primary": {
+                            "type": "string",
+                            "enum": ["科研", "市场投资", "AI产品", "AI技术"]
+                        },
+                        "category_sub": {"type": "string"},
+                        "tags": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        },
+                        "importance": {
+                            "type": "string",
+                            "enum": ["high", "medium", "low"]
+                        },
+                        "summary": {"type": "string"}
+                    }
+                },
+                "user_note": {
+                    "type": "string",
+                    "description": "Optional note explaining the correction"
+                }
+            },
+            "required": ["entry_id", "corrections"]
+        }
+    },
+    {
+        "name": "uc_collect",
+        "description": "Collect a new article URL into the knowledge base. Fetches, classifies, summarizes, and stores the article.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "Article URL to collect"
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": "Skip dedup check and force collect (default: false)",
+                    "default": false
+                }
+            },
+            "required": ["url"]
+        }
     }
 ]
 
@@ -256,6 +313,27 @@ def handle_request(request: dict) -> str:
             results = get_urgent()
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "uc_correct":
+            from feedback import submit_feedback
+            entry_id = arguments.get("entry_id", "")
+            corrections = arguments.get("corrections", {})
+            user_note = arguments.get("user_note", "")
+            result = submit_feedback(entry_id, corrections, user_note)
+            if not result["success"]:
+                return _jsonrpc_error(req_id, -32602, result.get("error", "Correction failed"))
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "uc_collect":
+            from pipeline import process_url
+            url = arguments.get("url", "")
+            force = arguments.get("force", False)
+            result = process_url(url, force=force)
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
             })
 
         else:

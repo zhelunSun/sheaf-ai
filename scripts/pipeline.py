@@ -15,6 +15,8 @@ Usage (Python):
 import json
 import sys
 import os
+import re
+import hashlib
 import uuid
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
@@ -47,6 +49,79 @@ def load_prompt(name: str) -> str:
     if path.exists():
         return path.read_text(encoding="utf-8")
     return ""
+
+
+def _normalize_url(url: str) -> str:
+    """Normalize URL for dedup: strip trailing slash, fragment, common tracking params"""
+    url = url.strip()
+    # Remove fragment
+    if "#" in url:
+        url = url.split("#")[0]
+    # Remove trailing slash
+    url = url.rstrip("/")
+    # Remove common tracking params
+    tracking_params = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content",
+                       "from", "isappinstalled", "nsukey", "pass_ticket"]
+    if "?" in url:
+        base, query = url.split("?", 1)
+        params = []
+        for p in query.split("&"):
+            key = p.split("=")[0] if "=" in p else p
+            if key not in tracking_params:
+                params.append(p)
+        if params:
+            url = base + "?" + "&".join(params)
+        else:
+            url = base
+    # WeChat URL normalization: remove chksm and other noise
+    if "mp.weixin.qq.com" in url:
+        # Extract just the s parameter (the key identifier)
+        match = re.search(r's=([a-zA-Z0-9_-]+)', url)
+        if match:
+            return f"https://mp.weixin.qq.com/s/{match.group(1)}"
+    return url
+
+
+def _content_hash(text: str) -> str:
+    """Generate a hash for content dedup (first 2000 chars, normalized)"""
+    # Normalize: strip whitespace, lowercase, remove punctuation noise
+    normalized = re.sub(r'\s+', ' ', text[:2000].lower().strip())
+    return hashlib.md5(normalized.encode('utf-8')).hexdigest()[:12]
+
+
+def check_duplicate(url: str, text: str = None) -> dict | None:
+    """
+    Check if a URL or content is already in the collection.
+    Returns the existing entry if duplicate found, None otherwise.
+    """
+    if not INDEX_FILE.exists():
+        return None
+
+    normalized_url = _normalize_url(url)
+    url_hash = hashlib.md5(normalized_url.encode('utf-8')).hexdigest()[:12]
+    content_h = _content_hash(text) if text else None
+
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                existing_url = _normalize_url(entry.get("url", ""))
+                existing_url_hash = hashlib.md5(existing_url.encode('utf-8')).hexdigest()[:12]
+
+                # URL dedup (exact match after normalization)
+                if url_hash == existing_url_hash:
+                    return {"type": "url_duplicate", "existing": entry}
+
+                # Content dedup (if text provided)
+                if content_h and entry.get("content_hash") == content_h:
+                    return {"type": "content_duplicate", "existing": entry}
+
+            except json.JSONDecodeError:
+                continue
+    return None
 
 
 def _detect_platform(url: str) -> str:
@@ -245,6 +320,9 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     # Extract timeliness from summary
     timeliness = _extract_timeliness(summary_result.get("structured", {}))
 
+    # Content hash for dedup
+    content_h = _content_hash(fetch_result.get("text", ""))
+
     # Build entry JSON (Schema v1)
     entry = {
         "id": entry_id,
@@ -277,7 +355,8 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "collected_at": now.isoformat(),
             "fetch_method": fetch_result.get("method", "unknown"),
             "language": "zh",
-            "schema_version": "1.0.0"
+            "schema_version": "1.0.0",
+            "content_hash": content_h
         },
         "status": "active"
     }
@@ -367,6 +446,7 @@ def _append_index(entry: dict):
         "deadline_date": timeliness.get("deadline_date"),
         "urgency": timeliness.get("urgency", "evergreen"),
         "collected_at": entry["metadata"]["collected_at"],
+        "content_hash": entry["metadata"].get("content_hash", ""),
     }
     with open(INDEX_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
@@ -376,17 +456,34 @@ def _append_index(entry: dict):
 # Main Pipeline
 # ============================================================
 
-def process_url(url: str, manual_text: str = None) -> dict:
+def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
     """
     Main pipeline: fetch → classify → summarize → store
 
     Args:
         url: Article URL
         manual_text: If provided, skip fetch and use this text directly
+        force: If True, skip dedup check and process anyway
 
     Returns:
         dict with pipeline results
     """
+    # Step 0: Dedup check
+    if not force:
+        dedup_text = manual_text if manual_text else None
+        dup = check_duplicate(url, dedup_text)
+        if dup:
+            existing = dup["existing"]
+            print(f"⚠️  Duplicate detected ({dup['type']}): {existing.get('title','?')}")
+            return {
+                "success": False,
+                "error": f"Duplicate ({dup['type']})",
+                "stage": "dedup",
+                "existing_id": existing.get("id"),
+                "existing_title": existing.get("title", ""),
+                "url": url
+            }
+
     # Step 1: Fetch
     if manual_text:
         fetch_result = {
@@ -514,5 +611,6 @@ if __name__ == "__main__":
         sys.exit(0)
 
     url = sys.argv[1]
-    result = process_url(url)
+    force = "--force" in sys.argv
+    result = process_url(url, force=force)
     print(json.dumps(result, ensure_ascii=False, indent=2))
