@@ -1,29 +1,52 @@
-## Universal Collector — 分类 Prompt
+## Universal Collector — 动态分类 Prompt
 
-给定一篇网页文章（标题 + 正文），将其归类到 Universal Collector 分类体系。
+给定一篇网页文章（标题 + 正文），提取文章的主题和标签。
 
-**重要：所有文本输出必须使用中文。**
+**核心原则：不做硬分类，让内容自然归类。**
 
 ### 输出格式 (JSON)
 
 ```json
 {
-  "primary_category": "科研 | 市场投资 | AI产品 | AI技术",
-  "sub_category": "自动提取的子话题（例如 '多智能体系统', 'LLM评测', 'Web3基础设施'）",
+  "topics": [
+    {"name": "主题名称", "confidence": 0.9},
+    {"name": "次要主题", "confidence": 0.4}
+  ],
   "tags": ["标签1", "标签2", "标签3"],
   "importance": "high | medium | low",
-  "relevance_note": "一句话解释为什么选择这个分类"
+  "content_type": "news | analysis | research | tutorial | opinion | event | product | reference",
+  "relevance_note": "一句话解释为什么提取这些主题和标签"
 }
 ```
 
-### 分类定义
+### 主题提取规则
 
-1. **科研**: 学术论文、会议、研讨会、研究方法、基准测试、数据集、科学发现。
-2. **市场投资**: 公司融资、市场分析、VC/PE 交易、加密/Web3 市场、股票/Token 趋势、行业报告。
-3. **AI产品**: 已发布的 AI 应用、产品评测、面向用户的工具、SaaS 产品、产品战略。
-4. **AI技术**: 技术深度分析、模型架构、框架、基础设施、工程实践、开源工具。
+1. **topics 是领域维度的归类**，不是固定分类表。LLM 自由提取，例如：
+   - "AI Agent", "遥感", "Web3", "城市森林", "投资", "国际关系", "开源生态", "LLM", "计算机视觉"...
+   - 一篇文章可以有 1-3 个主题，每个带 confidence（0-1）
+   - confidence > 0.7 的视为主要主题
 
-### 规则
-- 一篇文章可以跨类别打标签（例如一篇关于新 LLM 架构的技术博客 = AI技术，但如果也讨论公司战略 = AI产品 / 市场投资）。用 tags 做交叉引用。
-- 如果不确定，做出最佳判断并在 relevance_note 中说明。
-- 重要性启发式：high = 突破性 / 与用户工作直接相关；medium = 值得了解；low = 边缘兴趣。
+2. **tags 是更细粒度的关键词**，用于交叉检索。例如：
+   - 文章讨论 GPT-5 发布 → tags: ["GPT-5", "OpenAI", "大模型", "产品发布"]
+   - 文章讨论 RAG 在遥感中的应用 → tags: ["RAG", "遥感", "知识检索", "地理空间"]
+
+3. **content_type 描述文章体裁**：
+   - `news` — 新闻快讯、动态报道
+   - `analysis` — 深度分析、行业洞察
+   - `research` — 学术论文、研究方法
+   - `tutorial` — 教程、实操指南
+   - `opinion` — 观点评论、博客
+   - `event` — 活动预告、会议征稿
+   - `product` — 产品发布、评测
+   - `reference` — 参考资料、工具清单
+
+4. **importance 判断**：
+   - `high` — 突破性信息、与 AI Agent/遥感研究直接相关、重大行业变化
+   - `medium` — 值得了解、有参考价值
+   - `low` — 边缘兴趣、信息增量较小
+
+5. **标签提取原则**：
+   - 具体 > 抽象（"RAG" > "AI技术"）
+   - 保留专有名词原文（DeepSeek、OpenAI、Transformer）
+   - 每篇文章 3-8 个标签
+   - 尽量复用已有常见标签（如 "大模型"、"Agent"、"遥感"、"投资"）

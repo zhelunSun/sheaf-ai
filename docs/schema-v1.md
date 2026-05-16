@@ -1,21 +1,30 @@
-# Universal Collector — Knowledge Card Schema v1
+# Universal Collector — Knowledge Card Schema v1.1
 
-> **Status**: Draft → Active (Phase 1 P0)
-> **Version**: 1.0.0
+> **Status**: Active
+> **Version**: 1.1.0 (dynamic topics)
 > **Purpose**: 标准化知识资产格式，使 Agent 可消费、可检索、可关联
 
 ## 设计原则
 
 1. **Agent-First**: Schema 的首要消费者是 Agent（MCP/LLM），不是人类浏览器
-2. **Backward Compatible**: 现有 4 条 entry 无需迁移，新字段有合理默认值
+2. **Backward Compatible**: 现有 entry 无需迁移，新字段有合理默认值
 3. **Progressive Enrichment**: 录入时填核心字段，后续 Agent 可补充关联/时效状态
-4. **Flat + Nested Mix**: 顶层 flat（便于检索），嵌套仅用于 grouping（category, source）
+4. **Dynamic Topics**: 不做硬分类，主题由 LLM 自由提取，自然生长
+
+## v1.1 变更（vs v1.0）
+
+| 字段 | v1.0 | v1.1 |
+|------|------|------|
+| `topics` | 不存在 | **NEW** — 动态主题列表 `[{name, confidence}]` |
+| `content_type` | 不存在 | **NEW** — 文章体裁 `news/analysis/research/...` |
+| `category.primary` | 枚举四选一 | 由 topics[0].name 自动填充（兼容） |
+| `tags_registry.json` | 不存在 | **NEW** — 全局标签注册表 |
 
 ## Schema Definition
 
 ```json
 {
-  "$schema": "https://universal-collector.dev/schema/v1",
+  "$schema": "https://universal-collector.dev/schema/v1.1",
   "type": "object",
   "required": ["id", "url", "title", "collected_at", "category", "status"],
   "properties": {
@@ -41,18 +50,35 @@
 
     "category": {
       "type": "object",
-      "required": ["primary"],
+      "description": "Legacy 兼容 — primary 从 topics[0] 自动填充",
       "properties": {
         "primary": {
           "type": "string",
-          "enum": ["科研", "市场投资", "AI产品", "AI技术"],
-          "description": "主分类"
+          "description": "主主题（自动从 topics 最高置信度项填充）"
         },
         "sub": {
           "type": "string",
-          "description": "子分类（LLM 自动提取）"
+          "description": "子主题（保留为空，用 topics 代替）"
         }
       }
+    },
+
+    "topics": {
+      "type": "array",
+      "description": "动态主题列表（LLM 自由提取，非固定枚举）",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "description": "主题名称" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+
+    "content_type": {
+      "type": "string",
+      "enum": ["news", "analysis", "research", "tutorial", "opinion", "event", "product", "reference"],
+      "description": "文章体裁"
     },
 
     "tags": {

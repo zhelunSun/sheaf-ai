@@ -1,8 +1,14 @@
 """
-Universal Collector — MVP Pipeline
+Universal Collector — MVP Pipeline v2
 
 Processes a single article URL end-to-end:
-  fetch → LLM classify → LLM summarize → store to data/
+  fetch → LLM classify (dynamic topics) → LLM summarize → store to data/
+
+v2 changes:
+  - Dynamic topic system (no hardcoded categories)
+  - Content type classification
+  - Tag registry with auto-dedup
+  - Backward compatible with legacy entries
 
 Usage (CLI):
   python pipeline.py <url>
@@ -37,6 +43,7 @@ ENTRIES_DIR = DATA_DIR / "entries"
 SUMMARIES_DIR = DATA_DIR / "summaries"
 RAW_DIR = DATA_DIR / "raw"
 INDEX_FILE = DATA_DIR / "index.jsonl"
+TAGS_REGISTRY_FILE = DATA_DIR / "tags_registry.json"
 
 # Default model
 CLASSIFY_MODEL = "deepseek-ai/DeepSeek-V3.2"
@@ -195,11 +202,55 @@ def _extract_timeliness(structured: dict) -> dict:
 
 
 # ============================================================
+# Tag Registry — dynamic tag management
+# ============================================================
+
+def _load_tags_registry() -> dict:
+    """Load tags registry. Returns {tag: {count, first_seen, last_seen}}"""
+    if TAGS_REGISTRY_FILE.exists():
+        try:
+            return json.loads(TAGS_REGISTRY_FILE.read_text(encoding="utf-8"))
+        except (json.JSONDecodeError, Exception):
+            return {}
+    return {}
+
+
+def _save_tags_registry(registry: dict):
+    """Save tags registry."""
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    TAGS_REGISTRY_FILE.write_text(
+        json.dumps(registry, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
+
+
+def update_tags_registry(tags: list, now_iso: str):
+    """Update registry with new tags from an article."""
+    registry = _load_tags_registry()
+    for tag in tags:
+        tag_lower = tag.lower().strip()
+        if not tag_lower:
+            continue
+        if tag_lower in registry:
+            registry[tag_lower]["count"] += 1
+            registry[tag_lower]["last_seen"] = now_iso
+            # Keep the canonical form (prefer the one already stored)
+        else:
+            registry[tag_lower] = {
+                "canonical": tag,  # Store the original casing
+                "count": 1,
+                "first_seen": now_iso,
+                "last_seen": now_iso,
+            }
+    _save_tags_registry(registry)
+
+
+# ============================================================
 # LLM Processing
 # ============================================================
 
 def classify_article(title: str, text: str) -> dict:
-    """LLM classify: theme + sub-theme + tags + importance"""
+    """LLM classify: dynamic topics + tags + content_type + importance"""
     classify_prompt = load_prompt("classify.md")
     prompt = f"""{classify_prompt}
 
@@ -214,7 +265,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
     try:
         result = chat(
             prompt=prompt,
-            system="You are a precise article classifier. Output ONLY valid JSON. ALL text fields must be in Chinese (中文).",
+            system="You are a precise article classifier. Output ONLY valid JSON. ALL text fields must be in Chinese (中文), except proper nouns.",
             model=CLASSIFY_MODEL,
             temperature=0.3,
             max_tokens=800,
@@ -231,16 +282,28 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
         result = result.strip()
 
         parsed = json.loads(result)
-        # Validate
-        if "primary_category" not in parsed:
-            parsed["primary_category"] = "AI技术"
+
+        # Normalize: ensure topics is a list of dicts
+        if "topics" not in parsed or not isinstance(parsed["topics"], list):
+            # Legacy fallback: convert primary_category to topics
+            primary = parsed.get("primary_category", "AI技术")
+            sub = parsed.get("sub_category", "")
+            parsed["topics"] = [
+                {"name": primary, "confidence": 0.9},
+            ]
+            if sub:
+                parsed["topics"].append({"name": sub, "confidence": 0.6})
+
+        if "content_type" not in parsed:
+            parsed["content_type"] = "reference"
+
         return parsed
     except Exception as e:
         return {
-            "primary_category": "AI技术",
-            "sub_category": "general",
+            "topics": [{"name": "AI", "confidence": 0.5}],
             "tags": [],
             "importance": "medium",
+            "content_type": "reference",
             "relevance_note": f"Classification failed: {e}"
         }
 
@@ -309,7 +372,6 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
         or fetch_result.get("title", "")
     )
     if not title and fetch_result.get("text"):
-        # Last resort: use first line of content (truncated)
         first_line = fetch_result["text"].split("\n")[0].strip()[:100]
         if first_line:
             title = first_line
@@ -323,16 +385,29 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     # Content hash for dedup
     content_h = _content_hash(fetch_result.get("text", ""))
 
-    # Build entry JSON (Schema v1)
+    # Extract topics (new dynamic system)
+    topics = classify_result.get("topics", [])
+    # Also build legacy-compatible category from primary topic
+    primary_topic = ""
+    if topics:
+        # Sort by confidence descending
+        sorted_topics = sorted(topics, key=lambda t: t.get("confidence", 0), reverse=True)
+        primary_topic = sorted_topics[0].get("name", "")
+
+    tags = classify_result.get("tags", [])
+
+    # Build entry JSON (Schema v1.1 — dynamic topics)
     entry = {
         "id": entry_id,
         "url": url,
         "title": title,
         "category": {
-            "primary": classify_result.get("primary_category", "AI技术"),
-            "sub": classify_result.get("sub_category", "")
+            "primary": primary_topic or "未分类",
+            "sub": ""
         },
-        "tags": classify_result.get("tags", []),
+        "topics": topics,  # NEW: dynamic topic list
+        "tags": tags,
+        "content_type": classify_result.get("content_type", "reference"),  # NEW
         "importance": classify_result.get("importance", "medium"),
         "relevance_note": classify_result.get("relevance_note", ""),
         "summary": summary_result.get("one_liner", ""),
@@ -355,7 +430,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "collected_at": now.isoformat(),
             "fetch_method": fetch_result.get("method", "unknown"),
             "language": "zh",
-            "schema_version": "1.0.0",
+            "schema_version": "1.1.0",
             "content_hash": content_h
         },
         "status": "active"
@@ -376,6 +451,9 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     summary_path = SUMMARIES_DIR / f"{entry_id}.md"
     summary_path.write_text(summary_md, encoding="utf-8")
 
+    # Update tags registry
+    update_tags_registry(tags, now.isoformat())
+
     # Append to index
     _append_index(entry)
 
@@ -388,15 +466,31 @@ def _build_summary_md(entry: dict, structured: dict) -> str:
     lines.append(f"# {entry['title']}")
     lines.append("")
     lines.append(f"- **URL**: {entry.get('url', '')}")
-    lines.append(f"- **收录时间**: {entry.get('collected_at', '')}")
-    lines.append(f"- **主题**: {entry['category']['primary']}")
-    if entry['category']['sub']:
-        lines.append(f"- **子主题**: {entry['category']['sub']}")
+    lines.append(f"- **收录时间**: {entry['metadata'].get('collected_at', '')}")
+
+    # Show topics (dynamic)
+    topics = entry.get("topics", [])
+    if topics:
+        topic_names = [f"{t['name']}({t.get('confidence', 0):.0%})" for t in topics]
+        lines.append(f"- **主题**: {', '.join(topic_names)}")
+    else:
+        lines.append(f"- **主题**: {entry['category']['primary']}")
+
+    content_type = entry.get("content_type", "")
+    if content_type:
+        type_labels = {
+            "news": "新闻", "analysis": "深度分析", "research": "学术研究",
+            "tutorial": "教程指南", "opinion": "观点评论", "event": "活动事件",
+            "product": "产品", "reference": "参考资料"
+        }
+        lines.append(f"- **类型**: {type_labels.get(content_type, content_type)}")
+
     if entry.get('tags'):
         lines.append(f"- **标签**: {', '.join(entry['tags'])}")
     lines.append(f"- **重要性**: {entry.get('importance', 'medium')}")
-    if entry.get('source_author'):
-        lines.append(f"- **来源**: {entry['source_author']}")
+    source = entry.get('source', {})
+    if source.get('author'):
+        lines.append(f"- **来源**: {source['author']}")
     lines.append("")
     lines.append("## 一句摘要")
     lines.append("")
@@ -426,7 +520,7 @@ def _build_summary_md(entry: dict, structured: dict) -> str:
         lines.append("")
 
     lines.append("---")
-    lines.append(f"*由 Universal Collector 自动处理 | {datetime.now(BJT).strftime('%Y-%m-%d %H:%M')}*")
+    lines.append(f"*由 Universal Collector v2 自动处理 | {datetime.now(BJT).strftime('%Y-%m-%d %H:%M')}*")
     return "\n".join(lines)
 
 
@@ -437,9 +531,11 @@ def _append_index(entry: dict):
         "id": entry["id"],
         "url": entry["url"],
         "title": entry["title"],
-        "primary_category": entry["category"]["primary"],
-        "sub_category": entry["category"]["sub"],
+        "topics": [t.get("name", "") for t in entry.get("topics", [])],
+        "primary_category": entry["category"]["primary"],  # Legacy compat
+        "sub_category": entry["category"]["sub"],  # Legacy compat
         "tags": entry["tags"],
+        "content_type": entry.get("content_type", ""),
         "importance": entry["importance"],
         "summary": entry["summary"],
         "has_deadline": timeliness.get("has_deadline", False),
@@ -507,7 +603,12 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
         fetch_result.get("title", ""),
         fetch_result.get("text", "")
     )
-    print(f"   → {classify_result.get('primary_category','?')} / {classify_result.get('sub_category','?')}")
+    topics = [t.get("name", "") for t in classify_result.get("topics", [])]
+    tags = classify_result.get("tags", [])
+    content_type = classify_result.get("content_type", "?")
+    print(f"   → Topics: {', '.join(topics)}")
+    print(f"   → Tags: {', '.join(tags)}")
+    print(f"   → Type: {content_type}")
 
     # Step 3: Summarize
     print("📝 Summarizing...")
@@ -525,7 +626,9 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
         "success": True,
         "entry_id": entry_id,
         "url": url,
-        "category": classify_result.get("primary_category"),
+        "topics": topics,
+        "tags": tags,
+        "content_type": content_type,
         "one_liner": summary_result.get("one_liner", ""),
         "structured": summary_result.get("structured", {}),
         "fetch_method": fetch_result.get("method"),
@@ -538,7 +641,7 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
 # ============================================================
 
 def query_collection(query: str, limit: int = 10) -> list:
-    """Simple keyword search against index.jsonl"""
+    """Search collection by keyword (matches topics, tags, title, summary)"""
     if not INDEX_FILE.exists():
         return []
 
@@ -551,8 +654,17 @@ def query_collection(query: str, limit: int = 10) -> list:
                 continue
             try:
                 entry = json.loads(line)
-                # Simple keyword match
-                searchable = f"{entry.get('title','')} {entry.get('primary_category','')} {entry.get('sub_category','')} {' '.join(entry.get('tags',[]))} {entry.get('summary','')}".lower()
+                # Build searchable text from all relevant fields
+                parts = [
+                    entry.get("title", ""),
+                    " ".join(entry.get("topics", [])),
+                    entry.get("primary_category", ""),
+                    entry.get("sub_category", ""),
+                    " ".join(entry.get("tags", [])),
+                    entry.get("summary", ""),
+                    entry.get("content_type", ""),
+                ]
+                searchable = " ".join(parts).lower()
                 if query_lower in searchable:
                     results.append(entry)
             except json.JSONDecodeError:
@@ -603,14 +715,49 @@ if __name__ == "__main__":
                     line = line.strip()
                     if line:
                         entries.append(json.loads(line))
-            print(f"📚 Universal Collector — 收藏统计")
+            print(f"📚 Universal Collector v2 — 收藏统计")
             print(f"总计: {len(entries)} 篇")
-            cats = {}
+
+            # Topic breakdown (from new topics field)
+            topic_counts = {}
+            type_counts = {}
+            tag_counts = {}
             for e in entries:
-                cat = e.get("primary_category", "?")
-                cats[cat] = cats.get(cat, 0) + 1
-            for cat, count in sorted(cats.items(), key=lambda x: -x[1]):
-                print(f"  {cat}: {count}")
+                # Topics
+                for t in e.get("topics", []):
+                    topic_counts[t] = topic_counts.get(t, 0) + 1
+                # Legacy primary_category for old entries
+                if not e.get("topics"):
+                    cat = e.get("primary_category", "?")
+                    topic_counts[cat] = topic_counts.get(cat, 0) + 1
+                # Content types
+                ct = e.get("content_type", "")
+                if ct:
+                    type_counts[ct] = type_counts.get(ct, 0) + 1
+                # Tags
+                for tag in e.get("tags", []):
+                    tag_counts[tag] = tag_counts.get(tag, 0) + 1
+
+            if topic_counts:
+                print("\n📊 主题分布:")
+                for topic, count in sorted(topic_counts.items(), key=lambda x: -x[1]):
+                    print(f"  {topic}: {count}")
+
+            if type_counts:
+                print("\n📝 内容类型:")
+                type_labels = {
+                    "news": "新闻", "analysis": "深度分析", "research": "学术研究",
+                    "tutorial": "教程指南", "opinion": "观点评论", "event": "活动事件",
+                    "product": "产品", "reference": "参考资料"
+                }
+                for ct, count in sorted(type_counts.items(), key=lambda x: -x[1]):
+                    label = type_labels.get(ct, ct)
+                    print(f"  {label}: {count}")
+
+            if tag_counts:
+                print("\n🏷️ 高频标签 (Top 10):")
+                for tag, count in sorted(tag_counts.items(), key=lambda x: -x[1])[:10]:
+                    print(f"  #{tag}: {count}")
         else:
             print("📂 收藏库为空。使用: python pipeline.py <url>")
         sys.exit(0)

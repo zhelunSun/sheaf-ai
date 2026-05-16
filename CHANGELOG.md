@@ -1,5 +1,36 @@
 # Universal Collector CHANGELOG
 
+## v0.3.0 (2026-05-16) — 爬取优化 + 动态标签 + 变更追踪
+
+### 重大变更：动态标签体系
+- **去掉硬编码四分类**（科研/市场投资/AI产品/AI技术），改为 LLM 自由提取的动态 `topics` 列表
+- 每篇文章可归属 1-3 个主题，每个主题带 confidence 分数
+- 新增 `content_type` 字段：区分文章体裁（news/analysis/research/tutorial/opinion/event/product/reference）
+- 新增 `tags_registry.json`：全局标签注册表，自动追踪标签使用频率和出现时间
+- `prompts/classify.md` 全面重写：从"分类"变为"提取主题和标签"
+- Schema 升级至 v1.1，向后兼容 v1.0（`category.primary` 从 topics 自动填充）
+
+### 爬取引擎 v2
+- **平台感知策略选择**：已知 JS-heavy 域名直接走 Playwright，不浪费时间盲试 requests
+  - `view.inews.qq.com`, `x.com`, `twitter.com`, `zhihu.com`, `bilibili.com` → Playwright first
+  - `mp.weixin.qq.com` → requests first（SSR 通常够用），Playwright fallback
+  - 其他 → requests first，Playwright fallback
+- **DRY 提取逻辑**：`_extract_from_html()` 统一函数，requests 和 Playwright 共用
+- **内容质量评估**：不仅看长度，还看段落密度和平均行长（`_content_quality()`）
+- **更完整的噪音清理**：去除 nav/footer/header 元素
+- **CLI 增加 timing 信息**
+
+### 变更追踪机制
+- **新增 `BACKLOG.md`**：统一追踪 idea/Bug/改进，取代散落对话
+  - 优先级标记（P0/P1/P2）+ 状态标记（💡/🔄/✅/❌）
+  - 条目 ID 格式 `BLG-XXX`，commit 时引用
+- **Git commit 规范**：`BLG-XXX: description`
+
+### 已关闭 Backlog 条目
+- ✅ BLG-001 爬取代码优化
+- ✅ BLG-002 动态标签机制
+- ✅ BLG-003 建立变更追踪
+
 ## v0.2.0 (2026-05-14) — 战略研究完成
 
 ### 新增：竞品调研
