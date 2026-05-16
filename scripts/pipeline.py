@@ -537,7 +537,10 @@ def _build_summary_md(entry: dict, structured: dict) -> str:
         if content:
             lines.append(f"### {label}")
             lines.append("")
-            lines.append(content)
+            # Ensure content is a string (LLM may return list)
+            if isinstance(content, list):
+                content = "\n".join(str(c) for c in content)
+            lines.append(str(content))
             lines.append("")
 
     deadline = structured.get("deadline_or_timing")
@@ -574,6 +577,188 @@ def _append_index(entry: dict):
     }
     with open(INDEX_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
+
+
+# ============================================================
+# Reclassify — upgrade legacy entries to Schema v1.1
+# ============================================================
+
+def reclassify_entries(entry_ids: list = None, dry_run: bool = False) -> dict:
+    """
+    Re-run classify+summarize on legacy entries that lack topics/content_type.
+    
+    Args:
+        entry_ids: Specific IDs to reclassify. If None, auto-detect all legacy entries.
+        dry_run: If True, only print what would change without modifying files.
+    
+    Returns:
+        Summary dict with count of reclassified entries.
+    """
+    # Find entry JSON files
+    all_entries = []
+    if ENTRIES_DIR.exists():
+        for month_dir in sorted(ENTRIES_DIR.iterdir()):
+            if month_dir.is_dir() and month_dir.name.startswith("202"):
+                for f in month_dir.glob("*.json"):
+                    try:
+                        entry = json.loads(f.read_text(encoding="utf-8"))
+                        all_entries.append((f, entry))
+                    except (json.JSONDecodeError, Exception):
+                        continue
+    
+    # Filter to entries needing reclassification
+    targets = []
+    for path, entry in all_entries:
+        eid = entry.get("id", "")
+        has_topics = bool(entry.get("topics"))
+        has_ct = bool(entry.get("content_type"))
+        
+        if entry_ids:
+            if eid in entry_ids:
+                targets.append((path, entry))
+        else:
+            if not has_topics or not has_ct:
+                targets.append((path, entry))
+    
+    print(f"🔄 Reclassifying {len(targets)} entries...")
+    
+    results = {"updated": 0, "skipped": 0, "errors": []}
+    
+    for entry_path, entry in targets:
+        eid = entry.get("id", "?")
+        title = entry.get("title", "?")[:40]
+        
+        # Load raw text
+        raw_path = RAW_DIR / f"{eid}.txt"
+        if not raw_path.exists():
+            print(f"  ⚠️  No raw text for {eid}, skipping")
+            results["skipped"] += 1
+            continue
+        
+        raw_text = raw_path.read_text(encoding="utf-8")
+        if len(raw_text) < 50:
+            print(f"  ⚠️  Raw text too short for {eid} ({len(raw_text)} chars)")
+            results["skipped"] += 1
+            continue
+        
+        # Re-run classify
+        try:
+            classify_result = classify_article(title, raw_text)
+            summary_result = summarize_article(title, raw_text)
+        except Exception as e:
+            print(f"  ❌ LLM failed for {eid}: {e}")
+            results["errors"].append({"id": eid, "error": str(e)})
+            continue
+        
+        # Extract new fields
+        topics = classify_result.get("topics", [])
+        tags = classify_result.get("tags", [])
+        content_type = classify_result.get("content_type", "reference")
+        importance = classify_result.get("importance", entry.get("importance", "medium"))
+        
+        # Primary topic from highest confidence
+        primary_topic = ""
+        if topics:
+            sorted_topics = sorted(topics, key=lambda t: t.get("confidence", 0), reverse=True)
+            primary_topic = sorted_topics[0].get("name", "")
+        
+        topic_names = [t.get("name", "") for t in topics]
+        print(f"  ✅ {eid}: topics={topic_names}, type={content_type}")
+        
+        if dry_run:
+            results["skipped"] += 1
+            continue
+        
+        # Migrate legacy flat structure → metadata wrapper
+        if "metadata" not in entry:
+            entry["metadata"] = {}
+            # Migrate top-level fields into metadata
+            for key in ("collected_at", "fetch_method", "language", "schema_version", "content_hash"):
+                if key in entry:
+                    entry["metadata"][key] = entry.pop(key)
+            # Migrate source_author → source.author
+            if "source_author" in entry and "source" not in entry:
+                entry["source"] = {
+                    "author": entry.pop("source_author"),
+                    "platform": "web",
+                    "publish_date": entry.pop("publish_date", None),
+                }
+            print(f"  🔧 Migrated legacy structure for {eid}")
+
+        # Update entry JSON
+        entry["topics"] = topics
+        entry["category"] = {"primary": primary_topic or "未分类", "sub": ""}
+        entry["tags"] = tags
+        entry["content_type"] = content_type
+        entry["importance"] = importance
+        entry["metadata"]["schema_version"] = "1.1.0"
+        
+        # Update summary if LLM provided new one
+        new_summary = summary_result.get("one_liner", "")
+        if new_summary:
+            entry["summary"] = new_summary
+            entry["structured_summary"] = {
+                k: v for k, v in {
+                    "core_argument": summary_result.get("structured", {}).get("core_argument", ""),
+                    "key_data": summary_result.get("structured", {}).get("key_data", ""),
+                    "relevance_to_user": summary_result.get("structured", {}).get("relevance_to_user", ""),
+                    "action_items": summary_result.get("structured", {}).get("action_items", ""),
+                }.items() if v
+            }
+            # Update timeliness
+            entry["timeliness"] = _extract_timeliness(summary_result.get("structured", {}))
+        
+        # Write updated entry
+        entry_path.write_text(json.dumps(entry, ensure_ascii=False, indent=2), encoding="utf-8")
+        
+        # Rebuild summary MD
+        summary_md = _build_summary_md(entry, summary_result.get("structured", {}))
+        summary_path = SUMMARIES_DIR / f"{eid}.md"
+        if summary_path.exists():
+            summary_path.write_text(summary_md, encoding="utf-8")
+        
+        # Update tags registry
+        now = datetime.now(BJT).isoformat()
+        update_tags_registry(tags, now)
+        
+        results["updated"] += 1
+    
+    # Rebuild index.jsonl with updated data
+    if not dry_run and results["updated"] > 0:
+        _rebuild_index()
+    
+    return results
+
+
+def _rebuild_index():
+    """Rebuild index.jsonl from all entry JSON files."""
+    entries = []
+    if ENTRIES_DIR.exists():
+        for month_dir in sorted(ENTRIES_DIR.iterdir()):
+            if month_dir.is_dir() and month_dir.name.startswith("202"):
+                for f in sorted(month_dir.glob("*.json")):
+                    try:
+                        entry = json.loads(f.read_text(encoding="utf-8"))
+                        if entry.get("status") != "deleted":
+                            entries.append(entry)
+                    except Exception:
+                        continue
+    
+    # Sort by collected_at (legacy: top-level; new: metadata wrapper)
+    def _get_collected_at(e):
+        meta = e.get("metadata", {})
+        if isinstance(meta, dict) and meta.get("collected_at"):
+            return meta["collected_at"]
+        return e.get("collected_at", "")
+    
+    entries.sort(key=_get_collected_at)
+    
+    # Write index
+    INDEX_FILE.write_text("", encoding="utf-8")
+    for entry in entries:
+        _append_index(entry)
+    
+    print(f"📋 Index rebuilt: {len(entries)} entries")
 
 
 # ============================================================
@@ -908,6 +1093,13 @@ if __name__ == "__main__":
                 print(f"  {date} ({n}篇): {top}")
         else:
             print("暂无趋势数据")
+        sys.exit(0)
+
+    # Handle --reclassify flag
+    if sys.argv[1] == "--reclassify":
+        dry_run = "--dry-run" in sys.argv
+        result = reclassify_entries(dry_run=dry_run)
+        print(f"\n📊 结果: {result['updated']} updated, {result['skipped']} skipped, {len(result['errors'])} errors")
         sys.exit(0)
 
     url = sys.argv[1]
