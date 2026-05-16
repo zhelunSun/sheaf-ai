@@ -10,14 +10,13 @@
 ## 🔥 P0 — 当前迭代（Phase 1.5 工程加固）
 
 - 🏗️ **TD-01** 配置 Git remote — 当前仓库无远程，阻塞推送/备份/协作
-- 🏗️ **TD-02** 依赖版本锁定 — requirements.txt 改 `==` 精确版本 或 引入 pyproject.toml + uv
+- ✅ **TD-02** 依赖版本锁定 — pyproject.toml + setuptools build（已替代 requirements.txt）
+- ✅ **TD-03** pipeline.py 拆分 — 1114 行 → 9 模块 uc/ 包（2026-05-16）
+- ✅ **TD-04** MCP Server 版本同步 — 从 uc.__init__.__version__ 读取，单一来源
+- ✅ **TD-05** __pycache__ 清理 — 已清理 + .gitignore 覆盖 build artifacts
+- ✅ **TD-06** CLI 统一入口 — pyproject.toml `[project.scripts]` uc = uc.cli:main
 
 ## 📋 P1 — 近期待做
-
-- 🏗️ **TD-03** pipeline.py 拆分 — 1114 行 → 5 模块（orchestrator/query/storage/cli/compat）
-- 🏗️ **TD-04** MCP Server 版本同步 — 从单一来源读取版本号，不再硬编码
-- 🏗️ **TD-05** __pycache__ 清理 — 残留目录清理 + 确认 .gitignore 覆盖
-- 🏗️ **TD-06** CLI 统一入口 — pyproject.toml + `[project.scripts]`，支持 `uc collect/query`
 
 ## 💭 P2 — 远期 Idea
 

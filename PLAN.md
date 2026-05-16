@@ -12,13 +12,27 @@ universal-collector/
 │   ├── needs/           — 用户调研、需求分析
 │   ├── docs/            — 产品架构、定位、生态愿景
 │   ├── research/        — 竞品分析、Whitespace、商业模式、战略简报
-│   ├── scripts/         — 原型代码（6 脚本，~2558 行）
+│   ├── scripts/         — 旧原型代码（Phase 1 遗留，保留不删）
 │   └── data/            — 运行时数据（.gitignore 排除）
+│
+├── 🐍 uc/ 包（当前代码）
+│   ├── __init__.py      — 版本号唯一来源（__version__）
+│   ├── config.py        — 共享常量、路径、编码修复
+│   ├── utils.py         — URL标准化、内容hash、平台检测
+│   ├── storage.py       — 存储与索引管理
+│   ├── query.py         — 查询、统计、趋势分析
+│   ├── pipeline.py      — 主流程编排
+│   ├── llm_client.py    — 双Provider LLM客户端
+│   ├── fetch_article.py — 智能抓取（requests + playwright）
+│   ├── feedback.py      — 纠偏反馈
+│   ├── mcp_server.py    — MCP stdio server（6 工具）
+│   └── cli.py           — CLI 入口（uc <url>, --tags, --trends, --urgent）
 │
 ├── 📋 BP 系列（输出出口）
 │   ├── BP.md            — 文档版 BP（当前版本）
 │   └── (未来) BP.pptx   — PPT 版 BP（Phase 2+ 产出）
 │
+├── pyproject.toml       — 包配置 + CLI 入口 + ruff 规则
 ├── PLAN.md              — 本文件：项目计划 + 仓库维护方式
 ├── CHANGELOG.md         — 变更日志
 ├── BACKLOG.md           — 待办/Idea/Bug 追踪
@@ -50,16 +64,22 @@ Phase 3:    产品化/Skill 化
 
 | 指标 | 值 |
 |------|-----|
-| 代码量 | ~2558 行（6 脚本） |
-| pipeline.py | 1114 行（⚠️ 逼近拆分阈值） |
-| fetch_article.py | 534 行 |
-| mcp_server.py | 373 行 |
-| feedback.py | 214 行 |
-| llm_client.py | 184 行 |
-| onboarding.py | 139 行 |
+| 包结构 | uc/ 包（11 模块）+ pyproject.toml |
+| uc/pipeline.py | ~335 行（编排逻辑） |
+| uc/fetch_article.py | ~375 行 |
+| uc/storage.py | ~295 行 |
+| uc/mcp_server.py | ~280 行 |
+| uc/query.py | ~185 行 |
+| uc/feedback.py | ~175 行 |
+| uc/llm_client.py | ~112 行 |
+| uc/cli.py | ~135 行 |
+| uc/config.py | ~42 行 |
+| uc/utils.py | ~100 行 |
+| 总代码量 | ~2034 行（uc/ 包，不含旧 scripts/） |
 | Schema 版本 | v1.1.0 |
 | MCP 工具数 | 6（search/list/get/urgent/correct/collect） |
 | 依赖 | openai / requests / beautifulsoup4 / playwright |
+| CLI 入口 | `uc` (pip install -e .) |
 | Git remote | ❌ 未配置 |
 | Python | 3.12.7 |
 
@@ -142,23 +162,19 @@ Phase 3:    产品化/Skill 化
 
 **TD-P1 — 应该修复（影响可维护性和可扩展性）**
 
-- [ ] **TD-03** pipeline.py 拆分 — 1114 行单文件，职责混杂（CLI + 管线逻辑 + 查询 + 统计 + 索引维护）
-  - 建议拆分方向：
-    - `pipeline/orchestrator.py` — 主流程编排（collect → classify → summarize → store）
-    - `pipeline/query.py` — 查询与统计（query_collection, topic_trends, tag_stats）
-    - `pipeline/storage.py` — 存储与索引（_save_entry, _rebuild_index, _build_summary_md）
-    - `pipeline/cli.py` — CLI 入口 + 参数解析
-    - `pipeline/compat.py` — Legacy 迁移 + 版本兼容逻辑
-  - 预估工作量：2-3h，需要回归测试
+- [x] **TD-03** pipeline.py 拆分 — 1114 行单文件 → 9 模块 uc/ 包
+  - 已完成（2026-05-16）：config / utils / storage / query / pipeline / llm_client / fetch_article / feedback / mcp_server / cli
+  - pip install -e . 成功，`uc` CLI 入口可用，所有命令（--version/--tags/--trends/--urgent/无参stats）回归通过
+  - 旧 scripts/ 目录保留（harness principle）
 
-- [ ] **TD-04** MCP Server 版本同步 — mcp_server.py 硬编码 `0.3.1a`，每次发版需手动更新
-  - 行动：从 `__init__.py` 或 `pyproject.toml` 读取版本号，单一来源
+- [x] **TD-04** MCP Server 版本同步 — 从 uc.__init__.__version__ 读取，单一来源
+  - config.py → `from uc import __version__; VERSION = __version__`
+  - mcp_server.py → `from uc.config import VERSION`
 
-- [ ] **TD-05** __pycache__ 清理 — `.gitignore` 已排除但本地残留
-  - 行动：`find . -type d -name __pycache__ -exec rm -rf {} +` + 确认 .gitignore 覆盖
+- [x] **TD-05** __pycache__ 清理 — 已清理 + .gitignore 已覆盖 build artifacts
 
-- [ ] **TD-06** CLI 脚本统一入口 — 当前需 `python scripts/pipeline.py`，不符合标准 Python 包结构
-  - 行动：添加 `pyproject.toml` + `[project.scripts]`，支持 `uc collect <url>` / `uc query <term>`
+- [x] **TD-06** CLI 脚本统一入口 — pyproject.toml `[project.scripts]` uc = uc.cli:main
+  - 支持 `uc <url>` / `uc --tags` / `uc --trends` / `uc --urgent` / `uc --reclassify` / `uc --version`
 
 **TD-P2 — 可以改善（不影响功能）**
 
@@ -265,11 +281,11 @@ Phase 3:    产品化/Skill 化
 | ID | 描述 | 优先级 | 状态 | Phase |
 |----|------|--------|------|-------|
 | TD-01 | 无 Git remote | P0 | 🔲 | 1.5 |
-| TD-02 | 依赖版本未锁定 | P0 | 🔲 | 1.5 |
-| TD-03 | pipeline.py 1114 行需拆分 | P1 | 🔲 | 1.5 |
-| TD-04 | MCP Server 版本硬编码 | P1 | 🔲 | 1.5 |
-| TD-05 | __pycache__ 残留 | P1 | 🔲 | 1.5 |
-| TD-06 | CLI 缺统一入口（无 pyproject.toml） | P1 | 🔲 | 1.5 |
+| TD-02 | 依赖版本未锁定 | P0 | ✅ pyproject.toml | 1.5 |
+| TD-03 | pipeline.py 拆分 | P1 | ✅ uc/ 9 模块 | 1.5 |
+| TD-04 | MCP Server 版本硬编码 | P1 | ✅ 从 __init__ 读取 | 1.5 |
+| TD-05 | __pycache__ 残留 | P1 | ✅ 已清理 | 1.5 |
+| TD-06 | CLI 缺统一入口 | P1 | ✅ pyproject.toml scripts | 1.5 |
 | TD-07 | 错误处理不统一 | P2 | 🔲 | 1.5+ |
 | TD-08 | 零测试覆盖 | P2 | 🔲 | 2 |
 | TD-09 | 缺少类型注解 | P2 | 🔲 | 2 |
@@ -290,8 +306,8 @@ Phase 3:    产品化/Skill 化
 5. **开源时间决策** — 🔲 何时将 UC 核心代码开源（GitHub public）？
 6. **商业模式路线选择** — 🔲 solo lifestyle business vs VC-backable？决定后续产品节奏
 7. **Sir 审阅战略简报** — 🔲 `research/strategy-brief-v1.md` 定位/商业模式/OPC 运营是否符合预期？
-8. **pipeline.py 拆分方案确认** — 🔲 是否同意上述 5 模块拆分？或有其他偏好？
-9. **包管理方案选择** — 🔲 requirements.txt 精确版本 vs pyproject.toml + uv？
+8. ~~**pipeline.py 拆分方案确认**~~ — ✅ 已完成（9 模块 uc/ 包）
+9. ~~**包管理方案选择**~~ — ✅ 已完成（pyproject.toml + setuptools）
 
 ## 里程碑时间线
 

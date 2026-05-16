@@ -10,17 +10,25 @@
 
 | 文件 | 内容 |
 |------|------|
-| `docs/product-overview.md` | 产品定位、架构、差异化 |
+| `uc/__init__.py` | 版本号唯一来源（`__version__`） |
+| `uc/config.py` | 共享常量、路径、编码修复 |
+| `uc/pipeline.py` | 端到端处理流水线（编排层） |
+| `uc/fetch_article.py` | 文章抓取（requests + playwright fallback） |
+| `uc/llm_client.py` | LLM 客户端（SiliconFlow + XTY） |
+| `uc/storage.py` | 存储与索引管理 |
+| `uc/query.py` | 查询、统计、趋势分析 |
+| `uc/feedback.py` | 纠偏反馈回路 |
+| `uc/mcp_server.py` | MCP stdio server（6 工具） |
+| `uc/cli.py` | CLI 入口（`uc` 命令） |
+| `uc/utils.py` | URL标准化、内容hash、平台检测 |
+| `pyproject.toml` | 包配置 + CLI 入口 + ruff 规则 |
 | `docs/schema-v1.md` | 知识卡片 Schema v1.1（动态 topics） |
 | `docs/architecture.svg` | 三层架构图 |
-| `needs/user-needs.md` | 用户需求文档 |
 | `prompts/classify.md` | LLM 动态主题+标签提取 Prompt |
 | `prompts/summarize.md` | LLM 摘要 Prompt |
-| `scripts/pipeline.py` | 端到端处理流水线 v2（入口） |
-| `scripts/fetch_article.py` | 文章抓取模块 v2（平台感知） |
-| `scripts/llm_client.py` | LLM 客户端（SiliconFlow + XTY） |
 | `data/tags_registry.json` | 全局标签注册表 |
 | `data/index.jsonl` | 轻量索引 |
+| `scripts/` | 旧原型代码（Phase 1 遗留，保留不删） |
 | `BACKLOG.md` | 待办/Idea/Bug 追踪 |
 | `CHANGELOG.md` | 版本历史 |
 
@@ -36,10 +44,23 @@
 ## 收藏入口
 
 ```bash
-python scripts/pipeline.py <url>          # 单篇
-python scripts/pipeline.py                # 查看统计（主题分布+标签频率）
-python scripts/pipeline.py <url> --force  # 跳过去重
-python -c "from scripts.pipeline import query_collection; print(query_collection('rag'))"  # 查询
+# 新 CLI（推荐）
+uc <url>                 # 收藏一篇
+uc                       # 查看统计（主题分布+标签频率）
+uc --tags                # 标签统计
+uc --trends              # 话题趋势
+uc --urgent              # 紧急/即将到期
+uc --reclassify          # 重新分类所有条目
+uc --version             # 版本号
+
+# 旧方式（仍可用，指向 scripts/）
+python scripts/pipeline.py <url>
+
+# Python API
+python -c "from uc.query import query_collection; print(query_collection('rag'))"
+
+# MCP Server（stdio transport）
+python -m uc.mcp_server
 ```
 
 ## 版本管理约定
