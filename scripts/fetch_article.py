@@ -156,6 +156,15 @@ def _extract_text(soup) -> str:
     for tag in soup(["script", "style", "noscript", "iframe", "nav", "footer", "header"]):
         tag.decompose()
 
+    # Remove video player containers (common on Tencent News, Bilibili, etc.)
+    for sel in [
+        ".video-player", ".player-wrap", ".txp_player", ".bilibili-player",
+        "[class*='player']", "[class*='video-wrap']", "[class*='debug']",
+        ".video-info", ".play-info", ".upload-log",
+    ]:
+        for el in soup.select(sel):
+            el.decompose()
+
     # Try specific content containers
     for selector in _CONTENT_SELECTORS:
         container = soup.select_one(selector)
@@ -174,11 +183,63 @@ def _extract_text(soup) -> str:
     return ""
 
 
+# Video player UI patterns to strip from extracted text
+_VIDEO_UI_PATTERNS = [
+    # Timecodes: "05:13", "00:00 / 05:13"
+    re.compile(r'^\d{1,2}:\d{2}(?:\s*/\s*\d{1,2}:\d{2})?$'),
+    # Speed options: "0.5X", "1.0X", "1.25X", "2.0X"
+    re.compile(r'^\d\.?\d*X$'),
+    # Resolution labels: "720P", "480P 准高清", "1080P"
+    re.compile(r'^\d{3,4}P'),
+    # Player buttons
+    re.compile(r'^(播放|下一个|打开循环播放|静音播放中.*|恢复音量|画中画|网页全屏|全屏|倍速|AirPlay|刷新|试试)$'),
+    # Debug panel labels and values
+    re.compile(r'^(视频信息|播放信息|上传日志|调试信息|\[X\]|视频ID|VID|播放流水|Flowid|播放内核|Kernel|显示器信息|Res|帧数|缓冲健康度|网络活动|net|视频分辨率|编码|Codec|mystery)$'),
+    # Debug hex IDs and codec strings
+    re.compile(r'^[a-f0-9]{16,}$'),     # Flowid hash (pure hex, 16+)
+    re.compile(r'^[a-z]\d[a-z0-9]{6,}$'),  # Short VID like "r32593h1xf5", "n32594abfsr"
+    re.compile(r'^m3u8/'),             # HLS kernel
+    re.compile(r'^avc1\.'),            # Codec string
+    re.compile(r'^\(O\d+\)$'),         # Codec label: "(O264)"
+    re.compile(r'^\d+\*\d+$'),         # Resolution: "1280*720"
+    re.compile(r'^br:'),               # Bitrate line
+    re.compile(r'^\d+\s*KB/s'),        # Network speed
+    re.compile(r'^\d+\.\d+s$'),        # Buffer health: "11.67s", "38.81s"
+    # Version numbers from player
+    re.compile(r'^\d+\.\d+\.\d+(-p2p.*)?$'),
+    # Common page UI noise
+    re.compile(r'^(登录|内容更精彩|安装电脑版|你可以)$'),
+    # Frames: "0/4; 0.00%"
+    re.compile(r'^\d+/\d+;\s*\d+\.\d+%'),
+    # Standalone single chars from player: "/", "0", "-"
+    re.compile(r'^[-/]$'),
+    re.compile(r'^\d$'),               # Single digit (volume "0")
+]
+
+
 def _clean_text(text: str) -> str:
-    """Clean extracted text: collapse newlines, remove noise."""
+    """Clean extracted text: remove video player noise, collapse newlines."""
+    lines = text.split("\n")
+    cleaned = []
+    for line in lines:
+        stripped = line.strip()
+        # Skip empty lines (will collapse later)
+        if not stripped:
+            cleaned.append("")
+            continue
+        # Skip lines matching video player UI patterns
+        skip = False
+        for pattern in _VIDEO_UI_PATTERNS:
+            if pattern.match(stripped):
+                skip = True
+                break
+        if not skip:
+            cleaned.append(stripped)
+
+    text = "\n".join(cleaned)
+    # Collapse multiple blank lines
     text = re.sub(r"\n{3,}", "\n\n", text)
-    text = text.strip()
-    return text
+    return text.strip()
 
 
 def _content_quality(text: str) -> dict:

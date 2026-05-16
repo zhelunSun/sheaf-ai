@@ -225,23 +225,51 @@ def _save_tags_registry(registry: dict):
 
 
 def update_tags_registry(tags: list, now_iso: str):
-    """Update registry with new tags from an article."""
+    """Update registry with new tags from an article.
+    
+    Auto-merges similar tags using fuzzy matching (threshold 0.85).
+    When a new tag is similar to an existing one, it's stored as an alias
+    and the existing tag's count is incremented instead.
+    """
+    import difflib
     registry = _load_tags_registry()
+    
     for tag in tags:
         tag_lower = tag.lower().strip()
         if not tag_lower:
             continue
+        
+        # Exact match (case-insensitive)
         if tag_lower in registry:
             registry[tag_lower]["count"] += 1
             registry[tag_lower]["last_seen"] = now_iso
-            # Keep the canonical form (prefer the one already stored)
-        else:
+            continue
+        
+        # Fuzzy match: check if similar tag already exists
+        merged = False
+        for existing_key, existing_val in registry.items():
+            similarity = difflib.SequenceMatcher(None, tag_lower, existing_key).ratio()
+            if similarity >= 0.85:
+                # Merge into existing tag
+                existing_val["count"] += 1
+                existing_val["last_seen"] = now_iso
+                # Add as alias if not already one
+                aliases = existing_val.get("aliases", [])
+                if tag not in aliases and tag.lower() != existing_key:
+                    aliases.append(tag)
+                    existing_val["aliases"] = aliases
+                merged = True
+                break
+        
+        if not merged:
             registry[tag_lower] = {
-                "canonical": tag,  # Store the original casing
+                "canonical": tag,
                 "count": 1,
                 "first_seen": now_iso,
                 "last_seen": now_iso,
+                "aliases": [],
             }
+    
     _save_tags_registry(registry)
 
 
@@ -697,6 +725,84 @@ def query_urgent() -> list:
     return results
 
 
+def tag_stats(sort_by: str = "count", limit: int = 20) -> list:
+    """
+    Get tag statistics from the registry.
+    
+    Args:
+        sort_by: "count" (frequency), "recent" (last_seen), "name" (alphabetical)
+        limit: Max tags to return
+    
+    Returns:
+        List of dicts: [{canonical, count, first_seen, last_seen, aliases}]
+    """
+    registry = _load_tags_registry()
+    tags = []
+    for key, val in registry.items():
+        tags.append({
+            "key": key,
+            "canonical": val.get("canonical", key),
+            "count": val.get("count", 0),
+            "first_seen": val.get("first_seen", ""),
+            "last_seen": val.get("last_seen", ""),
+            "aliases": val.get("aliases", []),
+        })
+    
+    if sort_by == "count":
+        tags.sort(key=lambda x: x["count"], reverse=True)
+    elif sort_by == "recent":
+        tags.sort(key=lambda x: x["last_seen"], reverse=True)
+    elif sort_by == "name":
+        tags.sort(key=lambda x: x["canonical"])
+    
+    return tags[:limit]
+
+
+def topic_trends() -> dict:
+    """
+    Analyze topic distribution trends over time.
+    Groups entries by collection date, shows topic frequency per day.
+    
+    Returns:
+        {date: {topic: count}}, total_topic_counts, entry_count_by_date
+    """
+    if not INDEX_FILE.exists():
+        return {}
+    
+    from collections import Counter, defaultdict
+    
+    daily_topics = defaultdict(Counter)
+    entry_count = Counter()
+    
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                collected = entry.get("collected_at", "")
+                date = collected[:10] if collected else "unknown"
+                entry_count[date] += 1
+                
+                # New format: topics list
+                for t in entry.get("topics", []):
+                    daily_topics[date][t] += 1
+                
+                # Legacy: primary_category
+                if not entry.get("topics"):
+                    cat = entry.get("primary_category", "")
+                    if cat:
+                        daily_topics[date][cat] += 1
+            except json.JSONDecodeError:
+                continue
+    
+    return {
+        "daily_topics": {k: dict(v) for k, v in sorted(daily_topics.items())},
+        "entry_count": dict(entry_count),
+    }
+
+
 # ============================================================
 # CLI Entry Point
 # ============================================================
@@ -758,8 +864,50 @@ if __name__ == "__main__":
                 print("\n🏷️ 高频标签 (Top 10):")
                 for tag, count in sorted(tag_counts.items(), key=lambda x: -x[1])[:10]:
                     print(f"  #{tag}: {count}")
+
+            # Tag registry stats
+            registry_stats = tag_stats(sort_by="count", limit=5)
+            if registry_stats:
+                print("\n📋 标签注册表 (Top 5):")
+                for ts in registry_stats:
+                    aliases = f" ← {', '.join(ts['aliases'])}" if ts.get("aliases") else ""
+                    print(f"  {ts['canonical']}: {ts['count']}x{aliases}")
+
+            # Topic trends
+            trends = topic_trends()
+            if trends.get("daily_topics"):
+                print("\n📈 主题趋势 (按日):")
+                for date, topics in trends["daily_topics"].items():
+                    n = trends["entry_count"].get(date, 0)
+                    top = ", ".join(f"{t}({c})" for t, c in sorted(topics.items(), key=lambda x: -x[1])[:3])
+                    print(f"  {date} ({n}篇): {top}")
         else:
             print("📂 收藏库为空。使用: python pipeline.py <url>")
+        sys.exit(0)
+
+    # Handle --tags flag for detailed tag stats
+    if sys.argv[1] == "--tags":
+        stats = tag_stats(sort_by="count")
+        if stats:
+            print("🏷️ 标签统计:")
+            for ts in stats:
+                aliases = f" ← {', '.join(ts['aliases'])}" if ts.get("aliases") else ""
+                print(f"  {ts['canonical']:20s} {ts['count']}x  (首见: {ts['first_seen'][:10]}){aliases}")
+        else:
+            print("标签注册表为空")
+        sys.exit(0)
+
+    # Handle --trends flag
+    if sys.argv[1] == "--trends":
+        trends = topic_trends()
+        if trends.get("daily_topics"):
+            print("📈 主题时序趋势:")
+            for date, topics in trends["daily_topics"].items():
+                n = trends["entry_count"].get(date, 0)
+                top = ", ".join(f"{t}({c})" for t, c in sorted(topics.items(), key=lambda x: -x[1]))
+                print(f"  {date} ({n}篇): {top}")
+        else:
+            print("暂无趋势数据")
         sys.exit(0)
 
     url = sys.argv[1]

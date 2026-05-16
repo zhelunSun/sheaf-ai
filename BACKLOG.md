@@ -15,9 +15,9 @@
 
 ## 📋 P1 — 近期待做
 
-- 💡 **BLG-004** Tencent News 视频播放器 debug text 清洗 — raw text 中包含播放器日志
-- 💡 **BLG-005** 标签注册表自动归并 — `tags_registry.json` 同义词合并
-- 💡 **BLG-006** 标签统计分析 — 查询接口支持按标签频率/趋势聚合
+- ✅ **BLG-004** Tencent News 视频播放器 debug text 清洗 — 20+ 噪音模式，HTML+text 双层清理
+- ✅ **BLG-005** 标签注册表自动归并 — difflib 模糊匹配，阈值 0.85
+- ✅ **BLG-006** 标签统计分析 — tag_stats() + topic_trends() + CLI --tags/--trends
 - 💡 **BLG-007** 已有 7 条 entry 重新分类 — 用新 topics 机制重新跑一遍 LLM
 
 ## 💭 P2 — 远期 Idea
