@@ -12,8 +12,8 @@ universal-collector/
 │   ├── needs/           — 用户调研、需求分析
 │   ├── docs/            — 产品架构、定位、生态愿景
 │   ├── research/        — 竞品分析、Whitespace、商业模式、战略简报
-│   ├── scripts/         — 原型代码
-│   └── data/            — 示例数据
+│   ├── scripts/         — 原型代码（6 脚本，~2558 行）
+│   └── data/            — 运行时数据（.gitignore 排除）
 │
 ├── 📋 BP 系列（输出出口）
 │   ├── BP.md            — 文档版 BP（当前版本）
@@ -21,6 +21,7 @@ universal-collector/
 │
 ├── PLAN.md              — 本文件：项目计划 + 仓库维护方式
 ├── CHANGELOG.md         — 变更日志
+├── BACKLOG.md           — 待办/Idea/Bug 追踪
 └── AGENTS.md            — Agent 协作指南
 ```
 
@@ -32,14 +33,35 @@ universal-collector/
 ## 当前阶段
 
 ```
-Phase 0: 需求梳理          ✅ 已完成
-Phase 0.5: MVP 验证        ✅ 4/4 文章端到端跑通
-Phase 0.75: 战略研究        ✅ 竞品调研+定位+商业模式+OPC运营框架
-Phase 0.76: 用户画像+产品审计   ✅ 3 Persona + 审计报告 + 优化建议
-Phase 1: 核心逻辑夯实          ← P0+P1 ✅ 完成，P2 待执行
-Phase 2: 生态联动
-Phase 3: 产品化/Skill 化
+Phase 0:    需求梳理              ✅ 已完成
+Phase 0.5:  MVP 验证              ✅ 4/4 文章端到端跑通
+Phase 0.75: 战略研究              ✅ 竞品调研+定位+商业模式+OPC运营框架
+Phase 0.76: 用户画像+产品审计      ✅ 3 Persona + 审计报告 + 优化建议
+Phase 1:    核心逻辑夯实          ✅ P0+P1+BLG 全部完成
+Phase 1.5:  工程加固+债务清理      ← 当前（v0.3.1a → v0.4.0）
+Phase 2:    生态联动
+Phase 3:    产品化/Skill 化
 ```
+
+**当前版本**：`v0.3.1a`（2026-05-17）
+**下一里程碑**：`v0.4.0`（Phase 1.5 完成后发布）
+
+## 技术现状快照
+
+| 指标 | 值 |
+|------|-----|
+| 代码量 | ~2558 行（6 脚本） |
+| pipeline.py | 1114 行（⚠️ 逼近拆分阈值） |
+| fetch_article.py | 534 行 |
+| mcp_server.py | 373 行 |
+| feedback.py | 214 行 |
+| llm_client.py | 184 行 |
+| onboarding.py | 139 行 |
+| Schema 版本 | v1.1.0 |
+| MCP 工具数 | 6（search/list/get/urgent/correct/collect） |
+| 依赖 | openai / requests / beautifulsoup4 / playwright |
+| Git remote | ❌ 未配置 |
+| Python | 3.12.7 |
 
 ## 路线图
 
@@ -79,7 +101,7 @@ Phase 3: 产品化/Skill 化
 - 商业模式：Open-Core 三步走（开源社区 → Skill 分发 → 云服务增值）
 - 运营方式：AI-Native OPC，1 人 + N Agent，Weekly Sprint
 
-### Phase 1 🔄 核心逻辑夯实（Sir 反馈校正，2026-05-16）
+### Phase 1 ✅ 核心逻辑夯实（2026-05-16 ~ 2026-05-17）
 
 > Sir 反馈：产品形态不急（浏览器插件/悬浮球是远期），先把核心逻辑搞扎实。Embedding 不是护城河，引入时机是收藏量 50+ 之后。大愿景是 AI 时代个人知识秘书。
 
@@ -95,7 +117,69 @@ Phase 3: 产品化/Skill 化
 - [x] **P1-2** 首次使用引导（Onboarding） — `scripts/onboarding.py` 3 篇示例 + 查询演示 + 操作指南
 - [x] **P1-3** Agent 查询交互规范 — `docs/agent-query-spec.md` 返回格式 + 错误码 + 去重 + 纠偏机制
 
-**P2 — 形态优化 + 增值功能**
+**BLG 修复** ✅ 全部完成
+- [x] **BLG-001** 爬取代码优化 — 平台感知策略 + 提取函数去重 + Playwright 复用
+- [x] **BLG-002** 动态标签机制 — 去掉硬分类，改为 topics + tags 双层动态体系
+- [x] **BLG-003** 建立变更追踪 — BACKLOG.md + git commit 引用
+- [x] **BLG-004** Tencent News 视频播放器噪音清洗 — 20+ 正则模式，HTML+text 双层清理
+- [x] **BLG-005** 标签注册表自动归并 — difflib 模糊匹配，阈值 0.85
+- [x] **BLG-006** 标签统计分析 — tag_stats() + topic_trends() + CLI --tags/--trends
+- [x] **BLG-007** Legacy entry 迁移 + 全量重分类 — schema 统一至 v1.1.0
+
+### Phase 1.5 🔄 工程加固 + 债务清理（v0.3.1a → v0.4.0）
+
+> Phase 1 快速迭代积累了技术债务。进入 Phase 2 之前，先清理干净，确保工程基座扎实。
+
+**TD-P0 — 必须修复（阻塞后续开发）**
+
+- [ ] **TD-01** 配置 Git remote — 当前仓库无远程，无法推送/备份/协作
+  - 行动：Sir 在 GitHub 创建 `universal-collector` 仓库后，执行 `git remote add origin`
+  - 阻塞：开源/分发/CI 的前提条件
+
+- [ ] **TD-02** 依赖版本锁定 — `requirements.txt` 使用 `>=` 宽约束，存在供应链风险
+  - 行动：`pip freeze > requirements-lock.txt`，requirements.txt 改为 `==` 精确版本
+  - 或：引入 `pyproject.toml` + `uv` 现代化包管理
+
+**TD-P1 — 应该修复（影响可维护性和可扩展性）**
+
+- [ ] **TD-03** pipeline.py 拆分 — 1114 行单文件，职责混杂（CLI + 管线逻辑 + 查询 + 统计 + 索引维护）
+  - 建议拆分方向：
+    - `pipeline/orchestrator.py` — 主流程编排（collect → classify → summarize → store）
+    - `pipeline/query.py` — 查询与统计（query_collection, topic_trends, tag_stats）
+    - `pipeline/storage.py` — 存储与索引（_save_entry, _rebuild_index, _build_summary_md）
+    - `pipeline/cli.py` — CLI 入口 + 参数解析
+    - `pipeline/compat.py` — Legacy 迁移 + 版本兼容逻辑
+  - 预估工作量：2-3h，需要回归测试
+
+- [ ] **TD-04** MCP Server 版本同步 — mcp_server.py 硬编码 `0.3.1a`，每次发版需手动更新
+  - 行动：从 `__init__.py` 或 `pyproject.toml` 读取版本号，单一来源
+
+- [ ] **TD-05** __pycache__ 清理 — `.gitignore` 已排除但本地残留
+  - 行动：`find . -type d -name __pycache__ -exec rm -rf {} +` + 确认 .gitignore 覆盖
+
+- [ ] **TD-06** CLI 脚本统一入口 — 当前需 `python scripts/pipeline.py`，不符合标准 Python 包结构
+  - 行动：添加 `pyproject.toml` + `[project.scripts]`，支持 `uc collect <url>` / `uc query <term>`
+
+**TD-P2 — 可以改善（不影响功能）**
+
+- [ ] **TD-07** 错误处理统一 — 当前各函数错误处理风格不一致（有的 raise，有的 return None，有的 print+exit）
+  - 行动：定义统一异常体系 + 日志策略
+
+- [ ] **TD-08** 测试覆盖 — 当前零测试，纯手动验证
+  - 行动：至少覆盖核心路径（collect → classify → store → query）的 smoke test
+
+- [ ] **TD-09** 类型注解 — 函数签名缺少 type hints，不利于 IDE 辅助和静态检查
+  - 行动：渐进添加，优先覆盖公开 API
+
+**Phase 1.5 出口条件**（全部满足 → 发版 v0.4.0）：
+1. ✅ Git remote 已配置
+2. ✅ 依赖版本锁定
+3. ✅ pipeline.py 拆分完成
+4. ✅ 所有现有功能回归通过（collect/query/correct/stats）
+5. ✅ CHANGELOG 更新至 v0.4.0
+
+**P2 — 形态优化 + 增值功能**（Phase 1.5 完成后视情况启动）
+
 - [ ] **P2-0** 浏览器插件 / 桌面悬浮球 — 降低收录摩擦（MVP 手动粘贴够用）
 - [ ] **P2-1** Embedding 语义检索（ChromaDB）— 收藏量 50+ 后引入，关键词检索不够用时
 - [ ] **P2-2** 定时报告（对接 WorkBuddy automation）
@@ -106,13 +190,14 @@ Phase 3: 产品化/Skill 化
 
 **核心目标**：从「个人工具」进化为「个人知识基础设施」，形成可传播、可扩展、可融资的完整产品叙事。
 
+> Phase 2 的启动条件：Phase 1.5 工程加固完成 + Sir 确认战略方向。以下为远景规划，执行时再细化。
+
 #### 2.1 学术知识闭环（nova-reader 对接）— P1
 
 **愿景**：打通「碎片化网络内容 ←→ 深度学术论文」的知识鸿沟。
 - UC 识别论文类收藏 → 自动路由到 nova-reader 进行精读
 - nova-reader 的精读笔记 → 回流 UC 作为结构化知识资产
 - Agent 可以同时检索「快消内容」和「深度论文」，获得「广度 × 深度」的完整知识上下文
-- **融资话术**：给投资人讲一个故事——「我们不是书签工具，是学术边界加速器。博士生用 UC 管理日常信息流，论文知识回流后 Agent 自动补充研究空白。」
 
 **交付物**：
 - [ ] nova-reader → UC 数据回流适配器
@@ -125,7 +210,6 @@ Phase 3: 产品化/Skill 化
 - 用户收藏的某个主题积累到一定量（如 10+ 条） → 一键生成 Skill 骨架
 - Skill 包含：知识卡片集 + Agent 使用说明 + 示例对话
 - 用户可在 ClawHub 发布/分享/甚至销售这些 Skill
-- **融资话术**：「我们用 UC 定义了个人知识的『原材料采集』，再用 skill-factory 完成了 『知识变现』。用户既是消费者也是生产者。」
 
 **交付物**：
 - [ ] UC → skill-factory 数据转换协议
@@ -138,22 +222,18 @@ Phase 3: 产品化/Skill 化
 - 邮件转发 → 自动收录并分类
 - RSS 订阅 → 自动追踪指定博客/期刊
 - Twitter / 微博时间线 → 自动抓取含有关键字的推文/链接
-- WeChat 自动转发（通过企业微信或个人微信接口）
-- **融资话术**：「现在你还需要手动保存，未来你只需要授权。UC 成为你数字生活的默认知识管道。」
 
 **交付物**：
 - [ ] 邮件转发收录（Mail → Parse → Classify）
 - [ ] RSS 订阅管理（新增/刷新/过滤）
 - [ ] Twitter 关键词追踪
-- [ ] WeChat 自动化集成
 
 #### 2.4 从收藏到洞察（知识图谱与关联推理）— P2
 
 **愿景**：Agent 不仅能检索用户收藏了什么，还能发现「收藏之间的逻辑关系」。
-- 自动发现同主题文章的「观点矛盾」（如文章 A 支持 GraphRAG vs 文章 B 反对）
-- 自动追踪「趋势演变」（如：过去 3 个月你收藏的 RAG 文章从「检索增强」变成了「Agent 记忆」）
+- 自动发现同主题文章的「观点矛盾」
+- 自动追踪「趋势演变」
 - 自动生成「知识关联图」辅助研究和写作
-- **融资话术**：「其他工具告诉你'你收藏了什么'。UC 告诉你'你的收藏在说什么'——后者才是有价值的洞察。」
 
 **交付物**：
 - [ ] 轻量知识图谱构建（节点 = 收藏，边 = 共引/共标签/共主题）
@@ -162,23 +242,12 @@ Phase 3: 产品化/Skill 化
 
 #### 2.5 团队协作知识层（可选）— P2
 
-**愿景**：从「个人知识层」进化为「团队共享知识基础设施」。
-- 共享收藏空间：团队成员可以共同标注和评论收藏
-- 团队知识图谱：跨成员的收藏自动关联
-- 权限管理：私有 / 团队 / 公开 三级
-- **融资话术**：「个人知识层是起点，团队协作层是规模化的关键。当 UC 成为团队的'共享记忆'时，替代的是 Notion + Readwise + Slack 的组合。」
-
 **交付物**：
 - [ ] 共享收藏空间 MVP
 - [ ] 团队知识图谱
 - [ ] 权限管理（私有/团队/公开）
 
 #### 2.6 ClawHub 生态分发 — P2
-
-**愿景**：UC 在 ClawHub 生态中成为「个人知识层」品类的定义者。
-- UC 作为 ClawHub 的「默认知识层 Skill」分发
-- 与其他 Skill（如 nova-reader、global-citizen）形成数据互通网络
-- **融资话术**：「ClawHub 的 Agent 生态需要'记忆层'。UC 就是那个 '记忆层' + '摄取层' 的双重角色。」
 
 **交付物**：
 - [ ] UC Skill 包装与发布
@@ -189,11 +258,51 @@ Phase 3: 产品化/Skill 化
 - [ ] ClawHub 分发
 - [ ] 多用户支持（可选）
 
+## 技术债务追踪
+
+> 来源：Phase 1 快速迭代 + 2026-05-17 全量审计
+
+| ID | 描述 | 优先级 | 状态 | Phase |
+|----|------|--------|------|-------|
+| TD-01 | 无 Git remote | P0 | 🔲 | 1.5 |
+| TD-02 | 依赖版本未锁定 | P0 | 🔲 | 1.5 |
+| TD-03 | pipeline.py 1114 行需拆分 | P1 | 🔲 | 1.5 |
+| TD-04 | MCP Server 版本硬编码 | P1 | 🔲 | 1.5 |
+| TD-05 | __pycache__ 残留 | P1 | 🔲 | 1.5 |
+| TD-06 | CLI 缺统一入口（无 pyproject.toml） | P1 | 🔲 | 1.5 |
+| TD-07 | 错误处理不统一 | P2 | 🔲 | 1.5+ |
+| TD-08 | 零测试覆盖 | P2 | 🔲 | 2 |
+| TD-09 | 缺少类型注解 | P2 | 🔲 | 2 |
+
+## 已知问题（Known Issues）
+
+| ID | 描述 | 状态 |
+|----|------|------|
+| BLG-K01 | Windows GBK stdout 静默崩溃 | ✅ 已修复（sys.stdout.reconfigure），但新 CLI 脚本需加 |
+| BLG-K02 | WeChat 短文误判为抓取失败 | ⚠️ 确认非 bug，但需更好的日志区分 |
+
 ## 当前待决问题
 
-1. **Sir 审阅战略简报**：`research/strategy-brief-v1.md` 是否准确？定位/商业模式/OPC 运营是否符合预期？
-2. **Phase 1 工程优先级确认**：浏览器插件是否同意升为 P0？Schema v1 是否同意作为 Phase 1 前置？
-3. **开源时间决策**：何时将 UC 核心代码开源（GitHub public）？
-4. **商业模式路线选择**：solo lifestyle business vs VC-backable？决定后续产品节奏
-5. **Agent 查询体验定义**：MCP 上线前，先定义好 Agent 检索的交互规范和返回格式
-6. **Schema v1 设计**：知识卡片的标准字段（类型/标签/摘要/关联/时效性/来源元数据）
+1. ~~**Schema v1 设计**~~ — ✅ 已解决（v1.1.0 动态 topics + content_type）
+2. ~~**Agent 查询体验定义**~~ — ✅ 已解决（MCP 6 工具 + agent-query-spec.md）
+3. ~~**Phase 1 工程优先级确认**~~ — ✅ 已解决（P0+P1+BLG 全部完成，P2 远期）
+4. **Git remote 配置** — 🔲 需 Sir 在 GitHub 创建仓库后手动配置
+5. **开源时间决策** — 🔲 何时将 UC 核心代码开源（GitHub public）？
+6. **商业模式路线选择** — 🔲 solo lifestyle business vs VC-backable？决定后续产品节奏
+7. **Sir 审阅战略简报** — 🔲 `research/strategy-brief-v1.md` 定位/商业模式/OPC 运营是否符合预期？
+8. **pipeline.py 拆分方案确认** — 🔲 是否同意上述 5 模块拆分？或有其他偏好？
+9. **包管理方案选择** — 🔲 requirements.txt 精确版本 vs pyproject.toml + uv？
+
+## 里程碑时间线
+
+```
+v0.1.0  2026-05-13  MVP 跑通
+v0.2.0  2026-05-14  战略研究完成
+v0.3.0  2026-05-16  爬取v2 + 动态标签 + BLG-001~003
+v0.3.1  2026-05-16  噪音清洗 + 标签归并 + BLG-004~006
+v0.3.1a 2026-05-17  Legacy迁移 + 全量重分类 + BLG-007 + 技术债务审计
+                    ↑ 当前版本
+v0.4.0  ???         Phase 1.5 完成（工程加固 + pipeline拆分 + 依赖锁定）
+v0.5.0  ???         Phase 2 里程碑（nova-reader/skill-factory 对接 MVP）
+v1.0.0  ???         Phase 3 产品化（ClawHub 发布 + 可选多用户）
+```
