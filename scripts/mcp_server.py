@@ -155,8 +155,7 @@ TOOLS = [
             "properties": {
                 "category": {
                     "type": "string",
-                    "description": "Filter by category: 科研, 市场投资, AI产品, AI技术",
-                    "enum": ["科研", "市场投资", "AI产品", "AI技术"]
+                    "description": "Filter by topic (matches primary topic name)"
                 },
                 "limit": {
                     "type": "integer",
@@ -204,7 +203,7 @@ TOOLS = [
                     "properties": {
                         "category_primary": {
                             "type": "string",
-                            "enum": ["科研", "市场投资", "AI产品", "AI技术"]
+                            "description": "Override primary topic classification"
                         },
                         "category_sub": {"type": "string"},
                         "tags": {
@@ -271,7 +270,7 @@ def handle_request(request: dict) -> str:
             },
             "serverInfo": {
                 "name": "universal-collector",
-                "version": "0.3.0"
+                "version": "0.3.1a"
             }
         })
 

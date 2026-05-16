@@ -205,3 +205,10 @@ def _update_index_entry(entry_id: str, entry: dict):
     with open(index_file, "w", encoding="utf-8") as f:
         for line in lines:
             f.write(line + "\n")
+
+
+# Windows UTF-8 guard for direct execution
+if __name__ == "__main__":
+    if __import__("sys").platform == "win32":
+        __import__("sys").stdout.reconfigure(encoding="utf-8")
+    print("Usage: from feedback import submit_feedback, get_feedback_history")

@@ -1,0 +1,5 @@
+# Universal Collector — Python Dependencies
+openai>=2.32.0
+requests>=2.32.0
+beautifulsoup4>=4.12.0
+playwright>=1.59.0

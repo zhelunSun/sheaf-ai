@@ -84,7 +84,7 @@ def get_client(provider: str = None) -> OpenAI:
     api_key = os.environ.get(cfg["api_key_env"], "")
     if not api_key:
         raise ValueError(
-            f"未找到 API Key：请在 ai-native-research/.env 中设置 {cfg['api_key_env']}，"
+            f"未找到 API Key：请在 .env 中设置 {cfg['api_key_env']}，"
             "或 export 该环境变量后重启。"
         )
 

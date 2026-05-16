@@ -868,9 +868,13 @@ def query_collection(query: str, limit: int = 10) -> list:
             try:
                 entry = json.loads(line)
                 # Build searchable text from all relevant fields
+                topics = entry.get("topics", [])
+                topic_names = " ".join(
+                    t.get("name", t) if isinstance(t, dict) else t for t in topics
+                )
                 parts = [
                     entry.get("title", ""),
-                    " ".join(entry.get("topics", [])),
+                    topic_names,
                     entry.get("primary_category", ""),
                     entry.get("sub_category", ""),
                     " ".join(entry.get("tags", [])),
@@ -970,9 +974,10 @@ def topic_trends() -> dict:
                 date = collected[:10] if collected else "unknown"
                 entry_count[date] += 1
                 
-                # New format: topics list
+                # New format: topics list (may be flat strings or dicts)
                 for t in entry.get("topics", []):
-                    daily_topics[date][t] += 1
+                    name = t.get("name", t) if isinstance(t, dict) else t
+                    daily_topics[date][name] += 1
                 
                 # Legacy: primary_category
                 if not entry.get("topics"):
@@ -1014,9 +1019,10 @@ if __name__ == "__main__":
             type_counts = {}
             tag_counts = {}
             for e in entries:
-                # Topics
+                # Topics (may be flat strings from index or dicts from entry)
                 for t in e.get("topics", []):
-                    topic_counts[t] = topic_counts.get(t, 0) + 1
+                    name = t.get("name", t) if isinstance(t, dict) else t
+                    topic_counts[name] = topic_counts.get(name, 0) + 1
                 # Legacy primary_category for old entries
                 if not e.get("topics"):
                     cat = e.get("primary_category", "?")
