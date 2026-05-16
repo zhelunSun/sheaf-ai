@@ -589,6 +589,11 @@ def query_urgent() -> list:
 # CLI Entry Point
 # ============================================================
 if __name__ == "__main__":
+    # Windows UTF-8 output fix
+    if sys.platform == "win32":
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+
     if len(sys.argv) < 2:
         # Summary mode: show collection stats
         if INDEX_FILE.exists():
