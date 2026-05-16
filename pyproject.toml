@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "universal-collector"
+version = "0.3.1a"
+description = "Agent-Native Personal Knowledge Layer — collect, classify, summarize, query"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "zhelunSun"},
+]
+
+dependencies = [
+    "openai>=2.32.0",
+    "requests>=2.32.0",
+    "beautifulsoup4>=4.12.0",
+    "playwright>=1.59.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+uc = "uc.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["uc*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
