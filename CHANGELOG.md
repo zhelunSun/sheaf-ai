@@ -1,5 +1,18 @@
 # Universal Collector CHANGELOG
 
+## v0.3.1a (2026-05-16) — Legacy Entry 迁移 + 全量重分类
+
+### 已有条目重分类 (BLG-007)
+- **Legacy entry 自动迁移**：`reclassify_entries()` 检测无 `metadata` 的旧 entries，自动创建 wrapper 并迁移：
+  - `collected_at` / `fetch_method` / `language` → `metadata.*`
+  - `source_author` + `publish_date` → `source.author` + `source.publish_date`
+- **7/7 entries 全部重分类**：用新 topics + content_type 体系重新跑 LLM
+  - 4 legacy entries → 迁移 + 重分类
+  - 3 new entries → 补充 topics 字段
+  - Schema 统一升至 v1.1.0
+- **Index 重建**：`_rebuild_index()` 兼容两种 entry 结构的排序
+- **Bug fix**：`_build_summary_md()` 处理 LLM 返回 list 类型 content（`TypeError: sequence item N: expected str`）
+
 ## v0.3.1 (2026-05-16) — 噪音清洗 + 标签归并 + 统计接口
 
 ### 爬取文本清洗增强 (BLG-004)
