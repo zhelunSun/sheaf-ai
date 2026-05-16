@@ -1,7 +1,7 @@
 """
-Universal Collector (UC) — Agent-Native Personal Knowledge Layer
+Glean — Your personal knowledge layer.
 
-From scattered bookmarks to Agent-consumable knowledge assets.
+Paste a link, AI does the rest. One sheaf at a time.
 """
 
 __version__ = "0.3.1a"

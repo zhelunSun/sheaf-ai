@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "universal-collector"
+name = "glean"
 version = "0.3.1a"
-description = "Agent-Native Personal Knowledge Layer — collect, classify, summarize, query"
+description = "Glean — Your personal knowledge layer. Paste a link, AI does the rest. One sheaf at a time."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}

@@ -25,7 +25,7 @@ def main():
 
     # --version
     if "--version" in args or "-v" in args:
-        print(f"uc (Universal Collector) v{VERSION}")
+        print(f"Glean v{VERSION} — One sheaf at a time.")
         sys.exit(0)
 
     # No args -> stats mode
@@ -91,10 +91,10 @@ def _show_stats():
     total = stats.get("total", 0)
 
     if total == 0:
-        print("Collection is empty. Usage: uc <url>")
+        print("Your basket is empty. Start gleaning: uc <url>")
         return
 
-    print(f"Universal Collector v{VERSION} - Collection Stats")
+    print(f"Glean v{VERSION} — {total} sheaves in your basket")
     print(f"Total: {total} entries")
 
     type_labels = {
