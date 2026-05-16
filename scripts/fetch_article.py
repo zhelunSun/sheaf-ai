@@ -106,7 +106,13 @@ def _extract_title(soup) -> str:
 
 
 def _fetch_requests(url: str, timeout: int) -> dict:
-    """Lightweight fetch with common headers"""
+    """Lightweight fetch with common headers.
+    
+    For WeChat articles (mp.weixin.qq.com), the initial HTML often contains
+    the full article text inside #js_content, but some articles load content
+    dynamically. If we detect a WeChat URL and the content is suspiciously
+    short (< 500 chars), we return failure to trigger Playwright fallback.
+    """
     headers = {
         "User-Agent": (
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -150,6 +156,12 @@ def _fetch_requests(url: str, timeout: int) -> dict:
         if len(text) < 50:
             return {"success": False, "title": title, "text": "", "error": "Too short"}
 
+        # WeChat articles: if content is suspiciously short, trigger Playwright fallback
+        is_wechat = "mp.weixin.qq.com" in url
+        if is_wechat and len(text) < 500:
+            return {"success": False, "title": title, "text": "", 
+                    "error": f"WeChat article too short ({len(text)} chars), need browser rendering"}
+
         return {"success": True, "title": title, "text": text, "error": None}
 
     except Exception as e:
@@ -157,7 +169,11 @@ def _fetch_requests(url: str, timeout: int) -> dict:
 
 
 def _fetch_playwright(url: str, timeout: int) -> dict:
-    """Try playwright as fallback"""
+    """Browser-rendered fetch via Playwright. 
+    
+    Handles JS-heavy pages (especially WeChat) that requests can't fully capture.
+    Waits for article content to appear before extracting.
+    """
     try:
         from playwright.sync_api import sync_playwright
     except ImportError:
@@ -168,8 +184,26 @@ def _fetch_playwright(url: str, timeout: int) -> dict:
             browser = p.chromium.launch(headless=True)
             page = browser.new_page()
             page.goto(url, timeout=timeout * 1000, wait_until="domcontentloaded")
-            # Wait a bit for dynamic content
-            page.wait_for_timeout(2000)
+            
+            # Wait for article content to render
+            is_wechat = "mp.weixin.qq.com" in url
+            if is_wechat:
+                # WeChat: wait specifically for #js_content to populate
+                try:
+                    page.wait_for_selector("#js_content", timeout=8000)
+                    # Extra wait for lazy-loaded images/content
+                    page.wait_for_timeout(1500)
+                except Exception:
+                    page.wait_for_timeout(3000)
+            else:
+                page.wait_for_timeout(2000)
+            
+            # Scroll down to trigger any lazy content
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight / 2)")
+            page.wait_for_timeout(500)
+            page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+            page.wait_for_timeout(500)
+            
             html = page.content()
             browser.close()
 

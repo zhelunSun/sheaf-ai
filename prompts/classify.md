@@ -1,27 +1,29 @@
-## Universal Collector — Classify Prompt
+## Universal Collector — 分类 Prompt
 
-Given a web article (title + text content), classify it into the Universal Collector taxonomy.
+给定一篇网页文章（标题 + 正文），将其归类到 Universal Collector 分类体系。
 
-### Output format (JSON)
+**重要：所有文本输出必须使用中文。**
+
+### 输出格式 (JSON)
 
 ```json
 {
   "primary_category": "科研 | 市场投资 | AI产品 | AI技术",
-  "sub_category": "auto-extracted sub-topic (e.g. '多智能体系统', 'LLM评测', 'Web3基础设施')",
-  "tags": ["tag1", "tag2", "tag3"],
+  "sub_category": "自动提取的子话题（例如 '多智能体系统', 'LLM评测', 'Web3基础设施'）",
+  "tags": ["标签1", "标签2", "标签3"],
   "importance": "high | medium | low",
-  "relevance_note": "one-sentence explanation of why this category was chosen"
+  "relevance_note": "一句话解释为什么选择这个分类"
 }
 ```
 
-### Category definitions
+### 分类定义
 
-1. **科研 (Research)**: Academic papers, conferences, workshops, research methods, benchmarks, datasets, scientific discoveries.
-2. **市场投资 (Market & Investment)**: Company funding, market analysis, VC/PE deals, crypto/Web3 market, stock/Token trends, industry reports.
-3. **AI产品 (AI Products)**: Launched AI applications, product reviews, user-facing tools, SaaS products, product strategy.
-4. **AI技术 (AI Technology)**: Technical deep-dives, model architectures, frameworks, infrastructure, engineering practices, open-source tools.
+1. **科研**: 学术论文、会议、研讨会、研究方法、基准测试、数据集、科学发现。
+2. **市场投资**: 公司融资、市场分析、VC/PE 交易、加密/Web3 市场、股票/Token 趋势、行业报告。
+3. **AI产品**: 已发布的 AI 应用、产品评测、面向用户的工具、SaaS 产品、产品战略。
+4. **AI技术**: 技术深度分析、模型架构、框架、基础设施、工程实践、开源工具。
 
-### Rules
-- An article can be tagged across categories (e.g. a technical blog about a new LLM architecture = AI技术, but if it also discusses company strategy = AI产品 / 市场投资). Use tags for cross-references.
-- If uncertain, make your best judgment and note it in relevance_note.
-- Importance heuristic: high = breakthrough / directly relevant to user's work; medium = good to know; low = peripheral interest.
+### 规则
+- 一篇文章可以跨类别打标签（例如一篇关于新 LLM 架构的技术博客 = AI技术，但如果也讨论公司战略 = AI产品 / 市场投资）。用 tags 做交叉引用。
+- 如果不确定，做出最佳判断并在 relevance_note 中说明。
+- 重要性启发式：high = 突破性 / 与用户工作直接相关；medium = 值得了解；low = 边缘兴趣。

@@ -1,29 +1,31 @@
-## Universal Collector — Summary Prompt
+## Universal Collector — 摘要 Prompt
 
-Given a web article (title + text content), generate two levels of summary.
+给定一篇网页文章（标题 + 正文），生成两个层级的摘要。
 
-### Output format (JSON)
+**重要：所有文本输出必须使用中文。** 保留专有名词的英文原文（如模型名、公司名、框架名），但解释和描述用中文。
+
+### 输出格式 (JSON)
 
 ```json
 {
-  "one_liner": "A single sentence capturing the core takeaway (≤50 words)",
+  "one_liner": "一句话概括核心要点（≤50字）",
   "structured": {
-    "core_argument": "The main thesis or key insight (1-3 sentences)",
-    "key_data": "Any important numbers, statistics, or concrete evidence mentioned",
-    "relevance_to_user": "Why this matters to a AI/remote sensing researcher and AI agent builder",
-    "action_items": "What could be done with this info (e.g. 'try this framework', 'monitor this trend', 'cite in paper')",
-    "deadline_or_timing": "Any time-sensitive info extracted from the article, or null if none"
+    "core_argument": "主要论点或关键洞察（1-3句话）",
+    "key_data": "文章中提到的重要数字、统计数据或具体证据",
+    "relevance_to_user": "为什么这对一位 AI/遥感研究者和 AI Agent 构建者很重要",
+    "action_items": "可以采取的行动（例如'试用这个框架'、'关注这个趋势'、'在论文中引用'）",
+    "deadline_or_timing": "从文章中提取的时间敏感信息，如果没有则为 null"
   },
-  "original_title": "The article's title",
-  "source_author": "Author / publication name if identifiable"
+  "original_title": "文章标题",
+  "source_author": "作者 / 发布方名称（如果能识别的话）"
 }
 ```
 
-### Guidelines
-- Be concise. The structured summary should fit within ~200 words total.
-- For "relevance_to_user", assume the reader works at the intersection of AI agents and remote sensing, and also follows AI/Web3 investment.
-- If the article is clearly irrelevant to the user's known interests, note that honestly.
-- Preserve all specific names (people, companies, models, frameworks, papers).
+### 指导原则
+- 简洁。结构化摘要总计控制在 ~200 字以内。
+- 对于 "relevance_to_user"，假设读者从事 AI Agent 与遥感的交叉研究，同时关注 AI/Web3 投资。
+- 如果文章与用户已知兴趣明显无关，请诚实说明。
+- 保留所有专有名词（人名、公司名、模型名、框架名、论文名）。
 
 ### Deadline/Time-sensitive Information Extraction
 

@@ -214,7 +214,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
     try:
         result = chat(
             prompt=prompt,
-            system="You are a precise article classifier. Output ONLY valid JSON.",
+            system="You are a precise article classifier. Output ONLY valid JSON. ALL text fields must be in Chinese (中文).",
             model=CLASSIFY_MODEL,
             temperature=0.3,
             max_tokens=800,
@@ -261,7 +261,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
     try:
         result = chat(
             prompt=prompt,
-            system="You are a precise article summarizer. Output ONLY valid JSON.",
+            system="You are a precise article summarizer. Output ONLY valid JSON. ALL text fields must be in Chinese (中文), except for proper nouns (model names, company names, framework names).",
             model=SUMMARIZE_MODEL,
             temperature=0.3,
             max_tokens=1200,
