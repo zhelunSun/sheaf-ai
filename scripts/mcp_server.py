@@ -238,7 +238,7 @@ TOOLS = [
                 "force": {
                     "type": "boolean",
                     "description": "Skip dedup check and force collect (default: false)",
-                    "default": false
+                    "default": False
                 }
             },
             "required": ["url"]

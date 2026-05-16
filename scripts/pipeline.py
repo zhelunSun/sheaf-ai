@@ -910,7 +910,7 @@ def query_urgent() -> list:
             except json.JSONDecodeError:
                 continue
 
-    results.sort(key=lambda x: x.get("deadline_date", "9999"), reverse=False)
+    results.sort(key=lambda x: x.get("deadline_date") or "9999", reverse=False)
     return results
 
 
