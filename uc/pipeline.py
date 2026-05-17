@@ -197,6 +197,17 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
     entry_id = store_article(url, fetch_result, classify_result, summary_result)
     print(f"Stored as: {entry_id}")
 
+    # Step 5: Gamification update
+    game_feedback = ""
+    try:
+        from uc.gamification import update_after_glean, format_glean_feedback
+        game_result = update_after_glean(topics)
+        game_feedback = format_glean_feedback(game_result)
+        if game_feedback:
+            print(game_feedback)
+    except Exception:
+        pass  # Gamification is non-critical, never block the pipeline
+
     return {
         "success": True,
         "entry_id": entry_id,

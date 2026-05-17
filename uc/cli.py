@@ -139,6 +139,15 @@ def _show_stats():
             top = ", ".join(f"{t}({c})" for t, c in sorted(topics.items(), key=lambda x: -x[1])[:3])
             print(f"  {date} ({n} entries): {top}")
 
+    # Gamification progress
+    try:
+        from uc.gamification import format_progress
+        progress_text = format_progress()
+        if progress_text.strip():
+            print(progress_text)
+    except Exception:
+        pass
+
 
 if __name__ == "__main__":
     main()
