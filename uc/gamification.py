@@ -1,8 +1,13 @@
 """
-Glean Gamification Engine — streak, baskets, milestones.
+Glean Gamification Engine v2 — streak, baskets, milestones, insights.
 
 Pure functions + JSON persistence. No external deps.
 Integrated into CLI output (not a separate UI).
+
+v2 additions:
+  - Cross-topic explorer milestones
+  - ASCII progress bars for baskets
+  - Insight summary line integration
 
 Usage:
     from uc.gamification import update_after_glean, get_progress, format_progress
@@ -31,13 +36,17 @@ BASKET_LEVELS = [
 
 # Milestone definitions: (id, display_name, check_function)
 MILESTONE_DEFS = [
-    ("first_sheaf",    "First Sheaf — 第一穗",      lambda g: g["total_gleans"] >= 1),
-    ("week_one",       "Week One — 一周拾穗人",       lambda g: g["streak"]["longest"] >= 7),
-    ("hoarder_50",     "The Hoarder — 囤积者",        lambda g: g["total_gleans"] >= 50),
-    ("curator_100",    "The Curator — 策展人",        lambda g: g["total_gleans"] >= 100),
-    ("renaissance_5",  "Renaissance — 文艺复兴",      lambda g: len(g["baskets"]) >= 5),
-    ("deep_diver",     "Deep Diver — 深潜者",         lambda g: any(b["count"] >= 20 for b in g["baskets"].values())),
-    ("gleaner_30",     "The Gleaner — 拾穗人",        lambda g: g["streak"]["longest"] >= 30),
+    ("first_sheaf",    "First Sheaf — 第一穗",        lambda g: g["total_gleans"] >= 1),
+    ("week_one",       "Week One — 一周拾穗人",         lambda g: g["streak"]["longest"] >= 7),
+    ("hoarder_50",     "The Hoarder — 囤积者",          lambda g: g["total_gleans"] >= 50),
+    ("curator_100",    "The Curator — 策展人",          lambda g: g["total_gleans"] >= 100),
+    ("renaissance_5",  "Renaissance — 文艺复兴",        lambda g: len(g["baskets"]) >= 5),
+    ("deep_diver",     "Deep Diver — 深潜者",           lambda g: any(b["count"] >= 20 for b in g["baskets"].values())),
+    # v2: Cross-topic milestones
+    ("cross_topic_3",  "Cross-Poller — 跨界传粉者",     lambda g: len(g["baskets"]) >= 3 and g["total_gleans"] >= 5),
+    ("bridge_10",      "Bridge Builder — 桥梁建造者",   lambda g: len(g["baskets"]) >= 10),
+    ("gleaner_30",     "The Gleaner — 拾穗人",          lambda g: g["streak"]["longest"] >= 30),
+    ("networker_50",   "Knowledge Networker — 知识编织者", lambda g: len(g["baskets"]) >= 5 and sum(1 for b in g["baskets"].values() if b["count"] >= 5) >= 3),
 ]
 
 
@@ -204,6 +213,7 @@ def format_progress(progress: dict = None) -> str:
     """
     Format gamification progress as human-readable CLI output.
 
+    v2: ASCII progress bars for baskets + insight summary line.
     Designed to be appended to `uc` stats output.
     """
     if progress is None:
@@ -229,13 +239,18 @@ def format_progress(progress: dict = None) -> str:
     topics = progress.get("total_topics", 0)
     lines.append(f"  Total: {total} sheaves across {topics} topics")
 
-    # Top baskets
+    # Top baskets with progress bars
     baskets = progress.get("baskets", {})
     if baskets:
         top_baskets = sorted(baskets.items(), key=lambda x: -x[1]["count"])[:5]
         lines.append(f"  Top baskets:")
         for topic, info in top_baskets:
-            lines.append(f"    {topic}: {info['level_display']} ({info['count']} sheaves)")
+            bar = _progress_bar(info["count"], max_val=50, width=10)
+            lines.append(f"    {bar} {topic}: {info['level_display']} ({info['count']} sheaves)")
+
+    # Cross-topic insight line (lightweight, no full discovery scan)
+    if topics >= 3:
+        lines.append(f"  🔗 {topics} topics in your knowledge web — run `uc --insights` to see connections")
 
     # Next milestone
     next_m = progress.get("next_milestone")
@@ -254,6 +269,24 @@ def format_progress(progress: dict = None) -> str:
             lines.append(f"  Next: {next_m['name']}")
 
     return "\n".join(lines)
+
+
+def _progress_bar(current: int, max_val: int = 50, width: int = 10) -> str:
+    """Generate an ASCII progress bar.
+
+    Args:
+        current: Current value
+        max_val: Value representing 100%
+        width: Bar width in characters
+
+    Returns:
+        String like "[████░░░░░░]"
+    """
+    ratio = min(current / max_val, 1.0)
+    filled = round(ratio * width)
+    empty = width - filled
+    bar = "\u2588" * filled + "\u2591" * empty
+    return f"[{bar}]"
 
 
 def format_glean_feedback(update_result: dict) -> str:

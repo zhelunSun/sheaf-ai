@@ -33,6 +33,10 @@
 
 - 🐛 **BLG-K01** Windows GBK stdout 静默崩溃 — 已修复（`sys.stdout.reconfigure`），但所有新 CLI 脚本都需加
 - 🐛 **BLG-K02** WeChat 短文误判为抓取失败 — 已确认是文章本身短，不是 bug，但需要更好的日志区分
+- 🐛 **BLG-K03** Topic 粒度过散 — 8 篇文章散出 23 个 topic，仅"AI Agent"重复 1 次。LLM 自由提取缺乏归一化约束，收藏量增长后 topic 将严重碎片化
+  - 影响：gamification 篮子无法有效聚类、搜索召回率下降
+  - 方案候选：(a) topic 归并机制类似 tags_registry（模糊匹配）；(b) prompt 层面增加"复用已有 topic"指令；(c) topic 层引入固定种子表 + 自由扩展
+  - 触发条件：收藏量 20+ 或 topic 总数/收藏量 > 4:1
 
 ## ✅ 已完成（Phase 1 及之前）
 

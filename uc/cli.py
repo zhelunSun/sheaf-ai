@@ -7,6 +7,7 @@ Usage:
     uc --init             # First-time onboarding
     uc --search <query>   # Full-text search (metadata + raw content)
     uc --weekly           # Weekly summary report
+    uc --insights         # Cross-topic association discovery
     uc --tags             # Tag statistics
     uc --trends           # Topic trends over time
     uc --reclassify       # Re-run classification on legacy entries
@@ -100,6 +101,11 @@ def main():
     if args[0] == "--init":
         from uc.onboarding import run_onboarding
         run_onboarding()
+        sys.exit(0)
+
+    # --insights
+    if args[0] == "--insights":
+        _show_insights()
         sys.exit(0)
 
     # Default: URL collection
@@ -291,6 +297,32 @@ def _show_weekly():
     except Exception:
         pass
 
+    # Knowledge insights
+    try:
+        from uc.insights import discover_associations, format_insight_summary
+        insight_data = discover_associations()
+        summary = format_insight_summary(insight_data)
+        print()
+        print(f"  Insights: {summary}")
+    except Exception:
+        pass
+
+    print()
+    print(f"{'='*50}")
+
+
+def _show_insights():
+    """Show cross-topic association discovery results."""
+    from uc.insights import discover_associations, format_insights
+
+    print(f"{'='*50}")
+    print("  Glean Knowledge Insights")
+    print(f"{'='*50}")
+    print()
+
+    data = discover_associations()
+    text = format_insights(data)
+    print(text)
     print()
     print(f"{'='*50}")
 

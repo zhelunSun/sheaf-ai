@@ -39,6 +39,7 @@
    - `event` — 活动预告、会议征稿
    - `product` — 产品发布、评测
    - `reference` — 参考资料、工具清单
+   - `ai_conversation` — AI 对话记录（ChatGPT、Claude 等多轮对话归档）
 
 4. **importance 判断**：
    - `high` — 突破性信息、与 AI Agent/遥感研究直接相关、重大行业变化

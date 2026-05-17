@@ -79,7 +79,8 @@ def update_tags_registry(tags: list, now_iso: str):
 # Entry Storage
 # ============================================================
 
-def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict) -> str:
+def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict,
+                   extra_meta: dict = None) -> str:
     """Store processed article to data/ directory. Returns entry_id."""
     now = datetime.now(BJT)
     date_str = now.strftime("%Y-%m-%d")
@@ -138,6 +139,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "language": "zh",
             "schema_version": "1.1.0",
             "content_hash": content_h,
+            **({"conversation": extra_meta} if extra_meta else {}),
         },
         "status": "active",
     }
@@ -187,6 +189,7 @@ def build_summary_md(entry: dict, structured: dict) -> str:
             "news": "新闻", "analysis": "深度分析", "research": "学术研究",
             "tutorial": "教程指南", "opinion": "观点评论", "event": "活动事件",
             "product": "产品", "reference": "参考资料",
+            "ai_conversation": "AI对话归档",
         }
         lines.append(f"- **类型**: {type_labels.get(content_type, content_type)}")
 

@@ -172,12 +172,28 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
 
     print(f"Fetched ({fetch_result['method']}): {len(fetch_result.get('text', ''))} chars")
 
+    # Step 1.5: Detect AI conversation -> adjust pipeline behavior
+    is_ai_conversation = (
+        fetch_result.get("meta", {}).get("content_type") == "ai_conversation"
+        or fetch_result.get("method") == "chatgpt-share"
+    )
+    conversation_meta = fetch_result.get("meta", {})
+
     # Step 2: Classify
     print("Classifying...")
     classify_result = classify_article(
         fetch_result.get("title", ""),
         fetch_result.get("text", ""),
     )
+
+    # Override content_type for AI conversations
+    if is_ai_conversation:
+        classify_result["content_type"] = "ai_conversation"
+        classify_result.setdefault("tags", []).extend(
+            t for t in ["AI对话", "ChatGPT", "对话归档"]
+            if t not in classify_result.get("tags", [])
+        )
+
     topics = [t.get("name", "") for t in classify_result.get("topics", [])]
     tags = classify_result.get("tags", [])
     content_type = classify_result.get("content_type", "?")
@@ -194,7 +210,10 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
 
     # Step 4: Store
     print("Storing...")
-    entry_id = store_article(url, fetch_result, classify_result, summary_result)
+    entry_id = store_article(
+        url, fetch_result, classify_result, summary_result,
+        extra_meta=conversation_meta if is_ai_conversation else None,
+    )
     print(f"Stored as: {entry_id}")
 
     # Step 5: Gamification update

@@ -38,6 +38,12 @@ _PLAYWRIGHT_PREFERRED = {
     "www.bilibili.com",
 }
 
+# ChatGPT share links get dedicated extraction (not generic Playwright)
+_CHATGPT_DOMAINS = {
+    "chatgpt.com",
+    "chat.openai.com",
+}
+
 _REQUESTS_OK = {
     "mp.weixin.qq.com",
     "arxiv.org",
@@ -292,6 +298,139 @@ def _fetch_playwright(url: str, timeout: int = 15) -> dict:
         return {"success": False, "html": "", "error": str(e)}
 
 
+# ============================================================
+# ChatGPT share link extraction (dedicated)
+# ============================================================
+
+def _fetch_chatgpt_share(url: str, timeout: int = 20) -> dict:
+    """
+    Extract structured conversation from ChatGPT share links.
+
+    ChatGPT share pages (/share/xxx) are fully JS-rendered SPA.
+    Messages use [data-message-author-role] attribute for role detection.
+
+    Returns dict with:
+      success, title, text (formatted conversation), method, error,
+      meta: { turns, user_msgs, assistant_msgs, source }
+    """
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        return {
+            "success": False, "title": "", "text": "",
+            "method": "chatgpt", "error": "playwright not installed",
+        }
+
+    try:
+        with sync_playwright() as p:
+            browser = p.chromium.launch(headless=True)
+            page = browser.new_page()
+
+            # Navigate with networkidle for SPA
+            page.goto(url, timeout=timeout * 1000, wait_until="networkidle")
+
+            # Wait for conversation messages to render
+            try:
+                page.wait_for_selector(
+                    '[data-message-author-role]',
+                    timeout=15000,
+                )
+                # Extra wait for late-loading messages
+                page.wait_for_timeout(3000)
+            except Exception:
+                browser.close()
+                return {
+                    "success": False, "title": "", "text": "",
+                    "method": "chatgpt", "error": "No messages found on page",
+                }
+
+            # Extract title from page
+            title = page.title()
+            # Clean up ChatGPT default title patterns
+            for suffix in [" - ChatGPT", " | ChatGPT", "ChatGPT"]:
+                if title.endswith(suffix):
+                    title = title[:-len(suffix)].strip()
+                    break
+            if not title or len(title) < 2:
+                title = "ChatGPT Conversation"
+
+            # Extract all messages
+            messages = page.evaluate("""() => {
+                const turns = [];
+                const elements = document.querySelectorAll('[data-message-author-role]');
+                elements.forEach(el => {
+                    const role = el.getAttribute('data-message-author-role');
+                    const text = el.innerText || el.textContent || '';
+                    if (text.trim()) {
+                        turns.push({ role: role, text: text.trim() });
+                    }
+                });
+                return turns;
+            }""")
+
+            browser.close()
+
+        if not messages:
+            return {
+                "success": False, "title": title, "text": "",
+                "method": "chatgpt", "error": "No messages extracted",
+            }
+
+        # Separate user / assistant messages
+        user_msgs = [m for m in messages if m["role"] == "user"]
+        assistant_msgs = [m for m in messages if m["role"] == "assistant"]
+        total_turns = len(messages)
+
+        # Format conversation as readable text
+        formatted_lines = [f"# {title}", ""]
+        for i, msg in enumerate(messages, 1):
+            role_label = "👤 User" if msg["role"] == "user" else "🤖 Assistant"
+            formatted_lines.append(f"## [{role_label}] (Turn {i})")
+            formatted_lines.append("")
+            formatted_lines.append(msg["text"])
+            formatted_lines.append("")
+
+        formatted_text = "\n".join(formatted_lines)
+
+        return {
+            "success": True,
+            "title": title,
+            "text": formatted_text,
+            "method": "chatgpt-share",
+            "error": None,
+            "quality": {
+                "ok": True,
+                "score": 4,
+                "length": len(formatted_text),
+                "reason": "chatgpt_conversation",
+            },
+            "meta": {
+                "content_type": "ai_conversation",
+                "turns": total_turns,
+                "user_msgs": len(user_msgs),
+                "assistant_msgs": len(assistant_msgs),
+                "source": "chatgpt",
+            },
+        }
+
+    except Exception as e:
+        return {
+            "success": False, "title": "", "text": "",
+            "method": "chatgpt", "error": str(e),
+        }
+
+
+def _is_chatgpt_share(url: str) -> bool:
+    """Check if URL is a ChatGPT share link."""
+    from urllib.parse import urlparse
+    try:
+        parsed = urlparse(url)
+        domain = parsed.netloc.lower().replace("www.", "")
+        return domain in _CHATGPT_DOMAINS and "/share/" in parsed.path
+    except Exception:
+        return False
+
+
 def _parse_html(html: str, url: str = "") -> dict:
     soup = BeautifulSoup(html, "html.parser")
     title = _extract_title(soup)
@@ -315,8 +454,31 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
     Fetch article content from URL with smart strategy selection.
 
     Returns dict: {success, title, text, method, error, quality}
+    Special paths:
+      - ChatGPT share links -> dedicated conversation extractor
     """
     domain = _detect_platform(url)
+
+    # Strategy 0: ChatGPT share link -> dedicated extraction
+    if _is_chatgpt_share(url):
+        logger.info(f"ChatGPT share link detected -> dedicated extractor")
+        result = _fetch_chatgpt_share(url, timeout)
+        if result["success"]:
+            return result
+        # Fallback to generic Playwright if dedicated fails
+        logger.warning("ChatGPT dedicated extractor failed, trying generic Playwright")
+        result = _fetch_playwright(url, timeout)
+        if result["success"]:
+            parsed = _parse_html(result["html"], url)
+            if parsed["success"]:
+                return {
+                    "success": True, "title": parsed["title"], "text": parsed["text"],
+                    "method": "playwright", "error": None, "quality": parsed["quality"],
+                }
+        return {
+            "success": False, "title": "", "text": "",
+            "method": "failed", "error": "ChatGPT extraction failed (dedicated + fallback)",
+        }
 
     # Strategy 1: Known JS-heavy -> Playwright first
     if domain in _PLAYWRIGHT_PREFERRED:
