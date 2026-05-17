@@ -20,13 +20,16 @@ universal-collector/
 │   ├── config.py        — 共享常量、路径、编码修复
 │   ├── utils.py         — URL标准化、内容hash、平台检测
 │   ├── storage.py       — 存储与索引管理
+│   ├── search.py        — 全文检索（摘要 + raw 原文）
 │   ├── query.py         — 查询、统计、趋势分析
 │   ├── pipeline.py      — 主流程编排
 │   ├── llm_client.py    — 双Provider LLM客户端
 │   ├── fetch_article.py — 智能抓取（requests + playwright）
 │   ├── feedback.py      — 纠偏反馈
+│   ├── gamification.py  — 游戏化引擎（streak + baskets + milestones）
+│   ├── onboarding.py    — 首次使用引导
 │   ├── mcp_server.py    — MCP stdio server（6 工具）
-│   └── cli.py           — CLI 入口（uc <url>, --tags, --trends, --urgent）
+│   └── cli.py           — CLI 入口（uc <url>, --search, --weekly, --init, --tags, --trends, --urgent）
 │
 ├── 📋 BP 系列（输出出口）
 │   ├── BP.md            — 文档版 BP（当前版本）
@@ -64,22 +67,25 @@ Phase 3:    产品化/Skill 化
 
 | 指标 | 值 |
 |------|-----|
-| 包结构 | uc/ 包（11 模块）+ pyproject.toml |
+| 包结构 | uc/ 包（13 模块）+ pyproject.toml |
 | uc/pipeline.py | ~335 行（编排逻辑） |
 | uc/fetch_article.py | ~375 行 |
 | uc/storage.py | ~295 行 |
-| uc/mcp_server.py | ~280 行 |
-| uc/query.py | ~185 行 |
+| uc/mcp_server.py | ~290 行 |
+| uc/search.py | ~155 行（全文检索 + 相关性评分） |
+| uc/query.py | ~200 行 |
 | uc/feedback.py | ~175 行 |
+| uc/gamification.py | ~230 行（游戏化引擎） |
+| uc/onboarding.py | ~145 行（首次引导） |
 | uc/llm_client.py | ~112 行 |
-| uc/cli.py | ~135 行 |
-| uc/config.py | ~42 行 |
+| uc/cli.py | ~200 行 |
+| uc/config.py | ~57 行 |
 | uc/utils.py | ~100 行 |
-| 总代码量 | ~2034 行（uc/ 包，不含旧 scripts/） |
+| 总代码量 | ~2570 行（uc/ 包，不含旧 scripts/） |
 | Schema 版本 | v1.1.0 |
 | MCP 工具数 | 6（search/list/get/urgent/correct/collect） |
 | 依赖 | openai / requests / beautifulsoup4 / playwright |
-| CLI 入口 | `uc` (pip install -e .) |
+| CLI 入口 | `uc` (pip install -e .), supports --search/--weekly/--init/--tags/--trends/--urgent/--reclassify |
 | Git remote | ❌ 未配置 |
 | Python | 3.12.7 |
 
@@ -187,20 +193,60 @@ Phase 3:    产品化/Skill 化
 - [ ] **TD-09** 类型注解 — 函数签名缺少 type hints，不利于 IDE 辅助和静态检查
   - 行动：渐进添加，优先覆盖公开 API
 
+**Phase 1.75 — Glean 游戏化 MVP** ✅ 已完成（2026-05-17）
+
+- [x] **GAME-01** Gamification 引擎核心 — `uc/gamification.py`（streak + baskets + milestones）
+- [x] **GAME-02** Pipeline 集成 — 收藏成功后自动更新游戏状态
+- [x] **GAME-03** CLI 集成 — stats 底部展示进度
+
 **Phase 1.5 出口条件**（全部满足 → 发版 v0.4.0）：
-1. ✅ Git remote 已配置
+1. 🔲 Git remote 已配置（需 Sir 创建 GitHub 仓库）
 2. ✅ 依赖版本锁定
 3. ✅ pipeline.py 拆分完成
 4. ✅ 所有现有功能回归通过（collect/query/correct/stats）
-5. ✅ CHANGELOG 更新至 v0.4.0
+5. ✅ 游戏化引擎已集成
+6. 🔲 CHANGELOG 更新至 v0.4.0
 
-**P2 — 形态优化 + 增值功能**（Phase 1.5 完成后视情况启动）
+### Phase 2 — 核心功能补强（v0.4.0 → v0.5.0）
 
-- [ ] **P2-0** 浏览器插件 / 桌面悬浮球 — 降低收录摩擦（MVP 手动粘贴够用）
-- [ ] **P2-1** Embedding 语义检索（ChromaDB）— 收藏量 50+ 后引入，关键词检索不够用时
-- [ ] **P2-2** 定时报告（对接 WorkBuddy automation）
-- [ ] **P2-3** 多上下文/项目隔离
-- [ ] **P2-4** 下游任务集成 — 编辑器/写作工具的 Agent 知识注入
+> 敏捷原则：**先补短板，再加长板**。游戏化是长板（差异化），但核心管线还有几个缺口需要先堵上。
+
+**CORE — 核心管线补强（P0，先于一切）**
+
+- [x] **CORE-01** 全文检索增强 — `uc/search.py`（相关性评分 + 原文片段）
+  - search_fulltext(): 同时搜摘要 + raw/ 全文，加权评分（title 10x, topic 5x, tag 3x, summary 2x, full-text 1x/count）
+  - search_quick(): 快速仅搜 metadata
+  - MCP uc_search 升级：支持 deep 参数
+  - CLI `uc --search <query>` 新命令
+  - 2026-05-17 完成
+
+- [x] **CORE-02** `uc --weekly` 周报命令 — 每周自动总结收集趋势 + 游戏进度
+  - 输出：本周收藏数 / 热门主题 / 内容类型分布 / 连续天数 / 篮子进度 / 下一里程碑
+  - 技术实现：query.py + gamification.py 组合
+  - 2026-05-17 完成
+
+- [x] **CORE-03** Onboarding 适配新包结构 — `uc/onboarding.py`
+  - 从 scripts/onboarding.py 迁移至 uc/onboarding.py
+  - 使用 `from uc.xxx` 导入
+  - CLI `uc --init` 入口
+  - 品牌更新为 Glean
+  - 2026-05-17 完成
+
+**GROW — 增长引擎（P1，CORE 完成后）**
+
+- [ ] **GROW-01** 游戏化 v2 — 篮子可视化 + 知识洞察推送
+  - 跨主题关联发现："你收藏的 AI Agent 和区块链有交叉"
+  - 知识回流："3个月前收藏的 X 话题有新进展"（需定期扫描，可选）
+- [ ] **GROW-02** 定时报告（WorkBuddy automation 集成）— 每周自动推送周报
+- [ ] **GROW-03** 中英文品牌名落地 — pyproject.toml + CLI + README + GitHub repo name
+
+**SCALE — 规模化准备（P2，视数据量触发）**
+
+- [ ] **SCALE-01** 浏览器插件 / 桌面悬浮球 — 降低收录摩擦
+- [ ] **SCALE-02** Embedding 语义检索（ChromaDB）— 收藏量 50+ 后引入
+- [ ] **SCALE-03** 多上下文/项目隔离
+- [ ] **SCALE-04** 下游任务集成 — 编辑器/写作工具的 Agent 知识注入
+- [ ] **SCALE-05** nova-reader 论文精读联动
 
 ### Phase 2 🔲 生态联动（产品形态完善 + 融资叙事）
 
@@ -289,6 +335,27 @@ Phase 3:    产品化/Skill 化
 | TD-07 | 错误处理不统一 | P2 | 🔲 | 1.5+ |
 | TD-08 | 零测试覆盖 | P2 | 🔲 | 2 |
 | TD-09 | 缺少类型注解 | P2 | 🔲 | 2 |
+
+## 功能特性追踪
+
+> Phase 2+ 按敏捷优先级排列（CORE → GROW → SCALE）
+
+| ID | 描述 | 层级 | 状态 | 备注 |
+|----|------|------|------|------|
+| CORE-01 | 全文检索增强 | CORE | ✅ uc/search.py | 加权评分 + 原文片段 |
+| CORE-02 | `uc --weekly` 周报 | CORE | ✅ | query + gamification 组合 |
+| CORE-03 | Onboarding 适配新包 | CORE | ✅ uc/onboarding.py | CLI --init 入口 |
+| GAME-01 | Gamification 引擎 | CORE | ✅ | streak + baskets + milestones |
+| GAME-02 | Pipeline 游戏集成 | CORE | ✅ | 非阻塞式 try/except |
+| GAME-03 | CLI 游戏展示 | CORE | ✅ | stats 底部展示进度 |
+| GROW-01 | 游戏化 v2（洞察推送） | GROW | 🔲 | 跨主题关联 |
+| GROW-02 | 定时报告集成 | GROW | 🔲 | WorkBuddy automation |
+| GROW-03 | 品牌名落地 | GROW | 🔲 | pyproject + CLI + README |
+| SCALE-01 | 浏览器插件 | SCALE | 🔲 | 降低收录摩擦 |
+| SCALE-02 | Embedding 语义检索 | SCALE | 🔲 | 50+ 收藏后引入 |
+| SCALE-03 | 多项目隔离 | SCALE | 🔲 | 多上下文支持 |
+| SCALE-04 | 下游任务集成 | SCALE | 🔲 | 编辑器/写作工具 |
+| SCALE-05 | nova-reader 联动 | SCALE | 🔲 | 论文精读闭环 |
 
 ## 已知问题（Known Issues）
 

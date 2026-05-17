@@ -4,6 +4,9 @@ UC CLI — unified command-line entry point.
 Usage:
     uc <url>              # Collect an article
     uc                    # Show collection stats
+    uc --init             # First-time onboarding
+    uc --search <query>   # Full-text search (metadata + raw content)
+    uc --weekly           # Weekly summary report
     uc --tags             # Tag statistics
     uc --trends           # Topic trends over time
     uc --reclassify       # Re-run classification on legacy entries
@@ -16,6 +19,7 @@ import json
 from uc.config import INDEX_FILE, fix_windows_encoding, VERSION
 from uc.pipeline import process_url, reclassify_entries
 from uc.query import tag_stats, topic_trends, query_urgent, get_collection_stats
+from uc.search import search_fulltext
 
 
 def main():
@@ -76,6 +80,26 @@ def main():
                 print(f"  [{urgency}] {deadline} - {r.get('title', '?')[:60]}")
         else:
             print("No urgent items")
+        sys.exit(0)
+
+    # --search <query>
+    if args[0] == "--search" or args[0] == "-s":
+        if len(args) < 2:
+            print("Usage: uc --search <query>")
+            sys.exit(1)
+        search_query = " ".join(args[1:])
+        _show_search(search_query)
+        sys.exit(0)
+
+    # --weekly
+    if args[0] == "--weekly":
+        _show_weekly()
+        sys.exit(0)
+
+    # --init
+    if args[0] == "--init":
+        from uc.onboarding import run_onboarding
+        run_onboarding()
         sys.exit(0)
 
     # Default: URL collection
@@ -147,6 +171,128 @@ def _show_stats():
             print(progress_text)
     except Exception:
         pass
+
+
+def _show_search(query: str):
+    """Full-text search with relevance scoring."""
+    results = search_fulltext(query, limit=10, include_raw=True)
+
+    if not results:
+        print(f'No results for "{query}"')
+        return
+
+    print(f'Search results for "{query}" ({len(results)} found):')
+    print()
+    for i, r in enumerate(results, 1):
+        entry = r["entry"]
+        score = r["score"]
+        locations = ", ".join(r["match_locations"])
+        title = entry.get("title", "?")[:70]
+        date = entry.get("collected_at", "")[:10]
+
+        print(f"  {i}. [{score:.1f}] {title}")
+        print(f"     Date: {date} | Matched: {locations}")
+        if r.get("snippet"):
+            print(f"     >> {r['snippet'][:100]}")
+        print()
+
+
+def _show_weekly():
+    """Weekly summary report: collection trends + gamification progress."""
+    from datetime import datetime, timedelta
+    from uc.config import BJT
+    from uc.gamification import get_progress
+
+    now = datetime.now(BJT)
+    week_ago = now - timedelta(days=7)
+    week_str = week_ago.strftime("%Y-%m-%d")
+
+    # Load all entries, filter to last 7 days
+    stats = get_collection_stats()
+    total = stats.get("total", 0)
+
+    recent_entries = []
+    if INDEX_FILE.exists():
+        with open(INDEX_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = json.loads(line)
+                    collected = entry.get("collected_at", "")
+                    if collected >= week_str:
+                        recent_entries.append(entry)
+                except json.JSONDecodeError:
+                    continue
+
+    # Compute weekly stats
+    weekly_topics = {}
+    weekly_types = {}
+    for e in recent_entries:
+        for t in e.get("topics", []):
+            name = t.get("name", t) if isinstance(t, dict) else t
+            weekly_topics[name] = weekly_topics.get(name, 0) + 1
+        ct = e.get("content_type", "")
+        if ct:
+            weekly_types[ct] = weekly_types.get(ct, 0) + 1
+
+    # Print report
+    print(f"{'='*50}")
+    print(f"  Glean Weekly Report ({week_str} ~ {now.strftime('%Y-%m-%d')})")
+    print(f"{'='*50}")
+    print()
+    print(f"  Total collection: {total} sheaves")
+    print(f"  This week: {len(recent_entries)} new sheaves")
+    print()
+
+    if weekly_topics:
+        print("  Hot Topics This Week:")
+        for topic, count in sorted(weekly_topics.items(), key=lambda x: -x[1])[:8]:
+            bar = "#" * count
+            print(f"    {topic}: {count} {bar}")
+        print()
+
+    if weekly_types:
+        type_labels = {
+            "news": "News", "analysis": "Analysis", "research": "Research",
+            "tutorial": "Tutorial", "opinion": "Opinion", "event": "Event",
+            "product": "Product", "reference": "Reference",
+        }
+        print("  Content Types:")
+        for ct, count in sorted(weekly_types.items(), key=lambda x: -x[1]):
+            label = type_labels.get(ct, ct)
+            print(f"    {label}: {count}")
+        print()
+
+    # Gamification progress
+    try:
+        progress = get_progress()
+        streak = progress.get("streak", {})
+        current_streak = streak.get("current", 0)
+        longest_streak = streak.get("longest", 0)
+        total_gleans = progress.get("total_gleans", 0)
+
+        print(f"  Streak: {current_streak} day(s) (longest: {longest_streak})")
+        print(f"  Total gleans: {total_gleans}")
+
+        baskets = progress.get("baskets", {})
+        if baskets:
+            # Show top baskets by count
+            sorted_baskets = sorted(baskets.items(), key=lambda x: -x[1]["count"])[:5]
+            print("  Top Baskets:")
+            for name, b in sorted_baskets:
+                level = b.get("level_display", "?")
+                print(f"    {name}: {b['count']} ({level})")
+
+        next_ms = progress.get("next_milestone")
+        if next_ms:
+            print(f"  Next Milestone: {next_ms.get('name', '?')}")
+    except Exception:
+        pass
+
+    print()
+    print(f"{'='*50}")
 
 
 if __name__ == "__main__":

@@ -11,6 +11,7 @@ import sys
 
 from uc.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, BJT, VERSION, fix_windows_encoding
 from uc.query import query_collection, query_urgent as _query_urgent
+from uc.search import search_fulltext, search_quick
 from uc.pipeline import process_url
 from uc.feedback import submit_feedback
 
@@ -94,12 +95,13 @@ def get_entry(entry_id: str) -> dict | None:
 TOOLS = [
     {
         "name": "uc_search",
-        "description": "Search collected knowledge by keyword. Searches across titles, categories, tags, and summaries.",
+        "description": "Search collected knowledge by keyword. Searches across titles, categories, tags, summaries, AND full article text. Returns ranked results with relevance scores and match snippets.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Search keyword or phrase"},
                 "limit": {"type": "integer", "description": "Max results to return (default: 10)", "default": 10},
+                "deep": {"type": "boolean", "description": "Search full article text in addition to metadata (default: true)", "default": True},
             },
             "required": ["query"],
         },
@@ -197,10 +199,29 @@ def handle_request(request: dict) -> str | None:
         arguments = params.get("arguments", {})
 
         if tool_name == "uc_search":
-            results = search_knowledge(arguments.get("query", ""), arguments.get("limit", 10))
-            return _jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
-            })
+            deep = arguments.get("deep", True)
+            limit = arguments.get("limit", 10)
+            query_str = arguments.get("query", "")
+
+            if deep:
+                results = search_fulltext(query_str, limit=limit, include_raw=True)
+                # Format with scores and snippets for Agent consumption
+                formatted = []
+                for r in results:
+                    item = r["entry"].copy()
+                    item["_score"] = r["score"]
+                    item["_match_locations"] = r["match_locations"]
+                    if r.get("snippet"):
+                        item["_snippet"] = r["snippet"]
+                    formatted.append(item)
+                return _jsonrpc_response(req_id, {
+                    "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
+                })
+            else:
+                results = search_quick(query_str, limit=limit)
+                return _jsonrpc_response(req_id, {
+                    "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
+                })
 
         elif tool_name == "uc_list":
             results = list_entries(arguments.get("category"), arguments.get("limit", 20))
