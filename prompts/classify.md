@@ -1,4 +1,4 @@
-## Universal Collector — 动态分类 Prompt
+﻿## Sheaf — 动态分类 Prompt
 
 给定一篇网页文章（标题 + 正文），提取文章的主题和标签。
 

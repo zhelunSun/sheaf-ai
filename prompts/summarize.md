@@ -1,4 +1,4 @@
-## Universal Collector — 摘要 Prompt
+﻿## Sheaf — 摘要 Prompt
 
 给定一篇网页文章（标题 + 正文），生成两个层级的摘要。
 

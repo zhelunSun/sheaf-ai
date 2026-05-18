@@ -1,4 +1,4 @@
-# Universal Collector — Agent Query Specification
+﻿# Sheaf — Agent Query Specification
 
 > **Version**: 1.0.0
 > **Purpose**: 定义 Agent 通过 MCP 消费知识库时的交互规范
