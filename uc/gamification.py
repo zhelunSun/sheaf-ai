@@ -1,5 +1,5 @@
 """
-Glean Gamification Engine v2 — streak, baskets, milestones, insights.
+Sheaf Gamification Engine v2 — streak, baskets, milestones, insights.
 
 Pure functions + JSON persistence. No external deps.
 Integrated into CLI output (not a separate UI).
@@ -45,7 +45,7 @@ MILESTONE_DEFS = [
     # v2: Cross-topic milestones
     ("cross_topic_3",  "Cross-Poller — 跨界传粉者",     lambda g: len(g["baskets"]) >= 3 and g["total_gleans"] >= 5),
     ("bridge_10",      "Bridge Builder — 桥梁建造者",   lambda g: len(g["baskets"]) >= 10),
-    ("gleaner_30",     "The Gleaner — 拾穗人",          lambda g: g["streak"]["longest"] >= 30),
+    ("gleaner_30",     "The Collector — 收藏家",          lambda g: g["streak"]["longest"] >= 30),
     ("networker_50",   "Knowledge Networker — 知识编织者", lambda g: len(g["baskets"]) >= 5 and sum(1 for b in g["baskets"].values() if b["count"] >= 5) >= 3),
 ]
 

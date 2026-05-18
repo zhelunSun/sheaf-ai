@@ -1,18 +1,18 @@
 """
-UC CLI — unified command-line entry point.
+Sheaf CLI — unified command-line entry point.
 
 Usage:
-    uc <url>              # Collect an article
-    uc                    # Show collection stats
-    uc --init             # First-time onboarding
-    uc --search <query>   # Full-text search (metadata + raw content)
-    uc --weekly           # Weekly summary report
-    uc --insights         # Cross-topic association discovery
-    uc --tags             # Tag statistics
-    uc --trends           # Topic trends over time
-    uc --reclassify       # Re-run classification on legacy entries
-    uc --urgent           # Show entries with upcoming deadlines
-    uc --version          # Show version
+    sheaf <url>              # Collect an article
+    sheaf                    # Show collection stats
+    sheaf --init             # First-time onboarding
+    sheaf --search <query>   # Full-text search (metadata + raw content)
+    sheaf --weekly           # Weekly summary report
+    sheaf --insights         # Cross-topic association discovery
+    sheaf --tags             # Tag statistics
+    sheaf --trends           # Topic trends over time
+    sheaf --reclassify       # Re-run classification on legacy entries
+    sheaf --urgent           # Show entries with upcoming deadlines
+    sheaf --version          # Show version
 """
 import sys
 import json
@@ -30,7 +30,7 @@ def main():
 
     # --version
     if "--version" in args or "-v" in args:
-        print(f"Glean v{VERSION} — One sheaf at a time.")
+        print(f"Sheaf v{VERSION} — One sheaf at a time.")
         sys.exit(0)
 
     # No args -> stats mode
@@ -86,7 +86,7 @@ def main():
     # --search <query>
     if args[0] == "--search" or args[0] == "-s":
         if len(args) < 2:
-            print("Usage: uc --search <query>")
+            print("Usage: sheaf --search <query>")
             sys.exit(1)
         search_query = " ".join(args[1:])
         _show_search(search_query)
@@ -121,10 +121,10 @@ def _show_stats():
     total = stats.get("total", 0)
 
     if total == 0:
-        print("Your basket is empty. Start gleaning: uc <url>")
+        print("Your basket is empty. Start collecting: sheaf <url>")
         return
 
-    print(f"Glean v{VERSION} — {total} sheaves in your basket")
+    print(f"Sheaf v{VERSION} — {total} sheaves in your basket")
     print(f"Total: {total} entries")
 
     type_labels = {
@@ -245,7 +245,7 @@ def _show_weekly():
 
     # Print report
     print(f"{'='*50}")
-    print(f"  Glean Weekly Report ({week_str} ~ {now.strftime('%Y-%m-%d')})")
+    print(f"  Sheaf Weekly Report ({week_str} ~ {now.strftime('%Y-%m-%d')})")
     print(f"{'='*50}")
     print()
     print(f"  Total collection: {total} sheaves")
@@ -280,7 +280,7 @@ def _show_weekly():
         total_gleans = progress.get("total_gleans", 0)
 
         print(f"  Streak: {current_streak} day(s) (longest: {longest_streak})")
-        print(f"  Total gleans: {total_gleans}")
+        print(f"  Total collected: {total_gleans}")
 
         baskets = progress.get("baskets", {})
         if baskets:
@@ -316,7 +316,7 @@ def _show_insights():
     from uc.insights import discover_associations, format_insights
 
     print(f"{'='*50}")
-    print("  Glean Knowledge Insights")
+    print("  Sheaf Knowledge Insights")
     print(f"{'='*50}")
     print()
 

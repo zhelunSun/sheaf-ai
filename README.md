@@ -1,82 +1,115 @@
-# Universal Collector / 全局收藏系统
+# Sheaf
 
-> 从「零散收藏」到「Agent 可用知识资产」的转化基础设施
+> Your personal knowledge layer. Paste a link, AI does the rest.
 
-## 项目定位
+**Sheaf** transforms scattered bookmarks into structured, agent-consumable knowledge assets. One sheaf at a time.
 
-这是一个**产品 Idea 的孵化空间**，目标是把「看到好东西 → 收藏 → 吃灰」的断裂流程，变成「收藏 → 自动结构化 → 注入 Agent / 生成 Skill / 输出洞察」的闭环。
+## What it does
 
-## 📋 BP（商业计划书）
+You know the feeling — you bookmark an article, save a tweet, copy a link... and never look at it again. Sheaf fixes this:
 
-- **[BP.md](BP.md)** — 文档版 BP，所有产品文档的输出出口
+1. **Paste a link** → Sheaf fetches, classifies, and summarizes it
+2. **AI structures it** → tags, topics, deadlines, content type — all automatic
+3. **Query it back** → full-text search, weekly reports, cross-topic insights
+4. **Agent-ready** → MCP server for LLM agents to query your knowledge base
 
-## 仓库结构
+## Quick Start
 
-```
-universal-collector/
-├── BP.md              # 📋 商业计划书（输出出口）
-├── PLAN.md            # 项目计划 + 仓库维护方式
-├── CHANGELOG.md       # 变更日志
-├── AGENTS.md          # Agent 协作指南
-│
-├── needs/             # 用户调研
-│   ├── user-needs.md
-│   └── pm-analysis.md
-│
-├── docs/              # 产品文档
-│   ├── positioning-v1.md
-│   ├── product-overview.md
-│   ├── ecosystem-vision.md
-│   ├── opc-operations-harness.md
-│   ├── personas-and-scenarios.md   # 用户画像 + 使用场景
-│   ├── product-audit.md            # 产品设计审计报告
-│   ├── schema-v1.md                # 知识卡片 Schema v1 定义
-│   └── agent-query-spec.md         # Agent 查询交互规范
-│
-├── research/          # 战略研究
-│   ├── competitor-deep-dive.md
-│   ├── whitespace-analysis.md
-│   ├── business-model-v1.md
-│   ├── strategy-brief-v1.md
-│   └── agent-trend-alignment.md
-│
-├── scripts/           # 原型代码
-│   ├── pipeline.py     # 主管线：fetch → classify → summarize → store
-│   ├── fetch_article.py # 文章抓取（3-strategy fallback）
-│   ├── llm_client.py   # LLM 客户端（SiliconFlow/XTY 双 provider）
-│   ├── mcp_server.py    # MCP Server（6 工具，stdio transport）
-│   ├── feedback.py      # 人机纠偏模块
-│   └── onboarding.py    # 5 分钟快速体验
-│
-├── prompts/           # LLM 提示词
-│   ├── classify.md      # 分类提示词
-│   └── summarize.md     # 摘要提示词（含时效性提取）
-│
-├── data/              # 运行时数据（gitignored）
-└── proposals/         # 早期概念（归档）
+```bash
+# Install
+pip install sheaf-ai
+
+# Install Playwright browser (first time only)
+playwright install chromium
+
+# Configure API key
+cp .env.example .env
+# Edit .env with your LLM API key (OpenAI-compatible)
+
+# Initialize
+sheaf --init
+
+# Collect your first sheaf
+sheaf https://example.com/article
 ```
 
-## 当前阶段
+## Usage
 
-| 阶段 | 状态 | 产出 |
-|------|------|------|
-| Phase 0: 需求梳理 | ✅ 完成 | `needs/user-needs.md` + `needs/pm-analysis.md` |
-| Phase 0.5: MVP 验证 | ✅ 完成 | 4/4 文章端到端跑通 |
-| Phase 0.75: 战略研究 | ✅ 完成 | 8 竞品分析 + 定位 + 商业模式 |
-| Phase 0.76: 用户画像+审计 | ✅ 完成 | 3 Persona + 审计报告 + 优先级重排 |
-| Phase 1: 核心逻辑夯实 | ✅ P0+P1 完成 | Schema v1 + MCP Server + 去重 + 纠偏 + Onboarding |
-| Phase 2: 生态联动 | 🔲 | 多源收录 + Skill 联动 |
-| Phase 3: 产品化 | 🔲 | Skill 发布 + 多用户 |
+```bash
+sheaf <url>                # Collect an article / webpage / ChatGPT share link
+sheaf --search <query>     # Full-text search across your collection
+sheaf --tags               # View tag statistics
+sheaf --trends             # Topic trends over time
+sheaf --weekly             # Weekly summary report
+sheaf --insights           # Cross-topic association discovery
+sheaf --urgent             # Show entries with upcoming deadlines
+sheaf --reclassify         # Re-run AI classification on existing entries
+sheaf                      # Show collection stats
+```
 
-## 与现有项目的关系
+## MCP Server
 
-| 现有项目 | 关系 |
-|---------|------|
-| `nova-reader/` | **场景互补**。论文精读走 nova-reader，碎片化网络内容走 UC |
-| `skill-factory/` | **下游输出**。UC 的结构化知识可打包成可发布 Skill |
-| `thesis-exec/` | **用户场景**。博士论文写作是 UC 的核心用户场景之一 |
-| `distillation-research/` | **上游技术参考**。内容→知识资产转化策略可复用 |
+Sheaf ships with a built-in [Model Context Protocol](https://modelcontextprotocol.io/) server, so any MCP-compatible agent can query your knowledge base:
+
+```bash
+# Start the MCP server (stdio transport)
+sheaf --mcp
+```
+
+**Available MCP tools:**
+| Tool | Description |
+|------|-------------|
+| `search` | Full-text search across all entries |
+| `list` | List recent entries with filtering |
+| `get` | Get full entry details by ID |
+| `urgent` | Find time-sensitive entries |
+| `collect` | Add a new URL to your collection |
+| `correct` | Correct a classification error |
+
+## Supported Content
+
+| Source | Support |
+|--------|---------|
+| Web articles | Full extraction with 3-strategy fallback |
+| ChatGPT share links | Structured conversation archiving |
+| WeChat articles | Full content extraction |
+| Any URL | Playwright-powered fallback |
+
+## Architecture
+
+```
+URL → fetch → classify → summarize → store → query
+         ↓          ↓          ↓         ↓
+    3-strategy   LLM tags   summary   JSONL + MD
+    fallback     + topics   + deadline  index
+```
+
+- **`uc/`** — Core package (pipeline, storage, search, MCP server)
+- **`prompts/`** — LLM prompt templates
+- **`data/`** — Local knowledge base (JSONL + Markdown, gitignored)
+
+## Configuration
+
+Sheaf uses environment variables for LLM API access. Copy `.env.example` to `.env`:
+
+```bash
+# Required: at least one LLM provider
+SILICONFLOW_API_KEY=sk-...     # SiliconFlow (DeepSeek, Qwen, etc.)
+OPENAI_API_KEY=sk-...          # OpenAI-compatible endpoint
+DEFAULT_PROVIDER=siliconflow   # or "openai"
+DEFAULT_MODEL=deepseek-ai/DeepSeek-V3.2
+```
+
+## Requirements
+
+- Python 3.10+
+- An LLM API key (OpenAI-compatible endpoint)
+- Playwright Chromium (auto-installed via `playwright install chromium`)
+
+## License
+
+MIT
 
 ---
 
-*创建日期：2026-05-13 · 最近更新：2026-05-17*
+*The name "Sheaf" comes from mathematics — a [sheaf](https://en.wikipedia.org/wiki/Sheaf_(mathematics)) attaches local data to the open sets of a topological space and glues them together into a consistent global picture. That's exactly what this tool does: gather scattered fragments of knowledge into a coherent whole.*

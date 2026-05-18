@@ -1,8 +1,8 @@
 """
-UC Onboarding — 5-minute quick start for new Glean users.
+Sheaf Onboarding — 5-minute quick start for new Sheaf users.
 
 Usage:
-    uc --init
+    sheaf --init
     python -m uc.onboarding
 """
 import sys
@@ -47,7 +47,7 @@ def run_onboarding():
     fix_windows_encoding()
 
     print("=" * 55)
-    print(f"  Glean v{VERSION} — 5 分钟快速体验")
+    print(f"  Sheaf v{VERSION} — 5 分钟快速体验")
     print("  One sheaf at a time.")
     print("=" * 55)
     print()

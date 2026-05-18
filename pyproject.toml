@@ -3,14 +3,24 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "glean"
-version = "0.3.1a"
-description = "Glean — Your personal knowledge layer. Paste a link, AI does the rest. One sheaf at a time."
+name = "sheaf-ai"
+version = "0.1.0"
+description = "Sheaf — Your personal knowledge layer. Paste a link, AI does the rest."
 readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
     {name = "zhelunSun"},
+]
+keywords = ["knowledge-management", "ai", "mcp", "cli", "agent"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Knowledge Management",
 ]
 
 dependencies = [
@@ -27,7 +37,10 @@ dev = [
 ]
 
 [project.scripts]
-uc = "uc.cli:main"
+sheaf = "uc.cli:main"
+
+[project.entry-points."mcp.servers"]
+sheaf = "uc.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
