@@ -25,26 +25,8 @@ build/
 Thumbs.db
 .DS_Store
 
-# Internal docs (not for public release)
-research/
-needs/
-proposals/
-BP.md
-BP-Lite.md
-AGENTS.md
-PLAN.md
-BACKLOG.md
-CHANGELOG.md
-
 # Legacy scripts (superseded by uc/ package)
 scripts/
 
-# Internal product docs
-docs/ecosystem-vision.md
-docs/glean-narrative.md
-docs/opc-operations-harness.md
-docs/personas-and-scenarios.md
-docs/positioning-v1.md
-docs/product-audit.md
-docs/product-overview.md
-docs/self-review.md
+# All internal docs — BP, plans, personas, archives, etc.
+internal/
