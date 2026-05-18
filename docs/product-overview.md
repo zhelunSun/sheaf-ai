@@ -1,12 +1,12 @@
-# Universal Collector 产品概览
+# Sheaf — 产品概览
 
 > Agent-Native 的知识收录与转化系统
 
 ## 产品定位
 
-**一句话定义**：Universal Collector 是一条「你丢链接 → AI 自动分类摘要 → Agent 可对话查询」的知识转化流水线。
+**一句话定义**：Sheaf 是一条「你丢链接 → AI 自动分类摘要 → Agent 可对话查询」的知识转化流水线。
 
-**Elevator Pitch**：现有的收藏工具（荣耀收藏、Readwise、印象笔记）都在解决「怎么把东西存好」。但收藏的真正目的不是「存」，而是「用」。UC 不做一个更好的盒子，它做一个**知识路由器**——收录端低摩擦、加工端全自动、输出端 Agent-Ready。区别于一众 Human-Oriented 的收藏产品，UC 从第一天就为 Agent 消费设计。
+**Elevator Pitch**：现有的收藏工具（荣耀收藏、Readwise、印象笔记）都在解决「怎么把东西存好」。但收藏的真正目的不是「存」，而是「用」。Sheaf 不做一个更好的盒子，它做一个**知识路由器**——收录端低摩擦、加工端全自动、输出端 Agent-Ready。区别于一众 Human-Oriented 的收藏产品，Sheaf 从第一天就为 Agent 消费设计。
 
 ## 大愿景：AI 时代的个人知识秘书
 

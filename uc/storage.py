@@ -230,7 +230,7 @@ def build_summary_md(entry: dict, structured: dict) -> str:
         lines.append("")
 
     lines.append("---")
-    lines.append(f"*由 Universal Collector v2 自动处理 | {datetime.now(BJT).strftime('%Y-%m-%d %H:%M')}*")
+    lines.append(f"*由 Sheaf 自动处理 | {datetime.now(BJT).strftime('%Y-%m-%d %H:%M')}*")
     return "\n".join(lines)
 
 
