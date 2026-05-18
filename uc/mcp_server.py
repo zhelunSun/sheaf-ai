@@ -188,7 +188,7 @@ def handle_request(request: dict) -> str | None:
         return _jsonrpc_response(req_id, {
             "protocolVersion": "2024-11-05",
             "capabilities": {"tools": {}},
-            "serverInfo": {"name": "universal-collector", "version": VERSION},
+            "serverInfo": {"name": "sheaf", "version": VERSION},
         })
 
     if method == "tools/list":

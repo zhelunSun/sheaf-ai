@@ -12,6 +12,7 @@ Usage:
     sheaf --trends           # Topic trends over time
     sheaf --reclassify       # Re-run classification on legacy entries
     sheaf --urgent           # Show entries with upcoming deadlines
+    sheaf --mcp              # Start MCP server (stdio transport)
     sheaf --version          # Show version
 """
 import sys
@@ -31,6 +32,12 @@ def main():
     # --version
     if "--version" in args or "-v" in args:
         print(f"Sheaf v{VERSION} — One sheaf at a time.")
+        sys.exit(0)
+
+    # --mcp
+    if "--mcp" in args:
+        from uc.mcp_server import main as mcp_main
+        mcp_main()
         sys.exit(0)
 
     # No args -> stats mode

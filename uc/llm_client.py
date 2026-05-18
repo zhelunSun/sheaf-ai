@@ -9,14 +9,20 @@ from pathlib import Path
 from openai import OpenAI
 
 # Load .env (plug and play)
-_env_path = Path(__file__).resolve().parent.parent / ".env"
-if _env_path.exists():
-    with open(_env_path, encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if line and not line.startswith("#") and "=" in line:
-                k, v = line.split("=", 1)
-                os.environ.setdefault(k.strip(), v.strip())
+# Search: cwd/.env first, then package parent/.env (dev mode)
+_env_paths = [
+    Path.cwd() / ".env",
+    Path(__file__).resolve().parent.parent / ".env",
+]
+for _env_path in _env_paths:
+    if _env_path.exists():
+        with open(_env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+        break
 
 # ============================================================
 # Provider config

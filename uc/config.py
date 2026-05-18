@@ -8,10 +8,12 @@ import os
 from pathlib import Path
 
 # Project root (where .env, prompts/, data/ live)
+# Works both in dev (repo root) and pip-installed (package parent)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# Data directories
-DATA_DIR = PROJECT_ROOT / "data"
+# Data directories — default to ./data relative to cwd, configurable via env
+_DATA_ROOT = Path(os.environ.get("SHEAF_DATA_DIR", str(Path.cwd() / "data")))
+DATA_DIR = _DATA_ROOT
 ENTRIES_DIR = DATA_DIR / "entries"
 SUMMARIES_DIR = DATA_DIR / "summaries"
 RAW_DIR = DATA_DIR / "raw"
@@ -39,10 +41,26 @@ def ensure_data_dirs():
 
 
 def load_prompt(name: str) -> str:
-    """Load a prompt file from prompts/"""
+    """Load a prompt file. Works both in dev and pip-installed mode.
+
+    Search order:
+      1. PROJECT_ROOT/prompts/ (dev mode, repo root)
+      2. Package-bundled prompts/ (pip installed via importlib.resources)
+    """
+    # Dev mode: repo root / prompts / name
     path = PROJECT_ROOT / "prompts" / name
     if path.exists():
         return path.read_text(encoding="utf-8")
+
+    # Pip-installed: use importlib.resources to find bundled prompts
+    try:
+        from importlib.resources import files
+        prompts_pkg = files("prompts")
+        prompt_file = prompts_pkg.joinpath(name)
+        return prompt_file.read_text(encoding="utf-8")
+    except Exception:
+        pass
+
     return ""
 
 

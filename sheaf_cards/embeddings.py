@@ -33,16 +33,18 @@ def _get_api_client():
 
     api_key = os.environ.get("SILICONFLOW_API_KEY", "")
     if not api_key:
-        # Try loading from .env
-        env_path = Path(__file__).resolve().parent.parent / ".env"
-        if env_path.exists():
-            for line in env_path.read_text(encoding="utf-8").splitlines():
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, v = line.split("=", 1)
-                    if k.strip() == "SILICONFLOW_API_KEY":
-                        api_key = v.strip()
-                        break
+        # Try loading from .env (cwd first, then package parent)
+        for env_path in [Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env"]:
+            if env_path.exists():
+                for line in env_path.read_text(encoding="utf-8").splitlines():
+                    line = line.strip()
+                    if line and not line.startswith("#") and "=" in line:
+                        k, v = line.split("=", 1)
+                        if k.strip() == "SILICONFLOW_API_KEY":
+                            api_key = v.strip()
+                            break
+                if api_key:
+                    break
 
     if not api_key:
         raise ValueError("SILICONFLOW_API_KEY not found. Set it in .env or environment.")
