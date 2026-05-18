@@ -29,6 +29,11 @@ def main():
 
     args = sys.argv[1:]
 
+    # --help
+    if "--help" in args or "-h" in args:
+        print(__doc__.strip())
+        sys.exit(0)
+
     # --version
     if "--version" in args or "-v" in args:
         print(f"Sheaf v{VERSION} — One sheaf at a time.")
