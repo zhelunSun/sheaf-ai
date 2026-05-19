@@ -1,8 +1,8 @@
 """
 sheaf_cards/embeddings.py — Embedding engine for knowledge cards.
 
-Supports SiliconFlow / OpenAI embedding APIs with local FAISS index.
-Pure numpy fallback when FAISS is not installed.
+Supports any OpenAI-compatible embedding API (OpenAI, SiliconFlow, etc.)
+with local numpy index. Pure numpy fallback when FAISS is not installed.
 
 Usage:
     from sheaf_cards.embeddings import EmbeddingEngine
@@ -27,11 +27,23 @@ from sheaf_cards.base import KnowledgeCard
 # Embedding API client
 # ============================================================
 
+# Supports any OpenAI-compatible embedding provider.
+# Set EMBEDDING_API_KEY and EMBEDDING_BASE_URL in .env or environment.
+# Defaults to OpenAI's embedding endpoint.
+_EMBEDDING_API_KEY_ENV = os.environ.get("EMBEDDING_API_KEY_ENV", "OPENAI_API_KEY")
+_EMBEDDING_BASE_URL_DEFAULT = os.environ.get(
+    "EMBEDDING_BASE_URL_DEFAULT",
+    os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+)
+
+
 def _get_api_client():
-    """Get OpenAI-compatible client for embeddings (SiliconFlow default)."""
+    """Get OpenAI-compatible client for embeddings."""
     from openai import OpenAI
 
-    api_key = os.environ.get("SILICONFLOW_API_KEY", "")
+    # Resolve the API key env var name (configurable)
+    key_env = os.environ.get("EMBEDDING_API_KEY_ENV", "OPENAI_API_KEY")
+    api_key = os.environ.get(key_env, "")
     if not api_key:
         # Try loading from .env (cwd first, then package parent)
         for env_path in [Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env"]:
@@ -40,21 +52,24 @@ def _get_api_client():
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
                         k, v = line.split("=", 1)
-                        if k.strip() == "SILICONFLOW_API_KEY":
+                        if k.strip() == key_env:
                             api_key = v.strip()
                             break
                 if api_key:
                     break
 
     if not api_key:
-        raise ValueError("SILICONFLOW_API_KEY not found. Set it in .env or environment.")
+        raise ValueError(
+            f"Embedding API key not found. Set {key_env} in .env or environment. "
+            "You can also set EMBEDDING_API_KEY_ENV to use a different key."
+        )
 
-    base_url = os.environ.get("EMBEDDING_BASE_URL", "https://api.siliconflow.cn/v1")
+    base_url = os.environ.get("EMBEDDING_BASE_URL", _EMBEDDING_BASE_URL_DEFAULT)
     return OpenAI(api_key=api_key, base_url=base_url)
 
 
-DEFAULT_EMBEDDING_MODEL = "BAAI/bge-large-zh-v1.5"
-EMBEDDING_DIM = 1024  # bge-large-zh dimension
+DEFAULT_EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "text-embedding-3-small")
+EMBEDDING_DIM = int(os.environ.get("EMBEDDING_DIM", "1536"))  # OpenAI text-embedding-3-small
 
 
 def embed_texts(texts: list[str], model: str = None) -> list[list[float]]:

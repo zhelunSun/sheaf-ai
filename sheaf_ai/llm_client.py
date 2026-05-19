@@ -1,5 +1,8 @@
 """
-Sheaf LLM Client — multi-provider support (SiliconFlow + any OpenAI-compatible endpoint).
+Sheaf LLM Client — works with any OpenAI-compatible API endpoint.
+
+Supports OpenAI, Together, Groq, DeepSeek, SiliconFlow, and any
+provider that follows the OpenAI chat completions API format.
 
 Usage:
     from sheaf_ai.llm_client import get_client, get_model, chat
@@ -29,20 +32,6 @@ for _env_path in _env_paths:
 # ============================================================
 
 PROVIDERS = {
-    "siliconflow": {
-        "api_key_env": "SILICONFLOW_API_KEY",
-        "base_url":    "https://api.siliconflow.cn/v1",
-        "default_model": "deepseek-ai/DeepSeek-V3.2",
-        "available_models": [
-            "deepseek-ai/DeepSeek-V3.2",
-            "deepseek-ai/DeepSeek-R1",
-            "Pro/moonshotai/Kimi-K2.5",
-            "MiniMaxAI/MiniMax-M2.5",
-            "stepfun-ai/Step-3.5-Flash",
-            "zai-org/GLM-5.1",
-            "Qwen/Qwen3.5-397B-A17B",
-        ],
-    },
     "openai": {
         "api_key_env": "OPENAI_API_KEY",
         "base_url":    os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -50,15 +39,21 @@ PROVIDERS = {
         "available_models": [
             "gpt-4o",
             "gpt-4o-mini",
-            "gpt-5",
-            "claude-sonnet-4-6",
-            "claude-opus-4-6",
-            "gemini-2.5-pro",
+        ],
+    },
+    "siliconflow": {
+        "api_key_env": "SILICONFLOW_API_KEY",
+        "base_url":    "https://api.siliconflow.cn/v1",
+        "default_model": "deepseek-ai/DeepSeek-V3.2",
+        "available_models": [
+            "deepseek-ai/DeepSeek-V3.2",
+            "deepseek-ai/DeepSeek-R1",
+            "Qwen/Qwen3.5-397B-A17B",
         ],
     },
 }
 
-DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "siliconflow")
+DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "openai")
 
 # ============================================================
 # Client factory (singleton)

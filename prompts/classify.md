@@ -22,13 +22,13 @@
 ### 主题提取规则
 
 1. **topics 是领域维度的归类**，不是固定分类表。LLM 自由提取，例如：
-   - "AI Agent", "遥感", "Web3", "城市森林", "投资", "国际关系", "开源生态", "LLM", "计算机视觉"...
+   - "AI Agent", "Remote Sensing", "Web3", "Climate", "Investing", "International Relations", "Open Source", "LLM", "Computer Vision"...
    - 一篇文章可以有 1-3 个主题，每个带 confidence（0-1）
    - confidence > 0.7 的视为主要主题
 
 2. **tags 是更细粒度的关键词**，用于交叉检索。例如：
    - 文章讨论 GPT-5 发布 → tags: ["GPT-5", "OpenAI", "大模型", "产品发布"]
-   - 文章讨论 RAG 在遥感中的应用 → tags: ["RAG", "遥感", "知识检索", "地理空间"]
+   - 文章讨论 RAG 在遥感中的应用 → tags: ["RAG", "remote sensing", "knowledge retrieval", "geospatial"]
 
 3. **content_type 描述文章体裁**：
    - `news` — 新闻快讯、动态报道
@@ -42,7 +42,7 @@
    - `ai_conversation` — AI 对话记录（ChatGPT、Claude 等多轮对话归档）
 
 4. **importance 判断**：
-   - `high` — 突破性信息、与 AI Agent/遥感研究直接相关、重大行业变化
+   - `high` — 突破性信息、与用户研究领域直接相关、重大行业变化
    - `medium` — 值得了解、有参考价值
    - `low` — 边缘兴趣、信息增量较小
 
@@ -50,4 +50,4 @@
    - 具体 > 抽象（"RAG" > "AI技术"）
    - 保留专有名词原文（DeepSeek、OpenAI、Transformer）
    - 每篇文章 3-8 个标签
-   - 尽量复用已有常见标签（如 "大模型"、"Agent"、"遥感"、"投资"）
+   - 尽量复用已有常见标签（如 "大模型"、"Agent"、"LLM"、"投资"）

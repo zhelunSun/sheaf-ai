@@ -53,13 +53,12 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
             model=CLASSIFY_MODEL,
             temperature=0.3,
             max_tokens=800,
-            provider="siliconflow",
         )
         result = _clean_json_response(result)
         parsed = json.loads(result)
 
         if "topics" not in parsed or not isinstance(parsed["topics"], list):
-            primary = parsed.get("primary_category", "AI技术")
+            primary = parsed.get("primary_category", "AI")
             sub = parsed.get("sub_category", "")
             parsed["topics"] = [{"name": primary, "confidence": 0.9}]
             if sub:
@@ -101,7 +100,6 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
             model=SUMMARIZE_MODEL,
             temperature=0.3,
             max_tokens=1200,
-            provider="siliconflow",
         )
         result = _clean_json_response(result)
         parsed = json.loads(result)

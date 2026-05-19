@@ -23,6 +23,7 @@ from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 
 # Re-use uc's LLM client pattern but keep sheaf_cards independent.
 # Falls back to direct OpenAI client if uc is not available.
+# Supports any OpenAI-compatible provider (OpenAI, SiliconFlow, etc.)
 
 _DEFAULT_SYSTEM = """You are a knowledge extraction engine. Your task is to extract structured knowledge cards from the given text.
 
@@ -43,7 +44,9 @@ def _get_client():
     """Get OpenAI-compatible client (shared logic with uc.llm_client)."""
     from openai import OpenAI
 
-    api_key = os.environ.get("SILICONFLOW_API_KEY", "")
+    # Resolve API key (configurable, defaults to OPENAI_API_KEY)
+    key_env = os.environ.get("CARD_LLM_API_KEY_ENV", "OPENAI_API_KEY")
+    api_key = os.environ.get(key_env, "")
     if not api_key:
         for env_path in [Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env"]:
             if env_path.exists():
@@ -51,20 +54,24 @@ def _get_client():
                     line = line.strip()
                     if line and not line.startswith("#") and "=" in line:
                         k, v = line.split("=", 1)
-                        if k.strip() == "SILICONFLOW_API_KEY":
+                        if k.strip() == key_env:
                             api_key = v.strip()
                             break
                 if api_key:
                     break
 
     if not api_key:
-        raise ValueError("SILICONFLOW_API_KEY not found. Set it in .env or environment.")
+        raise ValueError(
+            f"LLM API key not found. Set {key_env} in .env or environment. "
+            "You can also set CARD_LLM_API_KEY_ENV to use a different key."
+        )
 
-    base_url = os.environ.get("LLM_BASE_URL", "https://api.siliconflow.cn/v1")
+    base_url = os.environ.get("CARD_LLM_BASE_URL",
+                              os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"))
     return OpenAI(api_key=api_key, base_url=base_url)
 
 
-DEFAULT_GEN_MODEL = "deepseek-ai/DeepSeek-V3.2"
+DEFAULT_GEN_MODEL = os.environ.get("CARD_GEN_MODEL", "gpt-4o")
 
 
 class CardGenerator:

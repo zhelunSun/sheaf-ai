@@ -12,19 +12,19 @@ from sheaf_ai.query import query_collection, get_collection_stats
 from sheaf_ai.search import search_fulltext
 
 
-# Sample articles covering different categories
+# Sample articles covering different categories (international URLs)
 SAMPLES = [
     {
-        "url": "https://mp.weixin.qq.com/s/Ptl8dYR3lBhRgpcf_S--XA",
-        "description": "科研论文：跨城市交通噪声建模与不平等分析",
+        "url": "https://arxiv.org/abs/2401.15884",
+        "description": "AI Research: Mixtral of Experts — sparse mixture-of-experts language model",
     },
     {
-        "url": "https://mp.weixin.qq.com/s/kwErGjX231e2efVWhERzTw",
-        "description": "市场投资：硅谷 AI 考察——连造浪的人快被浪淹没",
+        "url": "https://arxiv.org/abs/2303.08774",
+        "description": "AI Research: GPT-4 Technical Report",
     },
     {
-        "url": "https://mp.weixin.qq.com/s/ng4kmZE9T4pRdMZHR9iBJA",
-        "description": "AI 技术：HTML vs Markdown — AI 协作文档之争",
+        "url": "https://arxiv.org/abs/2312.06648",
+        "description": "AI Research: Advancing autonomic understanding via LLM reasoning",
     },
 ]
 
@@ -94,7 +94,7 @@ def _show_demo_query():
 
     demos = [
         ("AI", "Keyword 'AI'"),
-        ("噪声", "Keyword 'noise' (remote sensing paper)"),
+        ("language model", "Keyword 'language model'"),
     ]
 
     for query, desc in demos:

@@ -12,7 +12,7 @@
   "structured": {
     "core_argument": "主要论点或关键洞察（1-3句话）",
     "key_data": "文章中提到的重要数字、统计数据或具体证据",
-    "relevance_to_user": "为什么这对一位 AI/遥感研究者和 AI Agent 构建者很重要",
+    "relevance_to_user": "为什么这对一位关注 AI 技术趋势的科研或工程人员很重要",
     "action_items": "可以采取的行动（例如'试用这个框架'、'关注这个趋势'、'在论文中引用'）",
     "deadline_or_timing": "从文章中提取的时间敏感信息，如果没有则为 null"
   },
