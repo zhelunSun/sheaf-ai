@@ -1,10 +1,10 @@
 """
-UC MCP Server — Agent-Native knowledge layer via MCP protocol (stdio transport).
+Sheaf MCP Server — Agent-Native knowledge layer via MCP protocol (stdio transport).
 
-Tools: uc_search, uc_list, uc_get, uc_urgent, uc_correct, uc_collect
+Tools: sheaf_search, sheaf_list, sheaf_get, sheaf_urgent, sheaf_correct, sheaf_collect
 
 Usage:
-    python -m uc.mcp_server
+    sheaf --mcp
 """
 import json
 import sys
@@ -94,7 +94,7 @@ def get_entry(entry_id: str) -> dict | None:
 
 TOOLS = [
     {
-        "name": "uc_search",
+        "name": "sheaf_search",
         "description": "Search collected knowledge by keyword. Searches across titles, categories, tags, summaries, AND full article text. Returns ranked results with relevance scores and match snippets.",
         "inputSchema": {
             "type": "object",
@@ -107,7 +107,7 @@ TOOLS = [
         },
     },
     {
-        "name": "uc_list",
+        "name": "sheaf_list",
         "description": "List recent knowledge entries. Optionally filter by category.",
         "inputSchema": {
             "type": "object",
@@ -118,7 +118,7 @@ TOOLS = [
         },
     },
     {
-        "name": "uc_get",
+        "name": "sheaf_get",
         "description": "Get full details of a specific knowledge entry by ID.",
         "inputSchema": {
             "type": "object",
@@ -129,12 +129,12 @@ TOOLS = [
         },
     },
     {
-        "name": "uc_urgent",
+        "name": "sheaf_urgent",
         "description": "Get knowledge entries with upcoming deadlines or time-sensitive information.",
         "inputSchema": {"type": "object", "properties": {}},
     },
     {
-        "name": "uc_correct",
+        "name": "sheaf_correct",
         "description": "Submit a correction to an entry's classification or summary.",
         "inputSchema": {
             "type": "object",
@@ -157,7 +157,7 @@ TOOLS = [
         },
     },
     {
-        "name": "uc_collect",
+        "name": "sheaf_collect",
         "description": "Collect a new article URL into the knowledge base.",
         "inputSchema": {
             "type": "object",
@@ -198,7 +198,7 @@ def handle_request(request: dict) -> str | None:
         tool_name = params.get("name", "")
         arguments = params.get("arguments", {})
 
-        if tool_name == "uc_search":
+        if tool_name == "sheaf_search":
             deep = arguments.get("deep", True)
             limit = arguments.get("limit", 10)
             query_str = arguments.get("query", "")
@@ -223,13 +223,13 @@ def handle_request(request: dict) -> str | None:
                     "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
                 })
 
-        elif tool_name == "uc_list":
+        elif tool_name == "sheaf_list":
             results = list_entries(arguments.get("category"), arguments.get("limit", 20))
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
             })
 
-        elif tool_name == "uc_get":
+        elif tool_name == "sheaf_get":
             entry = get_entry(arguments.get("entry_id", ""))
             if not entry:
                 return _jsonrpc_error(req_id, -32602, f"Entry not found: {arguments.get('entry_id')}")
@@ -237,13 +237,13 @@ def handle_request(request: dict) -> str | None:
                 "content": [{"type": "text", "text": json.dumps(entry, ensure_ascii=False, indent=2)}]
             })
 
-        elif tool_name == "uc_urgent":
+        elif tool_name == "sheaf_urgent":
             results = _query_urgent()
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
             })
 
-        elif tool_name == "uc_correct":
+        elif tool_name == "sheaf_correct":
             result = submit_feedback(
                 arguments.get("entry_id", ""),
                 arguments.get("corrections", {}),
@@ -255,7 +255,7 @@ def handle_request(request: dict) -> str | None:
                 "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
             })
 
-        elif tool_name == "uc_collect":
+        elif tool_name == "sheaf_collect":
             url = arguments.get("url", "")
             force = arguments.get("force", False)
             result = process_url(url, force=force)
