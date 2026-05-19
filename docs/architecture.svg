@@ -9,7 +9,7 @@
   </defs>
 
   <!-- title -->
-  <text class="th" x="340" y="30" text-anchor="middle" font-size="15" font-weight="500" fill="#3C3489">Universal collector 三层架构</text>
+  <text class="th" x="340" y="30" text-anchor="middle" font-size="15" font-weight="500" fill="#3C3489">Sheaf 三层架构</text>
 
   <!-- Layer 1: ingestion -->
   <rect x="40" y="55" width="600" height="90" rx="12" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>

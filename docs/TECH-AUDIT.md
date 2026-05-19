@@ -75,16 +75,13 @@ URL → Fetch全文 → LLM Classify → LLM Summarize → Store → Keyword Sea
 
 ## 3. 知识卡片中间层（Knowledge Card Layer）
 
-### 设计灵感：博士论文研究映射
+### 设计灵感
 
-Sheaf 的知识卡片层直接映射 Sir 的博士论文研究——**在原始向量知识和前端 Agent 调用之间建立中间层**：
+Sheaf 的知识卡片层灵感来源于认知科学中的**结构化知识表征**思想——**在原始向量知识和前端 Agent 调用之间建立中间层**：
 
 ```
 论文中的架构:
   Raw Vectors → [Knowledge Cards (结构化资产)] → Agent Planning
-
-Sheaf 中的架构:
-  Raw Text + Embeddings → [Knowledge Cards (可追溯资产)] → Agent Query / Knowledge Packs
 ```
 
 ### 知识卡片定义
@@ -95,8 +92,8 @@ Sheaf 中的架构:
 {
   "card_id": "card_2026-05-17_a1b2c3",
   "source_entry_ids": ["2026-05-17_de7d08eb"],
-  "title": "Glean 的产品定位与差异化",
-  "claim": "Glean 是一家估值 $4.6B 的企业 AI 搜索公司，与个人知识管理赛道不直接竞争",
+  "title": "竞品的产品定位与差异化",
+  "claim": "某企业 AI 搜索公司估值 $4.6B，与个人知识管理赛道不直接竞争",
   "evidence": "基于 2026-05-17 收录的 glean.com 分析",
   "tags": ["竞品分析", "AI搜索", "企业服务"],
   "card_type": "fact|insight|opinion|method|tool",
@@ -159,13 +156,13 @@ Sheaf 中的架构:
   └── 创作者经济：知识变现
 ```
 
-### 与龙虾生态的类比
+### 生态类比
 
-| 维度 | 龙虾生态 | Sheaf 生态 |
+| 维度 | Skill Marketplace | Sheaf 生态 |
 |------|---------|-----------|
 | 基本单位 | 技能/工具 | 知识包 |
 | 交易物 | 可执行能力 | 可消费知识 |
-| 分享机制 | ClawHub marketplace | Sheaf Hub |
+| 分享机制 | Marketplace | Sheaf Hub |
 | 变现方式 | Skill 售卖 | Knowledge Pack token |
 | 协作模式 | 用户贡献 skill | 用户贡献知识束 |
 

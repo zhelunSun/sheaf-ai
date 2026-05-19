@@ -1,5 +1,5 @@
 """
-Sheaf LLM Client — dual provider support (SiliconFlow + XTY).
+Sheaf LLM Client — multi-provider support (SiliconFlow + any OpenAI-compatible endpoint).
 
 Usage:
     from sheaf_ai.llm_client import get_client, get_model, chat
@@ -43,9 +43,9 @@ PROVIDERS = {
             "Qwen/Qwen3.5-397B-A17B",
         ],
     },
-    "xty": {
-        "api_key_env": "XTY_API_KEY",
-        "base_url":    "https://api.xty.app/v1",
+    "openai": {
+        "api_key_env": "OPENAI_API_KEY",
+        "base_url":    os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
         "default_model": "gpt-4o",
         "available_models": [
             "gpt-4o",

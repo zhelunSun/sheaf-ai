@@ -23,7 +23,7 @@
 
 ### 指导原则
 - 简洁。结构化摘要总计控制在 ~200 字以内。
-- 对于 "relevance_to_user"，假设读者从事 AI Agent 与遥感的交叉研究，同时关注 AI/Web3 投资。
+- 对于 "relevance_to_user"，假设读者是关注 AI 技术趋势的科研或工程人员。
 - 如果文章与用户已知兴趣明显无关，请诚实说明。
 - 保留所有专有名词（人名、公司名、模型名、框架名、论文名）。
 
@@ -39,7 +39,7 @@
 
 **Extraction format for `deadline_or_timing`**:
 - If there IS time-sensitive info: Write a natural language sentence that INCLUDES the date in ISO format at the end. Examples:
-  - "清华博士生交叉学科论坛征稿，截止日期为 2026-05-30"
+  - "交叉学科论坛征稿，截止日期为 2026-05-30"
   - "GPT-5 发布会定于 2026-06-15"
   - "ACL 2027 投稿截止 2027-01-15"
 - If there is NO time-sensitive info: set to `null`
