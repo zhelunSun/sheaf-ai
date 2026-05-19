@@ -9,7 +9,7 @@ No external dependencies. Pure keyword matching with relevance scoring.
 import json
 from pathlib import Path
 
-from uc.config import INDEX_FILE, RAW_DIR
+from sheaf_ai.config import INDEX_FILE, RAW_DIR
 
 
 def _load_raw_text(entry_id: str) -> str:

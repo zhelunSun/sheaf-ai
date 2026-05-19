@@ -6,11 +6,11 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
-from uc.config import (
+from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
     TAGS_REGISTRY_FILE, BJT,
 )
-from uc.utils import content_hash, detect_platform, extract_timeliness
+from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness
 
 
 # ============================================================

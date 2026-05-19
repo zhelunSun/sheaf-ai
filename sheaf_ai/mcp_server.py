@@ -9,11 +9,11 @@ Usage:
 import json
 import sys
 
-from uc.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, BJT, VERSION, fix_windows_encoding
-from uc.query import query_collection, query_urgent as _query_urgent
-from uc.search import search_fulltext, search_quick
-from uc.pipeline import process_url
-from uc.feedback import submit_feedback
+from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, BJT, VERSION, fix_windows_encoding
+from sheaf_ai.query import query_collection, query_urgent as _query_urgent
+from sheaf_ai.search import search_fulltext, search_quick
+from sheaf_ai.pipeline import process_url
+from sheaf_ai.feedback import submit_feedback
 
 
 # ============================================================

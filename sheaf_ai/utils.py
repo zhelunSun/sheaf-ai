@@ -5,7 +5,7 @@ import re
 import hashlib
 from datetime import datetime
 
-from uc.config import BJT
+from sheaf_ai.config import BJT
 
 
 def normalize_url(url: str) -> str:

@@ -6,13 +6,13 @@ Also contains the reclassify (legacy migration) logic.
 import json
 from datetime import datetime
 
-from uc.config import (
+from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
     BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt,
 )
-from uc.utils import extract_timeliness
-from uc.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry
-from uc.query import check_duplicate
+from sheaf_ai.utils import extract_timeliness
+from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry
+from sheaf_ai.query import check_duplicate
 
 
 # ============================================================
@@ -33,7 +33,7 @@ def _clean_json_response(result: str) -> str:
 
 def classify_article(title: str, text: str) -> dict:
     """LLM classify: dynamic topics + tags + content_type + importance."""
-    from uc.llm_client import chat
+    from sheaf_ai.llm_client import chat
 
     classify_prompt = load_prompt("classify.md")
     prompt = f"""{classify_prompt}
@@ -81,7 +81,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
 
 def summarize_article(title: str, text: str) -> dict:
     """LLM summarize: one-liner + structured summary."""
-    from uc.llm_client import chat
+    from sheaf_ai.llm_client import chat
 
     summarize_prompt = load_prompt("summarize.md")
     prompt = f"""{summarize_prompt}
@@ -137,7 +137,7 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
     Returns:
         dict with pipeline results
     """
-    from uc.fetch_article import fetch_article
+    from sheaf_ai.fetch_article import fetch_article
 
     # Step 0: Dedup check
     if not force:
@@ -219,7 +219,7 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
     # Step 5: Gamification update
     game_feedback = ""
     try:
-        from uc.gamification import update_after_glean, format_glean_feedback
+        from sheaf_ai.gamification import update_after_glean, format_glean_feedback
         game_result = update_after_glean(topics)
         game_feedback = format_glean_feedback(game_result)
         if game_feedback:

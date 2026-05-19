@@ -29,7 +29,7 @@ CLASSIFY_MODEL = "deepseek-ai/DeepSeek-V3.2"
 SUMMARIZE_MODEL = "deepseek-ai/DeepSeek-V3.2"
 
 # Version (single source)
-from uc import __version__
+from sheaf_ai import __version__
 
 VERSION = __version__
 

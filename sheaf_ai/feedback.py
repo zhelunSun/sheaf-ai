@@ -2,13 +2,13 @@
 UC Feedback — correction tracking for classification/summary results.
 
 Usage:
-    from uc.feedback import submit_feedback, get_feedback_history
+    from sheaf_ai.feedback import submit_feedback, get_feedback_history
     submit_feedback(entry_id, corrections)
 """
 import json
 from datetime import datetime, timezone, timedelta
 
-from uc.config import DATA_DIR, ENTRIES_DIR, BJT
+from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
 
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
 

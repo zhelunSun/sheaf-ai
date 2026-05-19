@@ -47,14 +47,14 @@ dev = [
 ]
 
 [project.scripts]
-sheaf = "uc.cli:main"
+sheaf = "sheaf_ai.cli:main"
 
 [project.entry-points."mcp.servers"]
-sheaf = "uc.mcp_server:main"
+sheaf = "sheaf_ai.mcp_server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["uc*", "sheaf_cards*", "prompts*"]
+include = ["sheaf_ai*", "sheaf_cards*", "prompts*"]
 
 [tool.setuptools.package-data]
 prompts = ["*.md"]

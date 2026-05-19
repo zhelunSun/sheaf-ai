@@ -10,13 +10,13 @@ v2 additions:
   - Insight summary line integration
 
 Usage:
-    from uc.gamification import update_after_glean, get_progress, format_progress
+    from sheaf_ai.gamification import update_after_glean, get_progress, format_progress
 """
 import json
 from datetime import datetime, date, timedelta
 from pathlib import Path
 
-from uc.config import DATA_DIR, BJT
+from sheaf_ai.config import DATA_DIR, BJT
 
 
 # ============================================================

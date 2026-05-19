@@ -7,10 +7,10 @@ Usage:
 """
 import sys
 
-from uc.config import INDEX_FILE, fix_windows_encoding, VERSION
-from uc.pipeline import process_url
-from uc.query import query_collection, get_collection_stats
-from uc.search import search_fulltext
+from sheaf_ai.config import INDEX_FILE, fix_windows_encoding, VERSION
+from sheaf_ai.pipeline import process_url
+from sheaf_ai.query import query_collection, get_collection_stats
+from sheaf_ai.search import search_fulltext
 
 
 # Sample articles covering different categories

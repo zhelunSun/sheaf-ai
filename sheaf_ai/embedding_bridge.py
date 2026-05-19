@@ -7,7 +7,7 @@ Connects uc's entry system with sheaf_cards for:
   3. Semantic search across collected knowledge
 
 Usage:
-    from uc.embedding_bridge import EmbeddingBridge
+    from sheaf_ai.embedding_bridge import EmbeddingBridge
 
     bridge = EmbeddingBridge()
     bridge.process_entry(entry)              # entry → cards → index
@@ -19,7 +19,7 @@ import json
 from pathlib import Path
 from typing import Optional
 
-from uc.config import DATA_DIR
+from sheaf_ai.config import DATA_DIR
 
 from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 from sheaf_cards.embeddings import EmbeddingEngine

@@ -7,7 +7,7 @@ Strategy:
   3. Playwright (JS rendering, dynamic pages)
 
 Usage:
-    from uc.fetch_article import fetch_article
+    from sheaf_ai.fetch_article import fetch_article
     result = fetch_article(url)
 """
 import re

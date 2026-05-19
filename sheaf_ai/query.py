@@ -4,8 +4,8 @@ UC Query — search, urgent items, tag stats, topic trends.
 import json
 from collections import Counter, defaultdict
 
-from uc.config import INDEX_FILE, TAGS_REGISTRY_FILE
-from uc.storage import load_tags_registry
+from sheaf_ai.config import INDEX_FILE, TAGS_REGISTRY_FILE
+from sheaf_ai.storage import load_tags_registry
 
 
 def query_collection(query: str, limit: int = 10) -> list:
@@ -130,7 +130,7 @@ def topic_trends() -> dict:
 
 def check_duplicate(url: str, text: str = None) -> dict | None:
     """Check if a URL or content is already in the collection."""
-    from uc.utils import normalize_url, content_hash as _chash
+    from sheaf_ai.utils import normalize_url, content_hash as _chash
     import hashlib
 
     if not INDEX_FILE.exists():

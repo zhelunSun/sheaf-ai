@@ -13,8 +13,8 @@ import json
 from collections import defaultdict
 from typing import Optional
 
-from uc.config import INDEX_FILE
-from uc.query import get_collection_stats
+from sheaf_ai.config import INDEX_FILE
+from sheaf_ai.query import get_collection_stats
 
 
 # ============================================================

@@ -2,7 +2,7 @@
 UC LLM Client — dual provider support (SiliconFlow + XTY).
 
 Usage:
-    from uc.llm_client import get_client, get_model, chat
+    from sheaf_ai.llm_client import get_client, get_model, chat
 """
 import os
 from pathlib import Path

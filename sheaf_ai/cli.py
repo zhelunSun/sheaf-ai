@@ -18,10 +18,10 @@ Usage:
 import sys
 import json
 
-from uc.config import INDEX_FILE, fix_windows_encoding, VERSION
-from uc.pipeline import process_url, reclassify_entries
-from uc.query import tag_stats, topic_trends, query_urgent, get_collection_stats
-from uc.search import search_fulltext
+from sheaf_ai.config import INDEX_FILE, fix_windows_encoding, VERSION
+from sheaf_ai.pipeline import process_url, reclassify_entries
+from sheaf_ai.query import tag_stats, topic_trends, query_urgent, get_collection_stats
+from sheaf_ai.search import search_fulltext
 
 
 def main():
@@ -41,7 +41,7 @@ def main():
 
     # --mcp
     if "--mcp" in args:
-        from uc.mcp_server import main as mcp_main
+        from sheaf_ai.mcp_server import main as mcp_main
         mcp_main()
         sys.exit(0)
 
@@ -111,7 +111,7 @@ def main():
 
     # --init
     if args[0] == "--init":
-        from uc.onboarding import run_onboarding
+        from sheaf_ai.onboarding import run_onboarding
         run_onboarding()
         sys.exit(0)
 
@@ -183,7 +183,7 @@ def _show_stats():
 
     # Gamification progress
     try:
-        from uc.gamification import format_progress
+        from sheaf_ai.gamification import format_progress
         progress_text = format_progress()
         if progress_text.strip():
             print(progress_text)
@@ -218,8 +218,8 @@ def _show_search(query: str):
 def _show_weekly():
     """Weekly summary report: collection trends + gamification progress."""
     from datetime import datetime, timedelta
-    from uc.config import BJT
-    from uc.gamification import get_progress
+    from sheaf_ai.config import BJT
+    from sheaf_ai.gamification import get_progress
 
     now = datetime.now(BJT)
     week_ago = now - timedelta(days=7)
@@ -311,7 +311,7 @@ def _show_weekly():
 
     # Knowledge insights
     try:
-        from uc.insights import discover_associations, format_insight_summary
+        from sheaf_ai.insights import discover_associations, format_insight_summary
         insight_data = discover_associations()
         summary = format_insight_summary(insight_data)
         print()
@@ -325,7 +325,7 @@ def _show_weekly():
 
 def _show_insights():
     """Show cross-topic association discovery results."""
-    from uc.insights import discover_associations, format_insights
+    from sheaf_ai.insights import discover_associations, format_insights
 
     print(f"{'='*50}")
     print("  Sheaf Knowledge Insights")
