@@ -31,7 +31,7 @@ sheaf --search "MCP protocol"
 sheaf
 ```
 
-That's it. No accounts. No cloud. Your data lives in `~/.sheaf/` as Markdown + JSON.
+That's it. No accounts. No cloud. Your data lives in `./data/` (relative to where you run `sheaf`) as Markdown + JSON.
 
 ## What It Does
 
@@ -103,7 +103,7 @@ URL → fetch → classify → summarize → store → query
 
 **Your data never leaves your machine unless you choose to.**
 
-- All content stored locally in `~/.sheaf/`
+- All content stored locally in `./data/` (configurable via `SHEAF_DATA_DIR`)
 - LLM calls go to your chosen API provider (SiliconFlow, OpenAI, etc.)
 - No telemetry, no analytics, no accounts
 - Markdown + JSONL format — fully portable, zero lock-in
@@ -123,13 +123,13 @@ export OPENAI_API_KEY=sk-...
 export OPENAI_BASE_URL=https://api.openai.com/v1
 ```
 
-Optional: create `~/.sheaf/.env` to persist settings.
+Optional: create `.env` in your working directory to persist settings.
 
 ## Requirements
 
 - Python 3.10+
 - An LLM API key (SiliconFlow, OpenAI, or any OpenAI-compatible endpoint)
-- Playwright Chromium (auto-installed on first use, or run `playwright install chromium`)
+- Playwright Chromium (for JS-heavy sites; install with `pip install sheaf-ai[browser] && playwright install chromium`)
 
 ## Alpha Status
 

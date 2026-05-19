@@ -1,5 +1,5 @@
 """
-UC LLM Client — dual provider support (SiliconFlow + XTY).
+Sheaf LLM Client — dual provider support (SiliconFlow + XTY).
 
 Usage:
     from sheaf_ai.llm_client import get_client, get_model, chat

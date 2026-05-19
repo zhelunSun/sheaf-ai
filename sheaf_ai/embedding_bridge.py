@@ -1,7 +1,7 @@
 """
-uc/embedding_bridge.py — Bridge between Sheaf entries and knowledge card engine.
+sheaf_ai/embedding_bridge.py — Bridge between Sheaf entries and knowledge card engine.
 
-Connects uc's entry system with sheaf_cards for:
+Connects Sheaf's entry system with sheaf_cards for:
   1. Converting entries → knowledge cards (via LLM generator)
   2. Building/maintaining embedding index over cards
   3. Semantic search across collected knowledge

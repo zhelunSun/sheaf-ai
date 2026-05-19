@@ -1,5 +1,5 @@
 """
-UC Core — main pipeline orchestration (collect -> classify -> summarize -> store).
+Sheaf Pipeline — main pipeline orchestration (collect -> classify -> summarize -> store).
 
 Also contains the reclassify (legacy migration) logic.
 """

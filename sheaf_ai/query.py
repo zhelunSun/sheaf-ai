@@ -1,5 +1,5 @@
 """
-UC Query — search, urgent items, tag stats, topic trends.
+Sheaf Query — search, urgent items, tag stats, topic trends.
 """
 import json
 from collections import Counter, defaultdict

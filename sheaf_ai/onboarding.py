@@ -3,7 +3,6 @@ Sheaf Onboarding — 5-minute quick start for new Sheaf users.
 
 Usage:
     sheaf --init
-    python -m uc.onboarding
 """
 import sys
 
@@ -126,18 +125,18 @@ def _show_demo_query():
     print("  Quick Start Complete!")
     print()
     print("  Common Commands:")
-    print("    uc <url>          Collect an article")
-    print("    uc --search <q>   Full-text search")
-    print("    uc --weekly       Weekly report")
-    print("    uc --tags         Tag statistics")
-    print("    uc --urgent       Deadline items")
+    print("    sheaf <url>          Collect an article")
+    print("    sheaf --search <q>   Full-text search")
+    print("    sheaf --weekly       Weekly report")
+    print("    sheaf --tags         Tag statistics")
+    print("    sheaf --urgent       Deadline items")
     print()
     print("  MCP Tools (for Agents):")
-    print("    uc_search(query)        Search knowledge")
-    print("    uc_list(category?)      Browse entries")
-    print("    uc_get(entry_id)        Entry details")
-    print("    uc_collect(url)         Collect via Agent")
-    print("    uc_correct(id, fixes)   Correct classification")
+    print("    sheaf_search(query)        Search knowledge")
+    print("    sheaf_list(category?)      Browse entries")
+    print("    sheaf_get(entry_id)        Entry details")
+    print("    sheaf_collect(url)         Collect via Agent")
+    print("    sheaf_correct(id, fixes)   Correct classification")
     print("=" * 55)
 
 

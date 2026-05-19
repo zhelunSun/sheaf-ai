@@ -19,7 +19,7 @@ Sheaf is **local-first**. Your data stays on your machine. We don't have servers
 - Your tags, topics, and search history
 - Your configuration
 
-Everything lives in `~/.sheaf/` on your machine as plain Markdown + JSONL files.
+Everything lives in `./data/` (configurable via `SHEAF_DATA_DIR`) on your machine as plain Markdown + JSONL files.
 
 ## No Telemetry
 
@@ -31,7 +31,7 @@ Sheaf does not:
 
 ## Your Control
 
-- Delete `~/.sheaf/` anytime to wipe everything
+- Delete the `data/` directory anytime to wipe everything
 - Choose your own LLM provider (self-hosted, local, or cloud)
 - Export your data anytime — it's just Markdown + JSON
 

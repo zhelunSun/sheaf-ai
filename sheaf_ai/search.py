@@ -1,5 +1,5 @@
 """
-UC Search — full-text search across summaries AND raw article text.
+Sheaf Search — full-text search across summaries AND raw article text.
 
 Unlike query.query_collection() which only searches index metadata,
 this module also loads raw/ text files for deep content matching.

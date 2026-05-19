@@ -1,5 +1,5 @@
 """
-UC Insights — cross-topic association discovery & knowledge insight generation.
+Sheaf Insights — cross-topic association discovery & knowledge insight generation.
 
 Discovers hidden connections between topics in the user's collection.
 Three association dimensions:

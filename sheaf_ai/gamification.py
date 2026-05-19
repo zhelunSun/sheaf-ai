@@ -250,7 +250,7 @@ def format_progress(progress: dict = None) -> str:
 
     # Cross-topic insight line (lightweight, no full discovery scan)
     if topics >= 3:
-        lines.append(f"  🔗 {topics} topics in your knowledge web — run `uc --insights` to see connections")
+        lines.append(f"  🔗 {topics} topics in your knowledge web — run `sheaf --insights` to see connections")
 
     # Next milestone
     next_m = progress.get("next_milestone")

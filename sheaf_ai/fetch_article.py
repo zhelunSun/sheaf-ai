@@ -1,5 +1,5 @@
 """
-UC Article Fetcher v2 — platform-aware fetching with smart fallback.
+Sheaf Article Fetcher v2 — platform-aware fetching with smart fallback.
 
 Strategy:
   1. Platform detection -> choose optimal strategy

@@ -1,5 +1,5 @@
 """
-UC Core — shared constants, paths, and configuration.
+Sheaf Config — shared constants, paths, and configuration.
 
 All modules import from here for single-source-of-truth paths.
 """

@@ -1,5 +1,5 @@
 """
-UC Storage — save entries, manage index, build summary MD, tags registry.
+Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 """
 import json
 import uuid

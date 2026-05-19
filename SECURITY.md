@@ -10,9 +10,9 @@ Sheaf follows a **local-first security model**:
 
 ### What You Control
 
-- **Data storage**: All content stored locally in `~/.sheaf/`
+- **Data storage**: All content stored locally in `./data/` (configurable via `SHEAF_DATA_DIR`)
 - **LLM provider**: You choose and configure your own API endpoint
-- **API keys**: Stored in your local environment or `~/.sheaf/.env`
+- **API keys**: Stored in your local environment or `.env` file
 
 ### What We Don't Do
 

@@ -1,5 +1,5 @@
 """
-UC Utils — URL normalization, content hashing, platform detection, timeliness extraction.
+Sheaf Utils — URL normalization, content hashing, platform detection, timeliness extraction.
 """
 import re
 import hashlib

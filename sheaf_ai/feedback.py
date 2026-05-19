@@ -1,5 +1,5 @@
 """
-UC Feedback — correction tracking for classification/summary results.
+Sheaf Feedback — correction tracking for classification/summary results.
 
 Usage:
     from sheaf_ai.feedback import submit_feedback, get_feedback_history
