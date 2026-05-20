@@ -30,3 +30,6 @@ scripts/
 
 # All internal docs — BP, plans, personas, archives, etc.
 internal/
+
+# Agent learnings (self-improvement)
+.learnings/
