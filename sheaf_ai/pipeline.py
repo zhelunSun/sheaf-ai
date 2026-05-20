@@ -3,8 +3,10 @@ Sheaf Pipeline — main pipeline orchestration (collect -> classify -> summarize
 
 Also contains the reclassify (legacy migration) logic.
 """
+from __future__ import annotations
 import json
 from datetime import datetime
+from typing import Optional
 
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
@@ -123,7 +125,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
 # Main Pipeline
 # ============================================================
 
-def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
+def process_url(url: str, manual_text: Optional[str] = None, force: bool = False) -> dict:
     """
     Main pipeline: fetch -> classify -> summarize -> store.
 
@@ -243,7 +245,7 @@ def process_url(url: str, manual_text: str = None, force: bool = False) -> dict:
 # Reclassify (Legacy Migration)
 # ============================================================
 
-def reclassify_entries(entry_ids: list = None, dry_run: bool = False) -> dict:
+def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = False) -> dict:
     """Re-run classify+summarize on legacy entries that lack topics/content_type."""
     all_entries = []
     if ENTRIES_DIR.exists():

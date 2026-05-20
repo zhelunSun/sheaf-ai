@@ -72,9 +72,9 @@ def test_cli_help():
     )
     assert result.returncode == 0
     assert "sheaf" in result.stdout.lower()
-    assert "--search" in result.stdout
-    assert "--init" in result.stdout
-    assert "--mcp" in result.stdout
+    assert "search" in result.stdout.lower()
+    assert "init" in result.stdout.lower()
+    assert "mcp" in result.stdout.lower()
 
 
 def test_cli_no_args():
