@@ -2,18 +2,22 @@
 
 > **Paste links. Ask your agent later.**
 
-[![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
-[![Python](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-68%20pass-brightgreen)](tests/)
+<!-- PyPI badges — uncomment after publishing to PyPI -->
+<!-- [![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/) -->
+<!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/) -->
 
 Sheaf is a local-first tool that turns saved links into structured context your AI agents can search and use. Paste a link — Sheaf fetches, classifies, summarizes, and stores it locally. Your MCP-compatible agent (Claude Desktop, Cursor, etc.) can then query your collection.
 
 ## Quick Start
 
 ```bash
-# Install
-pip install sheaf-ai
+# Install (from source — PyPI coming soon)
+git clone https://github.com/zhelunSun/sheaf-ai.git
+cd sheaf-ai
+pip install -e .
 
 # Set your LLM API key (any OpenAI-compatible endpoint)
 export OPENAI_API_KEY=sk-...
@@ -135,7 +139,7 @@ Optional: create a `.env` file in your working directory. See [.env.example](.en
 
 - **Python 3.10+**
 - **An LLM API key** — any OpenAI-compatible endpoint
-- **Playwright Chromium** (optional, for JS-heavy sites): `pip install sheaf-ai[browser] && playwright install chromium`
+- **Playwright Chromium** (optional, for JS-heavy sites): `pip install -e ".[browser]" && playwright install chromium`
 
 ## Development
 
