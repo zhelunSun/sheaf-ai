@@ -28,7 +28,7 @@ sheaf https://arxiv.org/abs/2401.00000
 # Search your collection
 sheaf --search "transformer architecture"
 
-# Check what's in your collection
+# Check what you've collected (shows recent entries)
 sheaf
 ```
 
@@ -53,9 +53,10 @@ Sheaf fixes this. Every link you save becomes a **structured entry** that any MC
 
 ```bash
 sheaf <url>                # Collect an article, paper, or webpage
+sheaf                      # Show recent entries
+sheaf --stats              # Show collection statistics
 sheaf --search <query>     # Full-text search across your collection
 sheaf --mcp                # Start MCP server (stdio transport)
-sheaf                      # Show collection stats
 sheaf --init               # First-time onboarding with demo
 sheaf --weekly             # Weekly summary report
 sheaf --insights           # Cross-topic association discovery

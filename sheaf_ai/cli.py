@@ -3,7 +3,8 @@ Sheaf CLI — unified command-line entry point.
 
 Usage:
     sheaf <url>              # Collect an article
-    sheaf                    # Show collection stats
+    sheaf                    # Show recent 5 entries
+    sheaf --stats            # Show collection statistics
     sheaf --init             # First-time onboarding
     sheaf --search <query>   # Full-text search (metadata + raw content)
     sheaf --weekly           # Weekly summary report
@@ -28,6 +29,42 @@ def main():
     fix_windows_encoding()
 
     args = sys.argv[1:]
+    debug = "--debug" in args
+
+    try:
+        _run(args)
+    except KeyboardInterrupt:
+        print("\nInterrupted.")
+        sys.exit(130)
+    except ConnectionError as e:
+        print(f"Network error: {e}")
+        print("Check your internet connection and try again.")
+        sys.exit(1)
+    except FileNotFoundError as e:
+        print(f"File not found: {e}")
+        print("Try running 'sheaf --init' first.")
+        sys.exit(1)
+    except KeyError as e:
+        _handle_error(f"Configuration error: missing key {e}", debug)
+    except Exception as e:
+        _handle_error(f"Error: {e}", debug)
+
+
+def _handle_error(message: str, debug: bool):
+    """Print a user-friendly error, with full traceback in debug mode."""
+    print(message)
+    if debug:
+        import traceback
+        traceback.print_exc()
+    else:
+        print("Run with --debug for details.")
+    sys.exit(1)
+
+
+def _run(args):
+    """Core CLI dispatch — separated from main() for error handling."""
+    # Strip --debug from dispatch args (already consumed by main())
+    args = [a for a in args if a != "--debug"]
 
     # --help
     if "--help" in args or "-h" in args:
@@ -45,8 +82,13 @@ def main():
         mcp_main()
         sys.exit(0)
 
-    # No args -> stats mode
+    # No args -> recent entries
     if not args:
+        _show_recent()
+        sys.exit(0)
+
+    # --stats
+    if args[0] == "--stats":
         _show_stats()
         sys.exit(0)
 
@@ -125,6 +167,50 @@ def main():
     force = "--force" in args
     result = process_url(url, force=force)
     print(json.dumps(result, ensure_ascii=False, indent=2))
+
+
+def _show_recent(limit: int = 5):
+    """Show the most recent entries — the default no-arg experience."""
+    if not INDEX_FILE.exists():
+        print("Welcome to Sheaf! Start collecting: sheaf <url>")
+        return
+
+    entries = []
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entries.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+
+    if not entries:
+        print("Your basket is empty. Start collecting: sheaf <url>")
+        return
+
+    total = len(entries)
+    recent = entries[-limit:]  # index is append-ordered, last = newest
+    recent.reverse()
+
+    print(f"Sheaf v{VERSION} — {total} sheave{'s' if total != 1 else ''} collected\n")
+    for i, e in enumerate(recent, 1):
+        title = e.get("title", "Untitled")[:60]
+        date = e.get("collected_at", "")[:10]
+        topics = ", ".join(
+            t.get("name", t) if isinstance(t, dict) else t
+            for t in e.get("topics", [])[:3]
+        )
+        summary = (e.get("summary") or "")[:80]
+        print(f"  {i}. {title}")
+        print(f"     {date}  |  {topics}")
+        if summary:
+            print(f"     {summary}...")
+        print()
+
+    if total > limit:
+        print(f"  ... and {total - limit} more. Use --stats for overview, --search to dig deeper.")
 
 
 def _show_stats():
