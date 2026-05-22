@@ -56,6 +56,11 @@ class KnowledgeCard:
         # Clamp confidence
         self.confidence = max(0.0, min(1.0, float(self.confidence)))
 
+    @property
+    def id(self) -> str:
+        """Convenience alias for card_id (used by MCP/CLI consumers)."""
+        return self.card_id
+
     # --- Serialization ---
 
     def to_dict(self) -> dict:

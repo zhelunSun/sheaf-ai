@@ -48,6 +48,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--stats", action="store_true", help="Show crystallization statistics")
     p.add_argument("--semantic", metavar="QUERY", help="Semantic search across cards")
     p.add_argument("--rebuild-embeddings", action="store_true", help="Rebuild embedding index")
+    p.add_argument("--format", metavar="FMT", choices=["text", "json", "detailed"],
+                   default="text", help="Output format: text (default), json, or detailed")
+    p.add_argument("--fields", metavar="FIELDS", help="Comma-separated fields to include (overrides --format defaults)")
     return parser
 
 
@@ -123,33 +126,25 @@ def _crystallize(p: argparse.Namespace) -> None:
         crystallize_and_save, list_crystallized, get_card,
         delete_card, get_topic_stats, semantic_search, rebuild_embeddings,
     )
+    from sheaf_ai.renderer import CardOutputConfig, CardRenderer
+
+    # Build renderer from --format and --fields
+    fmt = getattr(p, "format", "text")
+    config = _build_card_config(fmt, getattr(p, "fields", None))
+    renderer = CardRenderer(config)
+
     if p.list:
         cards = list_crystallized()
         if not cards:
             print("No crystallized cards yet. Try: sheaf crystallize <topic>")
             return
-        for c in cards:
-            topic = c.provenance.get("topic", "?") if c.provenance else "?"
-            conf = f" ({c.confidence:.0%})" if c.confidence else ""
-            print(f"  [{topic}] {c.title}{conf}")
-            if c.claim:
-                print(f"      {c.claim[:80]}")
-        print(f"\n  Total: {len(cards)} cards")
+        print(renderer.render_list(cards, format=fmt, title="Crystallized Knowledge Cards"))
         return
     if p.show:
         card = get_card(p.show)
         if not card:
             print(f"Card not found: {p.show}"); return
-        print(f"  Title: {card.title}")
-        print(f"  Claim: {card.claim}")
-        if card.evidence:
-            print(f"  Evidence: {card.evidence}")
-        if card.tags:
-            print(f"  Tags: {', '.join(card.tags)}")
-        if card.confidence:
-            print(f"  Confidence: {card.confidence:.0%}")
-        if card.provenance:
-            print(f"  Source: {json.dumps(card.provenance, ensure_ascii=False, indent=4)}")
+        print(renderer.render(card, format=fmt))
         return
     if p.delete:
         ok = delete_card(p.delete)
@@ -188,12 +183,30 @@ def _crystallize(p: argparse.Namespace) -> None:
     if not cards:
         print(f"No cards generated for '{p.topic}'. Not enough related entries (need 3+).")
         return
-    print(f"✨ {len(cards)} knowledge cards crystallized:")
+    print(f"✨ {len(cards)} knowledge cards crystallized:\n")
     for c in cards:
-        conf = f" ({c.confidence:.0%})" if c.confidence else ""
-        print(f"  📌 {c.title}{conf}")
-        print(f"     {c.claim[:100]}")
-    print("\nUse 'sheaf crystallize --list' to see all cards.")
+        print(renderer.render(c, format=fmt))
+        print()
+    print("Use 'sheaf crystallize --list' to see all cards.")
+
+
+def _build_card_config(fmt: str, fields_str: str = None) -> CardOutputConfig:
+    """Build a CardOutputConfig from format name and optional field filter."""
+    from sheaf_ai.renderer import CardOutputConfig
+
+    if fmt == "detailed":
+        config = CardOutputConfig.detailed()
+    elif fmt == "json":
+        config = CardOutputConfig.detailed()  # json always includes all
+    else:
+        config = CardOutputConfig()  # text = default
+
+    if fields_str:
+        include = [f.strip() for f in fields_str.split(",") if f.strip()]
+        if include:
+            config.apply_field_filter(fields_include=include)
+
+    return config
 
 
 if __name__ == "__main__":

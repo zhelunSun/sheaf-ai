@@ -17,6 +17,10 @@ from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.crystallize import (
     crystallize_and_save, list_crystallized, get_card as _get_card,
 )
+from sheaf_ai.renderer import CardOutputConfig, CardRenderer
+
+# Shared renderer for MCP structured output
+_mcp_renderer = CardRenderer(CardOutputConfig.detailed())
 
 
 # ============================================================
@@ -307,17 +311,7 @@ def handle_request(request: dict) -> str | None:
                 return _jsonrpc_error(req_id, -32602, "Missing required parameter: topic")
             try:
                 cards = crystallize_and_save(topic)
-                card_data = []
-                for c in cards:
-                    card_data.append({
-                        "id": c.id,
-                        "title": c.title,
-                        "claim": c.claim,
-                        "evidence": c.evidence,
-                        "tags": c.tags,
-                        "confidence": c.confidence,
-                        "provenance": c.provenance,
-                    })
+                card_data = [_mcp_renderer._card_to_json(c) for c in cards]
                 return _jsonrpc_response(req_id, {
                     "content": [{"type": "text", "text": json.dumps({
                         "topic": topic,
@@ -331,15 +325,7 @@ def handle_request(request: dict) -> str | None:
         elif tool_name == "sheaf_list_cards":
             topic = arguments.get("topic")
             cards = list_crystallized(topic=topic)
-            card_data = []
-            for c in cards:
-                card_data.append({
-                    "id": c.id,
-                    "title": c.title,
-                    "claim": c.claim,
-                    "confidence": c.confidence,
-                    "provenance": c.provenance,
-                })
+            card_data = [_mcp_renderer._card_to_json(c) for c in cards]
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps({
                     "total": len(card_data),
@@ -353,15 +339,7 @@ def handle_request(request: dict) -> str | None:
             if not card:
                 return _jsonrpc_error(req_id, -32602, f"Card not found: {card_id}")
             return _jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps({
-                    "id": card.id,
-                    "title": card.title,
-                    "claim": card.claim,
-                    "evidence": card.evidence,
-                    "tags": card.tags,
-                    "confidence": card.confidence,
-                    "provenance": card.provenance,
-                }, ensure_ascii=False, indent=2)}]
+                "content": [{"type": "text", "text": _mcp_renderer._render_json(card)}]
             })
 
         else:
