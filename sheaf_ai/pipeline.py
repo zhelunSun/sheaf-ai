@@ -10,7 +10,7 @@ from typing import Optional
 
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
-    BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt,
+    BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt, ensure_data_dirs,
 )
 from sheaf_ai.utils import extract_timeliness
 from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry
@@ -138,6 +138,9 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         dict with pipeline results
     """
     from sheaf_ai.fetch_article import fetch_article
+
+    # Ensure data directories exist before any writes
+    ensure_data_dirs()
 
     # Step 0: Dedup check
     if not force:
