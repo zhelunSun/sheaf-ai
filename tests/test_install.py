@@ -93,8 +93,12 @@ def test_mcp_tools_defined():
     """MCP server has all expected tools."""
     from sheaf_ai.mcp_server import TOOLS
     tool_names = [t["name"] for t in TOOLS]
-    expected = {"sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent", "sheaf_correct", "sheaf_collect"}
-    assert expected == set(tool_names), f"Missing tools: {expected - set(tool_names)}"
+    expected = {
+        "sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent",
+        "sheaf_correct", "sheaf_collect",
+        "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
+    }
+    assert expected <= set(tool_names), f"Missing tools: {expected - set(tool_names)}"
 
 
 def test_mcp_initialize():

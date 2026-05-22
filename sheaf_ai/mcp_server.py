@@ -14,6 +14,10 @@ from sheaf_ai.query import query_collection, query_urgent as _query_urgent
 from sheaf_ai.search import search_fulltext, search_quick
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
+from sheaf_ai.crystallize import (
+    crystallize_and_save, list_crystallized, get_card as _get_card,
+    delete_card as _delete_card, get_topic_stats,
+)
 
 
 # ============================================================
@@ -168,6 +172,38 @@ TOOLS = [
             "required": ["url"],
         },
     },
+    {
+        "name": "sheaf_crystallize",
+        "description": "Crystallize knowledge cards from collected entries about a topic. Synthesizes insights from 3+ related entries into structured knowledge cards with evidence tracing.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "topic": {"type": "string", "description": "Topic to crystallize (e.g. 'AI', '遥感', 'open source')"},
+            },
+            "required": ["topic"],
+        },
+    },
+    {
+        "name": "sheaf_list_cards",
+        "description": "List crystallized knowledge cards. Optionally filter by topic.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "topic": {"type": "string", "description": "Filter by topic (optional)"},
+            },
+        },
+    },
+    {
+        "name": "sheaf_get_card",
+        "description": "Get full details of a specific knowledge card by ID.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "card_id": {"type": "string", "description": "Card ID"},
+            },
+            "required": ["card_id"],
+        },
+    },
 ]
 
 
@@ -190,6 +226,9 @@ def handle_request(request: dict) -> str | None:
             "capabilities": {"tools": {}},
             "serverInfo": {"name": "sheaf", "version": VERSION},
         })
+
+    if method == "ping":
+        return _jsonrpc_response(req_id, {})
 
     if method == "tools/list":
         return _jsonrpc_response(req_id, {"tools": TOOLS})
@@ -261,6 +300,69 @@ def handle_request(request: dict) -> str | None:
             result = process_url(url, force=force)
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "sheaf_crystallize":
+            topic = arguments.get("topic", "")
+            if not topic:
+                return _jsonrpc_error(req_id, -32602, "Missing required parameter: topic")
+            try:
+                cards = crystallize_and_save(topic)
+                card_data = []
+                for c in cards:
+                    card_data.append({
+                        "id": c.id,
+                        "title": c.title,
+                        "claim": c.claim,
+                        "evidence": c.evidence,
+                        "tags": c.tags,
+                        "confidence": c.confidence,
+                        "provenance": c.provenance,
+                    })
+                return _jsonrpc_response(req_id, {
+                    "content": [{"type": "text", "text": json.dumps({
+                        "topic": topic,
+                        "cards_generated": len(cards),
+                        "cards": card_data,
+                    }, ensure_ascii=False, indent=2)}]
+                })
+            except Exception as e:
+                return _jsonrpc_error(req_id, -32603, f"Crystallization failed: {e}")
+
+        elif tool_name == "sheaf_list_cards":
+            topic = arguments.get("topic")
+            cards = list_crystallized(topic=topic)
+            card_data = []
+            for c in cards:
+                card_data.append({
+                    "id": c.id,
+                    "title": c.title,
+                    "claim": c.claim,
+                    "confidence": c.confidence,
+                    "provenance": c.provenance,
+                })
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "total": len(card_data),
+                    "cards": card_data,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "sheaf_get_card":
+            card_id = arguments.get("card_id", "")
+            card = _get_card(card_id)
+            if not card:
+                return _jsonrpc_error(req_id, -32602, f"Card not found: {card_id}")
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "id": card.id,
+                    "title": card.title,
+                    "claim": card.claim,
+                    "evidence": card.evidence,
+                    "tags": card.tags,
+                    "confidence": card.confidence,
+                    "provenance": card.provenance,
+                }, ensure_ascii=False, indent=2)}]
             })
 
         else:

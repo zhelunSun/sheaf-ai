@@ -22,7 +22,12 @@ _FLAG_MAP = {
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="sheaf", description="Sheaf — Agent-Native Personal Knowledge Layer")
+    parser = argparse.ArgumentParser(
+        prog="sheaf",
+        description="Sheaf — Agent-Native Personal Knowledge Layer",
+        epilog="Quick start:  sheaf <url>          # Collect an article\n"
+               "              sheaf crystallize AI  # Crystallize knowledge cards",
+    )
     parser.add_argument("--version", "-v", action="version", version=f"Sheaf v{VERSION}")
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
@@ -34,6 +39,13 @@ def build_parser() -> argparse.ArgumentParser:
                             ("mcp", "Start MCP server (stdio)"), ("init", "First-time onboarding")]:
         sub.add_parser(name, help=help_text)
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
+    # Crystallize subcommands
+    p = sub.add_parser("crystallize", help="Crystallize knowledge cards from topic")
+    p.add_argument("topic", nargs="?", help="Topic to crystallize (e.g. 'AI', '遥感')")
+    p.add_argument("--list", action="store_true", help="List all crystallized cards")
+    p.add_argument("--show", metavar="ID", help="Show a specific card by ID")
+    p.add_argument("--delete", metavar="ID", help="Delete a card by ID")
+    p.add_argument("--stats", action="store_true", help="Show crystallization statistics")
     return parser
 
 
@@ -81,6 +93,7 @@ def _run() -> None:
         "stats": show_stats, "weekly": show_weekly, "insights": show_insights,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
+        "crystallize": lambda: _crystallize(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -101,6 +114,68 @@ def _mcp():
 
 def _init():
     from sheaf_ai.onboarding import run_onboarding; run_onboarding()
+
+
+def _crystallize(p: argparse.Namespace) -> None:
+    from sheaf_ai.crystallize import (
+        crystallize_and_save, list_crystallized, get_card,
+        delete_card, get_topic_stats,
+    )
+    if p.list:
+        cards = list_crystallized()
+        if not cards:
+            print("No crystallized cards yet. Try: sheaf crystallize <topic>")
+            return
+        for c in cards:
+            topic = c.provenance.get("topic", "?") if c.provenance else "?"
+            conf = f" ({c.confidence:.0%})" if c.confidence else ""
+            print(f"  [{topic}] {c.title}{conf}")
+            if c.claim:
+                print(f"      {c.claim[:80]}")
+        print(f"\n  Total: {len(cards)} cards")
+        return
+    if p.show:
+        card = get_card(p.show)
+        if not card:
+            print(f"Card not found: {p.show}"); return
+        print(f"  Title: {card.title}")
+        print(f"  Claim: {card.claim}")
+        if card.evidence:
+            print(f"  Evidence: {card.evidence}")
+        if card.tags:
+            print(f"  Tags: {', '.join(card.tags)}")
+        if card.confidence:
+            print(f"  Confidence: {card.confidence:.0%}")
+        if card.provenance:
+            print(f"  Source: {json.dumps(card.provenance, ensure_ascii=False, indent=4)}")
+        return
+    if p.delete:
+        ok = delete_card(p.delete)
+        print(f"Card {'deleted' if ok else 'not found'}: {p.delete}")
+        return
+    if p.stats:
+        stats = get_topic_stats()
+        if not stats:
+            print("No crystallized cards yet."); return
+        for topic, count in sorted(stats.items(), key=lambda x: -x[1]):
+            print(f"  {topic}: {count} cards")
+        print(f"  Total: {sum(stats.values())} cards across {len(stats)} topics")
+        return
+    # Default: crystallize a topic
+    if not p.topic:
+        print("Usage: sheaf crystallize <topic>   or   sheaf crystallize --list")
+        return
+    print(f"Crystallizing '{p.topic}'...")
+    cards = crystallize_and_save(p.topic)
+    if not cards:
+        print(f"No cards generated for '{p.topic}'. Not enough related entries (need 3+).")
+        return
+    print(f"✨ {len(cards)} knowledge cards crystallized:")
+    for c in cards:
+        conf = f" ({c.confidence:.0%})" if c.confidence else ""
+        print(f"  📌 {c.title}{conf}")
+        print(f"     {c.claim[:100]}")
+    print(f"\nUse 'sheaf crystallize --list' to see all cards.")
 
 
 if __name__ == "__main__":
