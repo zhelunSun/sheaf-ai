@@ -9,14 +9,13 @@ Usage:
 import json
 import sys
 
-from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, BJT, VERSION, fix_windows_encoding
-from sheaf_ai.query import query_collection, query_urgent as _query_urgent
+from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION, fix_windows_encoding
+from sheaf_ai.query import query_urgent as _query_urgent
 from sheaf_ai.search import search_fulltext, search_quick
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.crystallize import (
     crystallize_and_save, list_crystallized, get_card as _get_card,
-    delete_card as _delete_card, get_topic_stats,
 )
 
 

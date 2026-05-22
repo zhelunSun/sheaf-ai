@@ -19,28 +19,28 @@ def test_version():
 
 def test_import_sheaf_ai():
     """All sheaf_ai submodules import cleanly."""
-    from sheaf_ai.config import DATA_DIR, ensure_data_dirs, load_prompt, VERSION
-    from sheaf_ai.storage import store_article, load_tags_registry, append_index
-    from sheaf_ai.pipeline import process_url, classify_article, summarize_article
-    from sheaf_ai.onboarding import run_onboarding
-    from sheaf_ai.feedback import submit_feedback
-    from sheaf_ai.search import search_fulltext, search_quick
-    from sheaf_ai.query import query_collection, get_collection_stats, query_urgent
-    from sheaf_ai.insights import discover_associations, format_insights
-    from sheaf_ai.gamification import update_after_glean, get_progress
-    from sheaf_ai.llm_client import get_client, get_model, chat, list_models
-    from sheaf_ai.utils import normalize_url, content_hash, detect_platform, extract_timeliness
-    from sheaf_ai.fetch_article import fetch_article
+    from sheaf_ai.config import DATA_DIR, ensure_data_dirs, load_prompt, VERSION  # noqa: F401
+    from sheaf_ai.storage import store_article, load_tags_registry, append_index  # noqa: F401
+    from sheaf_ai.pipeline import process_url, classify_article, summarize_article  # noqa: F401
+    from sheaf_ai.onboarding import run_onboarding  # noqa: F401
+    from sheaf_ai.feedback import submit_feedback  # noqa: F401
+    from sheaf_ai.search import search_fulltext, search_quick  # noqa: F401
+    from sheaf_ai.query import query_collection, get_collection_stats, query_urgent  # noqa: F401
+    from sheaf_ai.insights import discover_associations, format_insights  # noqa: F401
+    from sheaf_ai.gamification import update_after_glean, get_progress  # noqa: F401
+    from sheaf_ai.llm_client import get_client, get_model, chat, list_models  # noqa: F401
+    from sheaf_ai.utils import normalize_url, content_hash, detect_platform, extract_timeliness  # noqa: F401
+    from sheaf_ai.fetch_article import fetch_article  # noqa: F401
     # If we get here, all imports succeeded
     assert True
 
 
 def test_import_sheaf_cards():
     """sheaf_cards subpackage imports cleanly."""
-    from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
-    from sheaf_cards.embeddings import EmbeddingEngine
-    from sheaf_cards.generator import CardGenerator
-    from sheaf_ai.embedding_bridge import EmbeddingBridge
+    from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator  # noqa: F401
+    from sheaf_cards.embeddings import EmbeddingEngine  # noqa: F401
+    from sheaf_cards.generator import CardGenerator  # noqa: F401
+    from sheaf_ai.embedding_bridge import EmbeddingBridge  # noqa: F401
     assert True
 
 
@@ -154,7 +154,7 @@ def test_config_data_dir():
 
 def test_ensure_data_dirs(tmp_path):
     """ensure_data_dirs creates the expected directory structure."""
-    import os
+    import os  # noqa: F401
     from sheaf_ai import config
 
     # Temporarily override DATA_DIR

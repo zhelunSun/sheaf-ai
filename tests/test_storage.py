@@ -4,7 +4,6 @@ Unit tests for sheaf_ai.storage — entry storage, tags registry, index manageme
 Uses conftest.py's isolated_data_dir fixture for true path isolation.
 """
 import json
-import pytest
 
 
 class TestTagsRegistry:
@@ -131,9 +130,9 @@ class TestArticleStorage:
         td = self._make_test_data()
 
         # Store two articles
-        id1 = store_article(td["url"], td["fetch_result"], td["classify_result"], td["summary_result"])
+        store_article(td["url"], td["fetch_result"], td["classify_result"], td["summary_result"])
         td2 = {**td, "url": "https://example.com/second-article"}
-        id2 = store_article(td2["url"], td2["fetch_result"], td2["classify_result"], td2["summary_result"])
+        store_article(td2["url"], td2["fetch_result"], td2["classify_result"], td2["summary_result"])
 
         # Rebuild
         count = rebuild_index()
@@ -141,7 +140,7 @@ class TestArticleStorage:
 
         # Verify index file
         index_file = isolated_data_dir / "index.jsonl"
-        lines = [l for l in index_file.read_text(encoding="utf-8").strip().split("\n") if l.strip()]
+        lines = [line for line in index_file.read_text(encoding="utf-8").strip().split("\n") if line.strip()]
         assert len(lines) == 2
 
 

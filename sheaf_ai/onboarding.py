@@ -4,11 +4,10 @@ Sheaf Onboarding — 5-minute quick start for new Sheaf users.
 Usage:
     sheaf --init
 """
-import sys
 
 from sheaf_ai.config import INDEX_FILE, fix_windows_encoding, VERSION
 from sheaf_ai.pipeline import process_url
-from sheaf_ai.query import query_collection, get_collection_stats
+from sheaf_ai.query import get_collection_stats
 from sheaf_ai.search import search_fulltext
 
 
@@ -55,7 +54,7 @@ def run_onboarding():
     existing = _count_entries()
     if existing >= 3:
         print(f"  Detected {existing} sheaves in your basket.")
-        print(f"  Skipping sample collection.")
+        print("  Skipping sample collection.")
         print()
         _show_demo_query()
         return
@@ -75,7 +74,7 @@ def run_onboarding():
                 print(f"     Summary: {one_liner[:80]}...")
             print()
         elif result.get("stage") == "dedup":
-            print(f"     Skip (already collected)")
+            print("     Skip (already collected)")
             print()
         else:
             print(f"     Failed: {result.get('error', 'unknown')}")

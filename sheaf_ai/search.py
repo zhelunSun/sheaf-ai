@@ -7,7 +7,6 @@ this module also loads raw/ text files for deep content matching.
 No external dependencies. Pure keyword matching with relevance scoring.
 """
 import json
-from pathlib import Path
 
 from sheaf_ai.config import INDEX_FILE, RAW_DIR
 
@@ -110,7 +109,6 @@ def search_fulltext(
             }
 
             # Load raw text if requested
-            match_in_raw = False
             if include_raw and entry_id:
                 raw_text = _load_raw_text(entry_id)
                 fields["raw_text"] = raw_text

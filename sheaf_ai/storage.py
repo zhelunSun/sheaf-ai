@@ -4,7 +4,6 @@ Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 import json
 import uuid
 from datetime import datetime
-from pathlib import Path
 
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,

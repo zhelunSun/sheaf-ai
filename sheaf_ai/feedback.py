@@ -6,7 +6,7 @@ Usage:
     submit_feedback(entry_id, corrections)
 """
 import json
-from datetime import datetime, timezone, timedelta
+from datetime import datetime
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
 

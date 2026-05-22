@@ -4,7 +4,7 @@ Sheaf Query — search, urgent items, tag stats, topic trends.
 import json
 from collections import Counter, defaultdict
 
-from sheaf_ai.config import INDEX_FILE, TAGS_REGISTRY_FILE
+from sheaf_ai.config import INDEX_FILE, TAGS_REGISTRY_FILE  # noqa: F401 (patched by tests)
 from sheaf_ai.storage import load_tags_registry
 
 

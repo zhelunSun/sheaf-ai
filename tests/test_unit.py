@@ -3,7 +3,6 @@ Unit tests for sheaf_ai.utils — pure logic, no network, no API keys.
 
 Tests URL normalization, content hashing, platform detection, and timeliness extraction.
 """
-import pytest
 from sheaf_ai.utils import normalize_url, content_hash, detect_platform, extract_timeliness
 
 

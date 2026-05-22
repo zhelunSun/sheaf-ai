@@ -4,10 +4,7 @@ Shared test fixtures.
 Uses SHEAF_DATA_DIR env var for true isolation — each test gets its own temp data dir,
 and all modules that resolve paths via config.py will read from it.
 """
-import json
-import os
 import pytest
-from pathlib import Path
 
 
 @pytest.fixture(autouse=True)

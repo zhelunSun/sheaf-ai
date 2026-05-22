@@ -193,7 +193,7 @@ def _crystallize(p: argparse.Namespace) -> None:
         conf = f" ({c.confidence:.0%})" if c.confidence else ""
         print(f"  📌 {c.title}{conf}")
         print(f"     {c.claim[:100]}")
-    print(f"\nUse 'sheaf crystallize --list' to see all cards.")
+    print("\nUse 'sheaf crystallize --list' to see all cards.")
 
 
 if __name__ == "__main__":

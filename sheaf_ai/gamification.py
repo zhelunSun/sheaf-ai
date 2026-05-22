@@ -14,7 +14,6 @@ Usage:
 """
 import json
 from datetime import datetime, date, timedelta
-from pathlib import Path
 
 from sheaf_ai.config import DATA_DIR, BJT
 
@@ -224,7 +223,7 @@ def format_progress(progress: dict = None) -> str:
 
     streak = progress.get("streak", {})
     current = streak.get("current", 0)
-    longest = streak.get("longest", 0)
+    streak.get("longest", 0)
 
     # Streak
     streak_display = f"Streak: {current} day{'s' if current != 1 else ''}"
@@ -243,7 +242,7 @@ def format_progress(progress: dict = None) -> str:
     baskets = progress.get("baskets", {})
     if baskets:
         top_baskets = sorted(baskets.items(), key=lambda x: -x[1]["count"])[:5]
-        lines.append(f"  Top baskets:")
+        lines.append("  Top baskets:")
         for topic, info in top_baskets:
             bar = _progress_bar(info["count"], max_val=50, width=10)
             lines.append(f"    {bar} {topic}: {info['level_display']} ({info['count']} sheaves)")

@@ -18,12 +18,10 @@ from __future__ import annotations
 
 import json
 import os
-from pathlib import Path
 from typing import Optional
 
 from sheaf_ai.config import (
-    DATA_DIR, INDEX_FILE, RAW_DIR, BJT,
-    load_prompt,
+    DATA_DIR, INDEX_FILE, RAW_DIR,
 )
 from sheaf_ai.exceptions import LLMError
 from sheaf_ai.llm_client import chat
@@ -97,11 +95,11 @@ def find_entries_by_topic(topic: str, min_entries: int = 3, limit: int = 20) -> 
             t.get("name", t) if isinstance(t, dict) else str(t)
             for t in topics
         ]
-        topics_str = " ".join(topic_names).lower()
+        " ".join(topic_names).lower()
 
         # Check tags
         tags = entry.get("tags", [])
-        tags_str = " ".join(str(t) for t in tags).lower()
+        " ".join(str(t) for t in tags).lower()
 
         # Score: exact topic name match is highest
         for tn in topic_names:

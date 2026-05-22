@@ -11,12 +11,7 @@ Usage:
     result = fetch_article(url)
 """
 import re
-import sys
-import json
-import time
 import logging
-from pathlib import Path
-from typing import Optional
 
 import requests
 from bs4 import BeautifulSoup
@@ -208,8 +203,8 @@ def _content_quality(text: str) -> dict:
 
     length = len(text)
     lines = text.split("\n")
-    avg_line_len = sum(len(l) for l in lines) / max(len(lines), 1)
-    para_lines = sum(1 for l in lines if len(l.strip()) > 20)
+    avg_line_len = sum(len(line) for line in lines) / max(len(lines), 1)
+    para_lines = sum(1 for line in lines if len(line.strip()) > 20)
     para_ratio = para_lines / max(len(lines), 1)
 
     score = 0
@@ -461,7 +456,7 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
 
     # Strategy 0: ChatGPT share link -> dedicated extraction
     if _is_chatgpt_share(url):
-        logger.info(f"ChatGPT share link detected -> dedicated extractor")
+        logger.info("ChatGPT share link detected -> dedicated extractor")
         result = _fetch_chatgpt_share(url, timeout)
         if result["success"]:
             return result

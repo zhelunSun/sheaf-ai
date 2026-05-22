@@ -11,7 +11,6 @@ Tests cover:
 """
 import json
 import pytest
-from pathlib import Path
 from unittest.mock import patch, MagicMock
 
 from sheaf_ai.crystallize import (
@@ -26,10 +25,7 @@ from sheaf_ai.crystallize import (
     _get_card_store,
     _embed_cards,
     semantic_search,
-    CARDS_DIR,
-    EMBEDDINGS_DIR,
 )
-from sheaf_ai.config import INDEX_FILE, RAW_DIR
 from sheaf_cards.base import KnowledgeCard
 
 

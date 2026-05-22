@@ -17,7 +17,6 @@ import json
 import os
 import re
 from pathlib import Path
-from typing import Optional
 
 from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 

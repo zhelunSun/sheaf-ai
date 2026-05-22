@@ -11,10 +11,8 @@ Pure functions + index scan. No external deps.
 """
 import json
 from collections import defaultdict
-from typing import Optional
 
 from sheaf_ai.config import INDEX_FILE
-from sheaf_ai.query import get_collection_stats
 
 
 # ============================================================
