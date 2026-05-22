@@ -117,6 +117,15 @@ def show_stats():
     except Exception:
         pass
 
+    # Collection progress bars (W2.5-01: dual-dimension sheaves + cards)
+    try:
+        from sheaf_ai.gamification import format_stats_progress
+        stats_progress = format_stats_progress()
+        if stats_progress.strip():
+            print(stats_progress)
+    except Exception:
+        pass
+
 
 def show_search(query: str):
     """Full-text search with relevance scoring."""

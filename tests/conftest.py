@@ -80,4 +80,9 @@ def isolated_data_dir(tmp_path, monkeypatch):
             val = test_data / {"DATA_DIR": "", "ENTRIES_DIR": "entries", "FEEDBACK_FILE": "feedback.jsonl"}[attr]
             monkeypatch.setattr(feedback, attr, val)
 
+    # Patch gamification module (GAME_FILE, DATA_DIR)
+    from sheaf_ai import gamification
+    monkeypatch.setattr(gamification, "GAME_FILE", test_data / "gamification.json")
+    monkeypatch.setattr(gamification, "DATA_DIR", test_data)
+
     return test_data

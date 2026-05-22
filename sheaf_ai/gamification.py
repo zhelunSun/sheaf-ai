@@ -1,8 +1,13 @@
 """
-Sheaf Gamification Engine v2 — streak, baskets, milestones, insights.
+Sheaf Gamification Engine v2.5 — streak, baskets, milestones, progress bars.
 
 Pure functions + JSON persistence. No external deps.
 Integrated into CLI output (not a separate UI).
+
+v2.5 additions:
+  - Collection progress bars (dual-dimension: sheaves + cards)
+  - Progress thresholds at 10/30/50/100
+  - Pure data computation from existing sources (index + cards store)
 
 v2 additions:
   - Cross-topic explorer milestones
@@ -11,6 +16,7 @@ v2 additions:
 
 Usage:
     from sheaf_ai.gamification import update_after_glean, get_progress, format_progress
+    from sheaf_ai.gamification import get_collection_progress, format_stats_progress
 """
 import json
 from datetime import datetime, date, timedelta
@@ -305,3 +311,270 @@ def format_glean_feedback(update_result: dict) -> str:
         lines.append(f"  🏅 Milestone: {mname}")
 
     return "\n".join(lines)
+
+
+# ============================================================
+# Collection Progress (W2.5-01)
+# ============================================================
+
+# Progress thresholds: (threshold, level_id, display_name)
+SHEAF_PROGRESS_LEVELS = [
+    (0,   "empty",       "空篮"),
+    (10,  "sprout",      "萌芽"),
+    (30,  "growing",     "成长"),
+    (50,  "flourishing", "丰盛"),
+    (100, "master",      "大师"),
+]
+
+CARD_PROGRESS_LEVELS = [
+    (0,   "empty",       "未结晶"),
+    (10,  "sprout",      "萌芽"),
+    (30,  "growing",     "成长"),
+    (50,  "flourishing", "丰盛"),
+    (100, "master",      "大师"),
+]
+
+# Progress thresholds for the dual-dimension progress bar
+PROGRESS_THRESHOLDS = [10, 30, 50, 100]
+
+
+def _count_sheaves() -> int:
+    """Count total sheaves from index.jsonl. Pure data, no extra storage."""
+    from sheaf_ai.config import INDEX_FILE
+    if not INDEX_FILE.exists():
+        return 0
+    count = 0
+    try:
+        with open(INDEX_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    count += 1
+    except Exception:
+        return 0
+    return count
+
+
+def _count_cards() -> int:
+    """Count total crystallized knowledge cards. Pure data, no extra storage."""
+    from sheaf_ai.config import DATA_DIR
+    cards_file = DATA_DIR / "cards" / "knowledge_cards.json"
+    if not cards_file.exists():
+        return 0
+    try:
+        from sheaf_cards.base import CardStore
+        store = CardStore(cards_file)
+        return len(store.list_all(limit=10000))
+    except Exception:
+        return 0
+
+
+def _count_topics() -> int:
+    """Count unique topics from index.jsonl. Pure data, no extra storage."""
+    from sheaf_ai.config import INDEX_FILE
+    if not INDEX_FILE.exists():
+        return 0
+    topics = set()
+    try:
+        import json as _json
+        with open(INDEX_FILE, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entry = _json.loads(line)
+                    for t in entry.get("topics", []):
+                        name = t.get("name", t) if isinstance(t, dict) else str(t)
+                        if name:
+                            topics.add(name.lower())
+                    # Fallback to primary_category
+                    if not entry.get("topics"):
+                        cat = entry.get("primary_category", "")
+                        if cat and cat != "未分类":
+                            topics.add(cat.lower())
+                except Exception:
+                    continue
+    except Exception:
+        return 0
+    return len(topics)
+
+
+def _get_level(count: int, levels: list[tuple[int, str, str]]) -> tuple[str, str]:
+    """Get the current level for a count based on threshold levels.
+
+    Args:
+        count: Current count value.
+        levels: List of (threshold, level_id, display_name) tuples.
+
+    Returns:
+        Tuple of (level_id, display_name).
+    """
+    matched_id, matched_display = levels[0][1], levels[0][2]
+    for threshold, lid, disp in levels:
+        if count >= threshold:
+            matched_id, matched_display = lid, disp
+    return matched_id, matched_display
+
+
+def _get_next_threshold(count: int) -> int | None:
+    """Get the next progress threshold above the current count.
+
+    Args:
+        count: Current count value.
+
+    Returns:
+        Next threshold value, or None if all thresholds are passed.
+    """
+    for t in PROGRESS_THRESHOLDS:
+        if count < t:
+            return t
+    return None
+
+
+def get_collection_progress() -> dict:
+    """Get collection progress with dual-dimension progress bars.
+
+    Computes progress from existing data sources (index.jsonl + cards store).
+    Pure data computation, zero extra storage.
+
+    Returns:
+        Dict with keys:
+        - sheaves: {count, level_id, level_display, next_threshold, progress_pct}
+        - cards: {count, level_id, level_display, next_threshold, progress_pct}
+        - topics: count of unique topics
+    """
+    sheaf_count = _count_sheaves()
+    card_count = _count_cards()
+    topic_count = _count_topics()
+
+    sheaf_level_id, sheaf_level_display = _get_level(sheaf_count, SHEAF_PROGRESS_LEVELS)
+    card_level_id, card_level_display = _get_level(card_count, CARD_PROGRESS_LEVELS)
+
+    sheaf_next = _get_next_threshold(sheaf_count)
+    card_next = _get_next_threshold(card_count)
+
+    # Progress percentage towards next threshold (capped at 100%)
+    def _progress_pct(current: int, next_t: int | None) -> float:
+        if next_t is None:
+            return 100.0
+        # Find previous threshold
+        prev = 0
+        for t in PROGRESS_THRESHOLDS:
+            if t < next_t:
+                prev = t
+        segment = next_t - prev
+        if segment <= 0:
+            return 100.0
+        pct = ((current - prev) / segment) * 100
+        return min(max(pct, 0.0), 100.0)
+
+    return {
+        "sheaves": {
+            "count": sheaf_count,
+            "level_id": sheaf_level_id,
+            "level_display": sheaf_level_display,
+            "next_threshold": sheaf_next,
+            "progress_pct": _progress_pct(sheaf_count, sheaf_next),
+        },
+        "cards": {
+            "count": card_count,
+            "level_id": card_level_id,
+            "level_display": card_level_display,
+            "next_threshold": card_next,
+            "progress_pct": _progress_pct(card_count, card_next),
+        },
+        "topics": topic_count,
+    }
+
+
+def format_stats_progress(progress: dict = None) -> str:
+    """Format collection progress as human-readable CLI output.
+
+    Shows dual-dimension progress bars for sheaves and cards,
+    with threshold markers at 10/30/50/100.
+
+    Args:
+        progress: Pre-computed progress dict (default: compute from data).
+
+    Returns:
+        Formatted string for CLI output.
+    """
+    if progress is None:
+        progress = get_collection_progress()
+
+    lines = []
+    lines.append("")
+    lines.append("  📊 Collection Progress")
+    lines.append("  ─────────────────────")
+
+    # Sheaves progress bar
+    sheaves = progress["sheaves"]
+    sheaf_bar = _threshold_progress_bar(
+        sheaves["count"], PROGRESS_THRESHOLDS, width=20
+    )
+    lines.append(f"  Sheaves {sheaf_bar} {sheaves['count']}")
+    lines.append(f"    Level: {sheaves['level_display']}")
+    if sheaves["next_threshold"] is not None:
+        to_go = sheaves["next_threshold"] - sheaves["count"]
+        lines.append(f"    Next: {sheaves['next_threshold']} ({to_go} to go)")
+    else:
+        lines.append("    ✅ All thresholds reached!")
+
+    # Cards progress bar
+    cards = progress["cards"]
+    card_bar = _threshold_progress_bar(
+        cards["count"], PROGRESS_THRESHOLDS, width=20
+    )
+    lines.append(f"  Cards   {card_bar} {cards['count']}")
+    lines.append(f"    Level: {cards['level_display']}")
+    if cards["next_threshold"] is not None:
+        to_go = cards["next_threshold"] - cards["count"]
+        lines.append(f"    Next: {cards['next_threshold']} ({to_go} to go)")
+    else:
+        lines.append("    ✅ All thresholds reached!")
+
+    # Topics count
+    topics = progress["topics"]
+    lines.append(f"  Topics: {topics}")
+
+    return "\n".join(lines)
+
+
+def _threshold_progress_bar(
+    current: int,
+    thresholds: list[int],
+    width: int = 20,
+) -> str:
+    """Generate an ASCII progress bar with threshold markers.
+
+    Shows progress towards the final threshold (100) with
+    intermediate threshold markers.
+
+    Args:
+        current: Current value.
+        thresholds: List of threshold values (e.g. [10, 30, 50, 100]).
+        width: Total bar width in characters.
+
+    Returns:
+        String like "[████░░░░░░░░░░░░░░░░]" with threshold markers.
+    """
+    if not thresholds:
+        return "[" + "░" * width + "]"
+
+    max_val = max(thresholds)
+    ratio = min(current / max_val, 1.0) if max_val > 0 else 0.0
+    filled = round(ratio * width)
+    empty = width - filled
+
+    bar_chars = "█" * filled + "░" * empty
+
+    # Add threshold markers below the bar
+    marker_line = [" "] * width
+    for t in thresholds[:-1]:  # Skip the last (100%) marker
+        pos = round((t / max_val) * width) if max_val > 0 else 0
+        pos = min(pos, width - 1)
+        marker_line[pos] = "│"
+
+    marker_str = "".join(marker_line)
+    return f"[{bar_chars}]\n  [{marker_str}]"
