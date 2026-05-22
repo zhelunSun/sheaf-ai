@@ -24,7 +24,10 @@ from sheaf_ai.crystallize import (
     get_topic_stats,
     _parse_crystallized_response,
     _get_card_store,
+    _embed_cards,
+    semantic_search,
     CARDS_DIR,
+    EMBEDDINGS_DIR,
 )
 from sheaf_ai.config import INDEX_FILE, RAW_DIR
 from sheaf_cards.base import KnowledgeCard
@@ -259,8 +262,10 @@ def _patch_cards_dir(monkeypatch, tmp_path):
     """Helper to patch both CARDS_DIR and CARDS_STORE_FILE."""
     cards_dir = tmp_path / "cards"
     cards_store = cards_dir / "knowledge_cards.json"
+    embeddings_dir = cards_dir / "embeddings"
     monkeypatch.setattr("sheaf_ai.crystallize.CARDS_DIR", cards_dir)
     monkeypatch.setattr("sheaf_ai.crystallize.CARDS_STORE_FILE", cards_store)
+    monkeypatch.setattr("sheaf_ai.crystallize.EMBEDDINGS_DIR", embeddings_dir)
     return cards_dir
 
 
@@ -389,3 +394,111 @@ class TestGetTopicStats:
         stats = get_topic_stats()
         assert stats.get("RAG", 0) == 2
         assert stats.get("Agent", 0) == 1
+
+
+# ============================================================
+# Embedding integration tests
+# ============================================================
+
+class TestEmbeddingIntegration:
+    def test_embed_cards_success(self, tmp_path, monkeypatch):
+        """Should call EmbeddingEngine.update_index when embedding cards."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        cards = [
+            KnowledgeCard(title="Test Card 1", claim="Claim 1", evidence="Evidence 1"),
+            KnowledgeCard(title="Test Card 2", claim="Claim 2", evidence="Evidence 2"),
+        ]
+
+        with patch("sheaf_cards.embeddings.EmbeddingEngine") as MockEngine:
+            mock_instance = MagicMock()
+            MockEngine.return_value = mock_instance
+
+            count = _embed_cards(cards)
+            assert count == 2
+            MockEngine.assert_called_once()
+            mock_instance.update_index.assert_called_once_with(cards)
+
+    def test_embed_cards_graceful_failure(self, tmp_path, monkeypatch):
+        """Should return 0 on embedding failure without raising."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        cards = [KnowledgeCard(title="Test", claim="Claim")]
+
+        with patch("sheaf_cards.embeddings.EmbeddingEngine", side_effect=ImportError("no numpy")):
+            count = _embed_cards(cards)
+            assert count == 0
+
+    def test_crystallize_and_save_auto_embed(self, sample_entries, tmp_path, monkeypatch):
+        """crystallize_and_save should auto-embed by default."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        mock_response = json.dumps([
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0]",
+             "tags": ["rag"], "confidence": 0.85, "source_indices": [0]},
+        ])
+
+        with patch("sheaf_ai.crystallize.chat", return_value=mock_response), \
+             patch("sheaf_ai.crystallize._embed_cards", return_value=1) as mock_embed:
+            saved = crystallize_and_save("RAG")
+            assert len(saved) >= 1
+            mock_embed.assert_called_once()
+
+    def test_crystallize_and_save_no_auto_embed(self, sample_entries, tmp_path, monkeypatch):
+        """crystallize_and_save with auto_embed=False should skip embedding."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        mock_response = json.dumps([
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0]",
+             "tags": ["rag"], "confidence": 0.85, "source_indices": [0]},
+        ])
+
+        with patch("sheaf_ai.crystallize.chat", return_value=mock_response), \
+             patch("sheaf_ai.crystallize._embed_cards", return_value=1) as mock_embed:
+            saved = crystallize_and_save("RAG", auto_embed=False)
+            assert len(saved) >= 1
+            mock_embed.assert_not_called()
+
+    def test_semantic_search_success(self, tmp_path, monkeypatch):
+        """semantic_search should return scored results."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        card = KnowledgeCard(title="RAG Insight", claim="RAG works well", evidence="Evidence")
+        store = _get_card_store()
+        store.save(card)
+
+        with patch("sheaf_cards.embeddings.EmbeddingEngine") as MockEngine:
+            mock_instance = MagicMock()
+            mock_instance.search.return_value = [(card.card_id, 0.92)]
+            MockEngine.return_value = mock_instance
+
+            results = semantic_search("retrieval augmented")
+            assert len(results) == 1
+            assert results[0]["score"] == 0.92
+            assert results[0]["card"].title == "RAG Insight"
+
+    def test_semantic_search_empty(self, tmp_path, monkeypatch):
+        """semantic_search should return empty on no index."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        with patch("sheaf_cards.embeddings.EmbeddingEngine", side_effect=ImportError):
+            results = semantic_search("test")
+            assert results == []
+
+    def test_rebuild_embeddings(self, tmp_path, monkeypatch):
+        """rebuild_embeddings should build index from all stored cards."""
+        _patch_cards_dir(monkeypatch, tmp_path)
+
+        store = _get_card_store()
+        for i in range(3):
+            card = KnowledgeCard(title=f"Card {i}", claim=f"Claim {i}")
+            store.save(card)
+
+        with patch("sheaf_cards.embeddings.EmbeddingEngine") as MockEngine:
+            mock_instance = MagicMock()
+            MockEngine.return_value = mock_instance
+
+            from sheaf_ai.crystallize import rebuild_embeddings
+            count = rebuild_embeddings()
+            assert count == 3
+            mock_instance.build_index.assert_called_once()

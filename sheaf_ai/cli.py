@@ -46,6 +46,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--show", metavar="ID", help="Show a specific card by ID")
     p.add_argument("--delete", metavar="ID", help="Delete a card by ID")
     p.add_argument("--stats", action="store_true", help="Show crystallization statistics")
+    p.add_argument("--semantic", metavar="QUERY", help="Semantic search across cards")
+    p.add_argument("--rebuild-embeddings", action="store_true", help="Rebuild embedding index")
     return parser
 
 
@@ -119,7 +121,7 @@ def _init():
 def _crystallize(p: argparse.Namespace) -> None:
     from sheaf_ai.crystallize import (
         crystallize_and_save, list_crystallized, get_card,
-        delete_card, get_topic_stats,
+        delete_card, get_topic_stats, semantic_search, rebuild_embeddings,
     )
     if p.list:
         cards = list_crystallized()
@@ -160,6 +162,22 @@ def _crystallize(p: argparse.Namespace) -> None:
         for topic, count in sorted(stats.items(), key=lambda x: -x[1]):
             print(f"  {topic}: {count} cards")
         print(f"  Total: {sum(stats.values())} cards across {len(stats)} topics")
+        return
+    if hasattr(p, "semantic") and p.semantic:
+        results = semantic_search(p.semantic)
+        if not results:
+            print("No results. Try crystallizing some topics first, or check embedding API.")
+            return
+        for r in results:
+            card = r["card"]
+            print(f"  [{r['score']:.2f}] {card.title}")
+            print(f"      {card.claim[:80]}")
+        print(f"\n  {len(results)} results")
+        return
+    if hasattr(p, "rebuild_embeddings") and p.rebuild_embeddings:
+        print("Rebuilding embedding index...")
+        count = rebuild_embeddings()
+        print(f"✅ Indexed {count} cards")
         return
     # Default: crystallize a topic
     if not p.topic:

@@ -37,6 +37,7 @@ from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 
 CARDS_DIR = DATA_DIR / "cards"
 CARDS_STORE_FILE = CARDS_DIR / "knowledge_cards.json"
+EMBEDDINGS_DIR = CARDS_DIR / "embeddings"
 
 DEFAULT_CRYSTALLIZE_MODEL = os.environ.get(
     "CRYSTALLIZE_MODEL",
@@ -368,8 +369,14 @@ def crystallize_and_save(
     max_cards: int = 5,
     model: str = None,
     provider: str = None,
+    auto_embed: bool = True,
 ) -> list[KnowledgeCard]:
     """Crystallize a topic and save cards to the store.
+
+    Args:
+        topic: Topic to crystallize.
+        auto_embed: Whether to update embedding index after saving (default True).
+            Set to False in tests or when embedding API is unavailable.
 
     Returns:
         List of saved KnowledgeCard objects.
@@ -393,7 +400,34 @@ def crystallize_and_save(
         store.save(card)
         saved.append(card)
 
+    # Update embedding index for newly saved cards
+    if auto_embed and saved:
+        _embed_cards(saved)
+
     return saved
+
+
+def _embed_cards(cards: list[KnowledgeCard]) -> int:
+    """Add crystallized cards to the embedding index.
+
+    Uses the shared EmbeddingEngine from sheaf_cards.
+    Silently skips if embedding API is unavailable.
+
+    Args:
+        cards: List of KnowledgeCard objects to embed.
+
+    Returns:
+        Number of cards successfully indexed.
+    """
+    try:
+        from sheaf_cards.embeddings import EmbeddingEngine
+        EMBEDDINGS_DIR.mkdir(parents=True, exist_ok=True)
+        engine = EmbeddingEngine(EMBEDDINGS_DIR)
+        engine.update_index(cards)
+        return len(cards)
+    except Exception:
+        # Embedding is best-effort — don't block crystallization
+        return 0
 
 
 def list_crystallized(topic: str = "", limit: int = 20) -> list[KnowledgeCard]:
@@ -460,3 +494,50 @@ def get_topic_stats() -> dict[str, int]:
         topic_counts[topic] = topic_counts.get(topic, 0) + 1
 
     return dict(sorted(topic_counts.items(), key=lambda x: x[1], reverse=True))
+
+
+# ============================================================
+# Embedding integration
+# ============================================================
+
+def semantic_search(query: str, top_k: int = 10) -> list[dict]:
+    """Search crystallized cards using semantic similarity.
+
+    Args:
+        query: Natural language query.
+        top_k: Number of results to return.
+
+    Returns:
+        List of dicts with 'card' (KnowledgeCard) and 'score' (float).
+    """
+    try:
+        from sheaf_cards.embeddings import EmbeddingEngine
+        EMBEDDINGS_DIR.mkdir(parents=True, exist_ok=True)
+        engine = EmbeddingEngine(EMBEDDINGS_DIR)
+        results = engine.search(query, top_k=top_k)
+
+        store = _get_card_store()
+        output = []
+        for card_id, score in results:
+            card = store.load(card_id)
+            if card:
+                output.append({"card": card, "score": round(score, 4)})
+        return output
+    except Exception:
+        return []
+
+
+def rebuild_embeddings() -> int:
+    """Rebuild the entire embedding index from stored cards.
+
+    Returns:
+        Number of cards indexed.
+    """
+    from sheaf_cards.embeddings import EmbeddingEngine
+    EMBEDDINGS_DIR.mkdir(parents=True, exist_ok=True)
+    engine = EmbeddingEngine(EMBEDDINGS_DIR)
+    store = _get_card_store()
+    all_cards = store.list_all(limit=10000)
+    if all_cards:
+        engine.build_index(all_cards)
+    return len(all_cards)
