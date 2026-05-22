@@ -179,9 +179,112 @@ def update_after_glean(topics: list[str]) -> dict:
     }
 
 
+def update_after_crystallize(topic: str, card_count: int = 1) -> dict:
+    """Update gamification state after a successful crystallization.
+
+    Tracks crystallization activity for the streak system.
+    A crystallization counts as activity for the daily streak.
+
+    Args:
+        topic: The topic that was crystallized.
+        card_count: Number of cards generated.
+
+    Returns:
+        dict with keys: new_milestones, streak_info
+    """
+    state = _load_state()
+    today = datetime.now(BJT).strftime("%Y-%m-%d")
+
+    # --- Streak ---
+    streak = state["streak"]
+    last = streak["last_glean_date"]
+    if last == today:
+        # Already active today, no streak change
+        pass
+    elif last == (date.today() - timedelta(days=1)).strftime("%Y-%m-%d"):
+        streak["current"] += 1
+    else:
+        streak["current"] = 1
+    streak["last_glean_date"] = today
+    streak["longest"] = max(streak["longest"], streak["current"])
+
+    # --- Crystallization tracking ---
+    if "crystallizations" not in state:
+        state["crystallizations"] = {"total_cards": 0, "total_topics": 0, "last_date": None}
+    state["crystallizations"]["total_cards"] += card_count
+    state["crystallizations"]["last_date"] = today
+
+    # --- Milestones ---
+    new_milestones = []
+    for mid, mname, check_fn in MILESTONE_DEFS:
+        if mid not in state["milestones"] and check_fn(state):
+            state["milestones"][mid] = {
+                "achieved": True,
+                "date": today,
+                "name": mname,
+            }
+            new_milestones.append((mid, mname))
+
+    # --- Persist ---
+    _save_state(state)
+
+    return {
+        "new_milestones": new_milestones,
+        "streak_info": {
+            "current": streak["current"],
+            "longest": streak["longest"],
+        },
+        "total_cards": state["crystallizations"]["total_cards"],
+    }
+
+
 # ============================================================
 # Read-only Queries
 # ============================================================
+
+def format_streak_line() -> str:
+    """Format a one-line streak summary for CLI startup display.
+
+    Shows: streak count, fire emoji for active streaks, and
+    whether the user collected/crystallized today.
+
+    Returns:
+        Single-line string like "🔥 3-day streak | 5 collected, 2 cards today"
+    """
+    state = _load_state()
+    streak = state.get("streak", {})
+    current = streak.get("current", 0)
+
+    if current == 0:
+        return ""
+
+    # Streak fire indicator
+    if current >= 7:
+        prefix = "🔥"
+    elif current >= 3:
+        prefix = "✨"
+    else:
+        prefix = "📌"
+
+    # Day pluralization
+    day_str = f"{current} day{'s' if current != 1 else ''}"
+
+    # Activity today
+    today = datetime.now(BJT).strftime("%Y-%m-%d")
+    last_date = streak.get("last_glean_date")
+    today_status = ""
+    if last_date == today:
+        today_status = " | active today"
+    else:
+        days_ago = (date.today() - datetime.strptime(last_date, "%Y-%m-%d").date()).days if last_date else 0
+        if days_ago == 1:
+            today_status = " | collect today to keep it!"
+        elif days_ago > 1:
+            # Streak should have been reset — this shouldn't happen normally
+            today_status = ""
+
+    return f"{prefix} {day_str} streak{today_status}"
+
 
 def get_progress() -> dict:
     """Get full gamification progress (read-only)."""

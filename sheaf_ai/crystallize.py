@@ -402,6 +402,14 @@ def crystallize_and_save(
     if auto_embed and saved:
         _embed_cards(saved)
 
+    # Update gamification streak after crystallization
+    if saved:
+        try:
+            from sheaf_ai.gamification import update_after_crystallize
+            update_after_crystallize(topic, card_count=len(saved))
+        except Exception:
+            pass  # Gamification is best-effort
+
     return saved
 
 

@@ -35,7 +35,18 @@ def show_recent(limit: int = 5):
     recent = entries[-limit:]  # index is append-ordered, last = newest
     recent.reverse()
 
-    print(f"Sheaf v{VERSION} — {total} sheave{'s' if total != 1 else ''} collected\n")
+    print(f"Sheaf v{VERSION} — {total} sheave{'s' if total != 1 else ''} collected")
+
+    # Streak line (W2.5-02: one-line display on CLI startup)
+    try:
+        from sheaf_ai.gamification import format_streak_line
+        streak_line = format_streak_line()
+        if streak_line:
+            print(f"  {streak_line}")
+    except Exception:
+        pass
+
+    print()
     for i, e in enumerate(recent, 1):
         title = e.get("title", "Untitled")[:60]
         date = e.get("collected_at", "")[:10]

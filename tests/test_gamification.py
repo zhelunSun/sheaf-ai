@@ -375,3 +375,80 @@ class TestFormatGleanFeedback:
         })
         assert "AI" in result
         assert "萌芽" in result
+
+
+class TestUpdateAfterCrystallize:
+    """Tests for update_after_crystallize (W2.5-02)."""
+
+    def test_basic_crystallization(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_crystallize
+        result = update_after_crystallize("AI", card_count=3)
+        assert result["streak_info"]["current"] >= 1
+        assert result["total_cards"] == 3
+
+    def test_multiple_crystallizations(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_crystallize
+        update_after_crystallize("AI", card_count=2)
+        result = update_after_crystallize("遥感", card_count=3)
+        assert result["total_cards"] == 5
+
+    def test_crystallization_same_day_streak(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_crystallize
+        r1 = update_after_crystallize("AI", card_count=1)
+        r2 = update_after_crystallize("Python", card_count=1)
+        # Same day, streak should not increment beyond 1
+        assert r2["streak_info"]["current"] == r1["streak_info"]["current"]
+
+    def test_crystallization_milestones(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_glean, update_after_crystallize
+        # Need to glean first to set up state for milestones
+        update_after_glean(["AI"])
+        result = update_after_crystallize("AI", card_count=1)
+        assert isinstance(result["new_milestones"], list)
+
+
+class TestFormatStreakLine:
+    """Tests for format_streak_line (W2.5-02: CLI startup display)."""
+
+    def test_no_streak(self, isolated_data_dir):
+        from sheaf_ai.gamification import format_streak_line
+        result = format_streak_line()
+        assert result == ""  # No streak, no output
+
+    def test_one_day_streak(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_glean, format_streak_line
+        update_after_glean(["AI"])
+        result = format_streak_line()
+        assert "1 day" in result
+        assert "streak" in result
+
+    def test_active_today(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_glean, format_streak_line
+        update_after_glean(["AI"])
+        result = format_streak_line()
+        assert "active today" in result
+
+    def test_three_day_fire(self, isolated_data_dir):
+        from sheaf_ai.gamification import _load_state, _save_state, format_streak_line
+        from sheaf_ai.config import BJT
+        from datetime import datetime
+        # Simulate a 3-day streak
+        today = datetime.now(BJT).strftime("%Y-%m-%d")
+        state = _load_state()
+        state["streak"] = {"current": 3, "longest": 3, "last_glean_date": today}
+        _save_state(state)
+        result = format_streak_line()
+        assert "✨" in result
+        assert "3 days" in result
+
+    def test_seven_day_fire(self, isolated_data_dir):
+        from sheaf_ai.gamification import _load_state, _save_state, format_streak_line
+        from sheaf_ai.config import BJT
+        from datetime import datetime
+        today = datetime.now(BJT).strftime("%Y-%m-%d")
+        state = _load_state()
+        state["streak"] = {"current": 7, "longest": 7, "last_glean_date": today}
+        _save_state(state)
+        result = format_streak_line()
+        assert "🔥" in result
+        assert "7 days" in result
