@@ -137,6 +137,19 @@ def show_stats():
     except Exception:
         pass
 
+    # Milestone badges (W2.5-03: achieved milestones display)
+    try:
+        from sheaf_ai.gamification import get_progress, format_milestone_notification
+        progress = get_progress()
+        milestones = progress.get("milestones", {})
+        if milestones:
+            milestone_text = format_milestone_notification(milestones)
+            if milestone_text.strip():
+                print()
+                print(milestone_text)
+    except Exception:
+        pass
+
 
 def show_search(query: str):
     """Full-text search with relevance scoring."""

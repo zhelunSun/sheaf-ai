@@ -40,18 +40,22 @@ BASKET_LEVELS = [
 ]
 
 # Milestone definitions: (id, display_name, check_function)
+# Ordered from easiest to hardest. The first unachieved milestone is the "next" one.
 MILESTONE_DEFS = [
-    ("first_sheaf",    "First Sheaf — 第一穗",        lambda g: g["total_gleans"] >= 1),
-    ("week_one",       "Week One — 一周拾穗人",         lambda g: g["streak"]["longest"] >= 7),
-    ("hoarder_50",     "The Hoarder — 囤积者",          lambda g: g["total_gleans"] >= 50),
-    ("curator_100",    "The Curator — 策展人",          lambda g: g["total_gleans"] >= 100),
-    ("renaissance_5",  "Renaissance — 文艺复兴",        lambda g: len(g["baskets"]) >= 5),
-    ("deep_diver",     "Deep Diver — 深潜者",           lambda g: any(b["count"] >= 20 for b in g["baskets"].values())),
-    # v2: Cross-topic milestones
-    ("cross_topic_3",  "Cross-Poller — 跨界传粉者",     lambda g: len(g["baskets"]) >= 3 and g["total_gleans"] >= 5),
-    ("bridge_10",      "Bridge Builder — 桥梁建造者",   lambda g: len(g["baskets"]) >= 10),
-    ("gleaner_30",     "The Collector — 收藏家",          lambda g: g["streak"]["longest"] >= 30),
-    ("networker_50",   "Knowledge Networker — 知识编织者", lambda g: len(g["baskets"]) >= 5 and sum(1 for b in g["baskets"].values() if b["count"] >= 5) >= 3),
+    # W2.5-03 core milestones (6 preset)
+    ("first_sheaf",    "🌱 知识种子 — 收藏第 1 篇",             lambda g: g["total_gleans"] >= 1),
+    ("first_card",     "🧊 结晶初现 — 生成第 1 张知识卡片",     lambda g: g.get("crystallizations", {}).get("total_cards", 0) >= 1),
+    ("topic_explorer", "🗺️ 主题探索者 — 覆盖 5 个 topic",       lambda g: len(g["baskets"]) >= 5),
+    ("week_streak",    "🔥 连续 7 天 — 7 天 streak",            lambda g: g["streak"]["longest"] >= 7),
+    ("hoarder_50",     "📚 知识囤积者 — 收藏 50 篇",             lambda g: g["total_gleans"] >= 50),
+    ("domain_expert",  "🧠 领域专家 — 单 topic 收藏 10+ 篇",    lambda g: any(b["count"] >= 10 for b in g["baskets"].values())),
+    # Extended milestones
+    ("curator_100",    "🏆 策展人 — 收藏 100 篇",                lambda g: g["total_gleans"] >= 100),
+    ("deep_diver",     "⛏️ 深潜者 — 单 topic 收藏 20+ 篇",      lambda g: any(b["count"] >= 20 for b in g["baskets"].values())),
+    ("cross_topic_3",  "🔗 跨界传粉者 — 3 topics + 5 sheaves",  lambda g: len(g["baskets"]) >= 3 and g["total_gleans"] >= 5),
+    ("bridge_10",      "🌉 桥梁建造者 — 10 topics",              lambda g: len(g["baskets"]) >= 10),
+    ("gleaner_30",     "📅 收藏家 — 连续 30 天 streak",          lambda g: g["streak"]["longest"] >= 30),
+    ("networker_50",   "🕸️ 知识编织者 — 5 topics 各 5+ 篇",     lambda g: len(g["baskets"]) >= 5 and sum(1 for b in g["baskets"].values() if b["count"] >= 5) >= 3),
 ]
 
 
@@ -399,7 +403,7 @@ def _progress_bar(current: int, max_val: int = 50, width: int = 10) -> str:
 
 def format_glean_feedback(update_result: dict) -> str:
     """
-    Format immediate feedback after a glean (milestones, basket level-ups).
+    Format immediate feedback after a glean or crystallization.
 
     Returns empty string if nothing special happened.
     """
@@ -413,6 +417,27 @@ def format_glean_feedback(update_result: dict) -> str:
     for mid, mname in update_result.get("new_milestones", []):
         lines.append(f"  🏅 Milestone: {mname}")
 
+    return "\n".join(lines)
+
+
+def format_milestone_notification(milestones: dict) -> str:
+    """Format all achieved milestones for display in stats/weekly.
+
+    Args:
+        milestones: Dict of milestone_id → {achieved, date, name}.
+
+    Returns:
+        Formatted string with all achieved milestones.
+    """
+    if not milestones:
+        return ""
+
+    lines = []
+    lines.append("  Milestones:")
+    for mid, info in milestones.items():
+        name = info.get("name", mid)
+        achieved_date = info.get("date", "")
+        lines.append(f"    ✅ {name} ({achieved_date})")
     return "\n".join(lines)
 
 

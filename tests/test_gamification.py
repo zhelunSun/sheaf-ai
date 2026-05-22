@@ -452,3 +452,90 @@ class TestFormatStreakLine:
         result = format_streak_line()
         assert "🔥" in result
         assert "7 days" in result
+
+
+class TestMilestoneDefs:
+    """Tests for W2.5-03 milestone definitions and triggers."""
+
+    def test_first_sheaf_milestone(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_glean
+        result = update_after_glean(["AI"])
+        milestone_ids = [m[0] for m in result["new_milestones"]]
+        assert "first_sheaf" in milestone_ids
+
+    def test_first_card_milestone(self, isolated_data_dir):
+        from sheaf_ai.gamification import update_after_glean, update_after_crystallize
+        update_after_glean(["AI"])
+        result = update_after_crystallize("AI", card_count=1)
+        milestone_ids = [m[0] for m in result["new_milestones"]]
+        assert "first_card" in milestone_ids
+
+    def test_domain_expert_milestone(self, isolated_data_dir):
+        """Test domain_expert milestone: single topic with 10+ sheaves."""
+        from sheaf_ai.gamification import update_after_glean, _load_state, _save_state
+        from sheaf_ai.config import BJT
+        from datetime import datetime
+        # Simulate 10 sheaves in one topic
+        for _ in range(10):
+            update_after_glean(["AI"])
+        state = _load_state()
+        assert "domain_expert" in state.get("milestones", {})
+
+    def test_topic_explorer_milestone(self, isolated_data_dir):
+        """Test topic_explorer milestone: 5+ unique topics."""
+        from sheaf_ai.gamification import update_after_glean, _load_state
+        topics = ["AI", "遥感", "Python", "Web3", "投资"]
+        for t in topics:
+            update_after_glean([t])
+        state = _load_state()
+        assert "topic_explorer" in state.get("milestones", {})
+
+    def test_milestone_ordering(self):
+        """Test that milestones are ordered from easiest to hardest."""
+        from sheaf_ai.gamification import MILESTONE_DEFS
+        # first_sheaf should be first
+        assert MILESTONE_DEFS[0][0] == "first_sheaf"
+        # first_card should be second
+        assert MILESTONE_DEFS[1][0] == "first_card"
+
+    def test_milestone_emoji_in_name(self):
+        """Test that W2.5-03 core milestones have emoji in display names."""
+        from sheaf_ai.gamification import MILESTONE_DEFS
+        core_ids = ["first_sheaf", "first_card", "topic_explorer", "week_streak", "hoarder_50", "domain_expert"]
+        core_map = {d[0]: d[1] for d in MILESTONE_DEFS}
+        for mid in core_ids:
+            assert mid in core_map, f"Missing milestone: {mid}"
+            # Each should have an emoji (Unicode character above BMP or common emoji range)
+            name = core_map[mid]
+            assert any(ord(c) > 0x1F000 for c in name) or any(ord(c) > 0x2000 for c in name if not c.isascii()), \
+                f"Milestone {mid} missing emoji: {name}"
+
+
+class TestFormatMilestoneNotification:
+    """Tests for format_milestone_notification (W2.5-03)."""
+
+    def test_empty(self):
+        from sheaf_ai.gamification import format_milestone_notification
+        result = format_milestone_notification({})
+        assert result == ""
+
+    def test_with_milestones(self):
+        from sheaf_ai.gamification import format_milestone_notification
+        milestones = {
+            "first_sheaf": {"achieved": True, "date": "2026-05-23", "name": "🌱 知识种子"},
+            "first_card": {"achieved": True, "date": "2026-05-24", "name": "🧊 结晶初现"},
+        }
+        result = format_milestone_notification(milestones)
+        assert "知识种子" in result
+        assert "结晶初现" in result
+        assert "2026-05-23" in result
+
+    def test_milestone_in_stats(self, isolated_data_dir):
+        """Test that achieved milestones appear in stats output via display.py."""
+        from sheaf_ai.gamification import update_after_glean, get_progress, format_milestone_notification
+        update_after_glean(["AI"])
+        progress = get_progress()
+        milestones = progress.get("milestones", {})
+        assert len(milestones) >= 1
+        notification = format_milestone_notification(milestones)
+        assert "知识种子" in notification
