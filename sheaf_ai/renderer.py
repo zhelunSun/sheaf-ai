@@ -17,8 +17,7 @@ Usage:
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, fields
-from typing import Optional
+from dataclasses import dataclass, fields
 
 from sheaf_cards.base import KnowledgeCard
 
