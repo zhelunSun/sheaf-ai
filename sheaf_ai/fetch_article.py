@@ -5,6 +5,7 @@ Strategy:
   1. Platform detection -> choose optimal strategy
   2. requests (lightweight, SSR pages)
   3. Playwright (JS rendering, dynamic pages)
+  4. WeChat: dual-fetch (requests + Playwright), pick longest content
 
 Usage:
     from sheaf_ai.fetch_article import fetch_article
@@ -620,35 +621,71 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
             "method": "failed", "error": "Both playwright and requests failed",
         }
 
-    # Strategy 2: WeChat -> requests first (SSR), Playwright fallback
+    # Strategy 2: WeChat — dual-fetch and pick longest
+    # WeChat returns truncated HTML via requests (missing paragraphs).
+    # Playwright JS rendering gets the full content. Try both and compare.
     if domain == "mp.weixin.qq.com":
-        logger.info("WeChat -> requests first (SSR)")
-        result = _fetch_requests(url, timeout)
-        if result["success"]:
-            parsed = _parse_html(result["html"], url)
-            if parsed["success"]:
-                if len(parsed["text"]) < 500:
-                    logger.info(f"WeChat content too short ({len(parsed['text'])} chars), trying Playwright")
-                else:
-                    return _build_result(parsed, "requests")
+        best_result = None
+        best_length = 0
+        best_method = ""
 
-        logger.info("WeChat -> Playwright fallback")
-        result = _fetch_playwright(url, timeout)
-        if result["success"]:
-            parsed = _parse_html(result["html"], url)
-            if parsed["success"]:
-                return _build_result(parsed, "playwright")
+        # Fetch via requests (fast, may be truncated)
+        logger.info("WeChat -> trying requests")
+        req_result = _fetch_requests(url, timeout)
+        if req_result["success"]:
+            req_parsed = _parse_html(req_result["html"], url)
+            if req_parsed["success"] and len(req_parsed["text"]) > best_length:
+                best_result = req_parsed
+                best_length = len(req_parsed["text"])
+                best_method = "requests"
 
-        # Short article might be real
-        result_r = _fetch_requests(url, timeout)
-        if result_r["success"]:
-            parsed = _parse_html(result_r["html"], url)
-            if parsed["text"]:
-                return _build_result(parsed, "requests-short")
+        # Fetch via Playwright (slower but complete)
+        logger.info(f"WeChat -> trying Playwright (requests got {best_length} chars)")
+        pw_result = _fetch_playwright(url, timeout)
+        if pw_result["success"]:
+            pw_parsed = _parse_html(pw_result["html"], url)
+            if pw_parsed["success"] and len(pw_parsed["text"]) > best_length:
+                best_result = pw_parsed
+                best_length = len(pw_parsed["text"])
+                best_method = "playwright"
+
+        if best_result:
+            logger.info(f"WeChat -> using {best_method} ({best_length} chars)")
+            return _build_result(best_result, best_method)
+
+        # Fallback: some WeChat articles are inherently short (infographics,
+        # announcements). Accept short content if we have a valid title.
+        for source, result_fn in [
+            ("requests", lambda: _fetch_requests(url, timeout)),
+            ("playwright", lambda: _fetch_playwright(url, timeout)),
+        ]:
+            raw = result_fn()
+            if raw["success"]:
+                parsed = _parse_html(raw["html"], url)
+                text_len = parsed["quality"].get("length", 0)
+                if parsed["title"] and text_len >= 50:
+                    # Re-parse without quality check to get the raw text
+                    soup = BeautifulSoup(raw["html"], "html.parser")
+                    raw_title = _extract_title(soup)
+                    raw_text = _extract_text(soup)
+                    logger.info(f"WeChat short-form -> {source} ({len(raw_text)} chars)")
+                    return {
+                        "success": True,
+                        "title": raw_title,
+                        "text": raw_text,
+                        "method": source,
+                        "error": None,
+                        "quality": {
+                            "ok": True, "score": 1,
+                            "length": len(raw_text),
+                            "reason": "wechat_short_form",
+                        },
+                        "images": parsed.get("images", []),
+                    }
 
         return {
             "success": False, "title": "", "text": "",
-            "method": "failed", "error": "WeChat: both strategies failed",
+            "method": "failed", "error": "WeChat: all strategies failed",
         }
 
     # Strategy 3: Default -> requests first, Playwright fallback
