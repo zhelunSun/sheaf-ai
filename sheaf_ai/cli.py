@@ -25,13 +25,17 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="sheaf",
         description="Sheaf — Agent-Native Personal Knowledge Layer",
-        epilog="Quick start:  sheaf <url>          # Collect an article\n"
-               "              sheaf crystallize AI  # Crystallize knowledge cards",
+        epilog="Quick start:\n"
+               "  sheaf <url>            Collect an article\n"
+               "  sheaf crystallize AI   Crystallize knowledge cards\n"
+               "  sheaf init             First-time onboarding\n"
+               "  sheaf --help           Full command list",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--version", "-v", action="version", version=f"Sheaf v{VERSION}")
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
-    p = sub.add_parser("collect", help="Collect a URL"); p.add_argument("url"); p.add_argument("--force", action="store_true")
+    p = sub.add_parser("collect", help="Collect a URL"); p.add_argument("url"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON")
     p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("insights", "Cross-topic associations"), ("tags", "Tag statistics"),
@@ -67,6 +71,14 @@ def main() -> NoReturn:
         print(f"Storage error: {e}\nTry 'sheaf init' first."); sys.exit(1)
     except ConfigError as e:
         _die(f"Config error: {e}", debug)
+    except ValueError as e:
+        msg = str(e)
+        if "API Key not found" in msg:
+            from sheaf_ai.llm_client import check_api_key
+            _, guidance = check_api_key()
+            print(guidance)
+            sys.exit(1)
+        _die(f"Error: {e}", debug)
     except SheafError as e:
         _die(f"Error: {e}", debug)
     except Exception as e:
@@ -88,7 +100,8 @@ def _run() -> None:
     # Bare URL shorthand
     if argv and argv[0].startswith(("http://", "https://", "ftp://")):
         from sheaf_ai.pipeline import process_url
-        print(json.dumps(process_url(argv[0], force="--force" in argv), ensure_ascii=False, indent=2))
+        result = process_url(argv[0], force="--force" in argv)
+        _print_collect_result(result, json_output="--json" in argv)
         return
     parsed = build_parser().parse_args(argv)
     if parsed.command is None:
@@ -107,7 +120,32 @@ def _run() -> None:
 
 def _collect(p: argparse.Namespace) -> None:
     from sheaf_ai.pipeline import process_url
-    print(json.dumps(process_url(p.url, force=p.force), ensure_ascii=False, indent=2))
+    result = process_url(p.url, force=p.force)
+    _print_collect_result(result, json_output=getattr(p, "json", False))
+
+
+def _print_collect_result(result: dict, json_output: bool = False) -> None:
+    """Pretty-print collect results — human-readable by default, raw JSON with --json."""
+    if json_output:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+        return
+
+    if not result.get("success"):
+        if result.get("stage") == "dedup":
+            print(f"⚠ 已收集过: {result.get('existing_title', result.get('url', '?'))}")
+        else:
+            print(f"✗ 收集失败 [{result.get('stage', '?')}]: {result.get('error', '未知错误')}")
+        return
+
+    topics = result.get("topics", [])
+    one_liner = result.get("one_liner", "")
+    print(f"✓ 已收集: {result.get('entry_id', '?')[:12]}...")
+    if topics:
+        print(f"  分类: {', '.join(topics)}")
+    print(f"  类型: {result.get('content_type', '?')}")
+    if one_liner:
+        print(f"  摘要: {one_liner}")
+    print(f"  来源: {result.get('fetch_method', '?')}")
 
 def _reclassify(p: argparse.Namespace) -> None:
     from sheaf_ai.pipeline import reclassify_entries
@@ -126,7 +164,7 @@ def _crystallize(p: argparse.Namespace) -> None:
         crystallize_and_save, list_crystallized, get_card,
         delete_card, get_topic_stats, semantic_search, rebuild_embeddings,
     )
-    from sheaf_ai.renderer import CardOutputConfig, CardRenderer
+    from sheaf_ai.renderer import CardRenderer
 
     # Build renderer from --format and --fields
     fmt = getattr(p, "format", "text")
@@ -190,7 +228,7 @@ def _crystallize(p: argparse.Namespace) -> None:
     print("Use 'sheaf crystallize --list' to see all cards.")
 
 
-def _build_card_config(fmt: str, fields_str: str = None) -> CardOutputConfig:
+def _build_card_config(fmt: str, fields_str: str = None):
     """Build a CardOutputConfig from format name and optional field filter."""
     from sheaf_ai.renderer import CardOutputConfig
 

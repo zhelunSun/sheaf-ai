@@ -55,6 +55,43 @@ PROVIDERS = {
 
 DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "openai")
 
+
+def check_api_key(provider: str = None) -> tuple[bool, str]:
+    """Check if API key is configured for a provider.
+
+    Returns:
+        (is_ok, guidance_message)
+    """
+    provider = provider or DEFAULT_PROVIDER
+    if provider not in PROVIDERS:
+        provider = "openai"  # fallback to openai as default guidance
+
+    cfg = PROVIDERS[provider]
+    api_key = os.environ.get(cfg["api_key_env"], "")
+
+    if api_key:
+        return True, ""
+
+    # Build guidance
+    lines = [
+        f"⚠ 未检测到 API 密钥 ({cfg['api_key_env']})",
+        "",
+        "快速配置（二选一）：",
+        "",
+        "  方法 1: 创建 .env 文件",
+        f"    echo '{cfg['api_key_env']}=你的密钥' > .env",
+        "",
+        "  方法 2: 设置环境变量",
+        f"    export {cfg['api_key_env']}=你的密钥",
+        "",
+        "  方法 3: 运行初始化向导",
+        "    sheaf init",
+        "",
+        f"支持的 provider: {', '.join(PROVIDERS.keys())}",
+        f"当前默认: {DEFAULT_PROVIDER} (可通过 DEFAULT_PROVIDER 环境变量切换)",
+    ]
+    return False, "\n".join(lines)
+
 # ============================================================
 # Client factory (singleton)
 # ============================================================
