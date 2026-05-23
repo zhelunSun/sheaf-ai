@@ -145,6 +145,9 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
     print(f"  类型: {result.get('content_type', '?')}")
     if one_liner:
         print(f"  摘要: {one_liner}")
+    images = result.get("images", [])
+    if images:
+        print(f"  图片: {len(images)} 张")
     print(f"  来源: {result.get('fetch_method', '?')}")
 
 def _reclassify(p: argparse.Namespace) -> None:

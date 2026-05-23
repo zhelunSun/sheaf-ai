@@ -175,6 +175,11 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
 
     print(f"Fetched ({fetch_result['method']}): {len(fetch_result.get('text', ''))} chars")
 
+    # Image metadata from fetch
+    images = fetch_result.get("images", [])
+    if images:
+        print(f"  Images: {len(images)} extracted")
+
     # Step 1.5: Detect AI conversation -> adjust pipeline behavior
     is_ai_conversation = (
         fetch_result.get("meta", {}).get("content_type") == "ai_conversation"
@@ -241,6 +246,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         "structured": summary_result.get("structured", {}),
         "fetch_method": fetch_result.get("method"),
         "entry_path": str(ENTRIES_DIR / entry_id[:7] / f"{entry_id}.json"),
+        "images": images,
     }
 
 

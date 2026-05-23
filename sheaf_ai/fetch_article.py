@@ -153,6 +153,121 @@ def _extract_text(soup) -> str:
     return ""
 
 
+def _extract_images(soup, max_images: int = 20) -> list[dict]:
+    """Extract image metadata from article content.
+
+    Returns list of dicts:
+        - src: image URL
+        - alt: alt text (may be empty)
+        - context: surrounding paragraph text for context
+        - position: ordinal position in article
+    """
+    images = []
+
+    # Find the main content container first
+    container = None
+    for selector in _CONTENT_SELECTORS:
+        container = soup.select_one(selector)
+        if container:
+            break
+    if not container:
+        container = soup.find("body")
+    if not container:
+        return images
+
+    # Filter out tiny icons, emojis, tracking pixels, and UI elements
+    _SKIP_PATTERNS = [
+        re.compile(r'icon', re.IGNORECASE),
+        re.compile(r'emoji', re.IGNORECASE),
+        re.compile(r'avatar', re.IGNORECASE),
+        re.compile(r'logo', re.IGNORECASE),
+        re.compile(r'badge', re.IGNORECASE),
+        re.compile(r'loading', re.IGNORECASE),
+        re.compile(r'placeholder', re.IGNORECASE),
+        re.compile(r'\.svg$', re.IGNORECASE),
+        re.compile(r'1x1', re.IGNORECASE),
+        re.compile(r'pixel', re.IGNORECASE),
+        re.compile(r'tracker', re.IGNORECASE),
+    ]
+
+    _SKIP_CLASS_PATTERNS = [
+        re.compile(r'icon', re.IGNORECASE),
+        re.compile(r'emoji', re.IGNORECASE),
+        re.compile(r'avatar', re.IGNORECASE),
+        re.compile(r'lazyload-placeholder', re.IGNORECASE),
+    ]
+
+    for pos, img in enumerate(container.find_all("img"), 1):
+        # Get the actual image source (data-src for lazy-loaded, src for normal)
+        src = img.get("data-src") or img.get("data-original") or img.get("src", "")
+        if not src:
+            continue
+
+        # Skip relative URLs that are just placeholders
+        if src.startswith("data:"):
+            continue
+
+        # Skip small/icon images by CSS class
+        css_class = " ".join(img.get("class", []))
+        skip = False
+        for pattern in _SKIP_CLASS_PATTERNS:
+            if pattern.search(css_class):
+                skip = True
+                break
+        if skip:
+            continue
+
+        # Skip by URL patterns
+        for pattern in _SKIP_PATTERNS:
+            if pattern.search(src):
+                skip = True
+                break
+        if skip:
+            continue
+
+        # Skip very small images (width/height attributes)
+        width = img.get("width", "")
+        height = img.get("height", "")
+        try:
+            if width and int(width) < 50:
+                continue
+            if height and int(height) < 50:
+                continue
+        except (ValueError, TypeError):
+            pass
+
+        # Extract alt text
+        alt = (img.get("alt") or "").strip()
+
+        # Extract context: parent paragraph or heading text
+        context = ""
+        for parent in img.parents:
+            if parent.name == "p":
+                parent_text = parent.get_text(strip=True)
+                # Remove the alt text itself to avoid duplication
+                context = parent_text[:200] if parent_text else ""
+                break
+            if parent.name in ("h1", "h2", "h3", "h4"):
+                context = parent.get_text(strip=True)[:200]
+                break
+
+        # Make relative URLs absolute (best effort)
+        if src.startswith("//"):
+            src = "https:" + src
+
+        images.append({
+            "src": src,
+            "alt": alt,
+            "context": context,
+            "position": pos,
+        })
+
+        if len(images) >= max_images:
+            break
+
+    return images
+
+
 _VIDEO_UI_PATTERNS = [
     re.compile(r'^\d{1,2}:\d{2}(?:\s*/\s*\d{1,2}:\d{2})?$'),
     re.compile(r'^\d\.?\d*X$'),
@@ -431,12 +546,14 @@ def _parse_html(html: str, url: str = "") -> dict:
     title = _extract_title(soup)
     text = _extract_text(soup)
     quality = _content_quality(text)
+    images = _extract_images(soup)
 
     return {
         "title": title,
         "text": text if quality["ok"] else "",
         "quality": quality,
         "success": quality["ok"],
+        "images": images,
     }
 
 
@@ -444,11 +561,24 @@ def _parse_html(html: str, url: str = "") -> dict:
 # Main entry point
 # ============================================================
 
+def _build_result(parsed: dict, method: str) -> dict:
+    """Build a success result dict from parsed HTML data."""
+    return {
+        "success": True,
+        "title": parsed["title"],
+        "text": parsed["text"],
+        "method": method,
+        "error": None,
+        "quality": parsed["quality"],
+        "images": parsed.get("images", []),
+    }
+
+
 def fetch_article(url: str, timeout: int = 15) -> dict:
     """
     Fetch article content from URL with smart strategy selection.
 
-    Returns dict: {success, title, text, method, error, quality}
+    Returns dict: {success, title, text, method, error, quality, images}
     Special paths:
       - ChatGPT share links -> dedicated conversation extractor
     """
@@ -466,10 +596,7 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
         if result["success"]:
             parsed = _parse_html(result["html"], url)
             if parsed["success"]:
-                return {
-                    "success": True, "title": parsed["title"], "text": parsed["text"],
-                    "method": "playwright", "error": None, "quality": parsed["quality"],
-                }
+                return _build_result(parsed, "playwright")
         return {
             "success": False, "title": "", "text": "",
             "method": "failed", "error": "ChatGPT extraction failed (dedicated + fallback)",
@@ -482,18 +609,12 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
         if result["success"]:
             parsed = _parse_html(result["html"], url)
             if parsed["success"]:
-                return {
-                    "success": True, "title": parsed["title"], "text": parsed["text"],
-                    "method": "playwright", "error": None, "quality": parsed["quality"],
-                }
+                return _build_result(parsed, "playwright")
         result = _fetch_requests(url, timeout)
         if result["success"]:
             parsed = _parse_html(result["html"], url)
             if parsed["success"]:
-                return {
-                    "success": True, "title": parsed["title"], "text": parsed["text"],
-                    "method": "requests", "error": None, "quality": parsed["quality"],
-                }
+                return _build_result(parsed, "requests")
         return {
             "success": False, "title": "", "text": "",
             "method": "failed", "error": "Both playwright and requests failed",
@@ -509,30 +630,21 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
                 if len(parsed["text"]) < 500:
                     logger.info(f"WeChat content too short ({len(parsed['text'])} chars), trying Playwright")
                 else:
-                    return {
-                        "success": True, "title": parsed["title"], "text": parsed["text"],
-                        "method": "requests", "error": None, "quality": parsed["quality"],
-                    }
+                    return _build_result(parsed, "requests")
 
         logger.info("WeChat -> Playwright fallback")
         result = _fetch_playwright(url, timeout)
         if result["success"]:
             parsed = _parse_html(result["html"], url)
             if parsed["success"]:
-                return {
-                    "success": True, "title": parsed["title"], "text": parsed["text"],
-                    "method": "playwright", "error": None, "quality": parsed["quality"],
-                }
+                return _build_result(parsed, "playwright")
 
         # Short article might be real
         result_r = _fetch_requests(url, timeout)
         if result_r["success"]:
             parsed = _parse_html(result_r["html"], url)
             if parsed["text"]:
-                return {
-                    "success": True, "title": parsed["title"], "text": parsed["text"],
-                    "method": "requests-short", "error": None, "quality": parsed["quality"],
-                }
+                return _build_result(parsed, "requests-short")
 
         return {
             "success": False, "title": "", "text": "",
@@ -545,20 +657,14 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
     if result["success"]:
         parsed = _parse_html(result["html"], url)
         if parsed["success"]:
-            return {
-                "success": True, "title": parsed["title"], "text": parsed["text"],
-                "method": "requests", "error": None, "quality": parsed["quality"],
-            }
+            return _build_result(parsed, "requests")
 
     logger.info("Requests insufficient -> Playwright fallback")
     result = _fetch_playwright(url, timeout)
     if result["success"]:
         parsed = _parse_html(result["html"], url)
         if parsed["success"]:
-            return {
-                "success": True, "title": parsed["title"], "text": parsed["text"],
-                "method": "playwright", "error": None, "quality": parsed["quality"],
-            }
+            return _build_result(parsed, "playwright")
 
     return {
         "success": False, "title": "", "text": "",
