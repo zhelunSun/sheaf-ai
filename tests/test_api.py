@@ -1,0 +1,206 @@
+"""Tests for Sheaf HTTP API layer."""
+import json
+import pytest
+from unittest.mock import patch, MagicMock
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture
+def client():
+    """Create a test client for the API."""
+    from sheaf_ai.api import create_app
+    app = create_app()
+    return TestClient(app)
+
+
+@pytest.fixture
+def mock_index_file(tmp_path, monkeypatch):
+    """Create a mock index.jsonl with sample data."""
+    from sheaf_ai import config
+    index = tmp_path / "index.jsonl"
+    entries = [
+        {"id": "2026-05-01", "title": "Test AI Article", "topics": ["AI", "LLM"], "category": "tech"},
+        {"id": "2026-05-02", "title": "Test Remote Sensing", "topics": ["Remote Sensing"], "category": "science"},
+        {"id": "2026-05-03", "title": "Another AI Piece", "topics": ["AI"], "category": "tech"},
+    ]
+    with open(index, "w", encoding="utf-8") as f:
+        for e in entries:
+            f.write(json.dumps(e, ensure_ascii=False) + "\n")
+    monkeypatch.setattr(config, "INDEX_FILE", index)
+    monkeypatch.setattr(config, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(config, "ENTRIES_DIR", tmp_path / "entries")
+    return index
+
+
+class TestHealthEndpoint:
+    def test_health_returns_ok(self, client):
+        resp = client.get("/health")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "ok"
+        assert data["version"]  # version string present
+
+
+class TestStatsEndpoint:
+    def test_stats_returns_counts(self, client, mock_index_file):
+        resp = client.get("/stats")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total_entries"] == 3
+        assert isinstance(data["topics"], dict)
+        assert data["version"]
+
+
+class TestSearchEndpoint:
+    def test_search_with_query(self, client, mock_index_file):
+        resp = client.get("/search", params={"q": "AI"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["query"] == "AI"
+        assert isinstance(data["results"], list)
+
+    def test_search_missing_query(self, client):
+        resp = client.get("/search")
+        assert resp.status_code == 422  # Validation error
+
+
+class TestEntriesEndpoint:
+    def test_list_entries(self, client, mock_index_file):
+        resp = client.get("/entries", params={"limit": 10})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 3
+        assert len(data["entries"]) <= 10
+
+    def test_list_entries_pagination(self, client, mock_index_file):
+        resp = client.get("/entries", params={"limit": 2, "offset": 0})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert len(data["entries"]) == 2
+
+    def test_get_entry_not_found(self, client, mock_index_file, tmp_path):
+        resp = client.get("/entries/nonexistent-id")
+        assert resp.status_code == 404
+
+
+class TestCollectEndpoint:
+    @patch("sheaf_ai.api.process_url")
+    def test_collect_success(self, mock_process, client):
+        mock_process.return_value = {
+            "success": True,
+            "entry_id": "2026-05-test",
+            "url": "https://example.com",
+            "topics": ["AI"],
+            "one_liner": "Test summary",
+        }
+        resp = client.post("/collect", json={"url": "https://example.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+        assert data["entry_id"] == "2026-05-test"
+
+    @patch("sheaf_ai.api.process_url")
+    def test_collect_failure(self, mock_process, client):
+        mock_process.return_value = {
+            "success": False,
+            "error": "Fetch failed",
+        }
+        resp = client.post("/collect", json={"url": "https://bad-url.com"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is False
+
+    @patch("sheaf_ai.api.process_url")
+    def test_collect_with_force(self, mock_process, client):
+        mock_process.return_value = {"success": True, "entry_id": "test"}
+        resp = client.post("/collect", json={"url": "https://example.com", "force": True})
+        assert resp.status_code == 200
+        mock_process.assert_called_once_with(
+            url="https://example.com", manual_text=None, force=True,
+        )
+
+
+class TestCrystallizeEndpoint:
+    @patch("sheaf_ai.api.crystallize_and_save")
+    def test_crystallize_success(self, mock_cryst, client):
+        mock_cryst.return_value = [MagicMock(title="Test Card", confidence=0.9)]
+        resp = client.post("/crystallize", json={"topic": "AI"})
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["success"] is True
+
+    @patch("sheaf_ai.api.crystallize_and_save")
+    def test_crystallize_error(self, mock_cryst, client):
+        mock_cryst.side_effect = Exception("No API key")
+        resp = client.post("/crystallize", json={"topic": "AI"})
+        assert resp.status_code == 500
+
+
+class TestCardsEndpoint:
+    @patch("sheaf_ai.api.list_crystallized")
+    def test_list_cards(self, mock_list, client):
+        mock_card = MagicMock()
+        mock_card.card_id = "card-1"
+        mock_card.title = "Test Card"
+        mock_card.confidence = 0.9
+        mock_card.evidence = []
+        mock_list.return_value = [mock_card]
+
+        resp = client.get("/cards")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["total"] == 1
+        assert data["cards"][0]["title"] == "Test Card"
+
+    @patch("sheaf_ai.api.get_card")
+    def test_get_card_detail(self, mock_get, client):
+        mock_card = MagicMock()
+        mock_card.card_id = "card-1"
+        mock_card.title = "Test Card"
+        mock_card.confidence = 0.9
+        mock_card.evidence = []
+        mock_get.return_value = mock_card
+
+        resp = client.get("/cards/card-1")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["title"] == "Test Card"
+
+    @patch("sheaf_ai.api.get_card")
+    def test_get_card_not_found(self, mock_get, client):
+        mock_get.return_value = None
+        resp = client.get("/cards/nonexistent")
+        assert resp.status_code == 404
+
+
+class TestDocsEndpoint:
+    def test_openapi_docs(self, client):
+        resp = client.get("/docs")
+        assert resp.status_code == 200
+
+    def test_openapi_json(self, client):
+        resp = client.get("/openapi.json")
+        assert resp.status_code == 200
+        schema = resp.json()
+        assert "paths" in schema
+        assert "/health" in schema["paths"]
+        assert "/collect" in schema["paths"]
+        assert "/search" in schema["paths"]
+        assert "/cards" in schema["paths"]
+
+
+class TestServeCLI:
+    def test_serve_command_in_parser(self):
+        from sheaf_ai.cli import build_parser
+        parser = build_parser()
+        # Parse serve command
+        args = parser.parse_args(["serve", "--port", "9000"])
+        assert args.command == "serve"
+        assert args.port == 9000
+        assert args.host == "127.0.0.1"
+
+    def test_serve_default_port(self):
+        from sheaf_ai.cli import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["serve"])
+        assert args.port == 8321
