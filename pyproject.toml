@@ -36,14 +36,25 @@ browser = [
 cards = [
     "numpy>=1.24.0",
 ]
+server = [
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "httpx>=0.24.0",
+]
 all = [
     "playwright>=1.59.0",
     "numpy>=1.24.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "httpx>=0.24.0",
 ]
 dev = [
     "pytest>=8.0",
     "ruff>=0.4",
     "build>=1.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "httpx>=0.24.0",
 ]
 
 [project.scripts]

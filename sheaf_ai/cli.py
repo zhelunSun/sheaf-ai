@@ -28,6 +28,7 @@ def build_parser() -> argparse.ArgumentParser:
         epilog="Quick start:\n"
                "  sheaf <url>            Collect an article\n"
                "  sheaf crystallize AI   Crystallize knowledge cards\n"
+               "  sheaf serve            Start HTTP API server\n"
                "  sheaf init             First-time onboarding\n"
                "  sheaf --help           Full command list",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -43,6 +44,10 @@ def build_parser() -> argparse.ArgumentParser:
                             ("mcp", "Start MCP server (stdio)"), ("init", "First-time onboarding")]:
         sub.add_parser(name, help=help_text)
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
+    # HTTP API server
+    p = sub.add_parser("serve", help="Start HTTP API server")
+    p.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
+    p.add_argument("--port", type=int, default=8321, help="Port to listen on (default: 8321)")
     # Crystallize subcommands
     p = sub.add_parser("crystallize", help="Crystallize knowledge cards from topic")
     p.add_argument("topic", nargs="?", help="Topic to crystallize (e.g. 'AI', '遥感')")
@@ -111,7 +116,7 @@ def _run() -> None:
         "stats": show_stats, "weekly": show_weekly, "insights": show_insights,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
-        "crystallize": lambda: _crystallize(parsed),
+        "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -160,6 +165,9 @@ def _mcp():
 
 def _init():
     from sheaf_ai.onboarding import run_onboarding; run_onboarding()
+
+def _serve(p: argparse.Namespace):
+    from sheaf_ai.api import run_server; run_server(host=p.host, port=p.port)
 
 
 def _crystallize(p: argparse.Namespace) -> None:
