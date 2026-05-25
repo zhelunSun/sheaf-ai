@@ -126,7 +126,11 @@ def get_model(provider: str = None) -> str:
     if provider not in PROVIDERS:
         provider = DEFAULT_PROVIDER
     model_env_key = f"{provider.upper()}_MODEL"
-    return os.environ.get(model_env_key, PROVIDERS[provider]["default_model"])
+    return (
+        os.environ.get(model_env_key)
+        or os.environ.get("DEFAULT_MODEL")
+        or PROVIDERS[provider]["default_model"]
+    )
 
 
 def list_models(provider: str = None):

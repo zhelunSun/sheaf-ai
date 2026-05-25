@@ -126,9 +126,6 @@ class TestCountSheaves:
 
     def test_empty_index(self, isolated_data_dir):
         from sheaf_ai.gamification import _count_sheaves
-        from sheaf_ai import config
-        # Patch the gamification module's reference
-        import sheaf_ai.gamification as gam
         index_file = isolated_data_dir / "index.jsonl"
         # Ensure empty
         index_file.write_text("", encoding="utf-8")
@@ -472,9 +469,7 @@ class TestMilestoneDefs:
 
     def test_domain_expert_milestone(self, isolated_data_dir):
         """Test domain_expert milestone: single topic with 10+ sheaves."""
-        from sheaf_ai.gamification import update_after_glean, _load_state, _save_state
-        from sheaf_ai.config import BJT
-        from datetime import datetime
+        from sheaf_ai.gamification import update_after_glean, _load_state
         # Simulate 10 sheaves in one topic
         for _ in range(10):
             update_after_glean(["AI"])

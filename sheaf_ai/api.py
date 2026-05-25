@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import json
 import secrets
-import sys
 from datetime import datetime
 from typing import Optional
 
@@ -25,10 +24,10 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from sheaf_ai.config import VERSION, DATA_DIR, ENTRIES_DIR, fix_windows_encoding
-from sheaf_ai.config import INDEX_FILE as _INDEX_FILE
-from sheaf_ai.search import search_fulltext, search_quick
+from sheaf_ai.search import search_fulltext
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
+from sheaf_ai.mcp_server import MCP_PROTOCOL_VERSION
 from sheaf_ai.crystallize import (
     crystallize_and_save,
     list_crystallized,
@@ -59,8 +58,10 @@ class CrystallizeRequest(BaseModel):
 class FeedbackRequest(BaseModel):
     """Request body for submitting feedback."""
     entry_id: str = Field(..., description="Entry ID")
-    feedback_type: str = Field(..., description="Type: correction | rating")
-    content: str = Field(..., description="Feedback content")
+    corrections: Optional[dict] = Field(None, description="Fields to correct")
+    user_note: str = Field("", description="Optional note explaining the correction")
+    feedback_type: Optional[str] = Field(None, description="Legacy field name")
+    content: Optional[str] = Field(None, description="Legacy field value")
 
 
 class SearchResponse(BaseModel):
@@ -123,10 +124,14 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # CORS — allow browser extensions and local tools
+    # CORS — allow local tools and unpacked browser extensions by default.
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],  # Local server, all origins OK
+        allow_origins=[],
+        allow_origin_regex=(
+            r"^(https?://(localhost|127\.0\.0\.1|\[::1\])(:\d+)?"
+            r"|chrome-extension://[a-z]{32})$"
+        ),
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -314,8 +319,15 @@ def create_app() -> FastAPI:
     async def submit_feedback_api(req: FeedbackRequest):
         """Submit feedback on an entry."""
         try:
-            submit_feedback(req.entry_id, req.feedback_type, req.content)
+            corrections = req.corrections or {}
+            if not corrections and req.feedback_type and req.content is not None:
+                corrections = {req.feedback_type: req.content}
+            if not corrections:
+                raise HTTPException(status_code=422, detail="corrections is required")
+            submit_feedback(req.entry_id, corrections, req.user_note)
             return {"success": True}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -382,7 +394,7 @@ def create_app() -> FastAPI:
                 media_type="application/json",
                 headers={
                     "mcp-session-id": new_session,
-                    "mcp-protocol-version": "2025-06-18",
+                    "mcp-protocol-version": MCP_PROTOCOL_VERSION,
                 },
             )
             return resp
@@ -400,14 +412,14 @@ def create_app() -> FastAPI:
                 media_type="text/event-stream",
                 headers={
                     "mcp-session-id": session_id or "",
-                    "mcp-protocol-version": "2025-06-18",
+                    "mcp-protocol-version": MCP_PROTOCOL_VERSION,
                 },
             )
 
         return Response(
             content=response_str,
             media_type="application/json",
-            headers={"mcp-protocol-version": "2025-06-18"},
+            headers={"mcp-protocol-version": MCP_PROTOCOL_VERSION},
         )
 
     @app.get("/mcp", tags=["mcp"])
@@ -463,6 +475,8 @@ def run_server(host: str = "127.0.0.1", port: int = 8321):
     print(f"   http://{host}:{port}")
     print(f"   Docs: http://{host}:{port}/docs")
     print(f"   Data: {DATA_DIR}")
+    if host not in ("127.0.0.1", "localhost", "::1"):
+        print("   Warning: non-localhost bind exposes your local knowledge API on the network.")
     print()
 
     uvicorn.run(

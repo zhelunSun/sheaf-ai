@@ -4,6 +4,14 @@ All notable changes to Sheaf.
 
 ## [Unreleased] — Wave 2: Crystallize
 
+### Release Hardening
+- Ran a pre-release hard-gate audit covering tracked private files, first-run config, build artifacts, local API/MCP boundaries, and docs consistency.
+- Aligned default model configuration with `.env.example`: provider defaults now come from `llm_client`, with optional `DEFAULT_MODEL` / task-specific overrides.
+- Unified MCP protocol version reporting across stdio and HTTP transport.
+- Tightened default CORS behavior for the local HTTP API and added a warning for non-localhost binds.
+- Fixed Windows subprocess decoding in CLI smoke tests.
+- Updated public docs to reflect 268 tests and pyproject extras as the dependency source of truth.
+
 ### Added
 - `sheaf_ai/crystallize.py` — knowledge crystallization engine:
   - `find_entries_by_topic()`: cross title/topics/tags/summary matching

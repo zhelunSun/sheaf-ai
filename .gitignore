@@ -35,3 +35,6 @@ internal/
 
 # Agent learnings (self-improvement)
 .learnings/
+
+# Agent workspace state
+.workbuddy/

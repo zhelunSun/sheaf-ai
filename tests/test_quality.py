@@ -9,8 +9,6 @@ Covers:
   - QualityReport dataclass
   - CLI formatting helpers
 """
-import pytest
-
 from sheaf_ai.quality import (
     QualityReport,
     assess_quality,
@@ -20,7 +18,6 @@ from sheaf_ai.quality import (
     DECISION_WARN,
     DECISION_REJECT,
     MIN_TEXT_NO_IMAGES,
-    MIN_TEXT_WITH_IMAGES,
     IMAGE_HEAVY_THRESHOLD,
 )
 

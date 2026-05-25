@@ -21,6 +21,7 @@ from sheaf_ai.renderer import CardOutputConfig, CardRenderer
 
 # Shared renderer for MCP structured output
 _mcp_renderer = CardRenderer(CardOutputConfig.detailed())
+MCP_PROTOCOL_VERSION = "2025-06-18"
 
 
 # ============================================================
@@ -225,7 +226,7 @@ def handle_request(request: dict) -> str | None:
 
     if method == "initialize":
         return _jsonrpc_response(req_id, {
-            "protocolVersion": "2024-11-05",
+            "protocolVersion": MCP_PROTOCOL_VERSION,
             "capabilities": {"tools": {}},
             "serverInfo": {"name": "sheaf", "version": VERSION},
         })

@@ -37,9 +37,10 @@ CARDS_DIR = DATA_DIR / "cards"
 CARDS_STORE_FILE = CARDS_DIR / "knowledge_cards.json"
 EMBEDDINGS_DIR = CARDS_DIR / "embeddings"
 
-DEFAULT_CRYSTALLIZE_MODEL = os.environ.get(
-    "CRYSTALLIZE_MODEL",
-    os.environ.get("OPENAI_MODEL", "deepseek-ai/DeepSeek-V3.2"),
+DEFAULT_CRYSTALLIZE_MODEL = (
+    os.environ.get("CRYSTALLIZE_MODEL")
+    or os.environ.get("DEFAULT_MODEL")
+    or None
 )
 
 

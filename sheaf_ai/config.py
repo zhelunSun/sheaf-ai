@@ -11,6 +11,23 @@ from pathlib import Path
 # Works both in dev (repo root) and pip-installed (package parent)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
+
+def _load_env_file():
+    """Load a local .env file once, without overriding real environment variables."""
+    for env_path in [Path.cwd() / ".env", PROJECT_ROOT / ".env"]:
+        if not env_path.exists():
+            continue
+        with open(env_path, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    k, v = line.split("=", 1)
+                    os.environ.setdefault(k.strip(), v.strip())
+        break
+
+
+_load_env_file()
+
 # Data directories — default to ./data relative to cwd, configurable via env
 _DATA_ROOT = Path(os.environ.get("SHEAF_DATA_DIR", str(Path.cwd() / "data")))
 DATA_DIR = _DATA_ROOT
@@ -24,9 +41,9 @@ TAGS_REGISTRY_FILE = DATA_DIR / "tags_registry.json"
 from datetime import timezone, timedelta
 BJT = timezone(timedelta(hours=8))
 
-# Default LLM models
-CLASSIFY_MODEL = "deepseek-ai/DeepSeek-V3.2"
-SUMMARIZE_MODEL = "deepseek-ai/DeepSeek-V3.2"
+# Optional model overrides. None lets llm_client choose the provider default.
+CLASSIFY_MODEL = os.environ.get("CLASSIFY_MODEL") or os.environ.get("DEFAULT_MODEL") or None
+SUMMARIZE_MODEL = os.environ.get("SUMMARIZE_MODEL") or os.environ.get("DEFAULT_MODEL") or None
 
 # Version (single source)
 from sheaf_ai import __version__

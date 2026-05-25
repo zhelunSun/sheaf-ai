@@ -57,7 +57,7 @@ def test_cli_version():
     """CLI `sheaf --version` works."""
     result = subprocess.run(
         [sys.executable, "-m", "sheaf_ai.cli", "--version"],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True, text=True, encoding="utf-8", timeout=10,
     )
     assert result.returncode == 0
     assert "Sheaf" in result.stdout
@@ -68,7 +68,7 @@ def test_cli_help():
     """CLI `sheaf --help` works."""
     result = subprocess.run(
         [sys.executable, "-m", "sheaf_ai.cli", "--help"],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True, text=True, encoding="utf-8", timeout=10,
     )
     assert result.returncode == 0
     assert "sheaf" in result.stdout.lower()
@@ -81,7 +81,7 @@ def test_cli_no_args():
     """CLI with no args shows stats (empty basket is fine)."""
     result = subprocess.run(
         [sys.executable, "-m", "sheaf_ai.cli"],
-        capture_output=True, text=True, timeout=10,
+        capture_output=True, text=True, encoding="utf-8", timeout=10,
     )
     assert result.returncode == 0
     # Should show either "empty" or stats
@@ -114,7 +114,7 @@ def test_mcp_initialize():
     parsed = json.loads(response)
     assert parsed["id"] == 1
     assert parsed["result"]["serverInfo"]["name"] == "sheaf"
-    assert parsed["result"]["protocolVersion"] == "2024-11-05"
+    assert parsed["result"]["protocolVersion"] == "2025-06-18"
 
 
 def test_mcp_tools_list():

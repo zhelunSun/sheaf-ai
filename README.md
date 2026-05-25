@@ -186,14 +186,18 @@ Optional: create a `.env` file in your working directory. See [.env.example](.en
 ```bash
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
-pip install -e ".[dev]"
-pytest tests/ -v     # 268 tests
-ruff check sheaf_ai/ tests/ sheaf_cards/
+python -m pip install -e ".[dev]"
+python -m pytest tests/ -q     # 268 tests
+python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
+
+Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local development, `.[server]` for the HTTP API, and `.[browser]` for Playwright-based fetching.
 
 ## Alpha Status
 
 Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 268 tests. We're validating with real users before beta.
+
+The browser extension under `extension/` is an experimental local companion for the HTTP API. Its manifest version is independent from the Python package version until the extension has its own release channel.
 
 **Try it:** save 20+ links, run `sheaf crystallize <topic>`, then ask your agent to find them. If it works for you, open an issue or discussion to tell us what you'd change.
 
