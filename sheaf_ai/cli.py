@@ -138,6 +138,12 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
     if not result.get("success"):
         if result.get("stage") == "dedup":
             print(f"⚠ 已收集过: {result.get('existing_title', result.get('url', '?'))}")
+        elif result.get("stage") == "quality":
+            quality = result.get("quality", {})
+            hint = quality.get("hint", result.get("error", "质量检查未通过"))
+            print(f"✗ 质量检查未通过: {hint}")
+            if quality.get("is_image_heavy"):
+                print("  提示: 核心内容可能在图片中，可使用 --force 强制收集")
         else:
             print(f"✗ 收集失败 [{result.get('stage', '?')}]: {result.get('error', '未知错误')}")
         return
@@ -153,6 +159,9 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
     images = result.get("images", [])
     if images:
         print(f"  图片: {len(images)} 张")
+    quality = result.get("quality")
+    if quality and quality.get("is_image_heavy"):
+        print("  ⚠ 图片主导型文章 — 核心内容可能在图片中")
     print(f"  来源: {result.get('fetch_method', '?')}")
 
 def _reclassify(p: argparse.Namespace) -> None:

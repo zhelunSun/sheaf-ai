@@ -180,6 +180,33 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     if images:
         print(f"  Images: {len(images)} extracted")
 
+    # Step 1.1: Quality gate — image density detection + content quality
+    from sheaf_ai.quality import assess_quality, format_quality_hint, format_image_supplement
+    quality_report = assess_quality(
+        fetch_result.get("text", ""),
+        images,
+        force=force,
+    )
+    quality_hint = format_quality_hint(quality_report)
+    if quality_hint:
+        print(f"  {quality_hint}")
+
+    if not quality_report.passed:
+        return {
+            "success": False,
+            "error": quality_report.reason,
+            "stage": "quality",
+            "quality": quality_report.to_dict(),
+            "url": url,
+        }
+
+    # For image-heavy articles, append alt text as supplement
+    article_text = fetch_result.get("text", "")
+    if quality_report.is_image_heavy and quality_report.alt_text_available:
+        supplement = format_image_supplement(images)
+        if supplement:
+            article_text += supplement
+
     # Step 1.5: Detect AI conversation -> adjust pipeline behavior
     is_ai_conversation = (
         fetch_result.get("meta", {}).get("content_type") == "ai_conversation"
@@ -191,7 +218,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     print("Classifying...")
     classify_result = classify_article(
         fetch_result.get("title", ""),
-        fetch_result.get("text", ""),
+        article_text,
     )
 
     # Override content_type for AI conversations
@@ -213,7 +240,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     print("Summarizing...")
     summary_result = summarize_article(
         fetch_result.get("title", ""),
-        fetch_result.get("text", ""),
+        article_text,
     )
 
     # Step 4: Store
@@ -247,6 +274,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         "fetch_method": fetch_result.get("method"),
         "entry_path": str(ENTRIES_DIR / entry_id[:7] / f"{entry_id}.json"),
         "images": images,
+        "quality": quality_report.to_dict(),
     }
 
 

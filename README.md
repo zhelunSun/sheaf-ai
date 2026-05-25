@@ -5,16 +5,18 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-104%20pass-brightgreen)](tests/)
-<!-- PyPI badges — uncomment after publishing to PyPI -->
-<!-- [![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/) -->
-<!-- [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/) -->
+[![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
 
 A **sheaf** is a bundle of grain — the basic unit a farmer brings to market. Sheaf does the same for knowledge: gather what you read, crystallize it into structured bundles, and make it tradable. Your AI agents can search, cite, and reason over everything you've collected.
 
 ## Quick Start
 
 ```bash
-# Install (from source — PyPI coming soon)
+# Install from PyPI
+pip install sheaf-ai
+
+# Or install from source
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 pip install -e .

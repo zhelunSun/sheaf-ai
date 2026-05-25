@@ -15,6 +15,7 @@ build/
 *.egg
 
 # Environment
+.venv/
 .vscode/
 .idea/
 *.swp

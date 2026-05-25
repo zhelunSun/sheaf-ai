@@ -2,7 +2,10 @@
 import json
 import pytest
 from unittest.mock import patch, MagicMock
-from fastapi.testclient import TestClient
+
+# fastapi is an optional [server] dependency — skip entire module if missing
+pytest.importorskip("fastapi", reason="fastapi not installed (optional [server] dep)")
+from fastapi.testclient import TestClient  # noqa: E402
 
 
 @pytest.fixture
