@@ -1,6 +1,0 @@
-# Sheaf — Python Dependencies
-openai>=2.32.0
-requests>=2.32.0
-beautifulsoup4>=4.12.0
-numpy>=1.24.0
-# Optional: playwright>=1.59.0  (for JS-heavy sites)

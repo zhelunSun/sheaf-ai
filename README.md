@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-104%20pass-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-268%20pass-brightgreen)](tests/)
 [![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
 
@@ -187,13 +187,13 @@ Optional: create a `.env` file in your working directory. See [.env.example](.en
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 pip install -e ".[dev]"
-pytest tests/ -v     # 104 tests
+pytest tests/ -v     # 268 tests
 ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 104 tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 268 tests. We're validating with real users before beta.
 
 **Try it:** save 20+ links, run `sheaf crystallize <topic>`, then ask your agent to find them. If it works for you, open an issue or discussion to tell us what you'd change.
 
