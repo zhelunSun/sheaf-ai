@@ -4,6 +4,8 @@ Sheaf HTTP API — FastAPI-based local server for Chrome Extension + Agent acces
 This is the HTTP interface layer that wraps Sheaf's core functionality,
 enabling browser extensions and remote agents to interact with the knowledge base.
 
+Includes MCP Streamable HTTP transport endpoint (/mcp) for agent integration.
+
 Usage:
     sheaf serve                    # Start server on http://localhost:8321
     sheaf serve --port 9000        # Custom port
@@ -12,12 +14,14 @@ Usage:
 from __future__ import annotations
 
 import json
+import secrets
 import sys
 from datetime import datetime
 from typing import Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from sheaf_ai.config import VERSION, DATA_DIR, ENTRIES_DIR, fix_windows_encoding
@@ -315,7 +319,136 @@ def create_app() -> FastAPI:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+    # ============================================================
+    # MCP Streamable HTTP Transport (EXT-04)
+    # ============================================================
+
+    _sessions: dict[str, datetime] = {}
+
+    def _make_sse_event(data: dict, event_id: str | None = None) -> str:
+        """Format a dict as an SSE event string."""
+        parts = []
+        if event_id:
+            parts.append(f"id: {event_id}")
+        payload = json.dumps(data, ensure_ascii=False)
+        for line in payload.split("\n"):
+            parts.append(f"data: {line}")
+        parts.append("")
+        parts.append("")
+        return "\n".join(parts)
+
+    @app.post("/mcp", tags=["mcp"])
+    async def mcp_post(request: Request):
+        """MCP Streamable HTTP transport — POST endpoint.
+
+        Handles JSON-RPC requests from MCP clients. Supports both
+        single JSON response and SSE streaming response modes.
+        """
+        # Validate Origin for security (DNS rebinding prevention)
+        origin = request.headers.get("origin", "")
+        if origin and not _is_safe_origin(origin):
+            return Response(status_code=403, content="Forbidden origin")
+
+        session_id = request.headers.get("mcp-session-id")
+        if session_id and session_id not in _sessions:
+            return Response(status_code=404, content="Session not found")
+
+        try:
+            body = await request.json()
+        except Exception:
+            return Response(status_code=400, content="Invalid JSON")
+
+        # Delegate to existing MCP handler
+        from sheaf_ai.mcp_server import handle_request
+        response_str = handle_request(body)
+
+        # No response for notifications
+        if response_str is None:
+            return Response(status_code=202)
+
+        try:
+            response_data = json.loads(response_str)
+        except Exception:
+            return Response(status_code=500, content="Internal MCP error")
+
+        # Check if this is an initialize request → create session
+        method = body.get("method", "")
+        if method == "initialize":
+            new_session = secrets.token_hex(16)
+            _sessions[new_session] = datetime.now()
+
+            resp = Response(
+                content=response_str,
+                media_type="application/json",
+                headers={
+                    "mcp-session-id": new_session,
+                    "mcp-protocol-version": "2025-06-18",
+                },
+            )
+            return resp
+
+        # For regular requests, return JSON response
+        # (SSE streaming mode can be added later for tool calls that need it)
+        accept = request.headers.get("accept", "")
+        if "text/event-stream" in accept and "result" in response_data:
+            # Stream the response via SSE
+            event_id = secrets.token_hex(8)
+            async def _stream():
+                yield _make_sse_event(response_data, event_id)
+            return StreamingResponse(
+                _stream(),
+                media_type="text/event-stream",
+                headers={
+                    "mcp-session-id": session_id or "",
+                    "mcp-protocol-version": "2025-06-18",
+                },
+            )
+
+        return Response(
+            content=response_str,
+            media_type="application/json",
+            headers={"mcp-protocol-version": "2025-06-18"},
+        )
+
+    @app.get("/mcp", tags=["mcp"])
+    async def mcp_get(request: Request):
+        """MCP Streamable HTTP transport — GET endpoint for server-initiated messages.
+
+        Opens an SSE stream for server-to-client communication.
+        """
+        session_id = request.headers.get("mcp-session-id")
+        if not session_id or session_id not in _sessions:
+            return Response(status_code=400, content="Session required")
+
+        async def _heartbeat():
+            """Keep-alive SSE stream. Server notifications can be pushed here."""
+            yield _make_sse_event({"jsonrpc": "2.0", "method": "ping"})
+
+        return StreamingResponse(
+            _heartbeat(),
+            media_type="text/event-stream",
+        )
+
+    @app.delete("/mcp", tags=["mcp"])
+    async def mcp_delete(request: Request):
+        """MCP Streamable HTTP transport — DELETE endpoint to terminate session."""
+        session_id = request.headers.get("mcp-session-id")
+        if session_id and session_id in _sessions:
+            del _sessions[session_id]
+        return Response(status_code=204)
+
     return app
+
+
+def _is_safe_origin(origin: str) -> bool:
+    """Check if origin is safe (localhost or same-host)."""
+    from urllib.parse import urlparse
+    try:
+        parsed = urlparse(origin)
+        host = parsed.hostname or ""
+        return host in ("localhost", "127.0.0.1", "::1") or host.endswith(".localhost")
+    except Exception:
+        return False
 
 
 # Module-level app instance (for uvicorn import)

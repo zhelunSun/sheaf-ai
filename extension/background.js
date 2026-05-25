@@ -55,3 +55,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true; // async response
   }
 });
+
+// Keyboard shortcut: Alt+Shift+S to collect current page
+chrome.commands?.onCommand?.addListener(async (command) => {
+  if (command === 'collect-page') {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab && tab.url && tab.url.startsWith('http')) {
+      await collectPage(tab.url);
+    }
+  }
+});

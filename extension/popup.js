@@ -123,7 +123,18 @@ collectBtn.addEventListener('click', async () => {
 
     if (data.success) {
       collectBtn.className = 'collect-btn collected';
-      collectBtn.textContent = '✅ Collected!';
+      // Show topic info if available
+      const topics = (data.topics || []).slice(0, 3).join(', ');
+      const oneLiner = data.one_liner || '';
+      collectBtn.textContent = topics
+        ? `✅ ${topics}`
+        : '✅ Collected!';
+      // Show one-liner as subtitle
+      if (oneLiner) {
+        const info = document.getElementById('collectInfo');
+        info.textContent = oneLiner;
+        info.style.display = 'block';
+      }
       // Refresh stats
       await loadStats();
       await loadRecent();
