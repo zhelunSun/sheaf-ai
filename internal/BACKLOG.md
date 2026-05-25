@@ -33,11 +33,28 @@
 - ✅ **W2.5-A** 知识卡片引擎核心（sheaf_cards/ 4 文件 ~1000 行，202 tests pass）
 
 ### Wave 3: Agent Context Server（🔄 进行中，见 #25）
-- 🔲 **MVP-EXT-01**: 本地 HTTP API 层（FastAPI，封装现有 CLI 功能）
-- 🔲 **MVP-EXT-02**: Chrome Extension 骨架（Manifest V3 + popup）
+- ✅ **MVP-EXT-01**: 本地 HTTP API 层（FastAPI 12 端点 + sheaf serve 命令）
+- ✅ **MVP-EXT-02**: Chrome Extension 骨架（Manifest V3 + popup + background）
 - 🔲 **MVP-EXT-03**: 一键收藏打通（Extension → HTTP API → process_url）
 - 🔲 **MVP-EXT-04**: MCP HTTP transport（SSE）
 - 🔲 **MVP-EXT-05**: 打包发布
+
+### 排期计划（2026-05-25 更新）
+
+| 优先级 | Issue | 内容 | 计划时间 | 执行方式 |
+|--------|-------|------|----------|----------|
+| 🔴 P1 | #24 | BP 去 AI 味优化 | 05-25 | ⏳ 一次性自动化已排 |
+| 🔴 P1 | #25 | Wave 3 继续推进 | nightly | 🌙 Nightly Dev Pipeline |
+| 🔴 P1 | #18 | Agent 基础设施调研 | 05-26~27 | 🌙 Nightly Dev |
+| 🔴 P1 | #19 | Obsidian 融合（调研已完成，闭环） | 05-26 | 🤖 自主闭环 |
+| 🔴 P1 | #14 | BP 定稿 | #24 后 | 🤖 自动跟进 |
+| 🔴 P1 | #17 | Ch3 样本迁移 | 等 VPN/GEE | 👤 需 Sir 解锁环境 |
+| 🔴 P1 | #11 | Ch1 实验设计 | 等 Sir 审查 | 👤 需 Sir 审查 pilot memo |
+| 🟡 P2 | #23 | 图片识别 Phase 2 | Alpha 后 | 🌙 Nightly Dev |
+| 🟡 P2 | #15 | HSW skill 开源 | 空闲时 | 🤖 批量处理 |
+| 🟡 P2 | #13 | LaTeX 学术简历 | 空闲时 | 🤖 批量处理 |
+| 🟢 P2 | #22 | 知识市场 | 远期 | 💡 idea 阶段 |
+| 🟢 P2 | #20 | App/客户端 | 远期 | 💡 idea 阶段 |
 
 ---
 
