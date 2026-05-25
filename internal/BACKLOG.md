@@ -35,7 +35,7 @@
 ### Wave 3: Agent Context Server（🔄 进行中，见 #25）
 - ✅ **MVP-EXT-01**: 本地 HTTP API 层（FastAPI 12 端点 + sheaf serve 命令）
 - ✅ **MVP-EXT-02**: Chrome Extension 骨架（Manifest V3 + popup + background）
-- 🔲 **MVP-EXT-03**: 一键收藏打通（Extension → HTTP API → process_url）
+- 🔄 **MVP-EXT-03**: 一键收藏打通（Extension → HTTP API → process_url）— popup 改进 + 快捷键 + API 验证通过
 - 🔲 **MVP-EXT-04**: MCP HTTP transport（SSE）
 - 🔲 **MVP-EXT-05**: 打包发布
 
@@ -43,7 +43,7 @@
 
 | 优先级 | Issue | 内容 | 计划时间 | 执行方式 |
 |--------|-------|------|----------|----------|
-| 🔴 P1 | #24 | BP 去 AI 味优化 | 05-25 | ⏳ 一次性自动化已排 |
+| 🔴 P1 | #24 | BP 去 AI 味优化 | 05-25 | ✅ 已完成（commit b889cb5, issue closed） |
 | 🔴 P1 | #25 | Wave 3 继续推进 | nightly | 🌙 Nightly Dev Pipeline |
 | 🔴 P1 | #18 | Agent 基础设施调研 | 05-26~27 | 🌙 Nightly Dev |
 | 🔴 P1 | #19 | Obsidian 融合（调研已完成，闭环） | 05-26 | 🤖 自主闭环 |
@@ -72,7 +72,7 @@
 - 🔲 **UX-05** [P1] collect 无进度反馈
 - 🔲 **UX-06** [P1] DATA_DIR 基于 cwd
 - 🔲 **UX-07** [P1] `--help` 不展示 URL 快捷方式
-- 🔲 **UX-08** [P1] version 定义两处
+- ✅ **UX-08** [P1] version 定义两处（已改为 importlib.metadata 单源）
 - 🔲 **UX-09** [P1] numpy 在核心依赖
 - ✅ **UX-10** [P1] MCP ping 方法（已添加）
 - 🔲 **UX-11** [P1] MCP 错误暴露内部细节
@@ -87,7 +87,7 @@
 
 ## 📋 P1 — 近期待做
 
-- 🔲 **W0-03** PyPI 发布：`twine upload`（构建就绪，需 API Token）
+- ✅ **W0-03** PyPI 发布（v0.4.0a0 已上线，2026-05-25）
 - ✅ **BLG-015** 游戏化 Lite — `sheaf stats` 展示收藏进度条（W2.5-01 已完成，双维度 sheaves+cards 进度条 + 阈值 10/30/50/100）
   - 进度条：收藏总量 / 卡片数量双维度，阈值节点 10/30/50/100
   - Streak：每日有新收藏/新卡片即算，CLI 启动一行展示
@@ -153,4 +153,4 @@
 Wave 0/1 + Wave 2 + Wave 2.5 全部完成。
 核心里程碑：MVP 跑通 → 模块化重构（sheaf_ai/ 15模块）→ 测试套件（202 tests pass）→ Alpha 发布（v0.4.0-alpha, repo public）→ CLI argparse 重构 → 知识卡片引擎（sheaf_cards/ 4 模块 ~1000 行）→ Embedding 语义检索 → Crystallize 盘点引擎 → 游戏化 Lite → P0 UX 修复（6 issues closed）→ 微信双策略抓取 → 图片元数据提取 Phase 1。
 
-**当前版本**: v0.4.0-alpha | **测试**: 202/202 pass | **Git**: main + nightly synced
+**当前版本**: v0.4.0a0 (PyPI published) | **测试**: 257/257 pass | **Git**: main + nightly synced

@@ -207,3 +207,109 @@ class TestServeCLI:
         parser = build_parser()
         args = parser.parse_args(["serve"])
         assert args.port == 8321
+
+
+class TestMCPTransport:
+    """Test MCP Streamable HTTP transport endpoints."""
+
+    def _init_session(self, client):
+        """Helper: initialize an MCP session and return session ID."""
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {
+                "protocolVersion": "2025-06-18",
+                "capabilities": {},
+                "clientInfo": {"name": "test", "version": "1.0"},
+            },
+        })
+        assert resp.status_code == 200
+        sid = resp.headers.get("mcp-session-id")
+        assert sid, "Session ID should be returned"
+        data = resp.json()
+        assert data["result"]["serverInfo"]["name"] == "sheaf"
+        return sid
+
+    def test_initialize_creates_session(self, client):
+        sid = self._init_session(client)
+        assert len(sid) == 32  # token_hex(16) = 32 chars
+
+    def test_protocol_version_header(self, client):
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                       "clientInfo": {"name": "t", "version": "1"}},
+        })
+        assert resp.headers.get("mcp-protocol-version") == "2025-06-18"
+
+    def test_tools_list(self, client):
+        sid = self._init_session(client)
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 2, "method": "tools/list",
+        }, headers={"mcp-session-id": sid})
+        assert resp.status_code == 200
+        tools = resp.json()["result"]["tools"]
+        tool_names = [t["name"] for t in tools]
+        assert "sheaf_search" in tool_names
+        assert "sheaf_collect" in tool_names
+        assert "sheaf_crystallize" in tool_names
+
+    def test_tool_call_search(self, client, mock_index_file):
+        sid = self._init_session(client)
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+            "params": {"name": "sheaf_search", "arguments": {"query": "AI", "limit": 5}},
+        }, headers={"mcp-session-id": sid})
+        assert resp.status_code == 200
+        content = resp.json()["result"]["content"]
+        assert len(content) > 0
+
+    def test_notification_returns_202(self, client):
+        sid = self._init_session(client)
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "method": "notifications/initialized",
+        }, headers={"mcp-session-id": sid})
+        assert resp.status_code == 202
+
+    def test_get_opens_sse_stream(self, client):
+        sid = self._init_session(client)
+        resp = client.get("/mcp", headers={"mcp-session-id": sid})
+        assert resp.status_code == 200
+        assert "text/event-stream" in resp.headers.get("content-type", "")
+
+    def test_delete_terminates_session(self, client):
+        sid = self._init_session(client)
+        resp = client.delete("/mcp", headers={"mcp-session-id": sid})
+        assert resp.status_code == 204
+
+        # Subsequent request with same session should 404
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "tools/list",
+        }, headers={"mcp-session-id": sid})
+        assert resp.status_code == 404
+
+    def test_invalid_session_rejected(self, client):
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "tools/list",
+        }, headers={"mcp-session-id": "nonexistent"})
+        assert resp.status_code == 404
+
+    def test_origin_security_blocks_remote(self, client):
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                       "clientInfo": {"name": "evil", "version": "1"}},
+        }, headers={"origin": "https://evil.com"})
+        assert resp.status_code == 403
+
+    def test_origin_allows_localhost(self, client):
+        resp = client.post("/mcp", json={
+            "jsonrpc": "2.0", "id": 1, "method": "initialize",
+            "params": {"protocolVersion": "2025-06-18", "capabilities": {},
+                       "clientInfo": {"name": "good", "version": "1"}},
+        }, headers={"origin": "http://localhost:3000"})
+        assert resp.status_code == 200
+
+    def test_mcp_endpoint_in_openapi(self, client):
+        resp = client.get("/openapi.json")
+        paths = resp.json()["paths"]
+        assert "/mcp" in paths
