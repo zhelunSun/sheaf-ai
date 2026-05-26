@@ -15,10 +15,11 @@ Usage:
 """
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Optional
 
-from sheaf_ai.config import DATA_DIR
+from sheaf_ai import config
 
 from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 from sheaf_cards.embeddings import EmbeddingEngine
@@ -26,8 +27,12 @@ from sheaf_cards.generator import CardGenerator
 
 
 # Default paths
-CARDS_DIR = DATA_DIR / "cards"
-CARDS_STORE_FILE = CARDS_DIR / "cards.json"
+CARD_STORE_FILENAME = "knowledge_cards.json"
+LEGACY_CARD_STORE_FILENAME = "cards.json"
+
+CARDS_DIR = config.DATA_DIR / "cards"
+CARDS_STORE_FILE = CARDS_DIR / CARD_STORE_FILENAME
+LEGACY_CARDS_STORE_FILE = CARDS_DIR / LEGACY_CARD_STORE_FILENAME
 EMBEDDINGS_DIR = CARDS_DIR / "embeddings"
 
 
@@ -40,11 +45,13 @@ class EmbeddingBridge:
 
     def __init__(self, cards_dir: Path = None, model: str = None):
         # Paths
-        self.cards_dir = cards_dir or CARDS_DIR
+        self.cards_dir = Path(cards_dir) if cards_dir else _default_cards_dir()
         self.cards_dir.mkdir(parents=True, exist_ok=True)
 
-        store_path = self.cards_dir / "cards.json"
+        store_path = self.cards_dir / CARD_STORE_FILENAME
+        legacy_store_path = self.cards_dir / LEGACY_CARD_STORE_FILENAME
         emb_dir = self.cards_dir / "embeddings"
+        _migrate_legacy_card_store(store_path, legacy_store_path)
 
         # Core components
         self.store = CardStore(store_path)
@@ -201,3 +208,68 @@ class EmbeddingBridge:
             parts.append(f"Tags: {', '.join(tags)}")
 
         return "\n\n".join(parts)
+
+
+def _default_cards_dir() -> Path:
+    """Resolve the default cards directory from the current config."""
+    return config.DATA_DIR / "cards"
+
+
+def _migrate_legacy_card_store(canonical_path: Path, legacy_path: Path) -> None:
+    """Copy legacy cards.json into the canonical store when it is safe.
+
+    The migration is intentionally conservative: existing non-empty canonical
+    stores win, legacy files are kept in place, and malformed legacy files are
+    ignored so startup remains non-blocking.
+    """
+    if _has_non_empty_store(canonical_path):
+        return
+
+    legacy_cards = _read_card_list(legacy_path)
+    if not legacy_cards:
+        return
+
+    canonical_path.parent.mkdir(parents=True, exist_ok=True)
+    canonical_path.write_text(
+        json.dumps(legacy_cards, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
+
+
+def _has_non_empty_store(path: Path) -> bool:
+    if not path.exists():
+        return False
+
+    try:
+        raw = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return True
+
+    if not raw:
+        return False
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError:
+        return True
+
+    if isinstance(data, list):
+        return bool(data)
+    return True
+
+
+def _read_card_list(path: Path) -> list[dict]:
+    if not path.exists():
+        return []
+
+    try:
+        raw = path.read_text(encoding="utf-8").strip()
+        if not raw:
+            return []
+        data = json.loads(raw)
+    except (json.JSONDecodeError, OSError):
+        return []
+
+    if not isinstance(data, list):
+        return []
+    return data
