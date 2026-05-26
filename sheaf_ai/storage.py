@@ -26,7 +26,7 @@ def load_tags_registry() -> dict:
     return {}
 
 
-def save_tags_registry(registry: dict):
+def save_tags_registry(registry: dict) -> None:
     """Save tags registry."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     TAGS_REGISTRY_FILE.write_text(
@@ -34,7 +34,7 @@ def save_tags_registry(registry: dict):
     )
 
 
-def update_tags_registry(tags: list, now_iso: str):
+def update_tags_registry(tags: list, now_iso: str) -> None:
     """Update registry with new tags from an article. Auto-merges similar tags (threshold 0.85)."""
     import difflib
     registry = load_tags_registry()
@@ -237,7 +237,7 @@ def build_summary_md(entry: dict, structured: dict) -> str:
 # Index Management
 # ============================================================
 
-def append_index(entry: dict):
+def append_index(entry: dict) -> None:
     """Append a lightweight index entry (for search)."""
     timeliness = entry.get("timeliness", {})
     index_entry = {
@@ -261,7 +261,7 @@ def append_index(entry: dict):
         f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
 
 
-def rebuild_index():
+def rebuild_index() -> int:
     """Rebuild index.jsonl from all entry JSON files."""
     entries = []
     if ENTRIES_DIR.exists():

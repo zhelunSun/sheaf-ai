@@ -2,6 +2,42 @@
 
 All notable changes to Sheaf.
 
+## [Unreleased] — Wave 2.5: Gamification Lite + Quality Gate
+
+### Added
+- `sheaf_ai/gamification.py` — gamification engine v2.5:
+  - Collection progress bars (dual-dimension: sheaves + cards)
+  - Progress thresholds at 10/30/50/100
+  - 12 milestone definitions (6 core + 6 extended)
+  - Streak tracking with CLI startup display
+  - ASCII progress bars with threshold markers
+- `sheaf_ai/quality.py` — content quality gate:
+  - `QualityReport` dataclass — structured quality assessment
+  - `assess_quality()` — core quality gate (pass/warn/reject)
+  - Image density detection + alt text extraction
+  - Force mode for `--force` flag
+  - Pipeline integration at Step 1.1 (before classify/summarize)
+- `sheaf_ai/api.py` — MCP Streamable HTTP transport (`/mcp` endpoint):
+  - POST for JSON-RPC requests
+  - GET with SSE for streamable responses
+  - CORS + health check support
+- `sheaf_ai/display.py` — streak line display on CLI startup
+- Chrome Extension MVP scaffold (popup, background, options, icons)
+- CONTRIBUTING.md — public contribution guide
+
+### Changed
+- Pipeline now runs quality gate before classify/summarize
+- Image-heavy articles auto-append alt text supplement
+- CLI shows quality hints on failure (with `--force` suggestion)
+- `sheaf stats` shows dual-dimension progress bars + milestone badges
+- Gamification update after both glean and crystallize
+
+### Tests
+- 273 tests (100% pass) — 62 new gamification + 35 quality gate tests
+- Ruff lint: 0 issues
+
+---
+
 ## [Unreleased] — Wave 2: Crystallize
 
 ### Release Hardening
@@ -10,7 +46,7 @@ All notable changes to Sheaf.
 - Unified MCP protocol version reporting across stdio and HTTP transport.
 - Tightened default CORS behavior for the local HTTP API and added a warning for non-localhost binds.
 - Fixed Windows subprocess decoding in CLI smoke tests.
-- Updated public docs to reflect 268 tests and pyproject extras as the dependency source of truth.
+- Updated public docs to reflect 273 tests and pyproject extras as the dependency source of truth.
 
 ### Added
 - `sheaf_ai/crystallize.py` — knowledge crystallization engine:
@@ -34,6 +70,7 @@ All notable changes to Sheaf.
 ### Fixed
 - `ensure_data_dirs()` was defined but never called → `sheaf init` crashed on storage. Fixed by adding call at start of `process_url()` (BLG-K04)
 - `sheaf_ai/query.py`: restored `TAGS_REGISTRY_FILE` import for test conftest compatibility
+- `EmbeddingBridge` now uses canonical `data/cards/knowledge_cards.json` and read-only migrates legacy `data/cards/cards.json`.
 
 ### Changed
 - `process_url()` now calls `ensure_data_dirs()` before any writes

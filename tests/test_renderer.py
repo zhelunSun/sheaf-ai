@@ -20,6 +20,15 @@ from sheaf_ai.renderer import (
 from sheaf_cards.base import KnowledgeCard
 
 
+def _has_jinja2() -> bool:
+    """Check if Jinja2 is available and functional for import."""
+    try:
+        from jinja2 import Template  # noqa: F401
+        return True
+    except (ImportError, Exception):
+        return False
+
+
 # ============================================================
 # Fixtures
 # ============================================================
@@ -337,18 +346,30 @@ class TestCardRendererRenderList:
 # ============================================================
 
 class TestRenderWithJinja2:
+    @pytest.mark.skipif(
+        not _has_jinja2(),
+        reason="Jinja2 not installed (optional dependency)"
+    )
     def test_basic_template(self, sample_card):
         """Should render a basic Jinja2 template."""
         template = "Card: {{ card.title }} — {{ card.claim[:50] }}..."
         result = render_with_jinja2(sample_card, template)
         assert "Card: RAG 系统分块策略优化" in result
 
+    @pytest.mark.skipif(
+        not _has_jinja2(),
+        reason="Jinja2 not installed (optional dependency)"
+    )
     def test_confidence_formatting(self, sample_card):
         """Should format confidence as percentage."""
         template = "Confidence: {{ '%.0f' | format(card.confidence * 100) }}%"
         result = render_with_jinja2(sample_card, template)
         assert "Confidence: 85%" in result
 
+    @pytest.mark.skipif(
+        not _has_jinja2(),
+        reason="Jinja2 not installed (optional dependency)"
+    )
     def test_cond_loop(self, sample_card):
         """Should handle Jinja2 conditionals and loops."""
         template = """{{ card.title }}

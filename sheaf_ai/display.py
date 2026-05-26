@@ -10,7 +10,7 @@ from sheaf_ai.query import tag_stats, topic_trends, get_collection_stats
 from sheaf_ai.search import search_fulltext
 
 
-def show_recent(limit: int = 5):
+def show_recent(limit: int = 5) -> None:
     """Show the most recent entries — the default no-arg experience."""
     if not INDEX_FILE.exists():
         print("Welcome to Sheaf! Start collecting: sheaf <url>")
@@ -65,7 +65,7 @@ def show_recent(limit: int = 5):
         print(f"  ... and {total - limit} more. Use --stats for overview, --search to dig deeper.")
 
 
-def show_stats():
+def show_stats() -> None:
     """Show collection statistics."""
     stats = get_collection_stats()
     total = stats.get("total", 0)
@@ -151,7 +151,7 @@ def show_stats():
         pass
 
 
-def show_search(query: str):
+def show_search(query: str) -> None:
     """Full-text search with relevance scoring."""
     results = search_fulltext(query, limit=10, include_raw=True)
 
@@ -175,7 +175,7 @@ def show_search(query: str):
         print()
 
 
-def show_weekly():
+def show_weekly() -> None:
     """Weekly summary report: collection trends + gamification progress."""
     from datetime import timedelta, datetime as _dt
     from sheaf_ai.config import BJT
@@ -282,7 +282,7 @@ def show_weekly():
     print(f"{'='*50}")
 
 
-def show_insights():
+def show_insights() -> None:
     """Show cross-topic association discovery results."""
     from sheaf_ai.insights import discover_associations, format_insights
 
@@ -298,7 +298,7 @@ def show_insights():
     print(f"{'='*50}")
 
 
-def show_tags():
+def show_tags() -> None:
     """Show tag statistics."""
     stats = tag_stats(sort_by="count")
     if stats:
@@ -310,7 +310,7 @@ def show_tags():
         print("Tag registry is empty")
 
 
-def show_trends():
+def show_trends() -> None:
     """Show topic trends over time."""
     trends = topic_trends()
     if trends.get("daily_topics"):
@@ -323,7 +323,7 @@ def show_trends():
         print("No trend data yet")
 
 
-def show_urgent():
+def show_urgent() -> None:
     """Show entries with upcoming deadlines."""
     from sheaf_ai.query import query_urgent
     results = query_urgent()

@@ -88,7 +88,7 @@ def _load_state() -> dict:
         return _empty_state()
 
 
-def _save_state(state: dict):
+def _save_state(state: dict) -> None:
     """Persist gamification state to disk."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     GAME_FILE.write_text(

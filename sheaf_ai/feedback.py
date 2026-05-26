@@ -116,7 +116,7 @@ def _load_entry(entry_id: str) -> dict | None:
         return json.load(f)
 
 
-def _apply_corrections(entry_id: str, entry: dict, corrections: dict):
+def _apply_corrections(entry_id: str, entry: dict, corrections: dict) -> None:
     """Apply corrections to entry file and update index."""
     if "category_primary" in corrections:
         entry["category"]["primary"] = corrections["category_primary"]
@@ -137,7 +137,7 @@ def _apply_corrections(entry_id: str, entry: dict, corrections: dict):
     _update_index_entry(entry_id, entry)
 
 
-def _update_index_entry(entry_id: str, entry: dict):
+def _update_index_entry(entry_id: str, entry: dict) -> None:
     """Update a single entry in index.jsonl."""
     index_file = DATA_DIR / "index.jsonl"
     if not index_file.exists():

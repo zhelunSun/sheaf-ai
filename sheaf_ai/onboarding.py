@@ -40,7 +40,7 @@ def _count_entries() -> int:
     return count
 
 
-def run_onboarding():
+def run_onboarding() -> None:
     """Run the onboarding experience."""
     fix_windows_encoding()
 
@@ -85,7 +85,7 @@ def run_onboarding():
     _show_demo_query()
 
 
-def _show_demo_query():
+def _show_demo_query() -> None:
     """Demonstrate the query interface."""
     print("=" * 55)
     print("  搜索演示")
