@@ -4,7 +4,7 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-270%20pass-brightgreen)](tests/)
+[![Tests](https://img.shields.io/badge/tests-287%20pass-brightgreen)](tests/)
 [![PyPI](https://img.shields.io/pypi/v/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/sheaf-ai.svg)](https://pypi.org/project/sheaf-ai/)
 
@@ -187,7 +187,7 @@ Optional: create a `.env` file in your working directory. See [.env.example](.en
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 270 tests
+python -m pytest tests/ -q     # 287 passed, 13 opt-in E2E skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -195,7 +195,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 270 tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 287 passing tests. We're validating with real users before beta.
 
 The browser extension under `extension/` is an experimental local companion for the HTTP API. Its manifest version is independent from the Python package version until the extension has its own release channel.
 

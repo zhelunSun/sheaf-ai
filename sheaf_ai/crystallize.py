@@ -23,6 +23,13 @@ from typing import Optional
 from sheaf_ai.config import (
     DATA_DIR, INDEX_FILE, RAW_DIR,
 )
+from sheaf_ai.card_extraction import (
+    CRYSTALLIZE_SYSTEM_PROMPT,
+    CardExtractionRequest,
+    CardSource,
+    LlmCardExtractionEngine,
+    parse_card_extraction_response,
+)
 from sheaf_ai.exceptions import LLMError
 from sheaf_ai.llm_client import chat
 
@@ -151,41 +158,31 @@ def _load_entry_full_text(entry_id: str) -> str:
     return ""
 
 
-# ============================================================
-# Crystallization prompt
-# ============================================================
+def _build_card_sources(entries: list[dict]) -> list[CardSource]:
+    """Build extraction sources from index entries and raw text files."""
+    sources = []
+    for entry in entries:
+        entry_id = entry.get("id", "")
+        title = entry.get("title", "Untitled")
+        summary = entry.get("summary", "")
+        full_text = _load_entry_full_text(entry_id)
+        text = full_text[:3000] if full_text else summary
+        sources.append(
+            CardSource(
+                entry_id=entry_id,
+                title=title,
+                summary=summary,
+                text=text,
+                url=entry.get("url", ""),
+                collected_at=entry.get("collected_at", ""),
+                metadata={"entry": entry},
+            )
+        )
+    return sources
 
-_CRYSTALLIZE_SYSTEM = """You are a knowledge synthesis engine. Your task is to analyze MULTIPLE source articles on a given topic and produce structured knowledge cards that capture patterns, insights, and evidence across sources.
 
-For each distinct insight or pattern you discover across the sources:
-- title: concise title (5-15 words)
-- claim: the synthesized knowledge statement (1-3 sentences)
-- evidence: specific evidence from sources, citing which source supports it (use source index like [Source 1], [Source 2])
-- tags: 3-7 relevant tags/keywords
-- confidence: your confidence (0.0-1.0) considering evidence quality and source agreement
-- source_indices: list of source indices that support this claim
-
-IMPORTANT RULES:
-1. Synthesize ACROSS sources — prefer insights supported by multiple sources
-2. Every claim MUST have evidence traced to specific sources
-3. If sources contradict, note the disagreement and lower confidence
-4. Output ONLY a JSON array of card objects
-5. All text output in Chinese, preserve English proper nouns
-6. If sources are too thin to extract meaningful patterns, return []
-
-Output format:
-```json
-[
-  {
-    "title": "...",
-    "claim": "...",
-    "evidence": "...",
-    "tags": ["..."],
-    "confidence": 0.85,
-    "source_indices": [0, 2]
-  }
-]
-```"""
+# Kept for compatibility with internal callers/tests that import the old name.
+_CRYSTALLIZE_SYSTEM = CRYSTALLIZE_SYSTEM_PROMPT
 
 
 # ============================================================
@@ -228,52 +225,31 @@ def crystallize_topic(
     if not entries:
         return []
 
-    # Step 2: Load full texts and build source context
-    sources = []
-    for i, entry in enumerate(entries):
-        entry_id = entry.get("id", "")
-        title = entry.get("title", "Untitled")
-        summary = entry.get("summary", "")
-        full_text = _load_entry_full_text(entry_id)
-
-        # Use summary + truncated full text
-        content = full_text[:3000] if full_text else summary
-        source_block = (
-            f"[Source {i}] {title}\n"
-            f"Summary: {summary}\n"
-            f"Content: {content[:2000]}\n"
-        )
-        sources.append(source_block)
-
-    # Step 3: Build prompt and call LLM
-    prompt = (
-        f"Analyze the following {len(sources)} sources about '{topic}' "
-        f"and extract up to {max_cards} knowledge cards.\n\n"
-        f"---\n{''.join(sources)}\n---"
+    # Step 2: Build extraction request and delegate to the default engine.
+    sources = _build_card_sources(entries)
+    model = model or DEFAULT_CRYSTALLIZE_MODEL
+    engine = LlmCardExtractionEngine(
+        system_prompt=_CRYSTALLIZE_SYSTEM,
+        chat_func=chat,
     )
-
     try:
-        model = model or DEFAULT_CRYSTALLIZE_MODEL
-        raw = chat(
-            prompt=prompt,
-            system=_CRYSTALLIZE_SYSTEM,
-            model=model,
-            temperature=0.3,
-            max_tokens=4096,
-            provider=provider,
+        result = engine.extract(
+            CardExtractionRequest(
+                topic=topic,
+                sources=sources,
+                max_cards=max_cards,
+                model=model,
+                provider=provider,
+            )
         )
+    except LLMError:
+        raise
     except Exception as e:
         raise LLMError(f"Crystallization LLM call failed: {e}") from e
 
-    # Step 4: Parse response into KnowledgeCards
-    cards = _parse_crystallized_response(
-        raw=raw,
-        entries=entries,
-        topic=topic,
-        model=model,
-    )
+    cards = result.cards
 
-    # Step 5: Validate
+    # Step 3: Validate
     validator = CardValidator()
     valid_cards = []
     for card in cards[:max_cards]:
@@ -290,65 +266,27 @@ def _parse_crystallized_response(
     topic: str,
     model: str,
 ) -> list[KnowledgeCard]:
-    """Parse LLM crystallization response into KnowledgeCards."""
-    import re
-
-    # Strip markdown code blocks
-    cleaned = re.sub(r'^```(?:json)?\s*', '', raw.strip())
-    cleaned = re.sub(r'\s*```$', '', cleaned)
-
-    try:
-        parsed = json.loads(cleaned)
-    except json.JSONDecodeError:
-        match = re.search(r'\[[\s\S]*\]', cleaned)
-        if match:
-            try:
-                parsed = json.loads(match.group())
-            except json.JSONDecodeError:
-                return []
-        else:
-            return []
-
-    if isinstance(parsed, dict):
-        parsed = [parsed]
-    if not isinstance(parsed, list):
-        return []
-
-    cards = []
-    for item in parsed:
-        if not isinstance(item, dict):
-            continue
-
-        # Map source_indices to source_ids
-        source_indices = item.get("source_indices", [])
-        source_ids = []
-        for idx in source_indices:
-            if isinstance(idx, int) and 0 <= idx < len(entries):
-                eid = entries[idx].get("id", "")
-                if eid:
-                    source_ids.append(eid)
-
-        # Also add any entry IDs that matched
-        if not source_ids:
-            source_ids = [e.get("id", "") for e in entries[:5] if e.get("id")]
-
-        card = KnowledgeCard(
-            title=item.get("title", f"Insight on {topic}"),
-            claim=item.get("claim", ""),
-            evidence=item.get("evidence", ""),
-            tags=item.get("tags", [topic]),
-            confidence=float(item.get("confidence", 0.5)),
-            source_ids=source_ids,
-            provenance={
-                "generator": "crystallize",
-                "model": model,
-                "topic": topic,
-                "source_count": len(entries),
-            },
+    """Compatibility wrapper for the old crystallize parser helper."""
+    sources = [
+        CardSource(
+            entry_id=entry.get("id", ""),
+            title=entry.get("title", "Untitled"),
+            summary=entry.get("summary", ""),
+            text=entry.get("summary", ""),
+            url=entry.get("url", ""),
+            collected_at=entry.get("collected_at", ""),
+            metadata={"entry": entry},
         )
-        cards.append(card)
-
-    return cards
+        for entry in entries
+    ]
+    result = parse_card_extraction_response(
+        raw=raw,
+        sources=sources,
+        topic=topic,
+        model=model,
+        engine="llm_v1",
+    )
+    return result.cards
 
 
 # ============================================================

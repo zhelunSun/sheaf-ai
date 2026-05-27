@@ -1,11 +1,12 @@
 """Tests for Sheaf HTTP API layer."""
 import json
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # fastapi is an optional [server] dependency — skip entire module if missing
 pytest.importorskip("fastapi", reason="fastapi not installed (optional [server] dep)")
 from fastapi.testclient import TestClient  # noqa: E402
+from sheaf_cards.base import KnowledgeCard  # noqa: E402
 
 
 @pytest.fixture
@@ -124,15 +125,21 @@ class TestCollectEndpoint:
 
 
 class TestCrystallizeEndpoint:
-    @patch("sheaf_ai.api.crystallize_and_save")
+    @patch("sheaf_ai.api.card_service.crystallize_cards")
     def test_crystallize_success(self, mock_cryst, client):
-        mock_cryst.return_value = [MagicMock(title="Test Card", confidence=0.9)]
+        mock_cryst.return_value = [
+            KnowledgeCard(card_id="card-1", title="Test Card", claim="Claim", evidence="Evidence")
+        ]
         resp = client.post("/crystallize", json={"topic": "AI"})
         assert resp.status_code == 200
         data = resp.json()
         assert data["success"] is True
+        assert data["topic"] == "AI"
+        assert data["count"] == 1
+        assert data["cards"][0]["id"] == "card-1"
+        assert "result" in data
 
-    @patch("sheaf_ai.api.crystallize_and_save")
+    @patch("sheaf_ai.api.card_service.crystallize_cards")
     def test_crystallize_error(self, mock_cryst, client):
         mock_cryst.side_effect = Exception("No API key")
         resp = client.post("/crystallize", json={"topic": "AI"})
@@ -140,40 +147,53 @@ class TestCrystallizeEndpoint:
 
 
 class TestCardsEndpoint:
-    @patch("sheaf_ai.api.list_crystallized")
+    @patch("sheaf_ai.api.card_service.list_cards")
     def test_list_cards(self, mock_list, client):
-        mock_card = MagicMock()
-        mock_card.card_id = "card-1"
-        mock_card.title = "Test Card"
-        mock_card.confidence = 0.9
-        mock_card.evidence = []
-        mock_list.return_value = [mock_card]
+        card = KnowledgeCard(card_id="card-1", title="Test Card", claim="Claim", evidence="Evidence")
+        mock_list.return_value = [card]
 
         resp = client.get("/cards")
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
+        assert data["cards"][0]["id"] == "card-1"
+        assert data["cards"][0]["card_id"] == "card-1"
         assert data["cards"][0]["title"] == "Test Card"
+        assert isinstance(data["cards"][0]["evidence"], str)
 
-    @patch("sheaf_ai.api.get_card")
+    @patch("sheaf_ai.api.card_service.get_card_detail")
     def test_get_card_detail(self, mock_get, client):
-        mock_card = MagicMock()
-        mock_card.card_id = "card-1"
-        mock_card.title = "Test Card"
-        mock_card.confidence = 0.9
-        mock_card.evidence = []
-        mock_get.return_value = mock_card
+        card = KnowledgeCard(card_id="card-1", title="Test Card", claim="Claim", evidence="Evidence")
+        mock_get.return_value = card
 
         resp = client.get("/cards/card-1")
         assert resp.status_code == 200
         data = resp.json()
+        assert data["id"] == "card-1"
+        assert data["card_id"] == "card-1"
         assert data["title"] == "Test Card"
+        assert isinstance(data["evidence"], str)
 
-    @patch("sheaf_ai.api.get_card")
+    @patch("sheaf_ai.api.card_service.get_card_detail")
     def test_get_card_not_found(self, mock_get, client):
         mock_get.return_value = None
         resp = client.get("/cards/nonexistent")
         assert resp.status_code == 404
+
+    @patch("sheaf_ai.api.card_service.search_cards_semantic")
+    def test_semantic_search_cards(self, mock_search, client):
+        mock_search.return_value = [{
+            "score": 0.9,
+            "card": {"id": "card-1", "card_id": "card-1", "title": "Test Card"},
+        }]
+
+        resp = client.get("/cards/search/semantic", params={"q": "test", "limit": 1})
+
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["query"] == "test"
+        assert data["total"] == 1
+        assert data["results"][0]["card"]["id"] == "card-1"
 
 
 class TestDocsEndpoint:

@@ -28,13 +28,7 @@ from sheaf_ai.search import search_fulltext
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.mcp_server import MCP_PROTOCOL_VERSION
-from sheaf_ai.crystallize import (
-    crystallize_and_save,
-    list_crystallized,
-    get_card,
-    delete_card,
-    semantic_search,
-)
+from sheaf_ai import card_service
 
 # Ensure Windows UTF-8 output
 fix_windows_encoding()
@@ -173,7 +167,7 @@ def create_app() -> FastAPI:
                         continue
 
         # Count cards
-        total_cards = len(list_crystallized())
+        total_cards = len(card_service.list_cards())
 
         return StatsResponse(
             total_entries=total_entries,
@@ -255,53 +249,26 @@ def create_app() -> FastAPI:
     async def crystallize(req: CrystallizeRequest):
         """Crystallize knowledge cards from a topic."""
         try:
-            result = crystallize_and_save(req.topic)
-            return {"success": True, "topic": req.topic, "result": str(result)}
+            cards = card_service.crystallize_cards(req.topic)
+            card_data = [card_service.card_to_public_dict(c) for c in cards]
+            return {
+                "success": True,
+                "topic": req.topic,
+                "count": len(card_data),
+                "cards": card_data,
+                "result": str(cards),
+            }
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/cards", tags=["knowledge"])
     async def list_cards():
         """List all crystallized knowledge cards."""
-        cards = list_crystallized()
+        cards = card_service.list_cards()
         return {
             "total": len(cards),
-            "cards": [
-                {
-                    "card_id": c.card_id if hasattr(c, "card_id") else None,
-                    "title": c.title,
-                    "confidence": c.confidence,
-                    "evidence_count": len(c.evidence) if hasattr(c, "evidence") else 0,
-                }
-                for c in cards
-            ],
+            "cards": [card_service.card_to_public_dict(c) for c in cards],
         }
-
-    @app.get("/cards/{card_id}", tags=["knowledge"])
-    async def get_card_detail(card_id: str):
-        """Get a specific knowledge card."""
-        card = get_card(card_id)
-        if card is None:
-            raise HTTPException(status_code=404, detail=f"Card {card_id} not found")
-        return {
-            "card_id": card.card_id if hasattr(card, "card_id") else card_id,
-            "title": card.title,
-            "confidence": card.confidence,
-            "evidence": [
-                {"entry_id": e.entry_id if hasattr(e, "entry_id") else str(e),
-                 "relevance": e.relevance if hasattr(e, "relevance") else None}
-                for e in (card.evidence if hasattr(card, "evidence") else [])
-            ],
-        }
-
-    @app.delete("/cards/{card_id}", tags=["knowledge"])
-    async def remove_card(card_id: str):
-        """Delete a knowledge card."""
-        try:
-            delete_card(card_id)
-            return {"success": True, "deleted": card_id}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/cards/search/semantic", tags=["search"])
     async def semantic_search_cards(
@@ -310,8 +277,25 @@ def create_app() -> FastAPI:
     ):
         """Semantic vector search across knowledge cards."""
         try:
-            results = semantic_search(q)
-            return {"query": q, "total": len(results), "results": results[:limit]}
+            results = card_service.search_cards_semantic(q, top_k=limit)
+            return {"query": q, "total": len(results), "results": results}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+    @app.get("/cards/{card_id}", tags=["knowledge"])
+    async def get_card_detail(card_id: str):
+        """Get a specific knowledge card."""
+        card = card_service.get_card_detail(card_id)
+        if card is None:
+            raise HTTPException(status_code=404, detail=f"Card {card_id} not found")
+        return card_service.card_to_public_dict(card)
+
+    @app.delete("/cards/{card_id}", tags=["knowledge"])
+    async def remove_card(card_id: str):
+        """Delete a knowledge card."""
+        try:
+            card_service.delete_card_by_id(card_id)
+            return {"success": True, "deleted": card_id}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

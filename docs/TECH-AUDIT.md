@@ -1,7 +1,7 @@
 # Sheaf — Technical Architecture Audit & Roadmap
 
 > **Status**: v0.4.0a0 architecture audit
-> **Updated**: 2026-05-26
+> **Updated**: 2026-05-28
 
 Sheaf is an early-alpha, local-first knowledge layer. The current product surface is CLI + MCP + local HTTP API, with an experimental browser extension and a structured KnowledgeCard layer.
 
@@ -43,7 +43,7 @@ The codebase is currently organized by function modules rather than strict layer
 | Interfaces | `cli.py`, `mcp_server.py`, `api.py`, `extension/` | Public entry points call core functions directly |
 | Collection workflow | `pipeline.py`, `fetch_article.py`, `quality.py` | `process_url()` is the main collect use case |
 | Local storage/search | `storage.py`, `query.py`, `search.py`, `feedback.py` | JSON/JSONL/Markdown files under `data/` |
-| Cards/knowledge assets | `crystallize.py`, `renderer.py`, `sheaf_cards/` | Cards are structured, traceable units |
+| Cards/knowledge assets | `crystallize.py`, `card_service.py`, `renderer.py`, `sheaf_cards/` | Cards are structured, traceable units with shared public projection |
 | Providers/config | `config.py`, `llm_client.py`, embedding/card provider helpers | OpenAI-compatible by default |
 
 ---
@@ -54,7 +54,7 @@ The codebase is currently organized by function modules rather than strict layer
 |---|---|---|---|
 | CLI `sheaf collect/search/crystallize/mcp/serve` | Alpha stable | Command names should remain compatible | Output text may evolve; JSON output should stay machine-readable |
 | MCP stdio | Alpha stable | 9 tools: search, list, get, urgent, correct, collect, crystallize, list_cards, get_card | Tool names and argument shapes should be treated as public |
-| HTTP API | Early alpha | `/health`, `/stats`, `/collect`, `/search`, `/entries`, `/crystallize`, `/cards`, `/feedback`, `/mcp` | Intended for local apps/extensions; security model is localhost-first |
+| HTTP API | Early alpha | `/health`, `/stats`, `/collect`, `/search`, `/entries`, `/crystallize`, `/cards`, `/feedback`, `/mcp` | Card JSON is projected through `card_service`; security model is localhost-first |
 | Browser extension | Experimental | Calls local HTTP API at `http://localhost:8321` by default | Versioning is independent from the Python package |
 | Python internals | Internal | No stable SDK yet | Future SDK should wrap services rather than expose raw modules |
 
@@ -110,6 +110,7 @@ Architecture audit note: `knowledge_cards.json` should be the canonical card sto
 ### Phase 1 — Contract Cleanup
 
 - Treat `data/cards/knowledge_cards.json` as the canonical card store.
+- Keep public card JSON generated through `card_service.card_to_public_dict()`.
 - Keep CLI command names, MCP tool names, HTTP route names, and data file names compatible.
 - Add tests for any public contract touched by a change.
 - Keep extension documented as experimental until its local API contract is versioned.

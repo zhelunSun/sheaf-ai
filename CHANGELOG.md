@@ -24,6 +24,8 @@ All notable changes to Sheaf.
 - `sheaf_ai/display.py` — streak line display on CLI startup
 - Chrome Extension MVP scaffold (popup, background, options, icons)
 - CONTRIBUTING.md — public contribution guide
+- `sheaf_ai/card_extraction.py` — internal `CardExtractionEngine` boundary for swappable knowledge card extraction.
+- `sheaf_ai/card_service.py` — shared card use-case boundary and public JSON projection for CLI/MCP/HTTP adapters.
 
 ### Changed
 - Pipeline now runs quality gate before classify/summarize
@@ -31,9 +33,11 @@ All notable changes to Sheaf.
 - CLI shows quality hints on failure (with `--force` suggestion)
 - `sheaf stats` shows dual-dimension progress bars + milestone badges
 - Gamification update after both glean and crystallize
+- `crystallize_topic()` now delegates prompt assembly, LLM extraction, response parsing, and card mapping to the default extraction engine while preserving existing CLI/MCP/HTTP behavior.
+- Card-related CLI/MCP/HTTP adapters now share `card_service.card_to_public_dict()` for stable card JSON output.
 
 ### Tests
-- 273 tests (100% pass) — 62 new gamification + 35 quality gate tests
+- 287 tests passed, 13 opt-in MCP E2E tests skipped by default — includes card extraction and card service boundary coverage
 - Ruff lint: 0 issues
 
 ---
@@ -46,7 +50,7 @@ All notable changes to Sheaf.
 - Unified MCP protocol version reporting across stdio and HTTP transport.
 - Tightened default CORS behavior for the local HTTP API and added a warning for non-localhost binds.
 - Fixed Windows subprocess decoding in CLI smoke tests.
-- Updated public docs to reflect 273 tests and pyproject extras as the dependency source of truth.
+- Updated public docs to reflect 287 passing tests and pyproject extras as the dependency source of truth.
 
 ### Added
 - `sheaf_ai/crystallize.py` — knowledge crystallization engine:

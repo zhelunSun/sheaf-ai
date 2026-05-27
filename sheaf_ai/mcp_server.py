@@ -14,13 +14,8 @@ from sheaf_ai.query import query_urgent as _query_urgent
 from sheaf_ai.search import search_fulltext, search_quick
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
-from sheaf_ai.crystallize import (
-    crystallize_and_save, list_crystallized, get_card as _get_card,
-)
-from sheaf_ai.renderer import CardOutputConfig, CardRenderer
+from sheaf_ai import card_service
 
-# Shared renderer for MCP structured output
-_mcp_renderer = CardRenderer(CardOutputConfig.detailed())
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
 
@@ -301,7 +296,13 @@ def handle_request(request: dict) -> str | None:
         elif tool_name == "sheaf_collect":
             url = arguments.get("url", "")
             force = arguments.get("force", False)
-            result = process_url(url, force=force)
+            # Suppress pipeline print() — they corrupt JSON-RPC stdio transport
+            _stdout = sys.stdout
+            sys.stdout = sys.stderr
+            try:
+                result = process_url(url, force=force)
+            finally:
+                sys.stdout = _stdout
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
             })
@@ -311,8 +312,8 @@ def handle_request(request: dict) -> str | None:
             if not topic:
                 return _jsonrpc_error(req_id, -32602, "Missing required parameter: topic")
             try:
-                cards = crystallize_and_save(topic)
-                card_data = [_mcp_renderer._card_to_json(c) for c in cards]
+                cards = card_service.crystallize_cards(topic)
+                card_data = [card_service.card_to_public_dict(c) for c in cards]
                 return _jsonrpc_response(req_id, {
                     "content": [{"type": "text", "text": json.dumps({
                         "topic": topic,
@@ -325,8 +326,8 @@ def handle_request(request: dict) -> str | None:
 
         elif tool_name == "sheaf_list_cards":
             topic = arguments.get("topic")
-            cards = list_crystallized(topic=topic)
-            card_data = [_mcp_renderer._card_to_json(c) for c in cards]
+            cards = card_service.list_cards(topic=topic)
+            card_data = [card_service.card_to_public_dict(c) for c in cards]
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps({
                     "total": len(card_data),
@@ -336,11 +337,18 @@ def handle_request(request: dict) -> str | None:
 
         elif tool_name == "sheaf_get_card":
             card_id = arguments.get("card_id", "")
-            card = _get_card(card_id)
+            card = card_service.get_card_detail(card_id)
             if not card:
                 return _jsonrpc_error(req_id, -32602, f"Card not found: {card_id}")
             return _jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": _mcp_renderer._render_json(card)}]
+                "content": [{
+                    "type": "text",
+                    "text": json.dumps(
+                        card_service.card_to_public_dict(card),
+                        ensure_ascii=False,
+                        indent=2,
+                    ),
+                }]
             })
 
         else:

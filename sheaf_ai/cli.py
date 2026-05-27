@@ -180,9 +180,10 @@ def _serve(p: argparse.Namespace):
 
 
 def _crystallize(p: argparse.Namespace) -> None:
-    from sheaf_ai.crystallize import (
-        crystallize_and_save, list_crystallized, get_card,
-        delete_card, get_topic_stats, semantic_search, rebuild_embeddings,
+    from sheaf_ai.card_service import (
+        crystallize_cards, list_cards, get_card_detail,
+        delete_card_by_id, get_card_topic_stats, search_cards_semantic,
+        rebuild_card_embeddings,
     )
     from sheaf_ai.renderer import CardRenderer
 
@@ -192,24 +193,24 @@ def _crystallize(p: argparse.Namespace) -> None:
     renderer = CardRenderer(config)
 
     if p.list:
-        cards = list_crystallized()
+        cards = list_cards()
         if not cards:
             print("No crystallized cards yet. Try: sheaf crystallize <topic>")
             return
         print(renderer.render_list(cards, format=fmt, title="Crystallized Knowledge Cards"))
         return
     if p.show:
-        card = get_card(p.show)
+        card = get_card_detail(p.show)
         if not card:
             print(f"Card not found: {p.show}"); return
         print(renderer.render(card, format=fmt))
         return
     if p.delete:
-        ok = delete_card(p.delete)
+        ok = delete_card_by_id(p.delete)
         print(f"Card {'deleted' if ok else 'not found'}: {p.delete}")
         return
     if p.stats:
-        stats = get_topic_stats()
+        stats = get_card_topic_stats()
         if not stats:
             print("No crystallized cards yet."); return
         for topic, count in sorted(stats.items(), key=lambda x: -x[1]):
@@ -217,19 +218,19 @@ def _crystallize(p: argparse.Namespace) -> None:
         print(f"  Total: {sum(stats.values())} cards across {len(stats)} topics")
         return
     if hasattr(p, "semantic") and p.semantic:
-        results = semantic_search(p.semantic)
+        results = search_cards_semantic(p.semantic)
         if not results:
             print("No results. Try crystallizing some topics first, or check embedding API.")
             return
         for r in results:
             card = r["card"]
-            print(f"  [{r['score']:.2f}] {card.title}")
-            print(f"      {card.claim[:80]}")
+            print(f"  [{r['score']:.2f}] {card.get('title', '')}")
+            print(f"      {card.get('claim', '')[:80]}")
         print(f"\n  {len(results)} results")
         return
     if hasattr(p, "rebuild_embeddings") and p.rebuild_embeddings:
         print("Rebuilding embedding index...")
-        count = rebuild_embeddings()
+        count = rebuild_card_embeddings()
         print(f"✅ Indexed {count} cards")
         return
     # Default: crystallize a topic
@@ -237,7 +238,7 @@ def _crystallize(p: argparse.Namespace) -> None:
         print("Usage: sheaf crystallize <topic>   or   sheaf crystallize --list")
         return
     print(f"Crystallizing '{p.topic}'...")
-    cards = crystallize_and_save(p.topic)
+    cards = crystallize_cards(p.topic)
     if not cards:
         print(f"No cards generated for '{p.topic}'. Not enough related entries (need 3+).")
         return
