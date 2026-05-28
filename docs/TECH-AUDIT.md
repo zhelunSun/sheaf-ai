@@ -60,6 +60,8 @@ The codebase is currently organized by function modules rather than strict layer
 
 Rule of thumb: adding or changing a public command, MCP tool, HTTP endpoint, or extension contract should update this matrix and the changelog.
 
+Release and beta rules are tracked in [RELEASE-LIFECYCLE.md](RELEASE-LIFECYCLE.md). Nightly branches are review candidates, not release channels.
+
 ---
 
 ## 3. Local Data Contracts

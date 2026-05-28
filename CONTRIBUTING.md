@@ -39,6 +39,7 @@ python -m pytest tests -q --basetemp .pytest-tmp
 - Add or update tests for user-visible behavior.
 - Do not commit local data, API keys, private planning docs, or agent memory.
 - Keep public docs consistent with actual commands, versions, and test counts.
+- Follow the release and nightly merge rules in [docs/RELEASE-LIFECYCLE.md](docs/RELEASE-LIFECYCLE.md).
 
 ## Security and Privacy
 
