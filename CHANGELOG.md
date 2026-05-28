@@ -36,8 +36,11 @@ All notable changes to Sheaf.
 - `crystallize_topic()` now delegates prompt assembly, LLM extraction, response parsing, and card mapping to the default extraction engine while preserving existing CLI/MCP/HTTP behavior.
 - Card-related CLI/MCP/HTTP adapters now share `card_service.card_to_public_dict()` for stable card JSON output.
 
+### Fixed
+- Restored the documented local-first data root contract: by default, Sheaf writes to `./data/` for the invoking process; set `SHEAF_DATA_DIR` for a stable shared data directory.
+
 ### Tests
-- 287 tests passed, 13 opt-in MCP E2E tests skipped by default — includes card extraction and card service boundary coverage
+- 288 tests passed, 13 opt-in MCP E2E tests skipped by default — includes card extraction, card service boundary, and data-root contract coverage
 - Ruff lint: 0 issues
 
 ---

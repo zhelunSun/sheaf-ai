@@ -28,12 +28,9 @@ def _load_env_file():
 
 _load_env_file()
 
-# Data directories — default to ./data relative to project root, configurable via env.
-# CWD-independent to avoid split-brain when CLI is called from different directories.
-_DATA_ROOT = Path(os.environ.get(
-    "SHEAF_DATA_DIR",
-    str(PROJECT_ROOT / "data")
-))
+# Data directories — default to ./data relative to the current working directory.
+# This matches the public local-first contract; set SHEAF_DATA_DIR for stable shared storage.
+_DATA_ROOT = Path(os.environ.get("SHEAF_DATA_DIR", str(Path.cwd() / "data")))
 DATA_DIR = _DATA_ROOT
 ENTRIES_DIR = DATA_DIR / "entries"
 SUMMARIES_DIR = DATA_DIR / "summaries"

@@ -6,6 +6,8 @@ It verifies the package structure, entry points, and basic functionality.
 """
 import subprocess
 import sys
+import os
+from pathlib import Path
 
 
 def test_version():
@@ -150,6 +152,27 @@ def test_config_data_dir():
     """Data directory path is correctly configured."""
     from sheaf_ai.config import DATA_DIR
     assert "data" in str(DATA_DIR).lower()
+
+
+def test_config_data_dir_defaults_to_cwd(tmp_path):
+    """Without SHEAF_DATA_DIR, data lives in ./data for the invoking process."""
+    env = os.environ.copy()
+    env.pop("SHEAF_DATA_DIR", None)
+
+    repo_root = Path(__file__).resolve().parents[1]
+    env["PYTHONPATH"] = str(repo_root) + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [sys.executable, "-c", "from sheaf_ai.config import DATA_DIR; print(DATA_DIR)"],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert Path(result.stdout.strip()) == tmp_path / "data"
 
 
 def test_ensure_data_dirs(tmp_path):

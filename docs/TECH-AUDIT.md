@@ -64,7 +64,7 @@ Rule of thumb: adding or changing a public command, MCP tool, HTTP endpoint, or 
 
 ## 3. Local Data Contracts
 
-Sheaf stores user data locally. The default root is `./data/`, configurable via `SHEAF_DATA_DIR`.
+Sheaf stores user data locally. The default root is `./data/` for the invoking process, configurable via `SHEAF_DATA_DIR` when a user or app needs a stable shared data directory.
 
 | Data | Path | Purpose |
 |---|---|---|
