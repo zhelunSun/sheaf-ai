@@ -4,6 +4,7 @@ Smoke test: verify sheaf-ai installs correctly and all public APIs are importabl
 This test runs WITHOUT any API keys or network access.
 It verifies the package structure, entry points, and basic functionality.
 """
+import json
 import subprocess
 import sys
 import os
@@ -89,6 +90,29 @@ def test_cli_no_args():
     # Should show either "empty" or stats
     output = result.stdout.lower()
     assert "sheaf" in output or "basket" in output or "sheaves" in output
+
+
+def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
+    """collect --json should reserve stdout for JSON and push warnings to stderr."""
+    from argparse import Namespace
+    from sheaf_ai import cli
+
+    def fake_process_url(url, force=False):
+        print("Warning: Duplicate detected (url_duplicate): Example title")
+        return {
+            "success": False,
+            "error": "Duplicate (url_duplicate)",
+            "stage": "dedup",
+            "url": url,
+        }
+
+    monkeypatch.setattr("sheaf_ai.pipeline.process_url", fake_process_url)
+
+    cli._collect(Namespace(url="https://example.com", force=False, json=True))
+
+    captured = capsys.readouterr()
+    assert captured.err.strip() == "Warning: Duplicate detected (url_duplicate): Example title"
+    assert json.loads(captured.out)["stage"] == "dedup"
 
 
 def test_mcp_tools_defined():

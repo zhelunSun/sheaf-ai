@@ -3,6 +3,8 @@ from __future__ import annotations
 import sys
 import json
 import argparse
+from contextlib import redirect_stdout
+from pathlib import Path
 from typing import NoReturn
 
 from sheaf_ai.config import fix_windows_encoding, VERSION
@@ -44,6 +46,13 @@ def build_parser() -> argparse.ArgumentParser:
                             ("mcp", "Start MCP server (stdio)"), ("init", "First-time onboarding")]:
         sub.add_parser(name, help=help_text)
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
+    # Setup: auto-configure MCP for Agent platforms
+    p = sub.add_parser("setup", help="Auto-configure MCP server for your Agent platform")
+    p.add_argument("--target", "-t", choices=["cursor", "claude", "workbuddy", "windsurf"],
+                   default=None, help="Target platform (default: detect)")
+    p.add_argument("--data-dir", default=None, help="Custom data directory for Sheaf")
+    p.add_argument("--dry-run", action="store_true", help="Show what would be written without writing")
+    p.add_argument("--show-config", action="store_true", help="Print the generated config and exit")
     # HTTP API server
     p = sub.add_parser("serve", help="Start HTTP API server")
     p.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
@@ -104,9 +113,9 @@ def _run() -> None:
         argv = [_FLAG_MAP[argv[0]]] + argv[1:]
     # Bare URL shorthand
     if argv and argv[0].startswith(("http://", "https://", "ftp://")):
-        from sheaf_ai.pipeline import process_url
-        result = process_url(argv[0], force="--force" in argv)
-        _print_collect_result(result, json_output="--json" in argv)
+        json_output = "--json" in argv
+        result = _run_collect(argv[0], force="--force" in argv, json_output=json_output)
+        _print_collect_result(result, json_output=json_output)
         return
     parsed = build_parser().parse_args(argv)
     if parsed.command is None:
@@ -117,6 +126,7 @@ def _run() -> None:
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
+        "setup": lambda: _setup(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -124,9 +134,20 @@ def _run() -> None:
 
 
 def _collect(p: argparse.Namespace) -> None:
+    json_output = getattr(p, "json", False)
+    result = _run_collect(p.url, force=p.force, json_output=json_output)
+    _print_collect_result(result, json_output=json_output)
+
+
+def _run_collect(url: str, force: bool = False, json_output: bool = False) -> dict:
+    """Run collect with optional stdout isolation for machine-readable output."""
     from sheaf_ai.pipeline import process_url
-    result = process_url(p.url, force=p.force)
-    _print_collect_result(result, json_output=getattr(p, "json", False))
+
+    if json_output:
+        with redirect_stdout(sys.stderr):
+            return process_url(url, force=force)
+
+    return process_url(url, force=force)
 
 
 def _print_collect_result(result: dict, json_output: bool = False) -> None:
@@ -174,6 +195,36 @@ def _mcp():
 
 def _init():
     from sheaf_ai.onboarding import run_onboarding; run_onboarding()
+
+def _setup(p: argparse.Namespace):
+    from sheaf_ai.setup import setup_target, print_setup_result, build_mcp_config
+    target = p.target or _detect_target()
+    if not target:
+        print("Could not auto-detect target platform.")
+        print("Please specify: sheaf setup --target <cursor|claude|workbuddy|windsurf>")
+        sys.exit(1)
+    # --show-config: just print the generated config and exit
+    if p.show_config:
+        config = build_mcp_config(data_dir=p.data_dir)
+        print(json.dumps({"mcpServers": {"sheaf": config}}, indent=2, ensure_ascii=False))
+        return
+    result = setup_target(target, data_dir=p.data_dir, dry_run=p.dry_run)
+    if p.dry_run:
+        print("[DRY RUN] Would write the following config:")
+        print(json.dumps(result["merged_config"], indent=2, ensure_ascii=False))
+        print()
+    print_setup_result(result)
+
+def _detect_target() -> str | None:
+    """Heuristic: detect which Agent platform is active based on CWD files."""
+    cwd = Path.cwd()
+    if (cwd / ".cursor").exists() or (cwd / ".cursorrules").exists():
+        return "cursor"
+    if (cwd / ".windsurfrules").exists() or (cwd / ".windsurf").exists():
+        return "windsurf"
+    if (Path.home() / ".workbuddy").exists():
+        return "workbuddy"
+    return None
 
 def _serve(p: argparse.Namespace):
     from sheaf_ai.api import run_server; run_server(host=p.host, port=p.port)

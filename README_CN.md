@@ -123,6 +123,30 @@ sheaf mcp
 | `sheaf_list_cards` | 列出已结晶的卡片 |
 | `sheaf_get_card` | 按 ID 获取卡片详情 |
 
+### 一键接入 Agent
+
+一条命令将 Sheaf 接入你的 AI 编程助手：
+
+```bash
+# Cursor / Windsurf / WorkBuddy
+sheaf setup --target cursor      # 写入 .cursor/mcp.json
+sheaf setup --target windsurf    # 写入 .windsurf/mcp.json
+sheaf setup --target workbuddy   # 写入 ~/.workbuddy/mcp.json
+
+# Claude Code
+sheaf setup --target claude      # 写入 ~/.claude.json
+
+# 自动检测当前环境
+sheaf setup                      # 自动识别 cursor/windsurf/workbuddy
+```
+
+**预览但不写入：**
+```bash
+sheaf setup --target cursor --dry-run
+```
+
+详见 [docs/mcp-setup.md](docs/mcp-setup.md)。
+
 ## 命令一览
 
 ```bash
@@ -137,6 +161,7 @@ sheaf weekly                     # 周报摘要
 sheaf insights                   # 跨主题关联发现
 sheaf urgent                     # 显示有截止日期的条目
 sheaf mcp                        # 启动 MCP 服务器
+sheaf setup --target <platform>  # 一键配置 MCP（cursor/claude/workbuddy/windsurf）
 sheaf init                       # 首次初始化
 ```
 

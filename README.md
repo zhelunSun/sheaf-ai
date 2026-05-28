@@ -82,6 +82,7 @@ sheaf weekly                # Weekly summary report
 sheaf insights              # Cross-topic association discovery
 sheaf urgent                # Show entries with upcoming deadlines
 sheaf mcp                   # Start MCP server (stdio transport)
+sheaf setup --target <platform>  # One-command MCP config (cursor/claude/workbuddy/windsurf)
 sheaf init                  # First-time onboarding with demo
 ```
 
@@ -130,6 +131,30 @@ sheaf mcp
 | `sheaf_crystallize` | Crystallize knowledge cards from a topic |
 | `sheaf_list_cards` | List crystallized cards (optional topic filter) |
 | `sheaf_get_card` | Get full card details by ID |
+
+## Agent Integration (One Command)
+
+Connect Sheaf to your AI coding agent in a single step:
+
+```bash
+# Cursor / Windsurf / WorkBuddy
+sheaf setup --target cursor      # writes .cursor/mcp.json
+sheaf setup --target windsurf    # writes .windsurf/mcp.json
+sheaf setup --target workbuddy   # writes ~/.workbuddy/mcp.json
+
+# Claude Code
+sheaf setup --target claude      # writes ~/.claude.json
+
+# Auto-detect from CWD
+sheaf setup                      # detects cursor/windsurf/workbuddy
+```
+
+**Preview without writing:**
+```bash
+sheaf setup --target cursor --dry-run
+```
+
+See [docs/mcp-setup.md](docs/mcp-setup.md) for detailed platform guides and troubleshooting.
 
 ## What You Can Collect
 
