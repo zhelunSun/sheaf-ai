@@ -51,3 +51,4 @@
    - 保留专有名词原文（DeepSeek、OpenAI、Transformer）
    - 每篇文章 3-8 个标签
    - 尽量复用已有常见标签（如 "大模型"、"Agent"、"LLM"、"投资"）
+   - 英文标签必须拼写正确（如 "artificial" 而非 "artifical"），不确定时用中文标签
