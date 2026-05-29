@@ -11,7 +11,7 @@ import sys
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION, fix_windows_encoding
 from sheaf_ai.query import query_urgent as _query_urgent
-from sheaf_ai.search import search_fulltext, search_quick
+from sheaf_ai.search import search_fulltext, search_hybrid, search_quick
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai import card_service
@@ -98,13 +98,24 @@ def get_entry(entry_id: str) -> dict | None:
 TOOLS = [
     {
         "name": "sheaf_search",
-        "description": "Search collected knowledge by keyword. Searches across titles, categories, tags, summaries, AND full article text. Returns ranked results with relevance scores and match snippets.",
+        "description": "Search collected knowledge by keyword or semantic meaning. Supports three modes: (1) 'keyword' — weighted field matching, (2) 'hybrid' — BM25 + semantic embedding fusion for best recall+precision (recommended), (3) 'quick' — metadata-only fast path. Returns ranked results with relevance scores and match snippets.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {"type": "string", "description": "Search keyword or phrase"},
                 "limit": {"type": "integer", "description": "Max results to return (default: 10)", "default": 10},
-                "deep": {"type": "boolean", "description": "Search full article text in addition to metadata (default: true)", "default": True},
+                "mode": {
+                    "type": "string",
+                    "description": "Search mode: 'keyword' (legacy weighted), 'hybrid' (BM25+semantic, recommended), or 'quick' (metadata-only). Default: 'keyword'.",
+                    "enum": ["keyword", "hybrid", "quick"],
+                    "default": "keyword",
+                },
+                "deep": {"type": "boolean", "description": "Search full article text in addition to metadata (default: true). Only for keyword mode.", "default": True},
+                "alpha": {
+                    "type": "number",
+                    "description": "BM25 vs semantic weight for hybrid mode (0.0-1.0, default: 0.6). Higher = more keyword-biased.",
+                    "default": 0.6,
+                },
             },
             "required": ["query"],
         },
@@ -237,17 +248,19 @@ def handle_request(request: dict) -> str | None:
         arguments = params.get("arguments", {})
 
         if tool_name == "sheaf_search":
-            deep = arguments.get("deep", True)
+            mode = arguments.get("mode", "keyword")
             limit = arguments.get("limit", 10)
             query_str = arguments.get("query", "")
 
-            if deep:
-                results = search_fulltext(query_str, limit=limit, include_raw=True)
-                # Format with scores and snippets for Agent consumption
+            if mode == "hybrid":
+                alpha = arguments.get("alpha", 0.6)
+                results = search_hybrid(query_str, limit=limit, alpha=alpha, include_raw=True)
                 formatted = []
                 for r in results:
                     item = r["entry"].copy()
                     item["_score"] = r["score"]
+                    item["_bm25_score"] = r.get("bm25_score", 0.0)
+                    item["_semantic_score"] = r.get("semantic_score", 0.0)
                     item["_match_locations"] = r["match_locations"]
                     if r.get("snippet"):
                         item["_snippet"] = r["snippet"]
@@ -255,11 +268,31 @@ def handle_request(request: dict) -> str | None:
                 return _jsonrpc_response(req_id, {
                     "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
                 })
-            else:
+            elif mode == "quick":
                 results = search_quick(query_str, limit=limit)
                 return _jsonrpc_response(req_id, {
                     "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
                 })
+            else:  # keyword (legacy)
+                deep = arguments.get("deep", True)
+                if deep:
+                    results = search_fulltext(query_str, limit=limit, include_raw=True)
+                    formatted = []
+                    for r in results:
+                        item = r["entry"].copy()
+                        item["_score"] = r["score"]
+                        item["_match_locations"] = r["match_locations"]
+                        if r.get("snippet"):
+                            item["_snippet"] = r["snippet"]
+                        formatted.append(item)
+                    return _jsonrpc_response(req_id, {
+                        "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
+                    })
+                else:
+                    results = search_quick(query_str, limit=limit)
+                    return _jsonrpc_response(req_id, {
+                        "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
+                    })
 
         elif tool_name == "sheaf_list":
             results = list_entries(arguments.get("category"), arguments.get("limit", 20))
