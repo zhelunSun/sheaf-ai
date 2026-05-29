@@ -63,6 +63,7 @@ def search_fulltext(
     limit: int = 10,
     include_raw: bool = True,
     min_score: float = 0.0,
+    tier: str = "",
 ) -> list[dict]:
     """Full-text search across metadata + raw article text.
 
@@ -71,6 +72,7 @@ def search_fulltext(
         limit: Max results to return
         include_raw: Whether to search raw/ text files (slower but thorough)
         min_score: Minimum relevance score to include
+        tier: Optional quality tier filter ("A", "B", "C"). Empty = all tiers.
 
     Returns:
         List of result dicts with 'entry', 'score', 'match_locations' keys
@@ -95,6 +97,13 @@ def search_fulltext(
                 continue
 
             entry_id = entry.get("id", "")
+
+            # Quality tier filter (Issue #34)
+            if tier:
+                entry_tier = entry.get("quality_tier", "B")
+                if entry_tier != tier:
+                    continue
+
             topics = entry.get("topics", [])
             topic_names = " ".join(
                 t.get("name", t) if isinstance(t, dict) else t for t in topics

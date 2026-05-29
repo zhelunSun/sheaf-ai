@@ -248,6 +248,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     entry_id = store_article(
         url, fetch_result, classify_result, summary_result,
         extra_meta=conversation_meta if is_ai_conversation else None,
+        quality_tier=quality_report.quality_tier,
     )
     print(f"Stored as: {entry_id}")
 

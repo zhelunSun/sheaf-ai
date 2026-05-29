@@ -79,7 +79,7 @@ def update_tags_registry(tags: list, now_iso: str) -> None:
 # ============================================================
 
 def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict,
-                   extra_meta: dict = None) -> str:
+                   extra_meta: dict = None, quality_tier: str = "") -> str:
     """Store processed article to data/ directory. Returns entry_id."""
     now = datetime.now(BJT)
     date_str = now.strftime("%Y-%m-%d")
@@ -115,6 +115,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
         "tags": tags,
         "content_type": classify_result.get("content_type", "reference"),
         "importance": classify_result.get("importance", "medium"),
+        "quality_tier": quality_tier or "B",
         "relevance_note": classify_result.get("relevance_note", ""),
         "summary": summary_result.get("one_liner", ""),
         "structured_summary": {
@@ -250,6 +251,7 @@ def append_index(entry: dict) -> None:
         "tags": entry["tags"],
         "content_type": entry.get("content_type", ""),
         "importance": entry["importance"],
+        "quality_tier": entry.get("quality_tier", "B"),
         "summary": entry["summary"],
         "has_deadline": timeliness.get("has_deadline", False),
         "deadline_date": timeliness.get("deadline_date"),

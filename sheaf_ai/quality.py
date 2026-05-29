@@ -49,6 +49,11 @@ class QualityReport:
         """Whether the article passes quality gate (pass or warn)."""
         return self.decision in (DECISION_PASS, DECISION_WARN)
 
+    @property
+    def quality_tier(self) -> str:
+        """Content quality tier: A (high) / B (medium) / C (low)."""
+        return quality_tier(self.score, self.text_length)
+
     def to_dict(self) -> dict:
         return {
             "decision": self.decision,
@@ -56,6 +61,7 @@ class QualityReport:
             "text_length": self.text_length,
             "image_count": self.image_count,
             "score": self.score,
+            "quality_tier": self.quality_tier,
             "is_image_heavy": self.is_image_heavy,
             "alt_text_available": self.alt_text_available,
             "hint": self.hint,
@@ -149,6 +155,22 @@ def assess_quality(
         alt_text_available=alt_text_available,
         hint=hint,
     )
+
+
+def quality_tier(score: int, text_length: int = 0) -> str:
+    """Map quality score to A/B/C tier (Issue #34).
+
+    Rules:
+    - A: High-quality, information-dense content (score >= 4, text >= 1000 chars)
+    - B: Medium quality, standard articles
+    - C: Low quality, short/fragmented content (score <= 1, or text < 200 chars)
+    """
+    if score >= 4 and text_length >= 1000:
+        return "A"
+    elif score <= 1 or text_length < 200:
+        return "C"
+    else:
+        return "B"
 
 
 def _compute_score(text_length: int, image_count: int, alt_text_available: bool) -> int:

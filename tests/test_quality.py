@@ -14,6 +14,7 @@ from sheaf_ai.quality import (
     assess_quality,
     format_quality_hint,
     format_image_supplement,
+    quality_tier,
     DECISION_PASS,
     DECISION_WARN,
     DECISION_REJECT,
@@ -247,11 +248,27 @@ class TestQualityReport:
         assert "text_length" in d
         assert "image_count" in d
         assert "score" in d
+        assert "quality_tier" in d
         assert "is_image_heavy" in d
         assert "alt_text_available" in d
         assert "hint" in d
         assert d["decision"] == r.decision
         assert d["text_length"] == r.text_length
+        assert d["quality_tier"] == r.quality_tier
+
+
+class TestQualityTier:
+    """Test A/B/C tier mapping for Issue #34."""
+
+    def test_high_score_long_text_is_a(self):
+        assert quality_tier(score=4, text_length=1200) == "A"
+
+    def test_low_score_or_short_text_is_c(self):
+        assert quality_tier(score=1, text_length=800) == "C"
+        assert quality_tier(score=3, text_length=199) == "C"
+
+    def test_mid_range_defaults_to_b(self):
+        assert quality_tier(score=3, text_length=600) == "B"
 
 
 # ============================================================

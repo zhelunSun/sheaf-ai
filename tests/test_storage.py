@@ -112,8 +112,24 @@ class TestArticleStorage:
         assert entry["title"] == "Test Article"
         assert entry["category"]["primary"] == "AI"
         assert entry["content_type"] == "research"
+        assert entry["quality_tier"] == "B"
         assert entry["status"] == "active"
         assert entry["metadata"]["schema_version"] == "1.1.0"
+
+    def test_store_article_persists_explicit_quality_tier(self, isolated_data_dir):
+        from sheaf_ai.storage import store_article
+        td = self._make_test_data()
+        entry_id = store_article(
+            td["url"],
+            td["fetch_result"],
+            td["classify_result"],
+            td["summary_result"],
+            quality_tier="A",
+        )
+
+        month_dir = isolated_data_dir / "entries" / entry_id[:7]
+        entry = json.loads((month_dir / f"{entry_id}.json").read_text(encoding="utf-8"))
+        assert entry["quality_tier"] == "A"
 
     def test_store_article_summary_md(self, isolated_data_dir):
         from sheaf_ai.storage import store_article
