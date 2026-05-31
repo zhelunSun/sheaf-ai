@@ -2,7 +2,7 @@
 Sheaf Universal Collector — content type detection and handler routing.
 
 The UC pipeline detects the type of a URL/content and routes it to the
-appropriate handler (GitHub repo, arXiv paper, YouTube video, generic web, etc.).
+appropriate handler (GitHub repo, arXiv paper, YouTube video, PDF, generic web, etc.).
 
 Usage:
     from sheaf_ai.collectors import detect_content_type, route_fetch
@@ -19,6 +19,12 @@ from sheaf_ai.collectors.router import (
     register_handler,
     get_handler,
 )
+from sheaf_ai.collectors.github import fetch_github_repo
+from sheaf_ai.collectors.pdf import fetch_pdf, fetch_pdf_from_bytes
+
+# Register built-in handlers
+register_handler(ContentType.GITHUB_REPO, fetch_github_repo)
+register_handler(ContentType.PDF_FILE, fetch_pdf)
 
 __all__ = [
     "ContentType",
@@ -28,4 +34,7 @@ __all__ = [
     "route_fetch",
     "register_handler",
     "get_handler",
+    "fetch_github_repo",
+    "fetch_pdf",
+    "fetch_pdf_from_bytes",
 ]
