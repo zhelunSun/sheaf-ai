@@ -1,0 +1,327 @@
+"""
+Sheaf Content Type Router — detect content type from URL/headers and route to handlers.
+
+Strategies (in priority order):
+  1. URL pattern matching — fast, no network required
+  2. HTTP Content-Type header — requires HEAD request
+  3. HTML meta tag inspection — requires GET request (lazy)
+
+Design principles:
+  - Pure Python, no external dependencies beyond requests (already used)
+  - Extensible: register_handler() for adding new handlers
+  - Graceful degradation: unknown types fall back to generic web fetcher
+"""
+from __future__ import annotations
+
+import logging
+import re
+from enum import Enum
+from typing import Any, Callable, Optional
+
+import requests
+
+logger = logging.getLogger(__name__)
+
+
+# ============================================================
+# Content type enum
+# ============================================================
+
+class ContentType(str, Enum):
+    """Supported content types for the UC pipeline."""
+    GITHUB_REPO = "github_repo"
+    ARXIV_PAPER = "arxiv_paper"
+    YOUTUBE_VIDEO = "youtube_video"
+    BILIBILI_VIDEO = "bilibili_video"
+    TWITTER_POST = "twitter_post"
+    PDF_FILE = "pdf_file"
+    IMAGE_FILE = "image_file"
+    WEBPAGE = "webpage"
+    WECHAT_ARTICLE = "wechat_article"
+    UNKNOWN = "unknown"
+
+    @property
+    def label(self) -> str:
+        """Human-readable label for CLI display."""
+        labels = {
+            "github_repo": "GitHub Repo",
+            "arxiv_paper": "arXiv Paper",
+            "youtube_video": "YouTube Video",
+            "bilibili_video": "Bilibili Video",
+            "twitter_post": "X/Twitter Post",
+            "pdf_file": "PDF Document",
+            "image_file": "Image",
+            "webpage": "Web Page",
+            "wechat_article": "WeChat Article",
+            "unknown": "Unknown",
+        }
+        return labels.get(self.value, self.value)
+
+
+# ============================================================
+# URL pattern registry (30+ patterns)
+# ============================================================
+
+# Each pattern maps to (regex_pattern, content_type, priority)
+# Lower priority number = higher priority (matched first)
+_URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
+    # GitHub repos
+    (re.compile(
+        r'https?://github\.com/(?P<owner>[\w.-]+)/(?P<repo>[\w.-]+)(?:/(?:tree|blob|issues|pull|releases|wiki|actions))?/?',
+        re.IGNORECASE,
+    ), ContentType.GITHUB_REPO, 10),
+
+    # GitHub Gist
+    (re.compile(
+        r'https?://gist\.github\.com/[\w-]+/[a-f0-9]+',
+        re.IGNORECASE,
+    ), ContentType.GITHUB_REPO, 11),
+
+    # arXiv papers (multiple URL formats)
+    (re.compile(
+        r'https?://arxiv\.org/(?:abs|pdf|html|list|search|format)/',
+        re.IGNORECASE,
+    ), ContentType.ARXIV_PAPER, 20),
+
+    (re.compile(
+        r'https?://ar5iv\.(?:labs\.)?arxiv\.org/html/',
+        re.IGNORECASE,
+    ), ContentType.ARXIV_PAPER, 21),
+
+    (re.compile(
+        r'https?://arxiv\.org/pdf/\d+\.\d+',
+        re.IGNORECASE,
+    ), ContentType.ARXIV_PAPER, 22),
+
+    # YouTube
+    (re.compile(
+        r'https?://(?:www\.)?(?:youtube\.com/(?:watch|shorts|embed|live|playlist)|youtu\.be/)',
+        re.IGNORECASE,
+    ), ContentType.YOUTUBE_VIDEO, 30),
+
+    # Bilibili
+    (re.compile(
+        r'https?://(?:www\.)?bilibili\.com/(?:video|bangumi)/',
+        re.IGNORECASE,
+    ), ContentType.BILIBILI_VIDEO, 31),
+
+    (re.compile(
+        r'https?://b23\.tv/',
+        re.IGNORECASE,
+    ), ContentType.BILIBILI_VIDEO, 32),
+
+    # X/Twitter
+    (re.compile(
+        r'https?://(?:www\.)?(?:x\.com|twitter\.com)/[\w]+/status/',
+        re.IGNORECASE,
+    ), ContentType.TWITTER_POST, 40),
+
+    # WeChat articles
+    (re.compile(
+        r'https?://mp\.weixin\.qq\.com/s/',
+        re.IGNORECASE,
+    ), ContentType.WECHAT_ARTICLE, 50),
+
+    # PDF files (URL ending or Content-Type)
+    (re.compile(
+        r'.*\.pdf(?:\?.*)?$',
+        re.IGNORECASE,
+    ), ContentType.PDF_FILE, 60),
+
+    # Image files
+    (re.compile(
+        r'.*\.(?:jpg|jpeg|png|gif|webp|svg|bmp|ico)(?:\?.*)?$',
+        re.IGNORECASE,
+    ), ContentType.IMAGE_FILE, 61),
+]
+
+
+# ============================================================
+# Detection functions
+# ============================================================
+
+def detect_from_url(url: str) -> Optional[ContentType]:
+    """Detect content type from URL pattern alone (no network request).
+
+    Args:
+        url: The URL to classify.
+
+    Returns:
+        ContentType or None if no pattern matches.
+    """
+    if not url or not url.startswith("http"):
+        return None
+
+    for pattern, content_type, _priority in sorted(
+        _URL_PATTERNS, key=lambda x: x[2]
+    ):
+        if pattern.match(url):
+            return content_type
+
+    return None
+
+
+def detect_from_headers(url: str, timeout: int = 5) -> Optional[ContentType]:
+    """Detect content type from HTTP HEAD response headers.
+
+    Uses Content-Type and Content-Disposition headers.
+
+    Args:
+        url: The URL to HEAD-request.
+        timeout: Request timeout in seconds.
+
+    Returns:
+        ContentType or None if no header-based detection succeeds.
+    """
+    try:
+        resp = requests.head(
+            url,
+            allow_redirects=True,
+            timeout=timeout,
+            headers={
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/125.0.0.0 Safari/537.36"
+                ),
+            },
+        )
+        content_type = resp.headers.get("Content-Type", "").lower()
+        content_disp = resp.headers.get("Content-Disposition", "").lower()
+
+        # PDF from Content-Type
+        if "application/pdf" in content_type:
+            return ContentType.PDF_FILE
+
+        # PDF from Content-Disposition
+        if ".pdf" in content_disp:
+            return ContentType.PDF_FILE
+
+        # Image from Content-Type
+        if content_type.startswith("image/"):
+            return ContentType.IMAGE_FILE
+
+        # HTML from Content-Type (generic webpage)
+        if "text/html" in content_type:
+            return ContentType.WEBPAGE
+
+    except Exception as e:
+        logger.debug(f"HEAD request failed for {url}: {e}")
+
+    return None
+
+
+def detect_content_type(
+    url: str,
+    use_headers: bool = True,
+    timeout: int = 5,
+) -> ContentType:
+    """Detect content type using all available strategies.
+
+    Strategy priority:
+      1. URL pattern matching (instant, no network)
+      2. HTTP headers (if use_headers=True, requires HEAD request)
+      3. Fallback to ContentType.UNKNOWN
+
+    Args:
+        url: The URL to classify.
+        use_headers: Whether to use HTTP HEAD for fallback detection.
+        timeout: Timeout for HTTP HEAD request.
+
+    Returns:
+        The detected ContentType.
+    """
+    # Strategy 1: URL pattern (fastest)
+    url_result = detect_from_url(url)
+    if url_result is not None:
+        return url_result
+
+    # Strategy 2: HTTP headers
+    if use_headers:
+        header_result = detect_from_headers(url, timeout=timeout)
+        if header_result is not None:
+            return header_result
+
+    # Strategy 3: Fallback
+    return ContentType.UNKNOWN
+
+
+# ============================================================
+# Handler registry and routing
+# ============================================================
+
+# Handler type: a callable that takes (url, **kwargs) and returns a dict
+Handler = Callable[[str], dict[str, Any]]
+
+# Global handler registry
+_HANDLERS: dict[ContentType, Handler] = {}
+
+
+def register_handler(content_type: ContentType, handler: Handler) -> None:
+    """Register a handler function for a content type.
+
+    Args:
+        content_type: The ContentType this handler handles.
+        handler: A callable(url: str) -> dict with keys:
+            success, title, text, method, error, meta.
+    """
+    _HANDLERS[content_type] = handler
+    logger.debug(f"Registered handler for {content_type.value}: {handler.__name__}")
+
+
+def get_handler(content_type: ContentType) -> Optional[Handler]:
+    """Get the registered handler for a content type.
+
+    Args:
+        content_type: The ContentType to look up.
+
+    Returns:
+        The handler callable, or None if not registered.
+    """
+    return _HANDLERS.get(content_type)
+
+
+def route_fetch(url: str, content_type: Optional[ContentType] = None, **kwargs) -> dict[str, Any]:
+    """Route a URL to the appropriate handler based on content type.
+
+    If no content_type is provided, auto-detect it.
+    Falls back to generic web fetcher if no handler is registered.
+
+    Args:
+        url: The URL to fetch.
+        content_type: Override content type detection (None = auto-detect).
+        **kwargs: Additional arguments passed to the handler.
+
+    Returns:
+        dict with keys: success, title, text, method, error, meta, content_type
+    """
+    if content_type is None:
+        content_type = detect_content_type(url)
+
+    handler = get_handler(content_type)
+
+    if handler is not None:
+        logger.info(f"Routing {url} -> {content_type.value} handler ({handler.__name__})")
+        try:
+            result = handler(url, **kwargs)
+            result["content_type"] = content_type.value
+            return result
+        except Exception as e:
+            logger.error(f"Handler {handler.__name__} failed: {e}")
+            return {
+                "success": False,
+                "title": "",
+                "text": "",
+                "method": content_type.value,
+                "error": str(e),
+                "content_type": content_type.value,
+                "meta": {},
+            }
+
+    # No handler registered — fall back to generic web fetch
+    logger.info(f"No handler for {content_type.value}, falling back to generic web fetch")
+    from sheaf_ai.fetch_article import fetch_article
+
+    result = fetch_article(url, **kwargs)
+    result["content_type"] = content_type.value
+    return result
