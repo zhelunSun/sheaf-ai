@@ -46,6 +46,14 @@ def build_parser() -> argparse.ArgumentParser:
                             ("mcp", "Start MCP server (stdio)"), ("init", "First-time onboarding")]:
         sub.add_parser(name, help=help_text)
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
+    # Config: API key and provider management
+    p = sub.add_parser("config", help="Manage API keys and provider settings")
+    p.add_argument("action", nargs="?", choices=["setup", "set-key", "list", "use", "remove"],
+                   default="list", help="Config action (default: list)")
+    p.add_argument("--provider", "-p", default=None, help="Provider ID (openai, deepseek, siliconflow, etc.)")
+    p.add_argument("--api-key", default=None, help="API key (interactive if omitted)")
+    p.add_argument("--base-url", default=None, help="Custom base URL")
+    p.add_argument("--model", default=None, help="Default model")
     # Setup: auto-configure MCP for Agent platforms
     p = sub.add_parser("setup", help="Auto-configure MCP server for your Agent platform")
     p.add_argument("--target", "-t", choices=["cursor", "claude", "workbuddy", "windsurf"],
@@ -127,6 +135,7 @@ def _run() -> None:
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
         "setup": lambda: _setup(parsed),
+        "config": lambda: _config(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -298,6 +307,72 @@ def _crystallize(p: argparse.Namespace) -> None:
         print(renderer.render(c, format=fmt))
         print()
     print("Use 'sheaf crystallize --list' to see all cards.")
+
+
+def _config(p: argparse.Namespace) -> None:
+    from sheaf_ai.settings import (
+        config_setup_interactive, config_set_key, config_list,
+        config_use, config_remove, CONFIG_FILE,
+    )
+    action = p.action or "list"
+    if action == "setup":
+        config_setup_interactive()
+        return
+    if action == "set-key":
+        provider = p.provider
+        if not provider:
+            print("Usage: sheaf config set-key --provider <provider-id>")
+            print(f"Available: openai, deepseek, siliconflow, together, groq, custom")
+            sys.exit(1)
+        try:
+            cfg = config_set_key(
+                provider=provider,
+                api_key=p.api_key,
+                base_url=p.base_url,
+                model=p.model,
+            )
+            print(f"✅ API Key for '{provider}' saved to {CONFIG_FILE}")
+            if not cfg.get("default_provider"):
+                config_use(provider)
+                print(f"✅ Set '{provider}' as default provider")
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        return
+    if action == "list":
+        providers = config_list()
+        if not providers:
+            print("No providers configured yet.")
+            print("Run 'sheaf config setup' to get started.")
+            return
+        print(f"{'Provider':<15} {'Key':<18} {'Model':<30} {'Default'}")
+        print("-" * 70)
+        for pr in providers:
+            default_mark = "  *" if pr["is_default"] else ""
+            print(f"{pr['name']:<15} {pr['api_key']:<18} {pr['default_model']:<30}{default_mark}")
+        print()
+        print("Tip: sheaf config use <provider>  to switch default")
+        return
+    if action == "use":
+        provider = p.provider
+        if not provider:
+            print("Usage: sheaf config use <provider-id>")
+            sys.exit(1)
+        try:
+            config_use(provider)
+            print(f"✅ Default provider set to '{provider}'")
+        except ValueError as e:
+            print(f"Error: {e}")
+            sys.exit(1)
+        return
+    if action == "remove":
+        provider = p.provider
+        if not provider:
+            print("Usage: sheaf config remove <provider-id>")
+            sys.exit(1)
+        config_remove(provider)
+        print(f"✅ Provider '{provider}' removed from config")
+        return
 
 
 def _build_card_config(fmt: str, fields_str: str = None):

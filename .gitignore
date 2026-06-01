@@ -29,6 +29,9 @@ sheaf_ai-*/
 Thumbs.db
 .DS_Store
 
+# Office temp files (lock files)
+~$*
+
 # Legacy scripts (superseded by uc/ package)
 scripts/
 

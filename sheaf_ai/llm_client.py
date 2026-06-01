@@ -4,9 +4,15 @@ Sheaf LLM Client — works with any OpenAI-compatible API endpoint.
 Supports OpenAI, Together, Groq, DeepSeek, SiliconFlow, and any
 provider that follows the OpenAI chat completions API format.
 
+Key resolution priority:
+    1. Environment variables + .env file (existing behavior)
+    2. User config file (~/.sheaf/config.json)
+    3. Interactive prompt (fallback, TTY only)
+
 Usage:
-    from sheaf_ai.llm_client import get_client, get_model, chat
+    from sheaf_ai.llm_client import get_client, get_model, chat, list_models
 """
+from __future__ import annotations
 import os
 from pathlib import Path
 from openai import OpenAI
@@ -41,6 +47,15 @@ PROVIDERS = {
             "gpt-4o-mini",
         ],
     },
+    "deepseek": {
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "base_url":    "https://api.deepseek.com/v1",
+        "default_model": "deepseek-chat",
+        "available_models": [
+            "deepseek-chat",
+            "deepseek-reasoner",
+        ],
+    },
     "siliconflow": {
         "api_key_env": "SILICONFLOW_API_KEY",
         "base_url":    "https://api.siliconflow.cn/v1",
@@ -51,9 +66,91 @@ PROVIDERS = {
             "Qwen/Qwen3.5-397B-A17B",
         ],
     },
+    "together": {
+        "api_key_env": "TOGETHER_API_KEY",
+        "base_url":    "https://api.together.xyz/v1",
+        "default_model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "available_models": [
+            "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        ],
+    },
+    "groq": {
+        "api_key_env": "GROQ_API_KEY",
+        "base_url":    "https://api.groq.com/openai/v1",
+        "default_model": "llama-3.3-70b-versatile",
+        "available_models": [
+            "llama-3.3-70b-versatile",
+            "mixtral-8x7b-32768",
+        ],
+    },
 }
 
 DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "openai")
+
+
+# ============================================================
+# API key resolution (env first, then config file)
+# ============================================================
+
+def _resolve_key_and_url(provider: str) -> tuple[str, str]:
+    """Resolve API key and base URL with layered priority.
+
+    Priority:
+        1. Environment variable (incl .env)
+        2. User config file ~/.sheaf/config.json
+        3. Raise ValueError with guidance
+    """
+    # 1. Environment variable (existing behavior)
+    if provider in PROVIDERS:
+        cfg = PROVIDERS[provider]
+        env_key = os.environ.get(cfg["api_key_env"], "").strip()
+        env_url = os.environ.get("OPENAI_BASE_URL", cfg["base_url"])
+        if env_key:
+            return env_key, env_url
+
+    # 2. User config file
+    try:
+        from sheaf_ai.settings import get_api_key as _cfg_get_key
+        from sheaf_ai.settings import get_provider_config as _cfg_get_pc
+        from sheaf_ai.settings import CONFIG_FILE
+
+        cfg_key = _cfg_get_key(provider)
+        pc = _cfg_get_pc(provider)
+        if cfg_key:
+            # Base URL: env > config file > provider default
+            if provider in PROVIDERS:
+                default_url = PROVIDERS[provider]["base_url"]
+            else:
+                default_url = pc.get("base_url", "") if pc else ""
+            url = os.environ.get("OPENAI_BASE_URL", "")
+            if not url and pc:
+                url = pc.get("base_url", "")
+            if not url:
+                url = default_url
+            return cfg_key, url
+    except ImportError:
+        pass
+
+    # 3. Not found — raise with guidance
+    env_name = PROVIDERS.get(provider, {}).get("api_key_env", f"{provider.upper()}_API_KEY")
+    lines = [
+        f"⚠ 未检测到 API 密钥 ({env_name})",
+        "",
+        "快速配置（推荐）：",
+        "    sheaf config setup",
+        "",
+        "或手动设置环境变量：",
+        f"    # macOS/Linux:  export {env_name}=你的密钥",
+        f"    # Windows PS:   $env:{env_name}='你的密钥'",
+        f"    # Windows CMD:  set {env_name}=你的密钥",
+        "",
+        "或创建 .env 文件：",
+        f"    {env_name}=你的密钥",
+        "",
+        f"支持的 provider: {', '.join(PROVIDERS.keys())}",
+        f"当前默认: {DEFAULT_PROVIDER} (可通过 DEFAULT_PROVIDER 环境变量切换)",
+    ]
+    raise ValueError("\n".join(lines))
 
 
 def check_api_key(provider: str = None) -> tuple[bool, str]:
@@ -69,6 +166,14 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
     cfg = PROVIDERS[provider]
     api_key = os.environ.get(cfg["api_key_env"], "")
 
+    # Also check config file
+    if not api_key:
+        try:
+            from sheaf_ai.settings import get_api_key as _cfg_get_key
+            api_key = _cfg_get_key(provider) or ""
+        except ImportError:
+            pass
+
     if api_key:
         return True, ""
 
@@ -76,21 +181,22 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
     lines = [
         f"⚠ 未检测到 API 密钥 ({cfg['api_key_env']})",
         "",
-        "快速配置（二选一）：",
+        "快速配置（推荐交互式向导）：",
+        "    sheaf config setup",
         "",
-        "  方法 1: 创建 .env 文件",
-        f"    echo '{cfg['api_key_env']}=你的密钥' > .env",
+        "或手动设置环境变量：",
+        f"    # macOS/Linux:  export {cfg['api_key_env']}=你的密钥",
+        f"    # Windows PS:   $env:{cfg['api_key_env']}='你的密钥'",
+        f"    # Windows CMD:  set {cfg['api_key_env']}=你的密钥",
         "",
-        "  方法 2: 设置环境变量",
-        f"    export {cfg['api_key_env']}=你的密钥",
-        "",
-        "  方法 3: 运行初始化向导",
-        "    sheaf init",
+        "或创建 .env 文件：",
+        f"    {cfg['api_key_env']}=你的密钥",
         "",
         f"支持的 provider: {', '.join(PROVIDERS.keys())}",
         f"当前默认: {DEFAULT_PROVIDER} (可通过 DEFAULT_PROVIDER 环境变量切换)",
     ]
     return False, "\n".join(lines)
+
 
 # ============================================================
 # Client factory (singleton)
@@ -100,23 +206,29 @@ _clients = {}
 
 
 def get_client(provider: str = None) -> OpenAI:
-    """Get API client (auto-reads key from .env)."""
+    """Get API client (auto-reads key from .env or user config)."""
     provider = provider or DEFAULT_PROVIDER
     if provider in _clients:
         return _clients[provider]
 
     if provider not in PROVIDERS:
-        raise ValueError(f"Unknown provider: {provider}, available: {list(PROVIDERS.keys())}")
-
-    cfg = PROVIDERS[provider]
-    api_key = os.environ.get(cfg["api_key_env"], "")
-    if not api_key:
+        # Allow custom providers from config file
+        try:
+            from sheaf_ai.settings import get_provider_config as _cfg_get_pc
+            pc = _cfg_get_pc(provider)
+            if pc and pc.get("api_key"):
+                api_key = pc["api_key"]
+                base_url = pc.get("base_url", "")
+                _clients[provider] = OpenAI(api_key=api_key, base_url=base_url)
+                return _clients[provider]
+        except ImportError:
+            pass
         raise ValueError(
-            f"API Key not found: set {cfg['api_key_env']} in .env "
-            "or export it as environment variable."
+            f"Unknown provider: {provider}, available: {list(PROVIDERS.keys())}"
         )
 
-    _clients[provider] = OpenAI(api_key=api_key, base_url=cfg["base_url"])
+    api_key, base_url = _resolve_key_and_url(provider)
+    _clients[provider] = OpenAI(api_key=api_key, base_url=base_url)
     return _clients[provider]
 
 
@@ -126,11 +238,21 @@ def get_model(provider: str = None) -> str:
     if provider not in PROVIDERS:
         provider = DEFAULT_PROVIDER
     model_env_key = f"{provider.upper()}_MODEL"
-    return (
-        os.environ.get(model_env_key)
-        or os.environ.get("DEFAULT_MODEL")
-        or PROVIDERS[provider]["default_model"]
-    )
+
+    # Priority: env > config file > provider default
+    model = os.environ.get(model_env_key) or os.environ.get("DEFAULT_MODEL")
+    if model:
+        return model
+
+    try:
+        from sheaf_ai.settings import get_provider_config as _cfg_get_pc
+        pc = _cfg_get_pc(provider)
+        if pc and pc.get("default_model"):
+            return pc["default_model"]
+    except ImportError:
+        pass
+
+    return PROVIDERS[provider]["default_model"]
 
 
 def list_models(provider: str = None):
