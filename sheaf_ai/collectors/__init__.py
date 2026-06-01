@@ -21,10 +21,12 @@ from sheaf_ai.collectors.router import (
 )
 from sheaf_ai.collectors.github import fetch_github_repo
 from sheaf_ai.collectors.pdf import fetch_pdf, fetch_pdf_from_bytes
+from sheaf_ai.collectors.arxiv import fetch_arxiv_paper
 
 # Register built-in handlers
 register_handler(ContentType.GITHUB_REPO, fetch_github_repo)
 register_handler(ContentType.PDF_FILE, fetch_pdf)
+register_handler(ContentType.ARXIV_PAPER, fetch_arxiv_paper)
 
 __all__ = [
     "ContentType",
@@ -37,4 +39,5 @@ __all__ = [
     "fetch_github_repo",
     "fetch_pdf",
     "fetch_pdf_from_bytes",
+    "fetch_arxiv_paper",
 ]

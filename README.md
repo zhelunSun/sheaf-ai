@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-486%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-531%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -27,7 +27,7 @@ A **sheaf** is a bundle of grain — the basic unit a farmer brings to market. S
 ## Quick Start
 
 ```bash
-# Install from PyPI
+# Install from PyPI (all platforms)
 pip install sheaf-ai
 
 # Or install from source
@@ -35,9 +35,38 @@ git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 pip install -e .
 
-# Set your LLM API key (any OpenAI-compatible endpoint)
-export OPENAI_API_KEY=sk-...
+# Configure your LLM API key (interactive wizard — recommended for all platforms)
+sheaf config setup
+```
 
+> **Already have a key?** Set it via [environment variable](#option-2-environment-variables) instead.
+
+<details>
+<summary><b>macOS / Linux</b></summary>
+
+```bash
+export OPENAI_API_KEY=sk-...
+```
+
+</details>
+<details>
+<summary><b>Windows PowerShell</b></summary>
+
+```powershell
+$env:OPENAI_API_KEY="sk-..."
+```
+
+</details>
+<details>
+<summary><b>Windows CMD</b></summary>
+
+```cmd
+set OPENAI_API_KEY=sk-...
+```
+
+</details>
+
+```bash
 # First-time onboarding (collects 3 sample articles)
 sheaf init
 
@@ -84,6 +113,12 @@ sheaf urgent                # Show entries with upcoming deadlines
 sheaf mcp                   # Start MCP server (stdio transport)
 sheaf setup --target <platform>  # One-command MCP config (cursor/claude/workbuddy/windsurf)
 sheaf init                  # First-time onboarding with demo
+
+# API Key & Provider management
+sheaf config setup          # Interactive setup wizard (recommended)
+sheaf config list           # Show configured providers
+sheaf config set-key --provider <id>   # Add/update a provider key
+sheaf config use <provider> # Switch default provider
 ```
 
 ## Crystallize: Your Second Brain
@@ -201,18 +236,79 @@ URL → fetch → classify → summarize → store → query
 
 ## Configuration
 
-Sheaf works with any OpenAI-compatible API:
+Sheaf supports **any OpenAI-compatible API** and offers three ways to configure your keys:
+
+### Option 1: Interactive Wizard (Recommended)
 
 ```bash
-# OpenAI
-export OPENAI_API_KEY=sk-...
-
-# Or any compatible endpoint (Together, Groq, DeepSeek, etc.)
-export OPENAI_API_KEY=sk-...
-export OPENAI_BASE_URL=https://api.together.xyz/v1
+sheaf config setup
 ```
 
-Optional: create a `.env` file in your working directory. See [.env.example](.env.example) for all options.
+Guides you through selecting a provider, entering your API key (hidden input), and setting defaults. Keys are stored securely in `~/.sheaf/config.json` with restricted file permissions.
+
+### Option 2: Environment Variables
+
+Best for CI/CD or temporary use. Sheaf reads standard `.env` files automatically.
+
+<details open>
+<summary><b>macOS / Linux</b></summary>
+
+```bash
+export OPENAI_API_KEY=sk-...
+export OPENAI_BASE_URL=https://api.openai.com/v1   # optional
+```
+</details>
+<details>
+<summary><b>Windows PowerShell</b></summary>
+
+```powershell
+$env:OPENAI_API_KEY="sk-..."
+$env:OPENAI_BASE_URL="https://api.openai.com/v1"   # optional
+```
+</details>
+<details>
+<summary><b>Windows CMD</b></summary>
+
+```cmd
+set OPENAI_API_KEY=sk-...
+set OPENAI_BASE_URL=https://api.openai.com/v1       # optional
+```
+</details>
+
+Or create a `.env` file in your working directory:
+```
+OPENAI_API_KEY=sk-...
+OPENAI_BASE_URL=https://api.openai.com/v1
+```
+
+### Option 3: CLI Config Commands
+
+```bash
+# Add/update a provider
+sheaf config set-key --provider deepseek
+sheaf config set-key --provider siliconflow
+
+# Switch default provider
+sheaf config use deepseek
+
+# List configured providers
+sheaf config list
+
+# Remove a provider
+sheaf config remove groq
+```
+
+### Supported Providers
+
+| Provider | Key Env Var | Default Model |
+|----------|-------------|---------------|
+| OpenAI | `OPENAI_API_KEY` | `gpt-4o` |
+| DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-chat` |
+| SiliconFlow | `SILICONFLOW_API_KEY` | `deepseek-ai/DeepSeek-V3.2` |
+| Together AI | `TOGETHER_API_KEY` | `meta-llama/Llama-3.3-70B-Instruct-Turbo` |
+| Groq | `GROQ_API_KEY` | `llama-3.3-70b-versatile` |
+
+Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` environment variable.
 
 ## Requirements
 
@@ -226,7 +322,7 @@ Optional: create a `.env` file in your working directory. See [.env.example](.en
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 486 passed
+python -m pytest tests/ -q     # 531 passed
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -234,7 +330,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 486 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 531 passing tests. We're validating with real users before beta.
 
 The browser extension under `extension/` is an experimental local companion for the HTTP API. Its manifest version is independent from the Python package version until the extension has its own release channel.
 
