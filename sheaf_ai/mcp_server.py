@@ -214,6 +214,37 @@ TOOLS = [
             "required": ["card_id"],
         },
     },
+    {
+        "name": "sheaf_collect_batch",
+        "description": "Collect multiple URLs in a single batch call. Returns aggregated results with per-URL status. Agent-Native preferred over multiple sheaf_collect calls.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Array of URLs to collect",
+                },
+                "concurrency": {
+                    "type": "integer",
+                    "description": "Max parallel workers (default: 3)",
+                    "default": 3,
+                },
+                "on_error": {
+                    "type": "string",
+                    "description": "Error handling: 'continue' (default) or 'stop'",
+                    "enum": ["continue", "stop"],
+                    "default": "continue",
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": "Skip dedup check for all URLs (default: false)",
+                    "default": False,
+                },
+            },
+            "required": ["urls"],
+        },
+    },
 ]
 
 
@@ -382,6 +413,31 @@ def handle_request(request: dict) -> str | None:
                         indent=2,
                     ),
                 }]
+            })
+
+        elif tool_name == "sheaf_collect_batch":
+            from sheaf_ai.batch import batch_collect
+            urls = arguments.get("urls", [])
+            if not urls:
+                return _jsonrpc_error(req_id, -32602, "Missing required parameter: urls (non-empty array)")
+            concurrency = arguments.get("concurrency", 3)
+            on_error = arguments.get("on_error", "continue")
+            force = arguments.get("force", False)
+            # Suppress pipeline print() — they corrupt JSON-RPC stdio transport
+            _stdout = sys.stdout
+            sys.stdout = sys.stderr
+            try:
+                batch_result = batch_collect(
+                    urls,
+                    force=force,
+                    concurrency=concurrency,
+                    on_error=on_error,  # type: ignore[arg-type]
+                    quiet=True,
+                )
+            finally:
+                sys.stdout = _stdout
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}]
             })
 
         else:

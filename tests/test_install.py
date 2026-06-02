@@ -108,7 +108,7 @@ def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
 
     monkeypatch.setattr("sheaf_ai.pipeline.process_url", fake_process_url)
 
-    cli._collect(Namespace(url="https://example.com", force=False, json=True))
+    cli._collect(Namespace(url=["https://example.com"], force=False, json=True, batch=None, concurrency=1, on_error="continue", output=None), json_auto=False)
 
     captured = capsys.readouterr()
     assert captured.err.strip() == "Warning: Duplicate detected (url_duplicate): Example title"

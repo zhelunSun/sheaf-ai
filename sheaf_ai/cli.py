@@ -42,7 +42,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", "-v", action="version", version=f"Sheaf v{VERSION}")
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
-    p = sub.add_parser("collect", help="Collect a URL"); p.add_argument("url"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON")
+    p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file")
     p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("insights", "Cross-topic associations"), ("tags", "Tag statistics"),
@@ -69,6 +69,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("serve", help="Start HTTP API server")
     p.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
     p.add_argument("--port", type=int, default=8321, help="Port to listen on (default: 8321)")
+    # Doctor: diagnostic command
+    sub.add_parser("doctor", help="Diagnose Sheaf configuration and health")
     # Crystallize subcommands
     p = sub.add_parser("crystallize", help="Crystallize knowledge cards from topic")
     p.add_argument("topic", nargs="?", help="Topic to crystallize (e.g. 'AI', '遥感')")
@@ -129,36 +131,79 @@ def _die(msg: str, debug: bool = False, code: int = 1) -> NoReturn:
 
 def _run() -> None:
     argv = sys.argv[1:]
+    # Auto TTY detection: non-interactive pipes get JSON by default
+    is_tty = sys.stdout.isatty()
+    auto_json = not is_tty and "--json" not in argv
+
     # Legacy flag → subcommand
     if argv and argv[0] in _FLAG_MAP:
         argv = [_FLAG_MAP[argv[0]]] + argv[1:]
-    # Bare URL shorthand
-    if argv and argv[0].startswith(("http://", "https://", "ftp://")):
-        json_output = "--json" in argv
+    # Bare URL shorthand — single URL
+    if argv and argv[0].startswith(("http://", "https://", "ftp://")) and (
+        len(argv) == 1 or argv[1].startswith(("-"))
+    ):
+        json_output = "--json" in argv or auto_json
         result = _run_collect(argv[0], force="--force" in argv, json_output=json_output)
         _print_collect_result(result, json_output=json_output)
         return
+    # Bare URLs — multiple URLs
+    if argv and all(a.startswith(("http://", "https://", "ftp://")) or a.startswith("-") for a in argv):
+        urls = [a for a in argv if a.startswith(("http://", "https://", "ftp://"))]
+        flags = [a for a in argv if a.startswith("-")]
+        force = "--force" in flags
+        json_output = "--json" in flags or auto_json
+        if len(urls) > 1:
+            _batch_collect_cli(urls, force=force, json_output=json_output)
+            return
     parsed = build_parser().parse_args(argv)
     if parsed.command is None:
         show_recent(); return
     _DISPATCH = {
-        "collect": lambda: _collect(parsed), "search": lambda: show_search(" ".join(parsed.query)),
+        "collect": lambda: _collect(parsed, json_auto=auto_json), "search": lambda: show_search(" ".join(parsed.query)),
         "stats": show_stats, "weekly": show_weekly, "insights": show_insights,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
         "setup": lambda: _setup(parsed),
         "config": lambda: _config(parsed),
+        "doctor": _doctor,
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
     else: print(f"Unknown: {parsed.command}"); sys.exit(get_exit_code_from_key("CONFIG"))
 
 
-def _collect(p: argparse.Namespace) -> None:
-    json_output = getattr(p, "json", False)
-    result = _run_collect(p.url, force=p.force, json_output=json_output)
-    _print_collect_result(result, json_output=json_output)
+def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
+    json_output = getattr(p, "json", False) or json_auto
+    urls = getattr(p, "url", []) or []
+    batch_file = getattr(p, "batch", None)
+
+    # Batch mode: --batch file
+    if batch_file:
+        from sheaf_ai.batch import load_urls_from_file
+        urls = load_urls_from_file(batch_file)
+
+    # Single URL mode (backward compat)
+    if len(urls) == 1 and not batch_file:
+        result = _run_collect(urls[0], force=p.force, json_output=json_output)
+        _print_collect_result(result, json_output=json_output)
+        return
+
+    # Batch mode: multiple URLs
+    if urls:
+        _batch_collect_cli(
+            urls,
+            force=p.force,
+            json_output=json_output,
+            concurrency=getattr(p, "concurrency", 1),
+            on_error=getattr(p, "on_error", "continue"),
+            jsonl_output=getattr(p, "output", None),
+        )
+        return
+
+    # No URLs provided
+    print("Usage: sheaf collect <url> [url2 ...]  or  sheaf collect --batch urls.txt")
+    sys.exit(get_exit_code_from_key("CONFIG"))
 
 
 def _run_collect(url: str, force: bool = False, json_output: bool = False) -> dict:
@@ -207,6 +252,37 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
         print("  ⚠ 图片主导型文章 — 核心内容可能在图片中")
     print(f"  来源: {result.get('fetch_method', '?')}")
 
+def _batch_collect_cli(
+    urls: list[str],
+    *,
+    force: bool = False,
+    json_output: bool = False,
+    concurrency: int = 1,
+    on_error: str = "continue",
+    jsonl_output: str | None = None,
+) -> None:
+    """Run batch collect and print results."""
+    from sheaf_ai.batch import batch_collect, format_batch_summary
+
+    batch_result = batch_collect(
+        urls,
+        force=force,
+        concurrency=concurrency,
+        on_error=on_error,  # type: ignore[arg-type]
+        jsonl_output=jsonl_output,
+    )
+
+    if json_output:
+        print(json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2))
+    else:
+        print(format_batch_summary(batch_result))
+
+    # Exit with appropriate code
+    if batch_result.failed > 0 and batch_result.succeeded == 0:
+        sys.exit(get_exit_code_from_key("NETWORK"))
+    elif batch_result.failed > 0:
+        sys.exit(get_exit_code_from_key("PARTIAL"))
+
 def _reclassify(p: argparse.Namespace) -> None:
     from sheaf_ai.pipeline import reclassify_entries
     r = reclassify_entries(dry_run=p.dry_run)
@@ -217,6 +293,77 @@ def _mcp():
 
 def _init():
     from sheaf_ai.onboarding import run_onboarding; run_onboarding()
+
+def _doctor() -> None:
+    """Run diagnostic checks and report health status."""
+    from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION
+    checks = []
+
+    # Check 1: Data directory
+    if DATA_DIR.exists():
+        checks.append(("✅", f"Data dir: {DATA_DIR}"))
+    else:
+        checks.append(("❌", f"Data dir missing: {DATA_DIR} (run 'sheaf init')"))
+
+    # Check 2: Index file
+    if INDEX_FILE.exists():
+        entry_count = sum(1 for line in INDEX_FILE.read_text(encoding="utf-8").splitlines() if line.strip())
+        checks.append(("✅", f"Index: {entry_count} entries"))
+    else:
+        checks.append(("⚠️", "Index file not found (no entries collected yet)"))
+
+    # Check 3: Entries directory
+    if ENTRIES_DIR.exists():
+        json_files = list(ENTRIES_DIR.rglob("*.json"))
+        checks.append(("✅", f"Entries: {len(json_files)} stored"))
+    else:
+        checks.append(("⚠️", "Entries directory not found"))
+
+    # Check 4: API key
+    try:
+        from sheaf_ai.llm_client import check_api_key
+        key_set, guidance = check_api_key()
+        if key_set:
+            checks.append(("✅", "API key configured"))
+        else:
+            checks.append(("❌", "API key not configured"))
+            checks.append(("💡", guidance.strip()))
+    except Exception as e:
+        checks.append(("❌", f"API key check failed: {e}"))
+
+    # Check 5: LLM connectivity (best-effort)
+    try:
+        from sheaf_ai.llm_client import chat
+        # Don't actually call the API, just verify client initialization
+        from sheaf_ai.llm_client import get_client
+        client = get_client()
+        checks.append(("✅", f"LLM client: {type(client).__name__}"))
+    except Exception as e:
+        checks.append(("⚠️", f"LLM client issue: {e}"))
+
+    # Check 6: Playwright (optional)
+    try:
+        import playwright  # noqa: F401
+        checks.append(("✅", "Playwright: installed"))
+    except ImportError:
+        checks.append(("⚠️", "Playwright: not installed (JS-heavy sites may fail)"))
+
+    # Check 7: Python environment
+    checks.append(("ℹ️", f"Python: {sys.version.split()[0]}"))
+    checks.append(("ℹ️", f"Sheaf: v{VERSION}"))
+
+    print("Sheaf Doctor — Configuration & Health Check")
+    print("=" * 50)
+    for icon, msg in checks:
+        print(f"  {icon} {msg}")
+    print("=" * 50)
+
+    errors = sum(1 for icon, _ in checks if icon == "❌")
+    if errors:
+        print(f"\n{errors} issue(s) found. See above for details.")
+    else:
+        print("\nAll checks passed! 🎉")
+
 
 def _setup(p: argparse.Namespace):
     from sheaf_ai.setup import setup_target, print_setup_result, build_mcp_config

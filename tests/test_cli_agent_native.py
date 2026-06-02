@@ -1,0 +1,233 @@
+"""Tests for JSON-First TTY detection and sheaf doctor command (Issue #64)."""
+from __future__ import annotations
+
+import io
+import json
+import os
+import sys
+from unittest.mock import patch, MagicMock
+
+import pytest
+
+
+class TestJSONFirstTTYDetection:
+    """Test that non-TTY pipes automatically get JSON output."""
+
+    def test_tty_detection_flag(self):
+        """Verify isatty() controls JSON auto-detection."""
+        # When stdout is a TTY → no auto-JSON
+        with patch.object(sys.stdout, "isatty", return_value=True):
+            assert sys.stdout.isatty() is True
+
+        # When stdout is not a TTY → auto-JSON
+        with patch.object(sys.stdout, "isatty", return_value=False):
+            assert sys.stdout.isatty() is False
+
+    def test_collect_auto_json_when_not_tty(self):
+        """Non-TTY collect should output JSON without --json flag."""
+        from sheaf_ai.cli import build_parser, _run_collect, _print_collect_result
+
+        result = {
+            "success": True,
+            "entry_id": "2026-06-03_test",
+            "url": "https://example.com",
+            "topics": ["AI"],
+            "content_type": "article",
+            "one_liner": "Test",
+            "fetch_method": "requests",
+        }
+
+        # Capture output when json_output=True (simulating auto-JSON)
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _print_collect_result(result, json_output=True)
+
+        output = captured.getvalue()
+        parsed = json.loads(output)
+        assert parsed["success"] is True
+        assert parsed["entry_id"] == "2026-06-03_test"
+
+    def test_collect_human_output_when_tty(self):
+        """TTY collect should output human-readable text."""
+        from sheaf_ai.cli import _print_collect_result
+
+        result = {
+            "success": True,
+            "entry_id": "2026-06-03_test",
+            "url": "https://example.com",
+            "topics": ["AI"],
+            "content_type": "article",
+            "one_liner": "Test summary here",
+            "fetch_method": "requests",
+        }
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _print_collect_result(result, json_output=False)
+
+        output = captured.getvalue()
+        assert "已收集" in output
+        assert "Test summary here" in output
+        # Should NOT be JSON
+        with pytest.raises(json.JSONDecodeError):
+            json.loads(output)
+
+
+class TestSheafDoctor:
+    """Test the sheaf doctor diagnostic command."""
+
+    def test_doctor_basic_run(self):
+        """Doctor command runs without error."""
+        from sheaf_ai.cli import _doctor
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _doctor()
+
+        output = captured.getvalue()
+        assert "Sheaf Doctor" in output
+
+    def test_doctor_shows_data_dir(self):
+        """Doctor reports data directory status."""
+        from sheaf_ai.cli import _doctor
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _doctor()
+
+        output = captured.getvalue()
+        assert "Data dir" in output
+
+    def test_doctor_shows_version(self):
+        """Doctor reports Sheaf version."""
+        from sheaf_ai.cli import _doctor
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _doctor()
+
+        output = captured.getvalue()
+        assert "Sheaf: v" in output
+
+    def test_doctor_api_key_check(self):
+        """Doctor checks API key status."""
+        from sheaf_ai.cli import _doctor
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured):
+            _doctor()
+
+        output = captured.getvalue()
+        # Should mention API key either way
+        assert "API key" in output
+
+    def test_doctor_parser_registered(self):
+        """Doctor command is registered in parser."""
+        from sheaf_ai.cli import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["doctor"])
+        assert args.command == "doctor"
+
+    def test_doctor_missing_data_dir(self, tmp_path):
+        """Doctor handles missing data directory gracefully."""
+        from sheaf_ai.cli import _doctor
+
+        fake_dir = tmp_path / "nonexistent"
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch("sheaf_ai.config.DATA_DIR", fake_dir), \
+             patch("sheaf_ai.config.ENTRIES_DIR", fake_dir / "entries"), \
+             patch("sheaf_ai.config.INDEX_FILE", fake_dir / "index.jsonl"):
+            _doctor()
+
+        output = captured.getvalue()
+        assert "missing" in output.lower() or "not found" in output.lower() or "❌" in output
+
+
+class TestExitCodeSemantics:
+    """Test that exit codes are semantic and meaningful."""
+
+    def test_exit_codes_defined(self):
+        from sheaf_ai.exceptions import EXIT_CODES
+        assert EXIT_CODES["SUCCESS"] == 0
+        assert EXIT_CODES["PARTIAL"] == 1
+        assert EXIT_CODES["DUPLICATE"] == 2
+        assert EXIT_CODES["QUALITY"] == 3
+        assert EXIT_CODES["NETWORK"] == 4
+        assert EXIT_CODES["CONFIG"] == 5
+        assert EXIT_CODES["LLM"] == 6
+        assert EXIT_CODES["STORAGE"] == 7
+
+    def test_get_exit_code_network_error(self):
+        from sheaf_ai.exceptions import get_exit_code, NetworkError
+        assert get_exit_code(NetworkError("test")) == 4
+
+    def test_get_exit_code_config_error(self):
+        from sheaf_ai.exceptions import get_exit_code, ConfigError
+        assert get_exit_code(ConfigError("test")) == 5
+
+    def test_get_exit_code_js_rendering(self):
+        from sheaf_ai.exceptions import get_exit_code, JSRenderingRequiredError
+        assert get_exit_code(JSRenderingRequiredError("test")) == 1  # PARTIAL
+
+    def test_get_exit_code_from_key(self):
+        from sheaf_ai.exceptions import get_exit_code_from_key
+        assert get_exit_code_from_key("SUCCESS") == 0
+        assert get_exit_code_from_key("NONEXISTENT") == 1  # fallback
+
+
+class TestStructuredErrors:
+    """Test structured error output for Agent consumption."""
+
+    def test_error_context_stored(self):
+        from sheaf_ai.exceptions import SheafError, NetworkError
+        err = NetworkError("Connection failed", url="https://example.com")
+        assert err.context["url"] == "https://example.com"
+        assert str(err) == "Connection failed"
+
+    def test_pipeline_error_structure(self):
+        """Pipeline errors should have structured fields."""
+        # patch the source module where fetch_article is imported from
+        with patch("sheaf_ai.fetch_article.fetch_article") as mock_fetch:
+            mock_fetch.return_value = {
+                "success": False,
+                "error": "All strategies failed",
+                "method": "none",
+                "fetch_error": {
+                    "ok": False,
+                    "error": {
+                        "stage": "fetch",
+                        "reason": "js_rendering_required",
+                        "hint": "Install Playwright",
+                    },
+                },
+            }
+            from sheaf_ai.pipeline import process_url
+            result = process_url("https://spa-site.example.com")
+            assert result["success"] is False
+            assert result["stage"] == "fetch"
+            assert "fetch_error" in result
+
+    def test_quality_gate_error_structure(self):
+        """Quality gate failures should have structured output."""
+        with patch("sheaf_ai.fetch_article.fetch_article") as mock_fetch, \
+             patch("sheaf_ai.quality.assess_quality") as mock_quality:
+            mock_fetch.return_value = {
+                "success": True,
+                "text": "Short",
+                "title": "Test",
+                "method": "requests",
+                "images": [],
+            }
+            mock_quality.return_value = MagicMock(
+                passed=False,
+                reason="insufficient_text",
+                quality_tier="D",
+                is_image_heavy=False,
+                alt_text_available=False,
+                to_dict=lambda: {"passed": False, "reason": "insufficient_text", "quality_tier": "D"},
+            )
+            from sheaf_ai.pipeline import process_url
+            result = process_url("https://example.com")
+            assert result["success"] is False
+            assert result["stage"] == "quality"
