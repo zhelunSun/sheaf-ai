@@ -8,7 +8,11 @@ from pathlib import Path
 from typing import NoReturn
 
 from sheaf_ai.config import fix_windows_encoding, VERSION
-from sheaf_ai.exceptions import SheafError, NetworkError as NetErr, ConfigError, StorageError
+from sheaf_ai.exceptions import (
+    SheafError, NetworkError as NetErr, NetworkTimeoutError,
+    JSRenderingRequiredError, ConfigError, StorageError,
+    get_exit_code, get_exit_code_from_key,
+)
 from sheaf_ai.display import (
     show_recent, show_stats, show_search, show_weekly,
     show_insights, show_tags, show_trends, show_urgent,
@@ -88,30 +92,39 @@ def main() -> NoReturn:
     except KeyboardInterrupt:
         print("\nInterrupted."); sys.exit(130)
     except NetErr as e:
-        print(f"Network error: {e}\nCheck your internet connection."); sys.exit(1)
+        print(f"Network error: {e}\nCheck your internet connection.")
+        sys.exit(get_exit_code(e))
+    except NetworkTimeoutError as e:
+        print(f"Network timeout: {e}\nCheck your internet connection or try again.")
+        sys.exit(get_exit_code(e))
+    except JSRenderingRequiredError as e:
+        print(f"JS rendering required: {e}")
+        print("Tip: pip install sheaf-ai[playwright] && sheaf playwright-install")
+        sys.exit(get_exit_code(e))
     except StorageError as e:
-        print(f"Storage error: {e}\nTry 'sheaf init' first."); sys.exit(1)
+        print(f"Storage error: {e}\nTry 'sheaf init' first.")
+        sys.exit(get_exit_code(e))
     except ConfigError as e:
-        _die(f"Config error: {e}", debug)
+        _die(f"Config error: {e}", debug, code=get_exit_code_from_key("CONFIG"))
     except ValueError as e:
         msg = str(e)
         if "API Key not found" in msg:
             from sheaf_ai.llm_client import check_api_key
             _, guidance = check_api_key()
             print(guidance)
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         _die(f"Error: {e}", debug)
     except SheafError as e:
-        _die(f"Error: {e}", debug)
+        _die(f"Error: {e}", debug, code=get_exit_code(e))
     except Exception as e:
         _die(f"Error: {e}", debug)
 
 
-def _die(msg: str, debug: bool = False) -> NoReturn:
+def _die(msg: str, debug: bool = False, code: int = 1) -> NoReturn:
     print(msg)
     if debug: import traceback; traceback.print_exc()
     else: print("Run with --debug for details.")
-    sys.exit(1)
+    sys.exit(code)
 
 
 def _run() -> None:
@@ -139,7 +152,7 @@ def _run() -> None:
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
-    else: print(f"Unknown: {parsed.command}"); sys.exit(1)
+    else: print(f"Unknown: {parsed.command}"); sys.exit(get_exit_code_from_key("CONFIG"))
 
 
 def _collect(p: argparse.Namespace) -> None:
@@ -211,7 +224,7 @@ def _setup(p: argparse.Namespace):
     if not target:
         print("Could not auto-detect target platform.")
         print("Please specify: sheaf setup --target <cursor|claude|workbuddy|windsurf>")
-        sys.exit(1)
+        sys.exit(get_exit_code_from_key("CONFIG"))
     # --show-config: just print the generated config and exit
     if p.show_config:
         config = build_mcp_config(data_dir=p.data_dir)
@@ -323,7 +336,7 @@ def _config(p: argparse.Namespace) -> None:
         if not provider:
             print("Usage: sheaf config set-key --provider <provider-id>")
             print(f"Available: openai, deepseek, siliconflow, together, groq, custom")
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         try:
             cfg = config_set_key(
                 provider=provider,
@@ -337,7 +350,7 @@ def _config(p: argparse.Namespace) -> None:
                 print(f"✅ Set '{provider}' as default provider")
         except ValueError as e:
             print(f"Error: {e}")
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         return
     if action == "list":
         providers = config_list()
@@ -357,19 +370,19 @@ def _config(p: argparse.Namespace) -> None:
         provider = p.provider
         if not provider:
             print("Usage: sheaf config use <provider-id>")
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         try:
             config_use(provider)
             print(f"✅ Default provider set to '{provider}'")
         except ValueError as e:
             print(f"Error: {e}")
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         return
     if action == "remove":
         provider = p.provider
         if not provider:
             print("Usage: sheaf config remove <provider-id>")
-            sys.exit(1)
+            sys.exit(get_exit_code_from_key("CONFIG"))
         config_remove(provider)
         print(f"✅ Provider '{provider}' removed from config")
         return

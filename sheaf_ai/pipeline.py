@@ -171,7 +171,12 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         print(f"Fetching: {url}")
         fetch_result = fetch_article(url)
         if not fetch_result["success"]:
-            return {"success": False, "error": fetch_result.get("error", "Fetch failed"), "stage": "fetch"}
+            err = fetch_result.get("error", "Fetch failed")
+            fetch_err = fetch_result.get("fetch_error", {})
+            result: dict = {"success": False, "error": err, "stage": "fetch"}
+            if fetch_err:
+                result["fetch_error"] = fetch_err
+            return result
 
     print(f"Fetched ({fetch_result['method']}): {len(fetch_result.get('text', ''))} chars")
 

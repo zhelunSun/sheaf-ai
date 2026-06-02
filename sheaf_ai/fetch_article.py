@@ -313,7 +313,31 @@ def _clean_text(text: str) -> str:
     return text.strip()
 
 
-def _content_quality(text: str) -> dict:
+def _is_js_heavy_page(html: str) -> bool:
+    """Detect if a page is JS-rendered (SPA) by checking body content vs script content.
+
+    Returns True if the body appears to be mostly empty/JS-generated.
+    """
+    if not html or len(html) < 200:
+        return True
+    # Quick heuristic: if body is empty or only contains script tags
+    body_match = re.search(r'<body[^>]*>(.*?)</body>', html, re.DOTALL | re.IGNORECASE)
+    if not body_match:
+        return True
+    body_content = body_match.group(1).strip()
+    # Strip all HTML tags from body content
+    text_only = re.sub(r'<[^>]+>', '', body_content).strip()
+    # If body has almost no readable text, it's likely a SPA
+    return len(text_only) < 100
+
+
+def _js_rendering_hint(url: str) -> str:
+    """Generate a human-readable hint for JS-rendered pages."""
+    domain = _detect_platform(url)
+    hint = f"Page requires JavaScript rendering (SPA): {domain}"
+    hint += "\nTip: This site uses client-side rendering and cannot be fetched with basic HTTP requests."
+    hint += "\nTo enable JS rendering support: pip install playwright && playwright install chromium"
+    return hint
     if not text:
         return {"ok": False, "reason": "empty", "score": 0}
 
@@ -616,9 +640,22 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
             parsed = _parse_html(result["html"], url)
             if parsed["success"]:
                 return _build_result(parsed, "requests")
+        error_detail = "Playwright not installed" if "playwright not installed" in (
+            result.get("error", "")
+        ).lower() else "JS rendering required"
         return {
             "success": False, "title": "", "text": "",
-            "method": "failed", "error": "Both playwright and requests failed",
+            "method": "failed",
+            "error": (
+                f"All strategies failed: {domain} requires JS rendering. "
+                f"Tip: pip install playwright && playwright install chromium"
+            ),
+            "fetch_error": {
+                "stage": "fetch",
+                "reason": "js_rendering_required",
+                "domain": domain,
+                "detail": error_detail,
+            },
         }
 
     # Strategy 2: WeChat — dual-fetch and pick longest
@@ -690,20 +727,55 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
 
     # Strategy 3: Default -> requests first, Playwright fallback
     logger.info(f"Default -> requests first for {domain}")
-    result = _fetch_requests(url, timeout)
-    if result["success"]:
-        parsed = _parse_html(result["html"], url)
+    requests_result = _fetch_requests(url, timeout)
+    requests_ok = False
+    if requests_result["success"]:
+        parsed = _parse_html(requests_result["html"], url)
         if parsed["success"]:
+            requests_ok = True
             return _build_result(parsed, "requests")
 
     logger.info("Requests insufficient -> Playwright fallback")
-    result = _fetch_playwright(url, timeout)
-    if result["success"]:
-        parsed = _parse_html(result["html"], url)
+    pw_result = _fetch_playwright(url, timeout)
+    playwright_ok = False
+    if pw_result["success"]:
+        parsed = _parse_html(pw_result["html"], url)
         if parsed["success"]:
+            playwright_ok = True
             return _build_result(parsed, "playwright")
+
+    # Both strategies failed — build a structured error with hints
+    is_js_heavy = (
+        (requests_result.get("html") and _is_js_heavy_page(requests_result["html"]))
+        or "playwright not installed" in (pw_result.get("error", "")).lower()
+        or not requests_ok
+    )
+
+    if is_js_heavy:
+        error_msg = _js_rendering_hint(url)
+        error_reason = "js_rendering_required"
+    else:
+        error_msg = "All strategies failed"
+        error_reason = "all_strategies_failed"
+
+    reason_parts = []
+    if not requests_ok and requests_result.get("error"):
+        reason_parts.append(f"requests: {requests_result['error']}")
+    if not playwright_ok and pw_result.get("error"):
+        reason_parts.append(f"playwright: {pw_result['error']}")
+    detail = "; ".join(reason_parts) if reason_parts else error_reason
 
     return {
         "success": False, "title": "", "text": "",
-        "method": "failed", "error": "All strategies failed",
+        "method": "failed",
+        "error": error_msg,
+        "fetch_error": {
+            "ok": False,
+            "error": {
+                "stage": "fetch",
+                "reason": error_reason,
+                "domain": domain,
+                "detail": detail,
+            },
+        },
     }

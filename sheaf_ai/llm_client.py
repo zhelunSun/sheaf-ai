@@ -4,16 +4,18 @@ Sheaf LLM Client — works with any OpenAI-compatible API endpoint.
 Supports OpenAI, Together, Groq, DeepSeek, SiliconFlow, and any
 provider that follows the OpenAI chat completions API format.
 
-Key resolution priority:
-    1. Environment variables + .env file (existing behavior)
-    2. User config file (~/.sheaf/config.json)
-    3. Interactive prompt (fallback, TTY only)
+Key resolution priority (SHEAF_API_KEY shortcut):
+    1. SHEAF_API_KEY (unified env var) — auto-detects provider from key format
+    2. Provider-specific env var: SILICONFLOW_API_KEY, DEEPSEEK_API_KEY, OPENAI_API_KEY, etc.
+    3. User config file (~/.sheaf/config.json)
+    4. Interactive prompt (fallback, TTY only)
 
 Usage:
     from sheaf_ai.llm_client import get_client, get_model, chat, list_models
 """
 from __future__ import annotations
 import os
+import re
 from pathlib import Path
 from openai import OpenAI
 
@@ -87,6 +89,41 @@ PROVIDERS = {
 
 DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "openai")
 
+# Auto-detect default provider from SHEAF_API_KEY format if DEFAULT_PROVIDER not set
+_SHEAF_API_KEY = os.environ.get("SHEAF_API_KEY", "").strip()
+if _SHEAF_API_KEY and not os.environ.get("DEFAULT_PROVIDER"):
+    _detected = detect_provider_from_key(_SHEAF_API_KEY)
+    if _detected:
+        DEFAULT_PROVIDER = _detected
+
+
+# ============================================================
+# SHEAF_API_KEY — unified entry point
+# ============================================================
+
+# Key prefix → provider mapping for auto-detection
+_KEY_PREFIX_PROVIDERS = {
+    "gsk_": "groq",                 # Groq
+    "sk-proj-": "openai",           # OpenAI project key
+    "sk-or-": "openai",             # OpenRouter (treated as OpenAI-compatible)
+    "f_": "together",               # Together AI (legacy)
+    "tgp_": "together",             # Together AI
+    "ds-": "deepseek",              # DeepSeek
+}
+
+
+def detect_provider_from_key(api_key: str) -> str | None:
+    """Try to infer the provider ID from the API key prefix.
+
+    Returns provider ID string or None if unknown.
+    """
+    for prefix, provider in _KEY_PREFIX_PROVIDERS.items():
+        if api_key.startswith(prefix):
+            return provider
+    # Ambiguous: sk- prefix could be openai, deepseek, or siliconflow
+    # Default to the current DEFAULT_PROVIDER
+    return None
+
 
 # ============================================================
 # API key resolution (env first, then config file)
@@ -96,17 +133,31 @@ def _resolve_key_and_url(provider: str) -> tuple[str, str]:
     """Resolve API key and base URL with layered priority.
 
     Priority:
-        1. Environment variable (incl .env)
-        2. User config file ~/.sheaf/config.json
-        3. Raise ValueError with guidance
+        1. SHEAF_API_KEY (unified env var) — universal fallback for any provider
+        2. Provider-specific environment variable (e.g. SILICONFLOW_API_KEY) + .env file
+        3. User config file ~/.sheaf/config.json
+        4. Raise ValueError with guidance
+
+    SHEAF_API_KEY acts as a universal API key that works with the
+    current provider when no provider-specific key is set.
     """
-    # 1. Environment variable (existing behavior)
+    # 1. Provider-specific environment variable (highest)
     if provider in PROVIDERS:
         cfg = PROVIDERS[provider]
         env_key = os.environ.get(cfg["api_key_env"], "").strip()
         env_url = os.environ.get("OPENAI_BASE_URL", cfg["base_url"])
         if env_key:
             return env_key, env_url
+
+    # 2. SHEAF_API_KEY universal entry point (fallback for any provider)
+    unified_key = os.environ.get("SHEAF_API_KEY", "").strip()
+    if unified_key:
+        # Build base URL for the target provider
+        if provider in PROVIDERS:
+            url = os.environ.get("OPENAI_BASE_URL", PROVIDERS[provider]["base_url"])
+        else:
+            url = os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        return unified_key, url
 
     # 2. User config file
     try:
@@ -131,12 +182,15 @@ def _resolve_key_and_url(provider: str) -> tuple[str, str]:
     except ImportError:
         pass
 
-    # 3. Not found — raise with guidance
+    # 3. Not found — raise with guidance mentioning SHEAF_API_KEY first
     env_name = PROVIDERS.get(provider, {}).get("api_key_env", f"{provider.upper()}_API_KEY")
     lines = [
         f"⚠ 未检测到 API 密钥 ({env_name})",
         "",
-        "快速配置（推荐）：",
+        "推荐方式 — 统一环境变量（适用于所有 Provider）：",
+        "    export SHEAF_API_KEY=你的密钥",
+        "",
+        "或快速配置（推荐交互式向导）：",
         "    sheaf config setup",
         "",
         "或手动设置环境变量：",
@@ -156,17 +210,29 @@ def _resolve_key_and_url(provider: str) -> tuple[str, str]:
 def check_api_key(provider: str = None) -> tuple[bool, str]:
     """Check if API key is configured for a provider.
 
+    Checks:
+        1. SHEAF_API_KEY (unified env var)
+        2. Provider-specific env var
+        3. User config file
+
     Returns:
         (is_ok, guidance_message)
     """
     provider = provider or DEFAULT_PROVIDER
+
+    # 1. SHEAF_API_KEY unified check
+    sheaf_key = os.environ.get("SHEAF_API_KEY", "").strip()
+    if sheaf_key:
+        return True, ""
+
+    # 2. Provider-specific env var
     if provider not in PROVIDERS:
         provider = "openai"  # fallback to openai as default guidance
 
     cfg = PROVIDERS[provider]
     api_key = os.environ.get(cfg["api_key_env"], "")
 
-    # Also check config file
+    # 3. Config file
     if not api_key:
         try:
             from sheaf_ai.settings import get_api_key as _cfg_get_key
@@ -177,14 +243,17 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
     if api_key:
         return True, ""
 
-    # Build guidance
+    # Build guidance with SHEAF_API_KEY as the preferred option
     lines = [
         f"⚠ 未检测到 API 密钥 ({cfg['api_key_env']})",
         "",
-        "快速配置（推荐交互式向导）：",
+        "推荐方式 — 统一环境变量（适用于所有 Provider）：",
+        f"    export SHEAF_API_KEY=你的密钥",
+        "",
+        "快速配置（交互式向导）：",
         "    sheaf config setup",
         "",
-        "或手动设置环境变量：",
+        "或手动设置 Provider 专属环境变量：",
         f"    # macOS/Linux:  export {cfg['api_key_env']}=你的密钥",
         f"    # Windows PS:   $env:{cfg['api_key_env']}='你的密钥'",
         f"    # Windows CMD:  set {cfg['api_key_env']}=你的密钥",
