@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-531%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-589%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -322,7 +322,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 531 passed
+python -m pytest tests/ -q     # 589 passed
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -330,7 +330,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 531 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 589 passing tests. We're validating with real users before beta.
 
 The browser extension under `extension/` is an experimental local companion for the HTTP API. Its manifest version is independent from the Python package version until the extension has its own release channel.
 
