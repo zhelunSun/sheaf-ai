@@ -43,3 +43,6 @@ internal/
 
 # Agent workspace state
 .workbuddy/
+
+# Sandbox test artifacts
+.sandbox-test/
