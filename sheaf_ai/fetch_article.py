@@ -338,6 +338,10 @@ def _js_rendering_hint(url: str) -> str:
     hint += "\nTip: This site uses client-side rendering and cannot be fetched with basic HTTP requests."
     hint += "\nTo enable JS rendering support: pip install playwright && playwright install chromium"
     return hint
+
+
+def _content_quality(text: str) -> dict:
+    """Quick heuristic for extracted text quality."""
     if not text:
         return {"ok": False, "reason": "empty", "score": 0}
 

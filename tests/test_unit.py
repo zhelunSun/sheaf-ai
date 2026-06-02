@@ -3,6 +3,7 @@ Unit tests for sheaf_ai.utils — pure logic, no network, no API keys.
 
 Tests URL normalization, content hashing, platform detection, and timeliness extraction.
 """
+from sheaf_ai.fetch_article import _content_quality, _js_rendering_hint
 from sheaf_ai.utils import normalize_url, content_hash, detect_platform, extract_timeliness
 
 
@@ -111,3 +112,17 @@ class TestExtractTimeliness:
     def test_none_input(self):
         result = extract_timeliness({"deadline_or_timing": None})
         assert result["has_deadline"] is False
+
+
+class TestFetchArticleHelpers:
+    def test_content_quality_scores_long_text(self):
+        text = ("This is a detailed paragraph about article quality.\n" * 40).strip()
+        result = _content_quality(text)
+        assert result["ok"] is True
+        assert result["score"] >= 2
+        assert result["reason"] == "quality_pass"
+
+    def test_js_rendering_hint_only_returns_hint_text(self):
+        hint = _js_rendering_hint("https://www.36kr.com/p/123")
+        assert "JavaScript rendering" in hint
+        assert "playwright install chromium" in hint
