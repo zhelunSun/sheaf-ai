@@ -96,7 +96,9 @@ class TestBuildMcpConfig:
     def test_api_key_from_env(self):
         saved = os.environ.get("OPENAI_API_KEY")
         saved_ds = os.environ.get("DEEPSEEK_API_KEY")
+        saved_sf = os.environ.get("SILICONFLOW_API_KEY")
         try:
+            os.environ.pop("SILICONFLOW_API_KEY", None)
             os.environ["OPENAI_API_KEY"] = "sk-test-key-123"
             os.environ.pop("DEEPSEEK_API_KEY", None)
             config = build_mcp_config()
@@ -111,13 +113,19 @@ class TestBuildMcpConfig:
                 os.environ["DEEPSEEK_API_KEY"] = saved_ds
             else:
                 os.environ.pop("DEEPSEEK_API_KEY", None)
+            if saved_sf is not None:
+                os.environ["SILICONFLOW_API_KEY"] = saved_sf
+            else:
+                os.environ.pop("SILICONFLOW_API_KEY", None)
 
     def test_deepseek_api_key_from_env(self):
         saved = os.environ.get("OPENAI_API_KEY")
         saved_ds = os.environ.get("DEEPSEEK_API_KEY")
+        saved_sf = os.environ.get("SILICONFLOW_API_KEY")
         try:
             os.environ.pop("OPENAI_API_KEY", None)
             os.environ["DEEPSEEK_API_KEY"] = "ds-test-key"
+            os.environ.pop("SILICONFLOW_API_KEY", None)
             config = build_mcp_config()
             assert config.get("env", {}).get("OPENAI_API_KEY") == "ds-test-key"
         finally:
@@ -129,13 +137,19 @@ class TestBuildMcpConfig:
                 os.environ["DEEPSEEK_API_KEY"] = saved_ds
             else:
                 os.environ.pop("DEEPSEEK_API_KEY", None)
+            if saved_sf is not None:
+                os.environ["SILICONFLOW_API_KEY"] = saved_sf
+            else:
+                os.environ.pop("SILICONFLOW_API_KEY", None)
 
     def test_no_api_key_no_env(self):
         saved = os.environ.get("OPENAI_API_KEY")
         saved_ds = os.environ.get("DEEPSEEK_API_KEY")
+        saved_sf = os.environ.get("SILICONFLOW_API_KEY")
         try:
             os.environ.pop("OPENAI_API_KEY", None)
             os.environ.pop("DEEPSEEK_API_KEY", None)
+            os.environ.pop("SILICONFLOW_API_KEY", None)
             config = build_mcp_config()
             assert "env" not in config
         finally:
@@ -147,6 +161,10 @@ class TestBuildMcpConfig:
                 os.environ["DEEPSEEK_API_KEY"] = saved_ds
             else:
                 os.environ.pop("DEEPSEEK_API_KEY", None)
+            if saved_sf is not None:
+                os.environ["SILICONFLOW_API_KEY"] = saved_sf
+            else:
+                os.environ.pop("SILICONFLOW_API_KEY", None)
 
     def test_no_data_dir_no_sheaf_data_dir_in_env(self):
         # When data_dir is None, SHEAF_DATA_DIR should not appear in env
