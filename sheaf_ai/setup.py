@@ -70,6 +70,35 @@ def detect_sheaf_entry() -> str:
     return f"{detect_python_path()} -m sheaf_ai.cli"
 
 
+def detect_all_platforms() -> list[str]:
+    """Detect all Agent platforms present on this machine.
+
+    Returns a list of platform IDs: cursor, claude, workbuddy, windsurf.
+    Checks both CWD project markers and global config files.
+    """
+    found = []
+    cwd = Path.cwd()
+    home = _home()
+
+    # Cursor: .cursor/ dir or .cursorrules in CWD
+    if (cwd / ".cursor").exists() or (cwd / ".cursorrules").exists():
+        found.append("cursor")
+
+    # Claude Code: ~/.claude.json exists
+    if (home / ".claude.json").exists():
+        found.append("claude")
+
+    # WorkBuddy: ~/.workbuddy/ dir
+    if (home / ".workbuddy").exists():
+        found.append("workbuddy")
+
+    # Windsurf: .windsurf/ dir or .windsurfrules in CWD
+    if (cwd / ".windsurf").exists() or (cwd / ".windsurfrules").exists():
+        found.append("windsurf")
+
+    return found
+
+
 # ============================================================
 # MCP config templates
 # ============================================================
@@ -91,8 +120,12 @@ def build_mcp_config(data_dir: Optional[str] = None) -> dict:
     if data_dir:
         env["SHEAF_DATA_DIR"] = str(Path(data_dir).resolve())
 
-    # Preserve API key if available
-    api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("DEEPSEEK_API_KEY")
+    # Preserve API key if available — check all common providers
+    api_key = (
+        os.environ.get("SILICONFLOW_API_KEY")
+        or os.environ.get("DEEPSEEK_API_KEY")
+        or os.environ.get("OPENAI_API_KEY")
+    )
     if api_key:
         env["OPENAI_API_KEY"] = api_key
 
