@@ -47,8 +47,15 @@ def build_parser() -> argparse.ArgumentParser:
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("insights", "Cross-topic associations"), ("tags", "Tag statistics"),
                             ("trends", "Topic trends"), ("urgent", "Upcoming deadlines"),
-                            ("mcp", "Start MCP server (stdio)"), ("init", "First-time onboarding")]:
+                            ("mcp", "Start MCP server (stdio)")]:
         sub.add_parser(name, help=help_text)
+    # init subcommand with --auto flag (Issue #62)
+    p = sub.add_parser("init", help="First-time onboarding")
+    p.add_argument("--auto", action="store_true", help="Agent-Native one-line deploy: init + MCP setup + health check")
+    p.add_argument("--data-dir", default=None, help="Custom data directory (default: ./data or $SHEAF_DATA_DIR)")
+    p.add_argument("--target", "-t", default=None,
+                   help="Target platform for MCP setup (cursor|claude|workbuddy|windsurf, default: auto-detect)")
+    p.add_argument("--json", action="store_true", help="Machine-readable JSON output (for agents)")
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
     # Config: API key and provider management
     p = sub.add_parser("config", help="Manage API keys and provider settings")
@@ -292,7 +299,218 @@ def _mcp():
     from sheaf_ai.mcp_server import main as mcp_main; mcp_main()
 
 def _init():
-    from sheaf_ai.onboarding import run_onboarding; run_onboarding()
+    """Handle sheaf init — with or without --auto flag (Issue #62)."""
+    # Re-parse to get init-specific flags
+    argv = sys.argv[1:]
+    # Normalize legacy --init flag
+    if argv and argv[0] == "--init":
+        argv = ["init"] + argv[1:]
+    if argv and argv[0] == "init":
+        auto = "--auto" in argv
+        data_dir = None
+        target = None
+        for i, arg in enumerate(argv):
+            if arg == "--data-dir" and i + 1 < len(argv):
+                data_dir = argv[i + 1]
+            if arg in ("--target", "-t") and i + 1 < len(argv):
+                target = argv[i + 1]
+        if auto:
+            _init_auto(data_dir=data_dir, target=target)
+        else:
+            from sheaf_ai.onboarding import run_onboarding
+            run_onboarding()
+    else:
+        from sheaf_ai.onboarding import run_onboarding
+        run_onboarding()
+
+
+def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
+    """Agent-Native one-line deploy: init + MCP setup + health check.
+
+    Idempotent — safe to run multiple times. Designed for agents:
+        sheaf init --auto                     # auto-detect everything
+        sheaf init --auto --target workbuddy  # specific platform
+        sheaf init --auto --json              # machine-readable output
+
+    Pipeline:
+        1. Create data dirs
+        2. Create config dir
+        3. Detect API key
+        4. Init index file
+        5. Check LLM client
+        6. Check Playwright (optional)
+        7. Auto-detect platform(s) + configure MCP
+        8. Print report + next steps
+    """
+    import os
+    from pathlib import Path
+    from sheaf_ai.config import VERSION, fix_windows_encoding
+    from sheaf_ai.settings import get_api_key, get_provider_config, CONFIG_DIR
+
+    fix_windows_encoding()
+
+    # Check for --json flag for machine-readable output
+    json_output = "--json" in sys.argv
+
+    print("=" * 55)
+    print(f"  Sheaf v{VERSION} — Agent-Native Auto Deploy")
+    print("=" * 55)
+    print()
+
+    steps = []
+    mcp_results = []
+
+    # ── Step 1: Data directory ──────────────────────────────
+    if data_dir:
+        target_data = Path(data_dir)
+    elif os.environ.get("SHEAF_DATA_DIR"):
+        target_data = Path(os.environ["SHEAF_DATA_DIR"])
+    else:
+        target_data = Path.home() / ".sheaf" / "data"
+
+    # Ensure data dirs exist
+    entries_dir = target_data / "entries"
+    summaries_dir = target_data / "summaries"
+    raw_dir = target_data / "raw"
+
+    for d in [target_data, entries_dir, summaries_dir, raw_dir]:
+        d.mkdir(parents=True, exist_ok=True)
+
+    steps.append(("✅", f"Data dir: {target_data}"))
+
+    # Set SHEAF_DATA_DIR for subsequent operations in this session
+    os.environ["SHEAF_DATA_DIR"] = str(target_data)
+
+    # ── Step 2: Config directory ────────────────────────────
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    steps.append(("✅", f"Config dir: {CONFIG_DIR}"))
+
+    # ── Step 3: API key detection ───────────────────────────
+    # Check common env vars (ordered by user preference)
+    key_env_vars = [
+        "SILICONFLOW_API_KEY",
+        "DEEPSEEK_API_KEY",
+        "OPENAI_API_KEY",
+        "SHEAF_API_KEY",
+    ]
+    found_key = False
+    found_provider = None
+    for env_var in key_env_vars:
+        val = os.environ.get(env_var, "").strip()
+        if val:
+            found_key = True
+            found_provider = env_var
+            steps.append(("✅", f"API key: {env_var} detected"))
+            break
+
+    # Also check config file
+    if not found_key:
+        pc = get_provider_config()
+        if pc and pc.get("api_key"):
+            found_key = True
+            steps.append(("✅", "API key: configured in ~/.sheaf/config.json"))
+        else:
+            steps.append(("⚠️", "API key: not found"))
+            steps.append(("💡", "Run: sheaf config setup  or  set SILICONFLOW_API_KEY env var"))
+
+    # ── Step 4: Index file ──────────────────────────────────
+    index_file = target_data / "index.jsonl"
+    if index_file.exists():
+        count = sum(1 for line in index_file.read_text(encoding="utf-8").splitlines() if line.strip())
+        steps.append(("✅", f"Index: {count} entries"))
+    else:
+        # Create empty index
+        index_file.touch()
+        steps.append(("✅", "Index: initialized (empty)"))
+
+    # ── Step 5: LLM client check ────────────────────────────
+    if found_key:
+        try:
+            from sheaf_ai.llm_client import get_client
+            client = get_client()
+            steps.append(("✅", f"LLM client: {type(client).__name__}"))
+        except Exception as e:
+            steps.append(("⚠️", f"LLM client issue: {e}"))
+    else:
+        steps.append(("⚠️", "LLM client: skipped (no API key)"))
+
+    # ── Step 6: Playwright check (optional) ─────────────────
+    try:
+        import playwright  # noqa: F401
+        steps.append(("✅", "Playwright: installed"))
+    except ImportError:
+        steps.append(("ℹ️", "Playwright: not installed (optional, for JS-heavy sites)"))
+
+    # ── Step 7: Python + Sheaf version ──────────────────────
+    steps.append(("ℹ️", f"Python: {sys.version.split()[0]}"))
+    steps.append(("ℹ️", f"Sheaf: v{VERSION}"))
+
+    # ── Step 8: Auto MCP setup (Agent-Native core) ──────────
+    from sheaf_ai.setup import setup_target, detect_all_platforms
+
+    platforms_to_setup = []
+    if target:
+        # User specified a target — use it directly
+        platforms_to_setup = [target]
+    else:
+        # Auto-detect all platforms
+        platforms_to_setup = detect_all_platforms()
+
+    if platforms_to_setup:
+        print(f"  📡 Configuring MCP for: {', '.join(platforms_to_setup)}")
+        print()
+        for plat in platforms_to_setup:
+            try:
+                result = setup_target(plat, data_dir=data_dir or str(target_data))
+                mcp_results.append(result)
+                steps.append(("✅", f"MCP [{plat}]: {result['config_path']}"))
+            except Exception as e:
+                steps.append(("⚠️", f"MCP [{plat}]: {e}"))
+    else:
+        steps.append(("ℹ️", "MCP: no Agent platform detected (use --target to specify)"))
+
+    # ── Print report ────────────────────────────────────────
+    print("  Deploy Results:")
+    print("  " + "-" * 45)
+    for icon, msg in steps:
+        print(f"  {icon} {msg}")
+    print("  " + "-" * 45)
+
+    errors = sum(1 for icon, _ in steps if icon == "❌")
+    warnings = sum(1 for icon, _ in steps if icon == "⚠️")
+    if errors:
+        print(f"\n  {errors} error(s) found. See above for details.")
+    elif warnings:
+        print(f"\n  Deploy completed with {warnings} warning(s).")
+    else:
+        print("\n  All checks passed! Sheaf is ready. 🎉")
+
+    # ── Print platform-specific next steps ──────────────────
+    if mcp_results:
+        print()
+        for result in mcp_results:
+            for step in result.get("next_steps", []):
+                print(f"  {step}")
+
+    print()
+    print("  Quick start:")
+    print("    sheaf <url>          Collect an article")
+    print("    sheaf search <term>  Search knowledge base")
+    print("    sheaf doctor         Full health check")
+    print("=" * 55)
+
+    # ── JSON output for agents ──────────────────────────────
+    if json_output:
+        deploy_result = {
+            "version": VERSION,
+            "data_dir": str(target_data),
+            "api_key_detected": found_key,
+            "mcp_platforms": [r["target"] for r in mcp_results],
+            "mcp_configs": {r["target"]: r["config_path"] for r in mcp_results},
+            "status": "ready" if not errors else "errors",
+            "warnings": warnings,
+        }
+        print(json.dumps(deploy_result, ensure_ascii=False, indent=2))
 
 def _doctor() -> None:
     """Run diagnostic checks and report health status."""
