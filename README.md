@@ -322,7 +322,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 589 passed
+python -m pytest tests/ -q     # 653 passed
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
