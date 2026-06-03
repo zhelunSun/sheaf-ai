@@ -51,8 +51,11 @@ def build_parser() -> argparse.ArgumentParser:
         sub.add_parser(name, help=help_text)
     # init subcommand with --auto flag (Issue #62)
     p = sub.add_parser("init", help="First-time onboarding")
-    p.add_argument("--auto", action="store_true", help="Auto-detect environment and initialize (non-interactive)")
+    p.add_argument("--auto", action="store_true", help="Agent-Native one-line deploy: init + MCP setup + health check")
     p.add_argument("--data-dir", default=None, help="Custom data directory (default: ./data or $SHEAF_DATA_DIR)")
+    p.add_argument("--target", "-t", default=None,
+                   help="Target platform for MCP setup (cursor|claude|workbuddy|windsurf, default: auto-detect)")
+    p.add_argument("--json", action="store_true", help="Machine-readable JSON output (for agents)")
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
     # Config: API key and provider management
     p = sub.add_parser("config", help="Manage API keys and provider settings")
@@ -305,11 +308,14 @@ def _init():
     if argv and argv[0] == "init":
         auto = "--auto" in argv
         data_dir = None
+        target = None
         for i, arg in enumerate(argv):
             if arg == "--data-dir" and i + 1 < len(argv):
                 data_dir = argv[i + 1]
+            if arg in ("--target", "-t") and i + 1 < len(argv):
+                target = argv[i + 1]
         if auto:
-            _init_auto(data_dir=data_dir)
+            _init_auto(data_dir=data_dir, target=target)
         else:
             from sheaf_ai.onboarding import run_onboarding
             run_onboarding()
@@ -318,10 +324,23 @@ def _init():
         run_onboarding()
 
 
-def _init_auto(data_dir: str | None = None) -> None:
-    """Auto-initialize Sheaf: detect environment, create dirs, check keys, output health report.
+def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
+    """Agent-Native one-line deploy: init + MCP setup + health check.
 
-    Idempotent — safe to run multiple times. (Issue #62)
+    Idempotent — safe to run multiple times. Designed for agents:
+        sheaf init --auto                     # auto-detect everything
+        sheaf init --auto --target workbuddy  # specific platform
+        sheaf init --auto --json              # machine-readable output
+
+    Pipeline:
+        1. Create data dirs
+        2. Create config dir
+        3. Detect API key
+        4. Init index file
+        5. Check LLM client
+        6. Check Playwright (optional)
+        7. Auto-detect platform(s) + configure MCP
+        8. Print report + next steps
     """
     import os
     from pathlib import Path
@@ -330,12 +349,16 @@ def _init_auto(data_dir: str | None = None) -> None:
 
     fix_windows_encoding()
 
+    # Check for --json flag for machine-readable output
+    json_output = "--json" in sys.argv
+
     print("=" * 55)
-    print(f"  Sheaf v{VERSION} — Auto Init")
+    print(f"  Sheaf v{VERSION} — Agent-Native Auto Deploy")
     print("=" * 55)
     print()
 
     steps = []
+    mcp_results = []
 
     # ── Step 1: Data directory ──────────────────────────────
     if data_dir:
@@ -363,12 +386,12 @@ def _init_auto(data_dir: str | None = None) -> None:
     steps.append(("✅", f"Config dir: {CONFIG_DIR}"))
 
     # ── Step 3: API key detection ───────────────────────────
-    # Check common env vars
+    # Check common env vars (ordered by user preference)
     key_env_vars = [
-        "SHEAF_API_KEY",
         "SILICONFLOW_API_KEY",
         "DEEPSEEK_API_KEY",
         "OPENAI_API_KEY",
+        "SHEAF_API_KEY",
     ]
     found_key = False
     found_provider = None
@@ -422,8 +445,32 @@ def _init_auto(data_dir: str | None = None) -> None:
     steps.append(("ℹ️", f"Python: {sys.version.split()[0]}"))
     steps.append(("ℹ️", f"Sheaf: v{VERSION}"))
 
+    # ── Step 8: Auto MCP setup (Agent-Native core) ──────────
+    from sheaf_ai.setup import setup_target, detect_all_platforms
+
+    platforms_to_setup = []
+    if target:
+        # User specified a target — use it directly
+        platforms_to_setup = [target]
+    else:
+        # Auto-detect all platforms
+        platforms_to_setup = detect_all_platforms()
+
+    if platforms_to_setup:
+        print(f"  📡 Configuring MCP for: {', '.join(platforms_to_setup)}")
+        print()
+        for plat in platforms_to_setup:
+            try:
+                result = setup_target(plat, data_dir=data_dir or str(target_data))
+                mcp_results.append(result)
+                steps.append(("✅", f"MCP [{plat}]: {result['config_path']}"))
+            except Exception as e:
+                steps.append(("⚠️", f"MCP [{plat}]: {e}"))
+    else:
+        steps.append(("ℹ️", "MCP: no Agent platform detected (use --target to specify)"))
+
     # ── Print report ────────────────────────────────────────
-    print("  Initialization Results:")
+    print("  Deploy Results:")
     print("  " + "-" * 45)
     for icon, msg in steps:
         print(f"  {icon} {msg}")
@@ -434,17 +481,36 @@ def _init_auto(data_dir: str | None = None) -> None:
     if errors:
         print(f"\n  {errors} error(s) found. See above for details.")
     elif warnings:
-        print(f"\n  Init completed with {warnings} warning(s).")
+        print(f"\n  Deploy completed with {warnings} warning(s).")
     else:
-        print("\n  All checks passed! 🎉")
+        print("\n  All checks passed! Sheaf is ready. 🎉")
+
+    # ── Print platform-specific next steps ──────────────────
+    if mcp_results:
+        print()
+        for result in mcp_results:
+            for step in result.get("next_steps", []):
+                print(f"  {step}")
 
     print()
-    print("  Next steps:")
+    print("  Quick start:")
     print("    sheaf <url>          Collect an article")
     print("    sheaf search <term>  Search knowledge base")
     print("    sheaf doctor         Full health check")
-    print("    sheaf setup          Configure MCP server")
     print("=" * 55)
+
+    # ── JSON output for agents ──────────────────────────────
+    if json_output:
+        deploy_result = {
+            "version": VERSION,
+            "data_dir": str(target_data),
+            "api_key_detected": found_key,
+            "mcp_platforms": [r["target"] for r in mcp_results],
+            "mcp_configs": {r["target"]: r["config_path"] for r in mcp_results},
+            "status": "ready" if not errors else "errors",
+            "warnings": warnings,
+        }
+        print(json.dumps(deploy_result, ensure_ascii=False, indent=2))
 
 def _doctor() -> None:
     """Run diagnostic checks and report health status."""

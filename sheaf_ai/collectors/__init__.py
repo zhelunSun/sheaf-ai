@@ -22,6 +22,7 @@ from sheaf_ai.collectors.router import (
 from sheaf_ai.collectors.github import fetch_github_repo
 from sheaf_ai.collectors.pdf import fetch_pdf, fetch_pdf_from_bytes
 from sheaf_ai.collectors.arxiv import fetch_arxiv_paper
+from sheaf_ai.collectors.spa_fetcher import fetch_spa_content, is_playwright_available
 
 # Register built-in handlers
 register_handler(ContentType.GITHUB_REPO, fetch_github_repo)
@@ -40,4 +41,6 @@ __all__ = [
     "fetch_pdf",
     "fetch_pdf_from_bytes",
     "fetch_arxiv_paper",
+    "fetch_spa_content",
+    "is_playwright_available",
 ]

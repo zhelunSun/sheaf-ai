@@ -413,10 +413,40 @@ def get_handler(content_type: ContentType) -> Optional[Handler]:
     return _HANDLERS.get(content_type)
 
 
+def _try_spa_fetch(url: str, content_type: ContentType, **kwargs) -> dict[str, Any]:
+    """Try fetching an SPA page via Playwright.
+
+    Delegates to spa_fetcher module for the actual browser rendering.
+    Returns a standard handler result dict. If Playwright is not installed,
+    returns a friendly error with install instructions.
+
+    Args:
+        url: The SPA URL to fetch.
+        content_type: The detected ContentType (for metadata).
+        **kwargs: Additional arguments (e.g. timeout).
+
+    Returns:
+        dict with keys: success, title, text, method, error, content_type, meta.
+    """
+    from sheaf_ai.collectors.spa_fetcher import fetch_spa_content
+
+    timeout = kwargs.pop("timeout", 15)
+    logger.info(f"SPA platform {content_type.value} -> Playwright fetch for {url}")
+
+    result = fetch_spa_content(
+        url,
+        timeout=timeout,
+        content_type_label=content_type.label,
+    )
+    result["content_type"] = content_type.value
+    return result
+
+
 def route_fetch(url: str, content_type: Optional[ContentType] = None, **kwargs) -> dict[str, Any]:
     """Route a URL to the appropriate handler based on content type.
 
     If no content_type is provided, auto-detect it.
+    For SPA platforms (_SPA_PLATFORMS), automatically uses Playwright.
     Falls back to generic web fetcher if no handler is registered.
 
     Args:
@@ -429,6 +459,10 @@ def route_fetch(url: str, content_type: Optional[ContentType] = None, **kwargs) 
     """
     if content_type is None:
         content_type = detect_content_type(url)
+
+    # SPA auto-degradation: route to Playwright for JS-rendered platforms
+    if content_type in _SPA_PLATFORMS:
+        return _try_spa_fetch(url, content_type, **kwargs)
 
     handler = get_handler(content_type)
 

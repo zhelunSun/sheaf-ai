@@ -623,3 +623,111 @@ class TestChinesePlatformPatterns:
         assert ContentType.GITHUB_REPO not in _SPA_PLATFORMS
         assert ContentType.ZHIHU_ARTICLE not in _SPA_PLATFORMS  # SSR
         assert ContentType.WECHAT_ARTICLE not in _SPA_PLATFORMS  # SSR
+
+
+# ============================================================
+# SPA Auto-Degradation (Issue #69)
+# ============================================================
+
+class TestSPADegradation:
+    """Tests for Issue #69: SPA auto-degradation to Playwright."""
+
+    def test_spa_url_routes_to_playwright_path(self):
+        """SPA platform URLs should be routed through _try_spa_fetch, not generic web fetch."""
+        doubao_url = "https://www.doubao.com/thread/abc123"
+        ct = detect_from_url(doubao_url)
+        assert ct == ContentType.DOUBAO_POST
+        assert ct in _SPA_PLATFORMS
+
+    def test_non_spa_url_not_in_spa_set(self):
+        """Non-SPA platforms should not trigger SPA path."""
+        github_url = "https://github.com/zhelunSun/sheaf-ai"
+        ct = detect_from_url(github_url)
+        assert ct == ContentType.GITHUB_REPO
+        assert ct not in _SPA_PLATFORMS
+
+    @patch("sheaf_ai.collectors.router._try_spa_fetch")
+    def test_route_fetch_calls_spa_for_spa_platform(self, mock_spa_fetch):
+        """route_fetch should call _try_spa_fetch for SPA platforms."""
+        mock_spa_fetch.return_value = {
+            "success": True,
+            "title": "Test Post",
+            "text": "Some content",
+            "method": "playwright",
+            "error": None,
+            "content_type": "doubao_post",
+            "meta": {"spa": True},
+        }
+        result = route_fetch("https://www.doubao.com/thread/abc123")
+        mock_spa_fetch.assert_called_once()
+        assert result["success"] is True
+        assert result["meta"]["spa"] is True
+
+    def test_spa_fetch_playwright_not_installed(self):
+        """When Playwright is not installed, should return friendly error."""
+        # Patch the import inside _try_spa_fetch to simulate missing playwright
+        with patch.dict("sys.modules", {"playwright": None, "playwright.sync_api": None}):
+            from sheaf_ai.collectors.router import _try_spa_fetch, ContentType as CT
+            result = _try_spa_fetch(
+                "https://www.doubao.com/thread/abc123",
+                CT.DOUBAO_POST,
+            )
+            assert result["success"] is False
+            assert result["content_type"] == "doubao_post"
+            assert "requires_js" in result.get("meta", {})
+            # Should contain install instructions
+            assert "pip install" in result.get("error", "").lower() or "spa_unavailable" in result.get("method", "")
+
+    def test_spa_fetch_returns_content_type(self):
+        """SPA fetch result should always include content_type field."""
+        with patch("sheaf_ai.collectors.router._try_spa_fetch") as mock:
+            mock.return_value = {
+                "success": False,
+                "title": "",
+                "text": "",
+                "method": "spa_unavailable",
+                "error": "Playwright not installed",
+                "content_type": "notion_page",
+                "meta": {"requires_js": True},
+            }
+            result = route_fetch("https://my.notion.site/Page-abc")
+            assert result["content_type"] == "notion_page"
+            assert result["meta"]["requires_js"] is True
+
+    def test_spa_platforms_coverage(self):
+        """Verify all expected SPA platforms are in the set."""
+        expected_spa = {
+            ContentType.DOUBAO_POST,
+            ContentType.XIAOHONGSHU_NOTE,
+            ContentType.JIKE_POST,
+            ContentType.FEISHU_DOC,
+            ContentType.NOTION_PAGE,
+        }
+        assert _SPA_PLATFORMS == expected_spa
+
+    def test_ssr_platforms_not_in_spa(self):
+        """SSR platforms (知乎, 少数派, 36kr, etc.) should NOT be SPA."""
+        ssr_types = [
+            ContentType.ZHIHU_ARTICLE,
+            ContentType.SSPAI_ARTICLE,
+            ContentType.KR36_ARTICLE,
+            ContentType.HUXIU_ARTICLE,
+            ContentType.IFANR_ARTICLE,
+            ContentType.WECHAT_ARTICLE,
+        ]
+        for ct in ssr_types:
+            assert ct not in _SPA_PLATFORMS, f"{ct.value} should NOT be in _SPA_PLATFORMS"
+
+    @patch("sheaf_ai.collectors.router._try_spa_fetch")
+    def test_route_fetch_does_not_call_spa_for_regular_webpage(self, mock_spa_fetch):
+        """route_fetch should NOT call _try_spa_fetch for regular webpages."""
+        with patch("sheaf_ai.fetch_article.fetch_article") as mock_fetch:
+            mock_fetch.return_value = {
+                "success": True,
+                "title": "Test",
+                "text": "Content",
+                "method": "requests",
+                "error": None,
+            }
+            route_fetch("https://example.com/article")
+            mock_spa_fetch.assert_not_called()
