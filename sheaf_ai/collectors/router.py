@@ -38,6 +38,17 @@ class ContentType(str, Enum):
     IMAGE_FILE = "image_file"
     WEBPAGE = "webpage"
     WECHAT_ARTICLE = "wechat_article"
+    # Chinese content platforms (Issue #68)
+    DOUBAO_POST = "doubao_post"           # 豆包/扣子
+    ZHIHU_ARTICLE = "zhihu_article"       # 知乎专栏/回答
+    XIAOHONGSHU_NOTE = "xiaohongshu_note" # 小红书
+    JIKE_POST = "jike_post"               # 即刻
+    SSPAI_ARTICLE = "sspai_article"       # 少数派
+    KR36_ARTICLE = "kr36_article"         # 36氪
+    HUXIU_ARTICLE = "huxiu_article"       # 虎嗅
+    IFANR_ARTICLE = "ifanr_article"       # 爱范儿
+    FEISHU_DOC = "feishu_doc"             # 飞书文档
+    NOTION_PAGE = "notion_page"           # Notion 公开页面
     UNKNOWN = "unknown"
 
     @property
@@ -53,6 +64,17 @@ class ContentType(str, Enum):
             "image_file": "Image",
             "webpage": "Web Page",
             "wechat_article": "WeChat Article",
+            # Chinese content platforms (Issue #68)
+            "doubao_post": "Doubao/Coze Post",
+            "zhihu_article": "Zhihu Article",
+            "xiaohongshu_note": "Xiaohongshu Note",
+            "jike_post": "Jike Post",
+            "sspai_article": "SSPai Article",
+            "kr36_article": "36Kr Article",
+            "huxiu_article": "Huxiu Article",
+            "ifanr_article": "ifanr Article",
+            "feishu_doc": "Feishu Doc",
+            "notion_page": "Notion Page",
             "unknown": "Unknown",
         }
         return labels.get(self.value, self.value)
@@ -122,6 +144,106 @@ _URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
         re.IGNORECASE,
     ), ContentType.WECHAT_ARTICLE, 50),
 
+    # ── Chinese content platforms (Issue #68) ──────────────────
+
+    # 豆包/扣子
+    (re.compile(
+        r'https?://www\.doubao\.com/thread/',
+        re.IGNORECASE,
+    ), ContentType.DOUBAO_POST, 70),
+    (re.compile(
+        r'https?://www\.coze\.com/s/',
+        re.IGNORECASE,
+    ), ContentType.DOUBAO_POST, 71),
+    (re.compile(
+        r'https?://www\.coze\.cn/s/',
+        re.IGNORECASE,
+    ), ContentType.DOUBAO_POST, 72),
+
+    # 知乎
+    (re.compile(
+        r'https?://zhuanlan\.zhihu\.com/p/',
+        re.IGNORECASE,
+    ), ContentType.ZHIHU_ARTICLE, 80),
+    (re.compile(
+        r'https?://www\.zhihu\.com/question/\d+/answer/',
+        re.IGNORECASE,
+    ), ContentType.ZHIHU_ARTICLE, 81),
+    (re.compile(
+        r'https?://www\.zhihu\.com/pin/',
+        re.IGNORECASE,
+    ), ContentType.ZHIHU_ARTICLE, 82),
+
+    # 小红书
+    (re.compile(
+        r'https?://www\.xiaohongshu\.com/(?:explore|discovery)/',
+        re.IGNORECASE,
+    ), ContentType.XIAOHONGSHU_NOTE, 90),
+    (re.compile(
+        r'https?://www\.xiaohongshu\.com/user/profile/',
+        re.IGNORECASE,
+    ), ContentType.XIAOHONGSHU_NOTE, 91),
+    (re.compile(
+        r'https?://xhslink\.com/',
+        re.IGNORECASE,
+    ), ContentType.XIAOHONGSHU_NOTE, 92),
+
+    # 即刻
+    (re.compile(
+        r'https?://m\.okjike\.com/',
+        re.IGNORECASE,
+    ), ContentType.JIKE_POST, 100),
+    (re.compile(
+        r'https?://web\.okjike\.com/',
+        re.IGNORECASE,
+    ), ContentType.JIKE_POST, 101),
+
+    # 少数派
+    (re.compile(
+        r'https?://sspai\.com/post/',
+        re.IGNORECASE,
+    ), ContentType.SSPAI_ARTICLE, 110),
+
+    # 36氪
+    (re.compile(
+        r'https?://36kr\.com/p/',
+        re.IGNORECASE,
+    ), ContentType.KR36_ARTICLE, 120),
+
+    # 虎嗅
+    (re.compile(
+        r'https?://www\.huxiu\.com/article/',
+        re.IGNORECASE,
+    ), ContentType.HUXIU_ARTICLE, 130),
+    (re.compile(
+        r'https?://www\.huxiu\.com/moment/',
+        re.IGNORECASE,
+    ), ContentType.HUXIU_ARTICLE, 131),
+
+    # 爱范儿
+    (re.compile(
+        r'https?://www\.ifanr\.com/\d+',
+        re.IGNORECASE,
+    ), ContentType.IFANR_ARTICLE, 140),
+
+    # 飞书文档
+    (re.compile(
+        r'https?://[a-z0-9-]+\.feishu\.cn/(?:doc|docx|wiki|sheets)/',
+        re.IGNORECASE,
+    ), ContentType.FEISHU_DOC, 150),
+
+    # Notion 公开页面
+    (re.compile(
+        r'https?://[a-z0-9-]+\.notion\.site/',
+        re.IGNORECASE,
+    ), ContentType.NOTION_PAGE, 160),
+    (re.compile(
+        r'https?://www\.notion\.so/[a-z0-9-]+/',
+        re.IGNORECASE,
+    ), ContentType.NOTION_PAGE, 161),
+
+    # ── End Chinese platforms ───────────────────────────────────
+
     # PDF files (URL ending or Content-Type)
     (re.compile(
         r'.*\.pdf(?:\?.*)?$',
@@ -134,6 +256,16 @@ _URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
         re.IGNORECASE,
     ), ContentType.IMAGE_FILE, 61),
 ]
+
+
+# SPA platforms — require JavaScript rendering (Playwright)
+_SPA_PLATFORMS: set[ContentType] = {
+    ContentType.DOUBAO_POST,
+    ContentType.XIAOHONGSHU_NOTE,
+    ContentType.JIKE_POST,
+    ContentType.FEISHU_DOC,
+    ContentType.NOTION_PAGE,
+}
 
 
 # ============================================================
@@ -281,10 +413,92 @@ def get_handler(content_type: ContentType) -> Optional[Handler]:
     return _HANDLERS.get(content_type)
 
 
+def _try_spa_fetch(url: str, content_type: ContentType, **kwargs) -> dict[str, Any]:
+    """Try fetching an SPA page via Playwright.
+
+    Returns a standard handler result dict. If Playwright is not installed,
+    returns a friendly error with install instructions.
+
+    Args:
+        url: The SPA URL to fetch.
+        content_type: The detected ContentType (for metadata).
+        **kwargs: Additional arguments (e.g. timeout).
+
+    Returns:
+        dict with keys: success, title, text, method, error, content_type, meta.
+    """
+    timeout = kwargs.pop("timeout", 15)
+
+    try:
+        from playwright.sync_api import sync_playwright
+    except ImportError:
+        logger.warning(f"Playwright not installed — cannot fetch SPA: {url}")
+        return {
+            "success": False,
+            "title": "",
+            "text": "",
+            "method": "spa_unavailable",
+            "error": (
+                f"Content from {content_type.label} requires JavaScript rendering. "
+                f"Install: pip install sheaf-ai[browser] && playwright install chromium"
+            ),
+            "content_type": content_type.value,
+            "meta": {"requires_js": True},
+        }
+
+    try:
+        from sheaf_ai.fetch_article import _fetch_playwright, _parse_html, _build_result
+    except ImportError:
+        return {
+            "success": False,
+            "title": "",
+            "text": "",
+            "method": "spa_unavailable",
+            "error": "Internal fetch_article module not available",
+            "content_type": content_type.value,
+            "meta": {"requires_js": True},
+        }
+
+    logger.info(f"SPA platform {content_type.value} -> Playwright fetch for {url}")
+    pw_result = _fetch_playwright(url, timeout)
+    if pw_result["success"]:
+        parsed = _parse_html(pw_result["html"], url)
+        if parsed["success"]:
+            result = _build_result(parsed, "playwright")
+            result["content_type"] = content_type.value
+            result["meta"] = {"rendered_with": "playwright_chromium", "spa": True}
+            return result
+        # Playwright got HTML but parsing failed — try returning raw text
+        if parsed["text"]:
+            return {
+                "success": True,
+                "title": parsed["title"],
+                "text": parsed["text"],
+                "method": "playwright",
+                "error": None,
+                "content_type": content_type.value,
+                "quality": parsed.get("quality", {}),
+                "meta": {"rendered_with": "playwright_chromium", "spa": True},
+            }
+
+    # Playwright failed completely
+    error_detail = pw_result.get("error", "unknown")
+    return {
+        "success": False,
+        "title": "",
+        "text": "",
+        "method": "spa_failed",
+        "error": f"Browser rendering failed for {content_type.label}: {error_detail}",
+        "content_type": content_type.value,
+        "meta": {"requires_js": True},
+    }
+
+
 def route_fetch(url: str, content_type: Optional[ContentType] = None, **kwargs) -> dict[str, Any]:
     """Route a URL to the appropriate handler based on content type.
 
     If no content_type is provided, auto-detect it.
+    For SPA platforms (_SPA_PLATFORMS), automatically uses Playwright.
     Falls back to generic web fetcher if no handler is registered.
 
     Args:
@@ -297,6 +511,10 @@ def route_fetch(url: str, content_type: Optional[ContentType] = None, **kwargs) 
     """
     if content_type is None:
         content_type = detect_content_type(url)
+
+    # SPA auto-degradation: route to Playwright for JS-rendered platforms
+    if content_type in _SPA_PLATFORMS:
+        return _try_spa_fetch(url, content_type, **kwargs)
 
     handler = get_handler(content_type)
 
