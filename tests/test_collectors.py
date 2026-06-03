@@ -24,6 +24,7 @@ from sheaf_ai.collectors.router import (
     route_fetch,
     register_handler,
     get_handler,
+    _SPA_PLATFORMS,
 )
 from sheaf_ai.collectors.github import (
     fetch_github_repo,
@@ -548,3 +549,77 @@ class TestContentTypeEnum:
     def test_all_types_have_labels(self):
         for ct in ContentType:
             assert ct.label != ct.value  # label should be human-readable
+
+
+# ============================================================
+# Chinese Platform URL Patterns (Issue #68)
+# ============================================================
+
+class TestChinesePlatformPatterns:
+    """Tests for Issue #68: Chinese platform URL patterns."""
+
+    # 豆包
+    def test_doubao_thread(self):
+        assert detect_from_url("https://www.doubao.com/thread/abc123") == ContentType.DOUBAO_POST
+
+    def test_coze_com(self):
+        assert detect_from_url("https://www.coze.com/s/xyz789") == ContentType.DOUBAO_POST
+
+    def test_coze_cn(self):
+        assert detect_from_url("https://www.coze.cn/s/xyz789") == ContentType.DOUBAO_POST
+
+    # 知乎
+    def test_zhihu_zhuanlan(self):
+        assert detect_from_url("https://zhuanlan.zhihu.com/p/123456789") == ContentType.ZHIHU_ARTICLE
+
+    def test_zhihu_answer(self):
+        assert detect_from_url("https://www.zhihu.com/question/12345678/answer/90123456") == ContentType.ZHIHU_ARTICLE
+
+    # 小红书
+    def test_xiaohongshu_explore(self):
+        assert detect_from_url("https://www.xiaohongshu.com/explore/abc123") == ContentType.XIAOHONGSHU_NOTE
+
+    def test_xhslink(self):
+        assert detect_from_url("https://xhslink.com/abc123") == ContentType.XIAOHONGSHU_NOTE
+
+    # 即刻
+    def test_jike_mobile(self):
+        assert detect_from_url("https://m.okjike.com/post/abc123") == ContentType.JIKE_POST
+
+    # 少数派
+    def test_sspai(self):
+        assert detect_from_url("https://sspai.com/post/12345") == ContentType.SSPAI_ARTICLE
+
+    # 36氪
+    def test_36kr(self):
+        assert detect_from_url("https://36kr.com/p/1234567890") == ContentType.KR36_ARTICLE
+
+    # 虎嗅
+    def test_huxiu_article(self):
+        assert detect_from_url("https://www.huxiu.com/article/123456.html") == ContentType.HUXIU_ARTICLE
+
+    # 爱范儿
+    def test_ifanr(self):
+        assert detect_from_url("https://www.ifanr.com/1234567") == ContentType.IFANR_ARTICLE
+
+    # 飞书
+    def test_feishu_doc(self):
+        assert detect_from_url("https://abc123.feishu.cn/doc/xyz789") == ContentType.FEISHU_DOC
+
+    def test_feishu_wiki(self):
+        assert detect_from_url("https://myteam.feishu.cn/wiki/page123") == ContentType.FEISHU_DOC
+
+    # Notion
+    def test_notion_site(self):
+        assert detect_from_url("https://myworkspace.notion.site/Page-title-abc123") == ContentType.NOTION_PAGE
+
+    # SPA platforms set
+    def test_spa_platforms_set(self):
+        assert ContentType.DOUBAO_POST in _SPA_PLATFORMS
+        assert ContentType.XIAOHONGSHU_NOTE in _SPA_PLATFORMS
+        assert ContentType.FEISHU_DOC in _SPA_PLATFORMS
+        assert ContentType.NOTION_PAGE in _SPA_PLATFORMS
+        # Non-SPA should NOT be in the set
+        assert ContentType.GITHUB_REPO not in _SPA_PLATFORMS
+        assert ContentType.ZHIHU_ARTICLE not in _SPA_PLATFORMS  # SSR
+        assert ContentType.WECHAT_ARTICLE not in _SPA_PLATFORMS  # SSR
