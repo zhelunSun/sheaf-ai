@@ -52,7 +52,7 @@
 - **核心叙事**: 一行命令，装完就能用。所有成功工具 ≤2 步
 - **转折触发**: 意识到 pip install 后还有 3 步摩擦（setup → API key → MCP 注册）
 - **关键文档**:
-  - `docs/ONE-CLICK-INSTALL-RESEARCH.md` — 竞品安装体验拆解 + 三条路径（Chrome/skill/CLI）
+  - `internal/research/one-click-install-research.md` — 竞品安装体验拆解 + 三条路径（Chrome/skill/CLI）
   - `docs/smoke-test-2026-06-01.md` — 空白环境 10/11 冒烟测试
   - GitHub Issue #62 — `sheaf init --auto`
 
@@ -96,7 +96,7 @@ Phase 0          Phase 1             Phase 2              Phase 3           Phas
 | 产品演化日志 | `internal/commercialization/PRODUCT-EVOLUTION.md` | 记录每次定位转折的触发事件、决策、理由 |
 | 项目计划 | `internal/PLAN.md` | 当前版本、Wave 进度、仓库结构 |
 | Matrix 产品设计 | `docs/MATRIX-PRODUCT-DESIGN.md` | Phase 4 的完整产品设计 Brief |
-| 一键安装调研 | `docs/ONE-CLICK-INSTALL-RESEARCH.md` | Phase 3 的竞品安装体验分析 |
+| 一键安装调研 | `internal/research/one-click-install-research.md` | Phase 3 的竞品安装体验分析 |
 | 冒烟测试报告 | `docs/smoke-test-2026-06-01.md` | v0.4.0a0 空白环境验证 |
 | 商业化路线 | `internal/commercialization/commercialization-roadmap.md` | 变现路径 |
 | 资金机会 | `internal/commercialization/funding-opportunities.md` | 孵化器/基金申请追踪 |
@@ -112,7 +112,7 @@ Phase 0          Phase 1             Phase 2              Phase 3           Phas
 | 商业模式 v1 | `internal/archive/research/business-model-v1.md` | Open-Core 评估（仍适用） |
 | 生态愿景 | `internal/archive/ecosystem-vision.md` | 三阶段路径（工具→基础设施→生态） |
 | 知识市场愿景 | `docs/KNOWLEDGE-MARKETPLACE-VISION.md` | 中远期 Web3 知识交易（Phase 5+） |
-| Obsidian 集成调研 | `docs/OBSIDIAN-INTEGRATION-RESEARCH.md` | 未来集成方向 |
+| Obsidian 集成调研 | `internal/research/obsidian-integration-research.md` | 未来集成方向 |
 
 ### 📍 GitHub Issues（产品功能追踪）
 
