@@ -199,6 +199,17 @@ def test_config_data_dir_defaults_to_cwd(tmp_path):
     assert Path(result.stdout.strip()) == tmp_path / "data"
 
 
+def test_env_example_documents_siliconflow_embeddings():
+    """The sample env file includes the selected Issue #67 embedding provider."""
+    env_example = Path(__file__).resolve().parents[1] / ".env.example"
+    text = env_example.read_text(encoding="utf-8")
+
+    assert "EMBEDDING_API_KEY_ENV=SILICONFLOW_API_KEY" in text
+    assert "EMBEDDING_BASE_URL=https://api.siliconflow.cn/v1" in text
+    assert "EMBEDDING_MODEL=BAAI/bge-m3" in text
+    assert "EMBEDDING_DIM=1024" in text
+
+
 def test_ensure_data_dirs(tmp_path):
     """ensure_data_dirs creates the expected directory structure."""
     import os  # noqa: F401
