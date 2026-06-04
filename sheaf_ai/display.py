@@ -152,14 +152,22 @@ def show_stats() -> None:
 
 
 def show_search(query: str) -> None:
-    """Full-text search with relevance scoring."""
+    """Full-text search with relevance scoring and synonym expansion."""
     results = search_fulltext(query, limit=10, include_raw=True)
 
     if not results:
         print(f'No results for "{query}"')
         return
 
-    print(f'Search results for "{query}" ({len(results)} found):')
+    # Issue #67: Show synonym expansion info
+    expanded = results[0].get("expanded_terms", [])
+    original_set = {query.lower()} | set(query.lower().split())
+    synonyms = [t for t in expanded if t not in original_set]
+    synonym_hint = ""
+    if synonyms:
+        synonym_hint = f" (expanded: {', '.join(synonyms[:5])}{'...' if len(synonyms) > 5 else ''})"
+
+    print(f'Search results for "{query}" ({len(results)} found){synonym_hint}:')
     print()
     for i, r in enumerate(results, 1):
         entry = r["entry"]

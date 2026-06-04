@@ -98,7 +98,7 @@ def get_entry(entry_id: str) -> dict | None:
 TOOLS = [
     {
         "name": "sheaf_search",
-        "description": "Search collected knowledge by keyword or semantic meaning. Supports three modes: (1) 'keyword' — weighted field matching, (2) 'hybrid' — BM25 + semantic embedding fusion for best recall+precision (recommended), (3) 'quick' — metadata-only fast path. Returns ranked results with relevance scores and match snippets.",
+        "description": "Search collected knowledge by keyword or semantic meaning. Supports three modes: (1) 'keyword' — weighted field matching with synonym expansion (cross-lingual: AI↔人工智能, deep learning↔深度学习), (2) 'hybrid' — BM25 + semantic embedding fusion for best recall+precision (recommended), (3) 'quick' — metadata-only fast path. Returns ranked results with relevance scores, match locations, snippets, and expanded search terms.",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -295,6 +295,8 @@ def handle_request(request: dict) -> str | None:
                     item["_match_locations"] = r["match_locations"]
                     if r.get("snippet"):
                         item["_snippet"] = r["snippet"]
+                    if r.get("expanded_terms"):
+                        item["_expanded_terms"] = r["expanded_terms"]
                     formatted.append(item)
                 return _jsonrpc_response(req_id, {
                     "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
@@ -315,6 +317,8 @@ def handle_request(request: dict) -> str | None:
                         item["_match_locations"] = r["match_locations"]
                         if r.get("snippet"):
                             item["_snippet"] = r["snippet"]
+                        if r.get("expanded_terms"):
+                            item["_expanded_terms"] = r["expanded_terms"]
                         formatted.append(item)
                     return _jsonrpc_response(req_id, {
                         "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]

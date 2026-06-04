@@ -5,10 +5,11 @@ Unlike query.query_collection() which only searches index metadata,
 this module also loads raw/ text files for deep content matching.
 
 Supports three search modes:
-  1. Keyword (legacy) — weighted field matching
+  1. Keyword (legacy) — weighted field matching + synonym expansion
   2. BM25 — Okapi BM25 probabilistic ranking
   3. Hybrid — BM25 + semantic embedding fusion (Issue #57)
 
+Issue #67: Synonym expansion for cross-lingual search (AI=人工智能, etc.)
 No external dependencies. Pure Python with numpy fallback for embeddings.
 """
 from __future__ import annotations
@@ -18,6 +19,111 @@ import math
 import re
 from dataclasses import dataclass, field
 from sheaf_ai.config import INDEX_FILE, RAW_DIR
+
+
+# ============================================================
+# Synonym Expansion (Issue #67)
+# ============================================================
+
+# Bi-directional synonym groups: each tuple contains equivalent terms.
+# Query expansion returns all synonyms for any matched term.
+_SYNONYM_GROUPS: list[tuple[str, ...]] = [
+    # AI / ML
+    ("ai", "artificial intelligence", "人工智能", "AI"),
+    ("machine learning", "ml", "机器学习", "ML"),
+    ("deep learning", "dl", "深度学习", "DL"),
+    ("neural network", "神经网络", "nn"),
+    ("llm", "large language model", "大语言模型", "大模型", "LLM"),
+    ("nlp", "natural language processing", "自然语言处理", "NLP"),
+    ("reinforcement learning", "rl", "强化学习"),
+    ("transformer", "注意力机制", "attention"),
+    ("gpt", "generative pretrained transformer"),
+    ("agent", "智能体", "ai agent", "AI智能体"),
+    ("multimodal", "多模态"),
+    ("computer vision", "cv", "计算机视觉"),
+    ("generative ai", "生成式AI", "genai", "aigc", "生成式人工智能"),
+    ("diffusion model", "扩散模型"),
+    ("rag", "retrieval augmented generation", "检索增强生成"),
+    ("fine-tuning", "微调", "finetune"),
+    ("prompt engineering", "提示工程", "prompt"),
+    ("embedding", "向量表示", "向量嵌入"),
+    ("foundation model", "基础模型", "底座模型"),
+    ("knowledge graph", "知识图谱", "kg"),
+    ("moe", "mixture of experts", "混合专家"),
+    ("cot", "chain of thought", "思维链"),
+    ("rlhf", "reinforcement learning from human feedback", "人类反馈强化学习"),
+    # General tech
+    ("api", "应用程序接口"),
+    ("open source", "开源"),
+    ("benchmark", "基准测试", "评测"),
+    ("dataset", "数据集"),
+    ("model", "模型"),
+    ("training", "训练"),
+    ("inference", "推理", "推断"),
+    ("deployment", "部署"),
+    ("scaling", "扩展", "缩放"),
+    ("optimization", "优化"),
+    ("architecture", "架构"),
+    ("framework", "框架"),
+    ("pipeline", "管道", "流水线"),
+    # Remote sensing
+    ("remote sensing", "遥感", "卫星遥感"),
+    ("earth observation", "地球观测", "eo"),
+    ("satellite", "卫星"),
+    ("spatial", "空间"),
+    ("geospatial", "地理空间"),
+    ("gis", "geographic information system", "地理信息系统"),
+]
+
+# Build lookup: normalized_term -> set of all synonyms
+_SYNONYM_LOOKUP: dict[str, set[str]] = {}
+for _group in _SYNONYM_GROUPS:
+    _normalized_group = {t.lower().strip() for t in _group}
+    for _term in _normalized_group:
+        if _term not in _SYNONYM_LOOKUP:
+            _SYNONYM_LOOKUP[_term] = set()
+        _SYNONYM_LOOKUP[_term].update(_normalized_group)
+
+
+def expand_query_synonyms(query: str) -> list[str]:
+    """Expand query with synonyms for better recall.
+
+    Issue #67: Given a query, find all synonym groups that match
+    any term in the query, and return the original query terms
+    plus all their synonyms.
+
+    Args:
+        query: Original search query.
+
+    Returns:
+        Deduplicated list of expanded search terms (lowercased).
+    """
+    query_lower = query.lower().strip()
+    terms: set[str] = {query_lower}
+
+    # Try matching the full query first
+    if query_lower in _SYNONYM_LOOKUP:
+        terms.update(_SYNONYM_LOOKUP[query_lower])
+
+    # Also try individual words/tokens
+    tokens = query_lower.split()
+    for token in tokens:
+        if token in _SYNONYM_LOOKUP:
+            terms.update(_SYNONYM_LOOKUP[token])
+
+    # Also try multi-word matches (e.g. "deep learning")
+    for i in range(len(tokens)):
+        for j in range(i + 1, len(tokens) + 1):
+            phrase = " ".join(tokens[i:j])
+            if phrase in _SYNONYM_LOOKUP:
+                terms.update(_SYNONYM_LOOKUP[phrase])
+
+    return sorted(terms)
+
+
+# ============================================================
+# Raw text loading
+# ============================================================
 
 
 def _load_raw_text(entry_id: str) -> str:
@@ -31,6 +137,77 @@ def _load_raw_text(entry_id: str) -> str:
     return ""
 
 
+# ============================================================
+# Match location detection (Issue #67: multi-term aware)
+# ============================================================
+
+def _find_match_locations(
+    search_terms: list[str],
+    fields: dict,
+) -> list[str]:
+    """Find which fields contain any of the search terms.
+
+    Issue #67: Checks all expanded terms, not just the original query.
+
+    Args:
+        search_terms: List of terms to search for (expanded from original query).
+        fields: Dict of field_name -> text_content.
+
+    Returns:
+        List of field names that matched at least one term.
+    """
+    locations: list[str] = []
+    field_map = {
+        "title": fields.get("title", ""),
+        "topic": fields.get("topics", ""),
+        "tag": fields.get("tags", ""),
+        "summary": fields.get("summary", ""),
+    }
+    raw_text = fields.get("raw_text", "")
+    if raw_text:
+        field_map["full-text"] = raw_text
+
+    for loc_name, text in field_map.items():
+        text_lower = text.lower()
+        for term in search_terms:
+            if term in text_lower:
+                locations.append(loc_name)
+                break
+
+    return locations
+
+
+def _best_snippet(
+    text: str,
+    search_terms: list[str],
+    context_chars: int = 120,
+) -> str:
+    """Extract best matching snippet from text using any of the search terms.
+
+    Issue #67: Picks the earliest match from any expanded term.
+    """
+    text_lower = text.lower()
+    best_idx = len(text)
+    best_len = 0
+
+    for term in search_terms:
+        idx = text_lower.find(term)
+        if idx != -1 and idx < best_idx:
+            best_idx = idx
+            best_len = len(term)
+
+    if best_idx == len(text):
+        return text[:context_chars] + "..."
+
+    start = max(0, best_idx - context_chars // 2)
+    end = min(len(text), best_idx + best_len + context_chars // 2)
+
+    snippet = text[start:end].replace("\n", " ").strip()
+    prefix = "..." if start > 0 else ""
+    suffix = "..." if end < len(text) else ""
+    return f"{prefix}{snippet}{suffix}"
+
+
 def _compute_relevance(query_lower: str, fields: dict) -> float:
     """Simple relevance scoring based on where the query appears.
 
@@ -40,29 +217,67 @@ def _compute_relevance(query_lower: str, fields: dict) -> float:
       - tag match:        3.0
       - summary match:    2.0
       - full-text match:  1.0 per occurrence (capped at 5.0)
+
+    Issue #67: Now also checks synonym-expanded terms with a 0.5x discount.
+    """
+    # Get expanded terms (includes original query)
+    expanded = expand_query_synonyms(query_lower)
+
+    # Separate original vs synonym-only terms
+    original_terms = {query_lower} | set(query_lower.lower().split())
+    synonym_only = [t for t in expanded if t not in original_terms]
+
+    score = 0.0
+
+    # Score original terms at full weight
+    score += _score_terms_against_fields([query_lower], fields, weight=1.0)
+
+    # Score synonym terms at 0.5x weight
+    if synonym_only:
+        score += _score_terms_against_fields(synonym_only, fields, weight=0.5)
+
+    return score
+
+
+def _score_terms_against_fields(
+    terms: list[str],
+    fields: dict,
+    weight: float = 1.0,
+) -> float:
+    """Score a set of terms against document fields with given weight multiplier.
+
+    For each term, only the best field match is counted (no double-counting
+    the same term across fields).
     """
     score = 0.0
 
-    title = fields.get("title", "").lower()
-    if query_lower in title:
-        score += 10.0
+    for term in terms:
+        term_lower = term.lower()
+        best_field_score = 0.0
 
-    topics_str = fields.get("topics", "").lower()
-    if query_lower in topics_str:
-        score += 5.0
+        title = fields.get("title", "").lower()
+        if term_lower in title:
+            best_field_score = max(best_field_score, 10.0)
 
-    tags_str = fields.get("tags", "").lower()
-    if query_lower in tags_str:
-        score += 3.0
+        topics_str = fields.get("topics", "").lower()
+        if term_lower in topics_str:
+            best_field_score = max(best_field_score, 5.0)
 
-    summary = fields.get("summary", "").lower()
-    if query_lower in summary:
-        score += 2.0
+        tags_str = fields.get("tags", "").lower()
+        if term_lower in tags_str:
+            best_field_score = max(best_field_score, 3.0)
 
-    raw_text = fields.get("raw_text", "").lower()
-    if raw_text:
-        count = raw_text.count(query_lower)
-        score += min(count, 5) * 1.0
+        summary = fields.get("summary", "").lower()
+        if term_lower in summary:
+            best_field_score = max(best_field_score, 2.0)
+
+        raw_text = fields.get("raw_text", "").lower()
+        if raw_text:
+            count = raw_text.count(term_lower)
+            text_score = min(count, 5) * 1.0
+            best_field_score = max(best_field_score, text_score)
+
+        score += best_field_score * weight
 
     return score
 
@@ -186,6 +401,7 @@ class BM25Scorer:
         """Score all documents against query, return top results.
 
         BM25 parameters adapt to query length (Issue #57 spec).
+        Issue #67: Synonym-expanded tokens score at 0.5x weight.
 
         Args:
             query: Search query string.
@@ -201,6 +417,17 @@ class BM25Scorer:
         if not query_tokens:
             return []
 
+        # Issue #67: Expand synonyms for BM25 scoring
+        original_token_set = set(query_tokens)
+        expanded_terms = expand_query_synonyms(query)
+        synonym_tokens: list[str] = []
+        for term in expanded_terms:
+            for tok in _tokenize(term):
+                if tok not in original_token_set:
+                    synonym_tokens.append(tok)
+        # Deduplicate synonym tokens
+        synonym_tokens = list(dict.fromkeys(synonym_tokens))
+
         # Adaptive BM25 params based on query length
         n_tokens = len(query_tokens)
         if n_tokens <= 2:
@@ -214,6 +441,7 @@ class BM25Scorer:
 
         for doc in self.docs:
             score = 0.0
+            # Score original tokens at full weight
             for qt in query_tokens:
                 tf = doc.tf.get(qt, 0)
                 if tf == 0:
@@ -222,6 +450,16 @@ class BM25Scorer:
                 idf = math.log((self.N - df + 0.5) / (df + 0.5) + 1.0)
                 tf_norm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * doc.dl / max(self.avgdl, 1e-8)))
                 score += idf * tf_norm
+
+            # Issue #67: Score synonym tokens at 0.5x weight
+            for st in synonym_tokens:
+                tf = doc.tf.get(st, 0)
+                if tf == 0:
+                    continue
+                df = self.df.get(st, 0)
+                idf = math.log((self.N - df + 0.5) / (df + 0.5) + 1.0)
+                tf_norm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * doc.dl / max(self.avgdl, 1e-8)))
+                score += 0.5 * idf * tf_norm
 
             if score > 0:
                 results.append((doc.entry_id, score, doc.entry))
@@ -317,6 +555,9 @@ def search_hybrid(
     if not query_lower:
         return []
 
+    # Issue #67: Expand search terms for match detection
+    expanded_terms = expand_query_synonyms(query)
+
     # Step 1: Load all entries (with optional tier filter)
     entries: list[dict] = []
     raw_texts: dict[str, str] = {}
@@ -399,28 +640,25 @@ def search_hybrid(
         if combined <= 0:
             continue
 
-        # Determine match locations using legacy relevance check
+        # Issue #67: Use synonym-expanded match locations
         topics = entry.get("topics", [])
         topic_names = " ".join(
             t.get("name", t) if isinstance(t, dict) else t for t in topics
         )
-        locations = []
-        if query_lower in entry.get("title", "").lower():
-            locations.append("title")
-        if query_lower in topic_names.lower():
-            locations.append("topic")
-        if query_lower in " ".join(entry.get("tags", [])).lower():
-            locations.append("tag")
-        if query_lower in entry.get("summary", "").lower():
-            locations.append("summary")
-        raw_text = raw_texts.get(eid, "")
-        if raw_text and query_lower in raw_text.lower():
-            locations.append("full-text")
+        fields = {
+            "title": entry.get("title", ""),
+            "topics": topic_names,
+            "tags": " ".join(entry.get("tags", [])),
+            "summary": entry.get("summary", ""),
+            "raw_text": raw_texts.get(eid, ""),
+        }
+        locations = _find_match_locations(expanded_terms, fields)
 
-        # Build snippet
+        # Issue #67: Use synonym-aware snippet extraction
         snippet = ""
+        raw_text = raw_texts.get(eid, "")
         if raw_text:
-            snippet = _extract_snippet(raw_text, query_lower)
+            snippet = _best_snippet(raw_text, expanded_terms)
 
         results.append({
             "entry": entry,
@@ -429,6 +667,7 @@ def search_hybrid(
             "semantic_score": round(sem_norm[i], 4),
             "match_locations": locations,
             "snippet": snippet,
+            "expanded_terms": expanded_terms,
         })
 
     results.sort(key=lambda x: (-x["score"], x["entry"].get("collected_at", "")))
@@ -444,6 +683,8 @@ def search_fulltext(
 ) -> list[dict]:
     """Full-text search across metadata + raw article text.
 
+    Issue #67: Enhanced with synonym expansion for cross-lingual recall.
+
     Args:
         query: Search keyword or phrase
         limit: Max results to return
@@ -452,7 +693,8 @@ def search_fulltext(
         tier: Optional quality tier filter ("A", "B", "C"). Empty = all tiers.
 
     Returns:
-        List of result dicts with 'entry', 'score', 'match_locations' keys
+        List of result dicts with 'entry', 'score', 'match_locations',
+        'snippet', 'expanded_terms' keys
     """
     if not INDEX_FILE.exists():
         return []
@@ -460,6 +702,9 @@ def search_fulltext(
     query_lower = query.lower().strip()
     if not query_lower:
         return []
+
+    # Issue #67: Expand search terms for match detection
+    expanded_terms = expand_query_synonyms(query)
 
     results = []
 
@@ -502,29 +747,20 @@ def search_fulltext(
             score = _compute_relevance(query_lower, fields)
 
             if score > min_score:
-                # Determine match locations for user feedback
-                locations = []
-                if query_lower in fields["title"].lower():
-                    locations.append("title")
-                if query_lower in fields["topics"].lower():
-                    locations.append("topic")
-                if query_lower in fields["tags"].lower():
-                    locations.append("tag")
-                if query_lower in fields["summary"].lower():
-                    locations.append("summary")
-                if query_lower in fields["raw_text"].lower():
-                    locations.append("full-text")
+                # Issue #67: Use synonym-expanded match locations
+                locations = _find_match_locations(expanded_terms, fields)
 
-                # Build snippet from raw text
+                # Issue #67: Use synonym-aware snippet extraction
                 snippet = ""
                 if include_raw and fields["raw_text"]:
-                    snippet = _extract_snippet(fields["raw_text"], query_lower)
+                    snippet = _best_snippet(fields["raw_text"], expanded_terms)
 
                 results.append({
                     "entry": entry,
                     "score": score,
                     "match_locations": locations,
                     "snippet": snippet,
+                    "expanded_terms": expanded_terms,
                 })
 
     # Sort by relevance score (descending), then by date (newest first)
@@ -533,7 +769,10 @@ def search_fulltext(
 
 
 def _extract_snippet(text: str, query: str, context_chars: int = 120) -> str:
-    """Extract a relevant snippet around the first match."""
+    """Extract a relevant snippet around the first match.
+
+    Kept for backward compatibility. New code should use _best_snippet().
+    """
     text_lower = text.lower()
     idx = text_lower.find(query)
     if idx == -1:
