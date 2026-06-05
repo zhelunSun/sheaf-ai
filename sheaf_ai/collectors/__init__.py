@@ -23,11 +23,13 @@ from sheaf_ai.collectors.github import fetch_github_repo
 from sheaf_ai.collectors.pdf import fetch_pdf, fetch_pdf_from_bytes
 from sheaf_ai.collectors.arxiv import fetch_arxiv_paper
 from sheaf_ai.collectors.spa_fetcher import fetch_spa_content, is_playwright_available
+from sheaf_ai.collectors.semantic_scholar import fetch_semantic_scholar
 
 # Register built-in handlers
 register_handler(ContentType.GITHUB_REPO, fetch_github_repo)
 register_handler(ContentType.PDF_FILE, fetch_pdf)
 register_handler(ContentType.ARXIV_PAPER, fetch_arxiv_paper)
+register_handler(ContentType.SEMANTIC_SCHOLAR_PAPER, fetch_semantic_scholar)
 
 __all__ = [
     "ContentType",
@@ -43,4 +45,5 @@ __all__ = [
     "fetch_arxiv_paper",
     "fetch_spa_content",
     "is_playwright_available",
+    "fetch_semantic_scholar",
 ]

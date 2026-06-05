@@ -33,6 +33,159 @@ def _clean_json_response(result: str) -> str:
     return result.strip()
 
 
+def _rule_based_classify(title: str, text: str) -> dict:
+    """Rule-based fallback classification when LLM is unavailable.
+
+    Uses keyword matching to derive topics and tags from the content.
+    This ensures that even without an LLM API key, content gets meaningful
+    classification instead of everything being "AI".
+
+    Returns the same dict structure as classify_article().
+    """
+    combined = f"{title} {text[:3000]}".lower()
+
+    # Domain keyword → (topic_name, confidence)
+    domain_keywords = [
+        # Tech / CS
+        (["machine learning", "deep learning", "neural network", "深度学习", "神经网络",
+          "transformer", "gpt", "bert", "llm", "大模型", "大语言模型"], "AI / LLM"),
+        (["agent", "multi-agent", "autonomous agent", "智能体", "多智能体"], "AI Agent"),
+        (["computer vision", "image recognition", "目标检测", "图像分类", "语义分割",
+          "object detection", "segmentation"], "Computer Vision"),
+        (["nlp", "natural language", "text mining", "文本挖掘", "自然语言"], "NLP"),
+        (["reinforcement learning", "强化学习"], "Reinforcement Learning"),
+        (["robot", "机器人", "ros "], "Robotics"),
+        (["cybersecurity", "security", "漏洞", "安全", "渗透"], "Cybersecurity"),
+        (["database", "sql", "nosql", "redis", "mysql", "postgresql"], "Database"),
+        (["kubernetes", "docker", "devops", "容器", "微服务", "microservice"], "DevOps"),
+        (["python", "javascript", "rust", "golang", "typescript"], "Programming"),
+        (["open source", "github", "开源"], "Open Source"),
+        (["web", "frontend", "backend", "react", "vue", "前端", "后端"], "Web Development"),
+        (["cloud", "aws", "gcp", "azure", "云计算"], "Cloud Computing"),
+        (["blockchain", "web3", "defi", "nft", "区块链", "智能合约", "smart contract"], "Web3 / Blockchain"),
+        # Science
+        (["remote sensing", "遥感", "satellite", "卫星", "earth observation",
+          "geospatial", "gis", "gdal"], "Remote Sensing / EO"),
+        (["climate", "carbon", "温室气体", "碳中和", "气候变化"], "Climate Science"),
+        (["ecology", "biodiversity", "生态", "生物多样性"], "Ecology"),
+        (["physics", "quantum", "物理", "量子"], "Physics"),
+        (["biology", "genomics", "crispr", "生物", "基因"], "Biology"),
+        (["medicine", "clinical", "health", "医疗", "健康"], "Healthcare"),
+        # Business / Social
+        (["invest", "stock", "market", "fund", "投资", "股市", "基金", "融资"], "Finance / Investment"),
+        (["startup", "创业", "融资", "incubator", "vc"], "Startup"),
+        (["product", "ux", "ui", "产品", "用户体验"], "Product Design"),
+        (["education", "学习", "课程", "tutorial"], "Education"),
+        (["policy", "regulation", "政策", "法规", "监管"], "Policy / Regulation"),
+        # Content types
+        (["paper", "arxiv", "论文", "journal", "conference"], "Academic Research"),
+    ]
+
+    matched_topics = []
+    for keywords, topic_name in domain_keywords:
+        max_score = 0
+        for kw in keywords:
+            count = combined.count(kw.lower())
+            if count > 0:
+                score = min(count * 0.2, 0.95)
+                max_score = max(max_score, score)
+        if max_score >= 0.2:
+            matched_topics.append({"name": topic_name, "confidence": round(max_score, 2)})
+
+    # Sort by confidence, take top 3
+    matched_topics.sort(key=lambda t: t["confidence"], reverse=True)
+    if not matched_topics:
+        matched_topics = [{"name": "Uncategorized", "confidence": 0.3}]
+
+    # Extract tags from content
+    tags = _extract_tags_from_text(title, text)
+    if not tags:
+        # Fallback: use first 2 topic names as tags
+        tags = [t["name"] for t in matched_topics[:2]]
+
+    # Determine content_type
+    content_type = "reference"
+    if any(kw in combined for kw in ["arxiv", "论文", "paper", "abstract", "研究方法"]):
+        content_type = "research"
+    elif any(kw in combined for kw in ["教程", "tutorial", "how to", "指南", "步骤"]):
+        content_type = "tutorial"
+    elif any(kw in combined for kw in ["发布", "release", "launch", "宣布", "announce"]):
+        content_type = "news"
+    elif any(kw in combined for kw in ["分析", "analysis", "洞察", "趋势", "trend"]):
+        content_type = "analysis"
+    elif any(kw in combined for kw in ["观点", "opinion", "评论", "评析"]):
+        content_type = "opinion"
+
+    # Determine importance
+    importance = "medium"
+    if any(kw in combined for kw in ["突破", "breakthrough", "首次", "重大", "milestone"]):
+        importance = "high"
+    elif any(kw in combined for kw in ["minor", "小更新", "patch"]):
+        importance = "low"
+
+    return {
+        "topics": matched_topics[:3],
+        "tags": tags[:8],
+        "importance": importance,
+        "content_type": content_type,
+        "relevance_note": "Rule-based classification (LLM unavailable)",
+    }
+
+
+def _extract_tags_from_text(title: str, text: str) -> list[str]:
+    """Extract meaningful tags from article text using heuristic rules.
+
+    Used as fallback when LLM classification is unavailable.
+    """
+    import re
+    tags = set()
+
+    # Extract from title words (most important)
+    title_words = re.findall(r'[A-Z][a-zA-Z]+(?:\s+[A-Z][a-zA-Z]+)*', title)
+    for w in title_words:
+        if len(w) > 2 and w.lower() not in ('the', 'and', 'for', 'not', 'but', 'all'):
+            tags.add(w)
+
+    # Extract hashtags
+    hashtags = re.findall(r'#(\w+)', text[:2000])
+    tags.update(hashtags[:5])
+
+    # Extract known tech terms (most common)
+    known_terms = {
+        "python", "javascript", "typescript", "rust", "golang",
+        "react", "vue", "nextjs", "svelte",
+        "docker", "kubernetes", "k8s",
+        "pytorch", "tensorflow", "huggingface",
+        "openai", "deepseek", "claude", "gemini", "llama",
+        "gpt-4", "gpt-5", "chatgpt",
+        "rag", "langchain", "autogen", "crewai",
+        "transformer", "attention", "bert",
+        "github", "gitlab", "vscode",
+        "api", "rest", "graphql", "grpc",
+        "redis", "postgresql", "mongodb", "mysql",
+        "aws", "gcp", "azure",
+    }
+    combined_lower = f"{title} {text[:3000]}".lower()
+    for term in known_terms:
+        if term in combined_lower:
+            tags.add(term)
+
+    # Chinese keyword extraction: find 2-4 char technical terms
+    cn_tech_patterns = [
+        r'大语言模型', r'深度学习', r'机器学习', r'自然语言',
+        r'计算机视觉', r'知识图谱', r'推荐系统', r'搜索引擎',
+        r'前端开发', r'后端开发', r'微服务', r'容器化',
+        r'云计算', r'边缘计算', r'联邦学习', r'迁移学习',
+        r'遥感影像', r'卫星数据', r'目标检测', r'语义分割',
+        r'区块链', r'智能合约', r'去中心化',
+    ]
+    for pat in cn_tech_patterns:
+        matches = re.findall(pat, text[:3000])
+        tags.update(matches)
+
+    return list(tags)
+
+
 def classify_article(title: str, text: str) -> dict:
     """LLM classify: dynamic topics + tags + content_type + importance."""
     from sheaf_ai.llm_client import chat
@@ -69,15 +222,16 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
         if "content_type" not in parsed:
             parsed["content_type"] = "reference"
 
+        # Validate tags are non-empty — if empty, use rule-based fallback
+        if not parsed.get("tags"):
+            parsed["tags"] = _extract_tags_from_text(title, text)[:8]
+
         return parsed
     except Exception as e:
-        return {
-            "topics": [{"name": "AI", "confidence": 0.5}],
-            "tags": [],
-            "importance": "medium",
-            "content_type": "reference",
-            "relevance_note": f"Classification failed: {e}",
-        }
+        # Use rule-based fallback instead of hardcoded "AI" / empty tags (Issue #74, #76)
+        fallback = _rule_based_classify(title, text)
+        fallback["relevance_note"] = f"LLM classification failed ({type(e).__name__}), using rule-based fallback"
+        return fallback
 
 
 def summarize_article(title: str, text: str) -> dict:

@@ -56,6 +56,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--target", "-t", default=None,
                    help="Target platform for MCP setup (cursor|claude|workbuddy|windsurf, default: auto-detect)")
     p.add_argument("--json", action="store_true", help="Machine-readable JSON output (for agents)")
+    # List: browse collected entries (Issue #71)
+    p = sub.add_parser("list", help="List collected entries")
+    p.add_argument("--recent", action="store_true", help="Show most recent entries (default)")
+    p.add_argument("--limit", "-n", type=int, default=10, help="Number of entries to show (default: 10)")
+    p.add_argument("--topic", "-t", default=None, help="Filter by topic")
+    p.add_argument("--tag", default=None, help="Filter by tag")
+    p.add_argument("--type", default=None, help="Filter by content type")
+    p.add_argument("--json", action="store_true", help="Output raw JSON")
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
     # Config: API key and provider management
     p = sub.add_parser("config", help="Manage API keys and provider settings")
@@ -174,6 +182,7 @@ def _run() -> None:
         "setup": lambda: _setup(parsed),
         "config": lambda: _config(parsed),
         "doctor": _doctor,
+        "list": lambda: _list(parsed, json_auto=auto_json),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -289,6 +298,19 @@ def _batch_collect_cli(
         sys.exit(get_exit_code_from_key("NETWORK"))
     elif batch_result.failed > 0:
         sys.exit(get_exit_code_from_key("PARTIAL"))
+
+def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
+    """List collected entries with optional filtering (Issue #71)."""
+    json_output = getattr(p, "json", False) or json_auto
+    from sheaf_ai.display import show_list_entries
+    show_list_entries(
+        limit=p.limit,
+        topic_filter=p.topic,
+        tag_filter=p.tag,
+        type_filter=getattr(p, "type", None),
+        json_output=json_output,
+    )
+
 
 def _reclassify(p: argparse.Namespace) -> None:
     from sheaf_ai.pipeline import reclassify_entries

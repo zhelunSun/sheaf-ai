@@ -308,6 +308,7 @@ def fetch_github_repo(url: str, timeout: int = 10, **kwargs) -> dict[str, Any]:
     """Fetch a GitHub repo's README + metadata + file tree.
 
     This is the main entry point for the GitHub repo collector.
+    If the GitHub API fails, falls back to generic web scraping.
 
     Args:
         url: GitHub repo URL (e.g., https://github.com/owner/repo).
@@ -319,7 +320,7 @@ def fetch_github_repo(url: str, timeout: int = 10, **kwargs) -> dict[str, Any]:
             success: bool
             title: str (repo full_name)
             text: str (combined: metadata + file tree + README)
-            method: str ("github-api")
+            method: str ("github-api" or "github-web-fallback")
             error: str or None
             meta: dict with raw metadata
     """
@@ -344,14 +345,15 @@ def fetch_github_repo(url: str, timeout: int = 10, **kwargs) -> dict[str, Any]:
     metadata = _fetch_repo_metadata(owner, repo, timeout=timeout)
 
     if metadata.get("_rate_limited"):
-        return {
-            "success": False,
-            "title": f"{owner}/{repo}",
-            "text": "",
-            "method": "github-api",
-            "error": "GitHub API rate limit exceeded (60 req/hr for unauthenticated)",
-            "meta": {},
-        }
+        # Rate limited — try web fallback instead of failing completely (Issue #73)
+        logger.info(f"GitHub API rate limited for {owner}/{repo}, trying web fallback")
+        return _web_fallback(url, owner, repo, "API rate limited")
+
+    # If metadata fetch itself failed, try web fallback
+    meta_error = metadata.get("_error")
+    if meta_error and not metadata.get("full_name"):
+        logger.info(f"GitHub API failed for {owner}/{repo}: {meta_error}, trying web fallback")
+        return _web_fallback(url, owner, repo, meta_error)
 
     # Fetch README (best-effort)
     readme_content = _fetch_readme(owner, repo, timeout=timeout)
@@ -365,16 +367,21 @@ def fetch_github_repo(url: str, timeout: int = 10, **kwargs) -> dict[str, Any]:
     text = _build_repo_text(metadata, readme_content, file_tree_text)
     title = metadata.get("full_name", f"{owner}/{repo}")
 
-    # Determine success: we need at least metadata
+    # Determine success: we need at least metadata or description
     has_content = bool(readme_content or file_tree or metadata.get("description"))
-    meta_error = metadata.pop("_error", None)
+    metadata.pop("_error", None)
+
+    if not has_content:
+        # API partially succeeded but no useful content — try web fallback (Issue #73)
+        logger.info(f"GitHub API returned no content for {owner}/{repo}, trying web fallback")
+        return _web_fallback(url, owner, repo, "No content from API")
 
     return {
-        "success": has_content,
+        "success": True,
         "title": title,
         "text": text,
         "method": "github-api",
-        "error": None if has_content else (meta_error or "No content extracted"),
+        "error": None,
         "meta": {
             "source": "github",
             "owner": owner,
@@ -392,9 +399,57 @@ def fetch_github_repo(url: str, timeout: int = 10, **kwargs) -> dict[str, Any]:
             "is_fork": metadata.get("is_fork", False),
         },
         "quality": {
-            "ok": has_content,
+            "ok": True,
             "score": 4 if readme_content and file_tree else (2 if readme_content else 1),
             "length": len(text),
-            "reason": "github_repo" if has_content else "empty",
+            "reason": "github_repo",
         },
     }
+
+
+def _web_fallback(url: str, owner: str, repo: str, reason: str) -> dict[str, Any]:
+    """Fallback to generic web fetcher when GitHub API fails (Issue #73).
+
+    Scrapes the GitHub HTML page as a last resort. Still extracts useful
+    metadata like description, README from the rendered HTML.
+
+    Args:
+        url: The original GitHub URL.
+        owner: Repository owner.
+        repo: Repository name.
+        reason: Why the API failed.
+
+    Returns:
+        Standard handler result dict.
+    """
+    try:
+        from sheaf_ai.fetch_article import fetch_article
+        result = fetch_article(url)
+        if result.get("success"):
+            result["method"] = "github-web-fallback"
+            result["meta"] = {
+                "source": "github",
+                "owner": owner,
+                "repo": repo,
+                "url": url,
+                "fallback_reason": reason,
+            }
+            return result
+        else:
+            return {
+                "success": False,
+                "title": f"{owner}/{repo}",
+                "text": "",
+                "method": "github-api",
+                "error": f"API failed ({reason}), web fallback also failed: {result.get('error', 'unknown')}",
+                "meta": {"owner": owner, "repo": repo},
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "title": f"{owner}/{repo}",
+            "text": "",
+            "method": "github-api",
+            "error": f"API failed ({reason}), web fallback exception: {e}",
+            "meta": {"owner": owner, "repo": repo},
+        }

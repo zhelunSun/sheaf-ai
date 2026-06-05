@@ -343,3 +343,108 @@ def show_urgent() -> None:
             print(f"  [{urgency}] {deadline} - {r.get('title', '?')[:60]}")
     else:
         print("No urgent items")
+
+
+def show_list_entries(
+    limit: int = 10,
+    topic_filter: str = None,
+    tag_filter: str = None,
+    type_filter: str = None,
+    json_output: bool = False,
+) -> None:
+    """List collected entries with optional filtering (Issue #71).
+
+    Supports --topic, --tag, --type filters. Outputs human-readable table
+    by default, or raw JSON with --json flag.
+    """
+    if not INDEX_FILE.exists():
+        print("Your basket is empty. Start collecting: sheaf <url>")
+        return
+
+    entries = []
+    with open(INDEX_FILE, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entries.append(json.loads(line))
+            except json.JSONDecodeError:
+                continue
+
+    if not entries:
+        print("Your basket is empty. Start collecting: sheaf <url>")
+        return
+
+    # Apply filters
+    filtered = entries
+    if topic_filter:
+        topic_lower = topic_filter.lower()
+        filtered = [
+            e for e in filtered
+            if any(
+                (t.get("name", t) if isinstance(t, dict) else t).lower() == topic_lower
+                or topic_lower in (t.get("name", t) if isinstance(t, dict) else t).lower()
+                for t in e.get("topics", [])
+            )
+            or topic_lower in e.get("primary_category", "").lower()
+        ]
+
+    if tag_filter:
+        tag_lower = tag_filter.lower()
+        filtered = [
+            e for e in filtered
+            if any(tag.lower() == tag_lower or tag_lower in tag.lower()
+                   for tag in e.get("tags", []))
+        ]
+
+    if type_filter:
+        type_lower = type_filter.lower()
+        filtered = [
+            e for e in filtered
+            if e.get("content_type", "").lower() == type_lower
+        ]
+
+    # Sort newest first, limit
+    filtered.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
+    total_matching = len(filtered)
+    filtered = filtered[:limit]
+
+    if json_output:
+        print(json.dumps(filtered, ensure_ascii=False, indent=2))
+        return
+
+    # Human-readable output
+    if not filtered:
+        print("No entries match the filter criteria.")
+        return
+
+    print(f"Sheaf — {total_matching} entries{' (showing ' + str(len(filtered)) + ')' if total_matching > limit else ''}")
+    print()
+
+    for i, e in enumerate(filtered, 1):
+        title = e.get("title", "Untitled")[:65]
+        date = e.get("collected_at", "")[:10]
+        entry_id = e.get("id", "?")
+        topics = ", ".join(
+            (t.get("name", t) if isinstance(t, dict) else t)
+            for t in e.get("topics", [])[:3]
+        )
+        content_type = e.get("content_type", "")
+        tags = ", ".join(e.get("tags", [])[:5])
+        summary = (e.get("summary") or "")[:90]
+        quality = e.get("quality_tier", "")
+
+        print(f"  {i}. {title}")
+        print(f"     ID: {entry_id}  |  {date}  |  Type: {content_type}{f'  |  Tier: {quality}' if quality else ''}")
+        if topics:
+            print(f"     Topics: {topics}")
+        if tags:
+            print(f"     Tags: {tags}")
+        if summary:
+            print(f"     {summary}")
+        print()
+
+    if total_matching > limit:
+        print(f"  ... {total_matching - limit} more entries. Use --limit to show more.")
+    print(f"  Total: {len(entries)} entries in collection")
