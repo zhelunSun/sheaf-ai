@@ -372,3 +372,45 @@ class TestMcpE2E:
             "params": {"name": "nonexistent", "arguments": {}}})
         assert "error" in resp
         assert resp["error"]["code"] == -32601
+
+
+class TestToolDescriptions:
+    """Test MCP tool descriptions have useful documentation (Issue #54)."""
+
+    def test_search_tool_has_advanced_syntax(self):
+        """sheaf_search description should mention advanced query syntax."""
+        search_tool = next((t for t in TOOLS if t["name"] == "sheaf_search"), None)
+        assert search_tool is not None
+        desc = search_tool["description"]
+        # Must mention key syntax elements
+        assert "#tag" in desc, "Missing #tag syntax in search description"
+        assert "after:" in desc or "before:" in desc, "Missing date filter syntax"
+        assert "source:" in desc, "Missing source filter syntax"
+        assert "is:fav" in desc, "Missing is:fav syntax"
+        # Must mention synonym expansion
+        assert "synonym" in desc.lower() or "同义" in desc, "Missing synonym expansion mention"
+        # Description should be concise but informative
+        assert len(desc) <= 800, f"Description too long ({len(desc)} chars), should be concise"
+
+    def test_search_query_param_has_examples(self):
+        """sheaf_search query parameter description should include usage examples."""
+        search_tool = next((t for t in TOOLS if t["name"] == "sheaf_search"), None)
+        query_schema = search_tool["inputSchema"]["properties"]["query"]
+        desc = query_schema["description"]
+        assert "example" in desc.lower() or "#tag" in desc, "Query param should have examples"
+
+    def test_all_tools_have_descriptions(self):
+        """Every tool must have a non-empty description."""
+        for tool in TOOLS:
+            assert tool.get("description", "").strip(), f"Tool {tool['name']} has empty description"
+
+    def test_all_tools_have_required_params_documented(self):
+        """Every required parameter must have a description."""
+        for tool in TOOLS:
+            schema = tool.get("inputSchema", {})
+            required = schema.get("required", [])
+            props = schema.get("properties", {})
+            for req_param in required:
+                assert req_param in props, f"Tool {tool['name']}: required param '{req_param}' missing from properties"
+                assert props[req_param].get("description", "").strip(), \
+                    f"Tool {tool['name']}: required param '{req_param}' has no description"

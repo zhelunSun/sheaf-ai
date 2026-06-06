@@ -1,7 +1,9 @@
 """
 Sheaf MCP Server — Agent-Native knowledge layer via MCP protocol (stdio transport).
 
-Tools: sheaf_search, sheaf_list, sheaf_get, sheaf_urgent, sheaf_correct, sheaf_collect
+Tools: sheaf_search, sheaf_list, sheaf_get, sheaf_urgent, sheaf_correct,
+       sheaf_collect, sheaf_collect_batch, sheaf_crystallize,
+       sheaf_list_cards, sheaf_get_card
 
 Usage:
     sheaf --mcp
@@ -98,15 +100,27 @@ def get_entry(entry_id: str) -> dict | None:
 TOOLS = [
     {
         "name": "sheaf_search",
-        "description": "Search collected knowledge by keyword or semantic meaning. Supports three modes: (1) 'keyword' — weighted field matching with synonym expansion (cross-lingual: AI↔人工智能, deep learning↔深度学习), (2) 'hybrid' — BM25 + semantic embedding fusion for best recall+precision (recommended), (3) 'quick' — metadata-only fast path. Returns ranked results with relevance scores, match locations, snippets, and expanded search terms.",
+        "description": (
+            "Search your personal knowledge base. Supports full-text, synonym expansion "
+            "(cross-lingual: AI↔人工智能, deep learning↔深度学习), and semantic search.\n"
+            "Modes: 'keyword' (weighted fields+synonyms), 'hybrid' (BM25+semantic, recommended), "
+            "'quick' (metadata-only).\n"
+            "Advanced query syntax: #tag (tag filter), is:fav (favorites only), "
+            "after:YYYY-MM-DD / before:YYYY-MM-DD (date range), source:arxiv (origin filter). "
+            "Combine freely: \"transformer #AI source:arxiv after:2024-01-01\".\n"
+            "Returns ranked results with scores, match fields, snippets, and expanded terms."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
-                "query": {"type": "string", "description": "Search keyword or phrase"},
+                "query": {
+                    "type": "string",
+                    "description": "Search query. Supports: plain text, #tag, is:fav, after:date, before:date, source:type. Example: \"GPT-4 #AI source:arxiv after:2024-01-01\"",
+                },
                 "limit": {"type": "integer", "description": "Max results to return (default: 10)", "default": 10},
                 "mode": {
                     "type": "string",
-                    "description": "Search mode: 'keyword' (legacy weighted), 'hybrid' (BM25+semantic, recommended), or 'quick' (metadata-only). Default: 'keyword'.",
+                    "description": "Search mode: 'keyword' (weighted fields+synonyms), 'hybrid' (BM25+semantic fusion, recommended), or 'quick' (metadata-only). Default: 'keyword'.",
                     "enum": ["keyword", "hybrid", "quick"],
                     "default": "keyword",
                 },
