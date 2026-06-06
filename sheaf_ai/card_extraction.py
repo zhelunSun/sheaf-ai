@@ -387,6 +387,14 @@ def parse_card_extraction_response(
                 },
             )
         )
+        # Issue #53: Tag source tracking — crystallize tags are AI-generated
+        card = cards[-1]
+        from sheaf_cards.base import TagEntry
+        card.tag_entries = [
+            TagEntry(name=t, attached_by="ai") for t in card.tags
+        ]
+        card.tagging_status = "completed"
+        card.summarization_status = "completed"
 
     return CardExtractionResult(cards=cards, raw_response=raw, warnings=warnings, engine=engine)
 

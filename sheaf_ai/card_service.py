@@ -9,11 +9,16 @@ from __future__ import annotations
 from typing import Optional
 
 from sheaf_ai import crystallize
-from sheaf_cards.base import KnowledgeCard
+from sheaf_cards.base import KnowledgeCard, TagEntry
 
 
-def card_to_public_dict(card: KnowledgeCard) -> dict:
-    """Project a KnowledgeCard into the stable public card shape."""
+def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) -> dict:
+    """Project a KnowledgeCard into the stable public card shape.
+
+    Args:
+        card: KnowledgeCard to project
+        include_tag_entries: If True, include rich tag entries with source tracking
+    """
     data = card.to_dict() if hasattr(card, "to_dict") else {}
     card_id = (
         data.get("card_id")
@@ -43,6 +48,11 @@ def card_to_public_dict(card: KnowledgeCard) -> dict:
     extra = data.get("extra", getattr(card, "extra", {})) or {}
     if extra:
         result["extra"] = extra
+    # Issue #53: Rich tag entries with source tracking
+    if include_tag_entries:
+        result["tag_entries"] = [te.to_dict() for te in card.tag_entries]
+        result["tagging_status"] = card.tagging_status
+        result["summarization_status"] = card.summarization_status
     return result
 
 

@@ -5,6 +5,7 @@ Shared by Sheaf product (simplified) and PhD thesis (strict).
 Design: <200 lines, pure logic, no domain specialization.
 
 Classes:
+    TagEntry       — tag with source tracking (ai|human) and timestamp
     KnowledgeCard  — core card data model (10 fields + extensible extra)
     CardStore      — JSONL-based card persistence + retrieval
     CardValidator  — schema + evidence validation (strict/lenient)
@@ -17,6 +18,42 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+
+
+# ============================================================
+# TagEntry — tag with source tracking (Issue #53)
+# ============================================================
+
+@dataclass
+class TagEntry:
+    """A tag with source provenance tracking.
+
+    Attributes:
+        name: Tag text (e.g. "AI", "深度学习")
+        attached_by: Who added this tag — "ai" (auto-generated) or "human" (manual)
+        attached_at: ISO 8601 timestamp when the tag was added
+    """
+    name: str = ""
+    attached_by: str = "ai"   # "ai" or "human"
+    attached_at: str = ""     # ISO 8601
+
+    def __post_init__(self):
+        if not self.attached_at:
+            self.attached_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+    def to_dict(self) -> dict:
+        return {"name": self.name, "attached_by": self.attached_by, "attached_at": self.attached_at}
+
+    @classmethod
+    def from_dict(cls, data: dict) -> TagEntry:
+        if isinstance(data, str):
+            # Backward compat: bare string → AI tag
+            return cls(name=data, attached_by="ai")
+        return cls(
+            name=data.get("name", ""),
+            attached_by=data.get("attached_by", "ai"),
+            attached_at=data.get("attached_at", ""),
+        )
 
 
 # ============================================================
@@ -60,6 +97,46 @@ class KnowledgeCard:
     def id(self) -> str:
         """Convenience alias for card_id (used by MCP/CLI consumers)."""
         return self.card_id
+
+    # --- Tag tracking (Issue #53) ---
+
+    @property
+    def tag_entries(self) -> list[TagEntry]:
+        """Get rich tag entries with source tracking.
+
+        Reads from extra["tag_entries"] if available, otherwise
+        synthesizes from flat tags list (backward compat).
+        """
+        raw = self.extra.get("tag_entries", [])
+        if raw:
+            return [TagEntry.from_dict(t) for t in raw]
+        # Backward compat: synthesize TagEntry from flat tags
+        return [TagEntry(name=t, attached_by="ai") for t in self.tags]
+
+    @tag_entries.setter
+    def tag_entries(self, entries: list[TagEntry]) -> None:
+        """Set rich tag entries. Syncs flat tags list for backward compat."""
+        self.extra["tag_entries"] = [e.to_dict() for e in entries]
+        # Keep flat tags in sync
+        self.tags = [e.name for e in entries]
+
+    @property
+    def tagging_status(self) -> str:
+        """Tag processing status: pending, completed, or failed."""
+        return self.extra.get("tagging_status", "completed" if self.tags else "pending")
+
+    @tagging_status.setter
+    def tagging_status(self, value: str) -> None:
+        self.extra["tagging_status"] = value
+
+    @property
+    def summarization_status(self) -> str:
+        """Summarization processing status: pending, completed, or failed."""
+        return self.extra.get("summarization_status", "completed" if self.claim else "pending")
+
+    @summarization_status.setter
+    def summarization_status(self, value: str) -> None:
+        self.extra["summarization_status"] = value
 
     # --- Serialization ---
 

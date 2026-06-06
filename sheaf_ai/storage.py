@@ -51,8 +51,14 @@ def save_tags_registry(registry: dict) -> None:
     )
 
 
-def update_tags_registry(tags: list, now_iso: str) -> None:
-    """Update registry with new tags from an article. Auto-merges similar tags (threshold 0.85)."""
+def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> None:
+    """Update registry with new tags from an article. Auto-merges similar tags (threshold 0.85).
+
+    Args:
+        tags: List of tag strings
+        now_iso: Current ISO timestamp
+        attached_by: "ai" (auto-generated) or "human" (manual) — Issue #53
+    """
     import difflib
     registry = load_tags_registry()
 
@@ -64,6 +70,13 @@ def update_tags_registry(tags: list, now_iso: str) -> None:
         if tag_lower in registry:
             registry[tag_lower]["count"] += 1
             registry[tag_lower]["last_seen"] = now_iso
+            # Issue #53: Track source counts
+            registry[tag_lower].setdefault("ai_count", 0)
+            registry[tag_lower].setdefault("human_count", 0)
+            if attached_by == "human":
+                registry[tag_lower]["human_count"] += 1
+            else:
+                registry[tag_lower]["ai_count"] += 1
             continue
 
         merged = False
@@ -72,6 +85,13 @@ def update_tags_registry(tags: list, now_iso: str) -> None:
             if similarity >= 0.85:
                 existing_val["count"] += 1
                 existing_val["last_seen"] = now_iso
+                # Issue #53: Track source counts
+                existing_val.setdefault("ai_count", 0)
+                existing_val.setdefault("human_count", 0)
+                if attached_by == "human":
+                    existing_val["human_count"] += 1
+                else:
+                    existing_val["ai_count"] += 1
                 aliases = existing_val.get("aliases", [])
                 if tag not in aliases and tag.lower() != existing_key:
                     aliases.append(tag)
@@ -86,6 +106,8 @@ def update_tags_registry(tags: list, now_iso: str) -> None:
                 "first_seen": now_iso,
                 "last_seen": now_iso,
                 "aliases": [],
+                "ai_count": 1 if attached_by == "ai" else 0,
+                "human_count": 1 if attached_by == "human" else 0,
             }
 
     save_tags_registry(registry)
