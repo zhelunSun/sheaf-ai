@@ -364,13 +364,7 @@ def handle_request(request: dict) -> str | None:
         elif tool_name == "sheaf_collect":
             url = arguments.get("url", "")
             force = arguments.get("force", False)
-            # Suppress pipeline print() — they corrupt JSON-RPC stdio transport
-            _stdout = sys.stdout
-            sys.stdout = sys.stderr
-            try:
-                result = process_url(url, force=force)
-            finally:
-                sys.stdout = _stdout
+            result = process_url(url, force=force)
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
             })
@@ -427,19 +421,13 @@ def handle_request(request: dict) -> str | None:
             concurrency = arguments.get("concurrency", 3)
             on_error = arguments.get("on_error", "continue")
             force = arguments.get("force", False)
-            # Suppress pipeline print() — they corrupt JSON-RPC stdio transport
-            _stdout = sys.stdout
-            sys.stdout = sys.stderr
-            try:
-                batch_result = batch_collect(
-                    urls,
-                    force=force,
-                    concurrency=concurrency,
-                    on_error=on_error,  # type: ignore[arg-type]
-                    quiet=True,
-                )
-            finally:
-                sys.stdout = _stdout
+            batch_result = batch_collect(
+                urls,
+                force=force,
+                concurrency=concurrency,
+                on_error=on_error,  # type: ignore[arg-type]
+                quiet=True,
+            )
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}]
             })

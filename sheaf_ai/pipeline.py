@@ -5,6 +5,7 @@ Also contains the reclassify (legacy migration) logic.
 """
 from __future__ import annotations
 import json
+import logging
 from datetime import datetime
 from typing import Optional
 
@@ -15,6 +16,8 @@ from sheaf_ai.config import (
 from sheaf_ai.utils import extract_timeliness
 from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry  # noqa: F401
 from sheaf_ai.query import check_duplicate
+
+logger = logging.getLogger(__name__)
 
 
 # ============================================================
@@ -302,7 +305,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         dup = check_duplicate(url, dedup_text)
         if dup:
             existing = dup["existing"]
-            print(f"Warning: Duplicate detected ({dup['type']}): {existing.get('title', '?')}")
+            logger.warning("Duplicate detected (%s): %s", dup['type'], existing.get('title', '?'))
             return {
                 "success": False,
                 "error": f"Duplicate ({dup['type']})",
@@ -322,7 +325,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
             "error": None,
         }
     else:
-        print(f"Fetching: {url}")
+        logger.info("Fetching: %s", url)
         fetch_result = fetch_article(url)
         if not fetch_result["success"]:
             err = fetch_result.get("error", "Fetch failed")
@@ -332,12 +335,12 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
                 result["fetch_error"] = fetch_err
             return result
 
-    print(f"Fetched ({fetch_result['method']}): {len(fetch_result.get('text', ''))} chars")
+    logger.info("Fetched (%s): %d chars", fetch_result['method'], len(fetch_result.get('text', '')))
 
     # Image metadata from fetch
     images = fetch_result.get("images", [])
     if images:
-        print(f"  Images: {len(images)} extracted")
+        logger.info("Images: %d extracted", len(images))
 
     # Step 1.1: Quality gate — image density detection + content quality
     from sheaf_ai.quality import assess_quality, format_quality_hint, format_image_supplement
@@ -348,7 +351,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     )
     quality_hint = format_quality_hint(quality_report)
     if quality_hint:
-        print(f"  {quality_hint}")
+        logger.info(quality_hint)
 
     if not quality_report.passed:
         return {
@@ -374,7 +377,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     conversation_meta = fetch_result.get("meta", {})
 
     # Step 2: Classify
-    print("Classifying...")
+    logger.info("Classifying...")
     classify_result = classify_article(
         fetch_result.get("title", ""),
         article_text,
@@ -391,25 +394,25 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     topics = [t.get("name", "") for t in classify_result.get("topics", [])]
     tags = classify_result.get("tags", [])
     content_type = classify_result.get("content_type", "?")
-    print(f"  Topics: {', '.join(topics)}")
-    print(f"  Tags: {', '.join(tags)}")
-    print(f"  Type: {content_type}")
+    logger.info("Topics: %s", ', '.join(topics))
+    logger.info("Tags: %s", ', '.join(tags))
+    logger.info("Type: %s", content_type)
 
     # Step 3: Summarize
-    print("Summarizing...")
+    logger.info("Summarizing...")
     summary_result = summarize_article(
         fetch_result.get("title", ""),
         article_text,
     )
 
     # Step 4: Store
-    print("Storing...")
+    logger.info("Storing...")
     entry_id = store_article(
         url, fetch_result, classify_result, summary_result,
         extra_meta=conversation_meta if is_ai_conversation else None,
         quality_tier=quality_report.quality_tier,
     )
-    print(f"Stored as: {entry_id}")
+    logger.info("Stored as: %s", entry_id)
 
     # Step 5: Gamification update
     game_feedback = ""
@@ -418,7 +421,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         game_result = update_after_glean(topics)
         game_feedback = format_glean_feedback(game_result)
         if game_feedback:
-            print(game_feedback)
+            logger.info(game_feedback)
     except Exception:
         pass  # Gamification is non-critical, never block the pipeline
 
@@ -468,7 +471,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
             if not has_topics or not has_ct:
                 targets.append((path, entry))
 
-    print(f"Reclassifying {len(targets)} entries...")
+    logger.info("Reclassifying %d entries...", len(targets))
 
     results = {"updated": 0, "skipped": 0, "errors": []}
 
@@ -478,13 +481,13 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
 
         raw_path = RAW_DIR / f"{eid}.txt"
         if not raw_path.exists():
-            print(f"  Warning: No raw text for {eid}, skipping")
+            logger.warning("No raw text for %s, skipping", eid)
             results["skipped"] += 1
             continue
 
         raw_text = raw_path.read_text(encoding="utf-8")
         if len(raw_text) < 50:
-            print(f"  Warning: Raw text too short for {eid} ({len(raw_text)} chars)")
+            logger.warning("Raw text too short for %s (%d chars)", eid, len(raw_text))
             results["skipped"] += 1
             continue
 
@@ -492,7 +495,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
             classify_result = classify_article(title, raw_text)
             summary_result = summarize_article(title, raw_text)
         except Exception as e:
-            print(f"  Error: LLM failed for {eid}: {e}")
+            logger.error("LLM failed for %s: %s", eid, e)
             results["errors"].append({"id": eid, "error": str(e)})
             continue
 
@@ -507,7 +510,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
             primary_topic = sorted_topics[0].get("name", "")
 
         topic_names = [t.get("name", "") for t in topics]
-        print(f"  {eid}: topics={topic_names}, type={content_type}")
+        logger.info("%s: topics=%s, type=%s", eid, topic_names, content_type)
 
         if dry_run:
             results["skipped"] += 1
@@ -525,7 +528,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
                     "platform": "web",
                     "publish_date": entry.pop("publish_date", None),
                 }
-            print(f"  Migrated legacy structure for {eid}")
+            logger.info("Migrated legacy structure for %s", eid)
 
         entry["topics"] = topics
         entry["category"] = {"primary": primary_topic or "未分类", "sub": ""}

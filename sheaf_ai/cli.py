@@ -3,7 +3,6 @@ from __future__ import annotations
 import sys
 import json
 import argparse
-from contextlib import redirect_stdout
 from pathlib import Path
 from typing import NoReturn
 
@@ -223,12 +222,8 @@ def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
 
 
 def _run_collect(url: str, force: bool = False, json_output: bool = False) -> dict:
-    """Run collect with optional stdout isolation for machine-readable output."""
+    """Run collect — pipeline uses logging, so no stdout isolation needed."""
     from sheaf_ai.pipeline import process_url
-
-    if json_output:
-        with redirect_stdout(sys.stderr):
-            return process_url(url, force=force)
 
     return process_url(url, force=force)
 

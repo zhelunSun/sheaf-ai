@@ -93,12 +93,11 @@ def test_cli_no_args():
 
 
 def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
-    """collect --json should reserve stdout for JSON and push warnings to stderr."""
+    """collect --json should output only JSON to stdout (pipeline uses logging, not print)."""
     from argparse import Namespace
     from sheaf_ai import cli
 
     def fake_process_url(url, force=False):
-        print("Warning: Duplicate detected (url_duplicate): Example title")
         return {
             "success": False,
             "error": "Duplicate (url_duplicate)",
@@ -111,8 +110,10 @@ def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
     cli._collect(Namespace(url=["https://example.com"], force=False, json=True, batch=None, concurrency=1, on_error="continue", output=None), json_auto=False)
 
     captured = capsys.readouterr()
-    assert captured.err.strip() == "Warning: Duplicate detected (url_duplicate): Example title"
+    # Pipeline uses logging (goes to stderr via logging handler), stdout is clean JSON
     assert json.loads(captured.out)["stage"] == "dedup"
+    # No pipeline output on stdout — only the JSON result
+    assert captured.out.strip().startswith("{")
 
 
 def test_mcp_tools_defined():
