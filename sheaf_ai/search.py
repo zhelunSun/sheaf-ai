@@ -553,10 +553,12 @@ def search_hybrid(
     alpha: float = 0.6,
     include_raw: bool = True,
     tier: str = "",
+    filters: dict | None = None,
 ) -> list[dict]:
     """Hybrid search combining BM25 keyword matching with semantic similarity.
 
     Issue #57: Blends keyword precision with semantic understanding.
+    Issue #59: Advanced filter support with AND/OR/NOT logic.
     Formula: combined = alpha * bm25_norm + (1 - alpha) * semantic_norm
 
     Args:
@@ -693,6 +695,18 @@ def search_hybrid(
             "expanded_terms": expanded_terms,
         })
 
+    # Issue #59: Apply structured filters (post-search)
+    if filters:
+        try:
+            from sheaf_ai.filters import apply_filters
+            filtered_entries = apply_filters(
+                [r["entry"] for r in results], filters
+            )
+            filtered_ids = {e.get("id") for e in filtered_entries}
+            results = [r for r in results if r["entry"].get("id") in filtered_ids]
+        except Exception:
+            pass  # Best-effort: filters must not break search
+
     results.sort(key=lambda x: (-x["score"], x["entry"].get("collected_at", "")))
     return results[:limit]
 
@@ -703,10 +717,12 @@ def search_fulltext(
     include_raw: bool = True,
     min_score: float = 0.0,
     tier: str = "",
+    filters: dict | None = None,
 ) -> list[dict]:
     """Full-text search across metadata + raw article text.
 
     Issue #67: Enhanced with synonym expansion for cross-lingual recall.
+    Issue #59: Advanced filter support with AND/OR/NOT logic.
 
     Args:
         query: Search keyword or phrase
@@ -714,6 +730,9 @@ def search_fulltext(
         include_raw: Whether to search raw/ text files (slower but thorough)
         min_score: Minimum relevance score to include
         tier: Optional quality tier filter ("A", "B", "C"). Empty = all tiers.
+        filters: Optional structured filter dict (Issue #59). Supports AND/OR/NOT
+            with operators: eq, ne, in, not_in, gt, gte, lt, lte, contains,
+            icontains, wildcard, isnull, exists.
 
     Returns:
         List of result dicts with 'entry', 'score', 'match_locations',
@@ -786,6 +805,18 @@ def search_fulltext(
                     "snippet": snippet,
                     "expanded_terms": expanded_terms,
                 })
+
+    # Issue #59: Apply structured filters (post-search)
+    if filters:
+        try:
+            from sheaf_ai.filters import apply_filters
+            filtered_entries = apply_filters(
+                [r["entry"] for r in results], filters
+            )
+            filtered_ids = {e.get("id") for e in filtered_entries}
+            results = [r for r in results if r["entry"].get("id") in filtered_ids]
+        except Exception:
+            pass  # Best-effort: filters must not break search
 
     # Sort by relevance score (descending), then by date (newest first)
     results.sort(key=lambda x: (-x["score"], x["entry"].get("collected_at", "")))
