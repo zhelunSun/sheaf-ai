@@ -50,6 +50,7 @@ class ContentType(str, Enum):
     FEISHU_DOC = "feishu_doc"             # 飞书文档
     NOTION_PAGE = "notion_page"           # Notion 公开页面
     SEMANTIC_SCHOLAR_PAPER = "semantic_scholar_paper"  # Semantic Scholar (Issue #75)
+    DOI_PAPER = "doi_paper"               # DOI resolution (Issue #46)
     UNKNOWN = "unknown"
 
     @property
@@ -77,6 +78,7 @@ class ContentType(str, Enum):
             "feishu_doc": "Feishu Doc",
             "notion_page": "Notion Page",
             "semantic_scholar_paper": "Semantic Scholar Paper",
+            "doi_paper": "DOI Paper",
             "unknown": "Unknown",
         }
         return labels.get(self.value, self.value)
@@ -122,6 +124,12 @@ _URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
         r'https?://(?:www\.)?semanticscholar\.org/paper/',
         re.IGNORECASE,
     ), ContentType.SEMANTIC_SCHOLAR_PAPER, 25),
+
+    # DOI (Issue #46)
+    (re.compile(
+        r'https?://(?:dx\.)?doi\.org/10\.\d{4,}/',
+        re.IGNORECASE,
+    ), ContentType.DOI_PAPER, 26),
 
     # YouTube
     (re.compile(
