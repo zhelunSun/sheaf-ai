@@ -15,87 +15,15 @@ Usage:
 """
 from __future__ import annotations
 import os
-import re
-from pathlib import Path
 from openai import OpenAI
 
-# Load .env (plug and play)
-# Search: cwd/.env first, then package parent/.env (dev mode)
-_env_paths = [
-    Path.cwd() / ".env",
-    Path(__file__).resolve().parent.parent / ".env",
-]
-for _env_path in _env_paths:
-    if _env_path.exists():
-        with open(_env_path, encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith("#") and "=" in line:
-                    k, v = line.split("=", 1)
-                    os.environ.setdefault(k.strip(), v.strip())
-        break
+from sheaf_ai.providers import PROVIDERS
 
 # ============================================================
-# Provider config
+# Provider config (canonical source: sheaf_ai.providers)
 # ============================================================
-
-PROVIDERS = {
-    "openai": {
-        "api_key_env": "OPENAI_API_KEY",
-        "base_url":    os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-        "default_model": "gpt-4o",
-        "available_models": [
-            "gpt-4o",
-            "gpt-4o-mini",
-        ],
-    },
-    "deepseek": {
-        "api_key_env": "DEEPSEEK_API_KEY",
-        "base_url":    "https://api.deepseek.com/v1",
-        "default_model": "deepseek-chat",
-        "available_models": [
-            "deepseek-chat",
-            "deepseek-reasoner",
-        ],
-    },
-    "siliconflow": {
-        "api_key_env": "SILICONFLOW_API_KEY",
-        "base_url":    "https://api.siliconflow.cn/v1",
-        "default_model": "deepseek-ai/DeepSeek-V3.2",
-        "available_models": [
-            "deepseek-ai/DeepSeek-V3.2",
-            "deepseek-ai/DeepSeek-R1",
-            "Qwen/Qwen3.5-397B-A17B",
-        ],
-    },
-    "together": {
-        "api_key_env": "TOGETHER_API_KEY",
-        "base_url":    "https://api.together.xyz/v1",
-        "default_model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        "available_models": [
-            "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        ],
-    },
-    "groq": {
-        "api_key_env": "GROQ_API_KEY",
-        "base_url":    "https://api.groq.com/openai/v1",
-        "default_model": "llama-3.3-70b-versatile",
-        "available_models": [
-            "llama-3.3-70b-versatile",
-            "mixtral-8x7b-32768",
-        ],
-    },
-}
 
 DEFAULT_PROVIDER = os.environ.get("DEFAULT_PROVIDER", "openai")
-
-# Auto-detect default provider from SHEAF_API_KEY format if DEFAULT_PROVIDER not set
-_SHEAF_API_KEY = os.environ.get("SHEAF_API_KEY", "").strip()
-if _SHEAF_API_KEY and not os.environ.get("DEFAULT_PROVIDER"):
-    _detected = detect_provider_from_key(_SHEAF_API_KEY)
-    if _detected:
-        DEFAULT_PROVIDER = _detected
-
 
 # ============================================================
 # SHEAF_API_KEY — unified entry point
@@ -123,6 +51,14 @@ def detect_provider_from_key(api_key: str) -> str | None:
     # Ambiguous: sk- prefix could be openai, deepseek, or siliconflow
     # Default to the current DEFAULT_PROVIDER
     return None
+
+
+# Auto-detect default provider from SHEAF_API_KEY format if DEFAULT_PROVIDER not set
+_SHEAF_API_KEY = os.environ.get("SHEAF_API_KEY", "").strip()
+if _SHEAF_API_KEY and not os.environ.get("DEFAULT_PROVIDER"):
+    _detected = detect_provider_from_key(_SHEAF_API_KEY)
+    if _detected:
+        DEFAULT_PROVIDER = _detected
 
 
 # ============================================================
@@ -163,7 +99,6 @@ def _resolve_key_and_url(provider: str) -> tuple[str, str]:
     try:
         from sheaf_ai.settings import get_api_key as _cfg_get_key
         from sheaf_ai.settings import get_provider_config as _cfg_get_pc
-        from sheaf_ai.settings import CONFIG_FILE
 
         cfg_key = _cfg_get_key(provider)
         pc = _cfg_get_pc(provider)
@@ -248,7 +183,7 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
         f"⚠ 未检测到 API 密钥 ({cfg['api_key_env']})",
         "",
         "推荐方式 — 统一环境变量（适用于所有 Provider）：",
-        f"    export SHEAF_API_KEY=你的密钥",
+        "    export SHEAF_API_KEY=你的密钥",
         "",
         "快速配置（交互式向导）：",
         "    sheaf config setup",
@@ -329,7 +264,7 @@ def list_models(provider: str = None):
     provider = provider or DEFAULT_PROVIDER
     if provider not in PROVIDERS:
         return []
-    return PROVIDERS[provider]["available_models"]
+    return PROVIDERS[provider]["models"]
 
 
 # ============================================================

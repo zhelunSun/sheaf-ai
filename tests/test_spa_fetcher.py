@@ -13,7 +13,6 @@ Tests cover:
 """
 from __future__ import annotations
 
-import pytest
 from unittest.mock import patch, MagicMock
 
 from sheaf_ai.collectors.spa_fetcher import (
@@ -237,7 +236,7 @@ class TestParseAndBuild:
             "images": [],
         }
 
-        result = _parse_and_build("<html><body>content</body></html>", "https://example.com", "Test")
+        _parse_and_build("<html><body>content</body></html>", "https://example.com", "Test")
 
         # Should NOT have called fallback
         mock_basic.assert_not_called()

@@ -10,7 +10,6 @@ Tests are grouped:
 """
 from __future__ import annotations
 
-import json
 import base64
 from unittest.mock import patch, MagicMock
 

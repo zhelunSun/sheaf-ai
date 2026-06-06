@@ -16,7 +16,6 @@ Exits codes:
     SUCCESS=0, PARTIAL=1, DUPLICATE=2, QUALITY=3,
     NETWORK=4, CONFIG=5, LLM=6, STORAGE=7
 """
-import sys
 
 
 # ── Semantic exit codes ──────────────────────────────────────────────

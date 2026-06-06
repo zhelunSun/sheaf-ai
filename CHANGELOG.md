@@ -35,12 +35,14 @@ All notable changes to Sheaf.
 - Gamification update after both glean and crystallize
 - `crystallize_topic()` now delegates prompt assembly, LLM extraction, response parsing, and card mapping to the default extraction engine while preserving existing CLI/MCP/HTTP behavior.
 - Card-related CLI/MCP/HTTP adapters now share `card_service.card_to_public_dict()` for stable card JSON output.
+- Provider definitions now live in `sheaf_ai/providers.py`, shared by config, settings, and LLM client code.
 
 ### Fixed
 - Restored the documented local-first data root contract: by default, Sheaf writes to `./data/` for the invoking process; set `SHEAF_DATA_DIR` for a stable shared data directory.
+- PDF collection now handles malformed or empty PDF bytes without bubbling parser exceptions into the router fallback path.
 
 ### Tests
-- 288 tests passed, 13 opt-in MCP E2E tests skipped by default — includes card extraction, card service boundary, and data-root contract coverage
+- 796 tests passed, 13 skipped, 2 warnings — includes provider registry coverage and PDF malformed-byte handling
 - Ruff lint: 0 issues
 
 ---

@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import io
 import json
-import os
 import sys
 from unittest.mock import patch, MagicMock
 
@@ -25,7 +24,7 @@ class TestJSONFirstTTYDetection:
 
     def test_collect_auto_json_when_not_tty(self):
         """Non-TTY collect should output JSON without --json flag."""
-        from sheaf_ai.cli import build_parser, _run_collect, _print_collect_result
+        from sheaf_ai.cli import _print_collect_result
 
         result = {
             "success": True,
@@ -180,7 +179,7 @@ class TestStructuredErrors:
     """Test structured error output for Agent consumption."""
 
     def test_error_context_stored(self):
-        from sheaf_ai.exceptions import SheafError, NetworkError
+        from sheaf_ai.exceptions import NetworkError
         err = NetworkError("Connection failed", url="https://example.com")
         assert err.context["url"] == "https://example.com"
         assert str(err) == "Connection failed"

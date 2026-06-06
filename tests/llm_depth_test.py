@@ -28,7 +28,6 @@ import time
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import Any
 
 # ── 配置 ────────────────────────────────────────────────────────
 
@@ -304,8 +303,8 @@ class OutputGuard:
         return []
 
     def _check_headers_only(self) -> list:
-        lines = [l for l in self.output.strip().splitlines() if l.strip()]
-        if 0 < len(lines) <= 2 and all(l.strip().startswith("#") for l in lines):
+        lines = [line for line in self.output.strip().splitlines() if line.strip()]
+        if 0 < len(lines) <= 2 and all(line.strip().startswith("#") for line in lines):
             return [self.GuardIssue("HEADERS_ONLY", "warning",
                     f"输出仅含 {len(lines)} 行标题，无实质内容")]
         return []
@@ -624,7 +623,6 @@ def run_profile_test(profile_id: str, steps: int = 5, dry_run: bool = False) -> 
 
         intent = intent_data.get("intent", "unknown intent")
         command = intent_data.get("command", "sheaf stats")
-        rationale = intent_data.get("rationale", "")
 
         print(f'"{intent[:50]}..."', end=" ", flush=True)
 
@@ -705,13 +703,13 @@ def generate_report(reports: list[ProfileReport], output_path: Path):
 
     now = datetime.now()
     lines = [
-        f"# Sheaf LLM 深度测试报告",
-        f"",
+        "# Sheaf LLM 深度测试报告",
+        "",
         f"> **日期**: {now.strftime('%Y-%m-%d %H:%M')} | **测试类型**: LLM 驱动（真实用户行为模拟）",
-        f"> **模型**: sheaf_ai.llm_client (default provider)",
-        f"",
-        f"---",
-        f"",
+        "> **模型**: sheaf_ai.llm_client (default provider)",
+        "",
+        "---",
+        "",
     ]
 
     # 汇总表

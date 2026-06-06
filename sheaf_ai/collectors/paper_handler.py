@@ -19,7 +19,6 @@ All paper handlers return a unified metadata format with:
 """
 from __future__ import annotations
 
-import json
 import logging
 import re
 from typing import Any
@@ -252,7 +251,6 @@ def _fetch_generic_paper(url: str, timeout: int = 30) -> dict[str, Any]:
 
             # Try to detect paper metadata from the HTML
             text = result.get("text", "")
-            title = result.get("title", "")
 
             # Look for DOI in text
             doi_match = re.search(r'(?:DOI|doi)[:\s]*(10\.\d{4,}/[^\s]+)', text)
@@ -289,9 +287,8 @@ def enrich_with_citations(result: dict[str, Any], timeout: int = 10) -> dict[str
     # Try to get citations via arXiv ID
     arxiv_id = meta.get("arxiv_id")
     doi = meta.get("doi")
-    title = result.get("title", "")
 
-    if not arxiv_id and not doi and not title:
+    if not arxiv_id and not doi:
         return result
 
     try:
@@ -302,10 +299,6 @@ def enrich_with_citations(result: dict[str, Any], timeout: int = 10) -> dict[str
             s2_url = f"https://api.semanticscholar.org/graph/v1/paper/arXiv:{arxiv_id}?fields=citationCount,referenceCount,year,tldr"
         elif doi:
             s2_url = f"https://api.semanticscholar.org/graph/v1/paper/DOI:{doi}?fields=citationCount,referenceCount,year,tldr"
-        elif title:
-            import urllib.parse
-            encoded = urllib.parse.quote(title)
-            s2_url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={encoded}&limit=1&fields=citationCount,referenceCount,year,tldr"
         else:
             return result
 

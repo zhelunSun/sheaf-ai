@@ -23,66 +23,14 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from sheaf_ai.providers import PROVIDERS as _PROVIDER_REGISTRY
+
 # ---------------------------------------------------------------------------
 # Paths
 # ---------------------------------------------------------------------------
 
 CONFIG_DIR = Path.home() / ".sheaf"
 CONFIG_FILE = CONFIG_DIR / "config.json"
-
-# ---------------------------------------------------------------------------
-# Provider registry (mirrors llm_client.PROVIDERS for config UI)
-# ---------------------------------------------------------------------------
-
-_PROVIDER_REGISTRY: dict[str, dict[str, Any]] = {
-    "openai": {
-        "name": "OpenAI",
-        "base_url": "https://api.openai.com/v1",
-        "default_model": "gpt-4o",
-        "key_env": "OPENAI_API_KEY",
-        "models": ["gpt-4o", "gpt-4o-mini"],
-    },
-    "deepseek": {
-        "name": "DeepSeek",
-        "base_url": "https://api.deepseek.com/v1",
-        "default_model": "deepseek-chat",
-        "key_env": "DEEPSEEK_API_KEY",
-        "models": ["deepseek-chat", "deepseek-reasoner"],
-    },
-    "siliconflow": {
-        "name": "SiliconFlow",
-        "base_url": "https://api.siliconflow.cn/v1",
-        "default_model": "deepseek-ai/DeepSeek-V3.2",
-        "key_env": "SILICONFLOW_API_KEY",
-        "models": [
-            "deepseek-ai/DeepSeek-V3.2",
-            "deepseek-ai/DeepSeek-R1",
-            "Qwen/Qwen3.5-397B-A17B",
-        ],
-    },
-    "together": {
-        "name": "Together AI",
-        "base_url": "https://api.together.xyz/v1",
-        "default_model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
-        "key_env": "TOGETHER_API_KEY",
-        "models": ["meta-llama/Llama-3.3-70B-Instruct-Turbo"],
-    },
-    "groq": {
-        "name": "Groq",
-        "base_url": "https://api.groq.com/openai/v1",
-        "default_model": "llama-3.3-70b-versatile",
-        "key_env": "GROQ_API_KEY",
-        "models": ["llama-3.3-70b-versatile", "mixtral-8x7b-32768"],
-    },
-    "custom": {
-        "name": "Custom (OpenAI-compatible)",
-        "base_url": "",
-        "default_model": "",
-        "key_env": "OPENAI_API_KEY",
-        "models": [],
-    },
-}
-
 
 def _ensure_config_dir() -> None:
     """Create config directory with restrictive permissions."""
@@ -158,7 +106,7 @@ def get_api_key(
     # Resolve provider default env var
     provider = provider or os.environ.get("DEFAULT_PROVIDER", "openai")
     reg = _PROVIDER_REGISTRY.get(provider, {})
-    default_env = reg.get("key_env", f"{provider.upper()}_API_KEY")
+    default_env = reg.get("api_key_env", f"{provider.upper()}_API_KEY")
 
     key = os.environ.get(default_env, "").strip()
     if key:
@@ -209,12 +157,12 @@ def resolve_provider(
     if not key:
         # Build helpful guidance
         reg = _PROVIDER_REGISTRY[provider]
-        env_name = reg["key_env"]
+        env_name = reg["api_key_env"]
         lines = [
             f"⚠ 未检测到 API 密钥 ({env_name})",
             "",
             "快速配置（推荐交互式向导）：",
-            f"    sheaf config setup",
+            "    sheaf config setup",
             "",
             "或手动设置环境变量：",
             f"    # macOS/Linux:  export {env_name}=你的密钥",
@@ -269,7 +217,7 @@ def config_setup_interactive() -> dict[str, Any]:
     print(f"\n→ 配置 {reg['name']}")
 
     # API key (hidden input)
-    env_hint = reg["key_env"]
+    env_hint = reg["api_key_env"]
     key = getpass.getpass(
         f"请输入 API Key [{env_hint}] (输入不会显示): "
     ).strip()
@@ -319,7 +267,7 @@ def config_setup_interactive() -> dict[str, Any]:
         print("   文件权限已设置为仅当前用户可读")
     print()
     print("使用方式：")
-    print(f"    sheaf collect <url>        # 使用默认 provider")
+    print("    sheaf collect <url>        # 使用默认 provider")
     print(f"    sheaf collect <url> --provider {provider}  # 指定 provider")
     return cfg
 
@@ -340,7 +288,7 @@ def config_set_key(
 
     if api_key is None:
         reg = _PROVIDER_REGISTRY.get(provider, {})
-        env_hint = reg.get("key_env", f"{provider.upper()}_API_KEY")
+        env_hint = reg.get("api_key_env", f"{provider.upper()}_API_KEY")
         api_key = getpass.getpass(
             f"API Key for {provider} [{env_hint}]: "
         ).strip()

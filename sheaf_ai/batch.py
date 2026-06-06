@@ -19,7 +19,6 @@ Usage (MCP):
 from __future__ import annotations
 
 import json
-import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -202,7 +201,7 @@ def format_batch_summary(result: BatchResult) -> str:
     """Format a human-readable batch summary."""
     lines = [
         f"\n{'='*50}",
-        f"  Batch Collect Summary",
+        "  Batch Collect Summary",
         f"{'='*50}",
         f"  Total:    {result.total}",
         f"  Success:  {result.succeeded}",
@@ -213,7 +212,7 @@ def format_batch_summary(result: BatchResult) -> str:
         # Show failed entries
         failed = [r for r in result.results if not r.get("success") and r.get("stage") != "dedup"]
         if failed:
-            lines.append(f"\n  Failed URLs:")
+            lines.append("\n  Failed URLs:")
             for f in failed:
                 url = f.get("url", "?")
                 err = f.get("error", "unknown")[:60]

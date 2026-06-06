@@ -38,6 +38,72 @@ def test_import_sheaf_ai():
     assert True
 
 
+def test_sheaf_api_key_auto_detects_provider_on_import(tmp_path):
+    """SHEAF_API_KEY prefix detection works during llm_client import."""
+    (tmp_path / ".env").write_text("# isolate repo .env\n", encoding="utf-8")
+
+    env = os.environ.copy()
+    env["SHEAF_API_KEY"] = "gsk_test_key"
+    env.pop("DEFAULT_PROVIDER", None)
+
+    repo_root = Path(__file__).resolve().parents[1]
+    env["PYTHONPATH"] = str(repo_root) + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from sheaf_ai.llm_client import DEFAULT_PROVIDER; print(DEFAULT_PROVIDER)",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "groq"
+
+
+def test_llm_client_reads_cwd_env_file(tmp_path):
+    """Direct llm_client imports still load cwd/.env."""
+    (tmp_path / ".env").write_text("OPENAI_API_KEY=sk-env-file-test\n", encoding="utf-8")
+
+    env = os.environ.copy()
+    for key in ["OPENAI_API_KEY", "SHEAF_API_KEY", "DEFAULT_PROVIDER"]:
+        env.pop(key, None)
+
+    repo_root = Path(__file__).resolve().parents[1]
+    env["PYTHONPATH"] = str(repo_root) + os.pathsep + env.get("PYTHONPATH", "")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "from sheaf_ai.llm_client import check_api_key; print(check_api_key('openai')[0])",
+        ],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip() == "True"
+
+
+def test_provider_registry_shape():
+    """Shared provider registry exposes config UI and llm_client fields."""
+    from sheaf_ai.llm_client import list_models
+    from sheaf_ai.settings import list_providers
+
+    openai = next(p for p in list_providers() if p["id"] == "openai")
+    assert openai["api_key_env"] == "OPENAI_API_KEY"
+    assert list_models("openai") == openai["models"]
+
+
 def test_import_sheaf_cards():
     """sheaf_cards subpackage imports cleanly."""
     from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator  # noqa: F401

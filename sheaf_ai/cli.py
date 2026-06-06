@@ -362,7 +362,7 @@ def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
     import os
     from pathlib import Path
     from sheaf_ai.config import VERSION, fix_windows_encoding
-    from sheaf_ai.settings import get_api_key, get_provider_config, CONFIG_DIR
+    from sheaf_ai.settings import get_provider_config, CONFIG_DIR
 
     fix_windows_encoding()
 
@@ -411,12 +411,10 @@ def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
         "SHEAF_API_KEY",
     ]
     found_key = False
-    found_provider = None
     for env_var in key_env_vars:
         val = os.environ.get(env_var, "").strip()
         if val:
             found_key = True
-            found_provider = env_var
             steps.append(("✅", f"API key: {env_var} detected"))
             break
 
@@ -568,7 +566,6 @@ def _doctor() -> None:
 
     # Check 5: LLM connectivity (best-effort)
     try:
-        from sheaf_ai.llm_client import chat
         # Don't actually call the API, just verify client initialization
         from sheaf_ai.llm_client import get_client
         client = get_client()
@@ -717,7 +714,7 @@ def _config(p: argparse.Namespace) -> None:
         provider = p.provider
         if not provider:
             print("Usage: sheaf config set-key --provider <provider-id>")
-            print(f"Available: openai, deepseek, siliconflow, together, groq, custom")
+            print("Available: openai, deepseek, siliconflow, together, groq, custom")
             sys.exit(get_exit_code_from_key("CONFIG"))
         try:
             cfg = config_set_key(

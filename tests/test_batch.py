@@ -2,11 +2,7 @@
 from __future__ import annotations
 
 import json
-import os
-import sys
-import tempfile
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
@@ -236,7 +232,7 @@ class TestBatchCollectJsonl:
         urls = ["https://a.com", "https://b.com"]
         mock_pipeline.side_effect = lambda url, **kw: _mock_process_url_success(url)
         jsonl_path = tmp_path / "results.jsonl"
-        result = batch_collect(urls, jsonl_output=str(jsonl_path), quiet=True)
+        batch_collect(urls, jsonl_output=str(jsonl_path), quiet=True)
         assert jsonl_path.exists()
         lines = jsonl_path.read_text(encoding="utf-8").strip().split("\n")
         assert len(lines) == 2
@@ -259,7 +255,7 @@ class TestBatchCollectForce:
         mock_pipeline.side_effect = lambda url, force=False, **kw: {
             "success": True, "url": url, "force_used": force,
         }
-        result = batch_collect(["https://a.com"], force=True, quiet=True)
+        batch_collect(["https://a.com"], force=True, quiet=True)
         mock_pipeline.assert_called_once_with("https://a.com", force=True)
 
 

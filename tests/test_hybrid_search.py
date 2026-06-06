@@ -1,7 +1,5 @@
 """Tests for sheaf_ai.search BM25 + Hybrid Search (Issue #57)."""
 
-import json
-import pytest
 
 from sheaf_ai.search import (
     BM25Scorer,
@@ -297,7 +295,7 @@ class TestSearchHybrid:
 
         # alpha=1.0 = pure BM25, alpha=0.0 = pure semantic (which will be 0 w/o embeddings)
         results_bm25 = search_hybrid("alpha test", alpha=1.0)
-        results_sem = search_hybrid("alpha test", alpha=0.0)
+        search_hybrid("alpha test", alpha=0.0)
 
         # Pure BM25 should find results, pure semantic (no embeddings) may not
         assert len(results_bm25) >= 1

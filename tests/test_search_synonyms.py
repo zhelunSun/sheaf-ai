@@ -1,7 +1,5 @@
 """Tests for Issue #67: Search semantic enhancement — synonym expansion."""
 
-import pytest
-from unittest.mock import patch, MagicMock
 
 
 class TestSynonymExpansion:

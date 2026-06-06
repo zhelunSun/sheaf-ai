@@ -1,13 +1,10 @@
 """Tests for the PDF collector (sheaf_ai.collectors.pdf)."""
-import io
-import pytest
 from unittest.mock import patch, MagicMock
 
 # We test the PDF module in isolation — no actual PDF downloads
 from sheaf_ai.collectors.pdf import (
     fetch_pdf,
     fetch_pdf_from_bytes,
-    _extract_text,
     _build_pdf_text,
     _title_from_url,
 )

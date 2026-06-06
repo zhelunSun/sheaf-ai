@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import io
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import requests
 
@@ -47,7 +47,12 @@ def _extract_with_pypdf2(content: bytes, max_pages: int = _DEFAULT_MAX_PAGES) ->
         except ImportError:
             return "", {"_unsupported": True}
 
-    reader = PdfReader(io.BytesIO(content))
+    try:
+        reader = PdfReader(io.BytesIO(content))
+    except Exception as e:
+        logger.debug(f"PyPDF reader initialization failed: {e}")
+        return "", {"_engine": "pypdf2", "page_count": 0, "_invalid": True}
+
     meta: dict[str, Any] = {
         "page_count": len(reader.pages),
         "_engine": "pypdf2",

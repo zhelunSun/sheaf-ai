@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-589%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-796%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -109,7 +109,7 @@ $ sheaf crystallize AI
 sheaf mcp
 ```
 
-**9 个工具可用：**
+**10 个工具可用：**
 
 | 工具 | 说明 |
 |------|------|
@@ -118,6 +118,7 @@ sheaf mcp
 | `sheaf_get` | 按 ID 获取条目详情 |
 | `sheaf_urgent` | 查找有时效性的条目（截止日期、征稿通知） |
 | `sheaf_collect` | 添加新 URL 到收藏 |
+| `sheaf_collect_batch` | 批量添加多个 URL |
 | `sheaf_correct` | 纠正分类错误 |
 | `sheaf_crystallize` | 从主题结晶知识卡片 |
 | `sheaf_list_cards` | 列出已结晶的卡片 |
@@ -222,7 +223,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 691 passed
+python -m pytest tests/ -q     # 796 passed, 13 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -230,7 +231,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态
 
-Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，589 个测试全部通过。我们正在用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，796 个测试通过、13 个跳过。我们正在用真实用户验证，准备进入 Beta。
 
 浏览器扩展（`extension/`）是 HTTP API 的实验性本地伴侣，其 manifest 版本独立于 Python 包版本，直到扩展拥有自己的发布渠道。
 

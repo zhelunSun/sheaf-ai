@@ -18,8 +18,9 @@ Design principles:
 """
 from __future__ import annotations
 
+import importlib
 import logging
-from typing import Any, Optional
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ def fetch_spa_content(
     """
     # Layer 3: Playwright not installed
     try:
-        from playwright.sync_api import sync_playwright
+        importlib.import_module("playwright.sync_api")
     except ImportError:
         logger.warning(f"Playwright not installed - cannot fetch SPA: {url}")
         return _unavailable_result(content_type_label)
