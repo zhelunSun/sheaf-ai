@@ -219,6 +219,7 @@ def _compute_relevance(query_lower: str, fields: dict) -> float:
       - full-text match:  1.0 per occurrence (capped at 5.0)
 
     Issue #67: Now also checks synonym-expanded terms with a 0.5x discount.
+    Issue #58: Entity boost for query entities matching entry entities.
     """
     # Get expanded terms (includes original query)
     expanded = expand_query_synonyms(query_lower)
@@ -235,6 +236,17 @@ def _compute_relevance(query_lower: str, fields: dict) -> float:
     # Score synonym terms at 0.5x weight
     if synonym_only:
         score += _score_terms_against_fields(synonym_only, fields, weight=0.5)
+
+    # Issue #58: Entity boost — if entry has entities, check overlap
+    entry_entities = fields.get("entities", [])
+    if entry_entities:
+        try:
+            from sheaf_ai.entities import extract_entities, entity_boost_score
+            query_entities = extract_entities(query_lower, use_spacy=False)
+            if query_entities:
+                score += entity_boost_score(query_entities, entry_entities)
+        except Exception:
+            pass  # Best-effort: entity extraction must not break search
 
     return score
 
@@ -460,6 +472,17 @@ class BM25Scorer:
                 idf = math.log((self.N - df + 0.5) / (df + 0.5) + 1.0)
                 tf_norm = (tf * (k1 + 1)) / (tf + k1 * (1 - b + b * doc.dl / max(self.avgdl, 1e-8)))
                 score += 0.5 * idf * tf_norm
+
+            # Issue #58: Entity boost for BM25 scoring
+            entry_entities = doc.entry.get("entities", [])
+            if entry_entities:
+                try:
+                    from sheaf_ai.entities import extract_entities, entity_boost_score
+                    query_entities = extract_entities(query, use_spacy=False)
+                    if query_entities:
+                        score += entity_boost_score(query_entities, entry_entities)
+                except Exception:
+                    pass
 
             if score > 0:
                 results.append((doc.entry_id, score, doc.entry))
@@ -737,6 +760,7 @@ def search_fulltext(
                 "tags": " ".join(entry.get("tags", [])),
                 "summary": entry.get("summary", ""),
                 "raw_text": "",
+                "entities": entry.get("entities", []),  # Issue #58
             }
 
             # Load raw text if requested

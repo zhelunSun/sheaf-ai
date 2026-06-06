@@ -2,6 +2,7 @@
 Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 """
 import json
+import logging
 import uuid
 from datetime import datetime
 
@@ -10,6 +11,22 @@ from sheaf_ai.config import (
     TAGS_REGISTRY_FILE, BJT,
 )
 from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness
+
+logger = logging.getLogger(__name__)
+
+
+def _extract_entities_for_index(title: str, summary: str) -> list[dict]:
+    """Best-effort entity extraction for index entry (Issue #58).
+
+    Uses spaCy if available, falls back to rule-based.
+    Returns list of {"text": ..., "label": ...} dicts.
+    """
+    try:
+        from sheaf_ai.entities import extract_entities
+        entities = extract_entities(f"{title} {summary}")
+        return [e.to_dict() for e in entities[:20]]  # Cap at 20 entities
+    except Exception:
+        return []
 
 
 # ============================================================
@@ -241,6 +258,13 @@ def build_summary_md(entry: dict, structured: dict) -> str:
 def append_index(entry: dict) -> None:
     """Append a lightweight index entry (for search)."""
     timeliness = entry.get("timeliness", {})
+    # Issue #58: Extract entities at index time for search boosting
+    title = entry.get("title", "")
+    summary = entry.get("summary", "")
+    if isinstance(summary, dict):
+        summary = summary.get("one_liner", "") or str(summary)
+    entities = _extract_entities_for_index(title, str(summary))
+
     index_entry = {
         "id": entry["id"],
         "url": entry["url"],
@@ -258,6 +282,7 @@ def append_index(entry: dict) -> None:
         "urgency": timeliness.get("urgency", "evergreen"),
         "collected_at": entry["metadata"]["collected_at"],
         "content_hash": entry["metadata"].get("content_hash", ""),
+        "entities": entities,  # Issue #58
     }
     with open(INDEX_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
@@ -289,5 +314,5 @@ def rebuild_index() -> int:
     for entry in entries:
         append_index(entry)
 
-    print(f"Index rebuilt: {len(entries)} entries")
+    logger.info("Index rebuilt: %d entries", len(entries))
     return len(entries)
