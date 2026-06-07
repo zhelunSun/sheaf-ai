@@ -23,7 +23,6 @@ sheaf_ai-*/
 *.swp
 *.swo
 *~
-.venv/
 
 # OS files
 Thumbs.db
@@ -46,3 +45,9 @@ internal/
 
 # Sandbox test artifacts
 .sandbox-test/
+
+# Debug test data
+test_debug_data/
+
+# Pytest temp dirs
+.pytest-tmp-*/
