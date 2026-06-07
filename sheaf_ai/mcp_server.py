@@ -9,6 +9,7 @@ Usage:
     sheaf --mcp
 """
 import json
+import os
 import sys
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION, fix_windows_encoding
@@ -75,12 +76,12 @@ def search_knowledge(query: str, limit: int = 10) -> list:
     return results[:limit]
 
 
-def list_entries(category: str = None, limit: int = 20) -> list:
+def list_entries(category: str = None, limit: int = 20, offset: int = 0) -> list:
     entries = _load_index()
     if category:
         entries = [e for e in entries if e.get("primary_category", "").lower() == category.lower()]
     entries.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
-    return entries[:limit]
+    return entries[offset:offset + limit]
 
 
 def get_entry(entry_id: str) -> dict | None:
@@ -136,12 +137,13 @@ TOOLS = [
     },
     {
         "name": "sheaf_list",
-        "description": "List recent knowledge entries. Optionally filter by category.",
+        "description": "List recent knowledge entries. Optionally filter by category. Supports pagination with offset.",
         "inputSchema": {
             "type": "object",
             "properties": {
                 "category": {"type": "string", "description": "Filter by topic (matches primary topic name)"},
                 "limit": {"type": "integer", "description": "Max results (default: 20)", "default": 20},
+                "offset": {"type": "integer", "description": "Skip first N results for pagination (default: 0)", "default": 0},
             },
         },
     },
@@ -259,6 +261,21 @@ TOOLS = [
             "required": ["urls"],
         },
     },
+    {
+        "name": "sheaf_healthcheck",
+        "description": "Lightweight health probe. Returns version, data directory, entry count, index status, and API key presence (masked). Safe to call repeatedly.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "sheaf_stats",
+        "description": "Collection statistics: total entries, topic distribution, type counts, tag counts, streak info, and milestone progress.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
+    {
+        "name": "sheaf_insights",
+        "description": "Discover cross-topic associations and hidden connections in your knowledge base. Requires 3+ entries.",
+        "inputSchema": {"type": "object", "properties": {}},
+    },
 ]
 
 
@@ -344,7 +361,11 @@ def handle_request(request: dict) -> str | None:
                     })
 
         elif tool_name == "sheaf_list":
-            results = list_entries(arguments.get("category"), arguments.get("limit", 20))
+            results = list_entries(
+                arguments.get("category"),
+                arguments.get("limit", 20),
+                arguments.get("offset", 0),
+            )
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
             })
@@ -445,6 +466,54 @@ def handle_request(request: dict) -> str | None:
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}]
             })
+
+        elif tool_name == "sheaf_healthcheck":
+            entries = _load_index()
+            api_key_set = bool(os.environ.get("OPENAI_API_KEY") or os.environ.get("SHEAF_API_KEY"))
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "version": VERSION,
+                    "data_dir": str(DATA_DIR),
+                    "entry_count": len(entries),
+                    "index_status": "ok" if INDEX_FILE.exists() else "missing",
+                    "api_key_configured": api_key_set,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "sheaf_stats":
+            from sheaf_ai.query import get_collection_stats
+            from sheaf_ai.gamification import get_progress
+            entries = _load_index()
+            stats = get_collection_stats()
+            try:
+                progress = get_progress()
+                game = {
+                    "streak": progress.get("streak", 0),
+                    "next_milestone": progress.get("next_milestone", {}).get("name"),
+                    "basket_level": progress.get("basket_progress", {}).get("level"),
+                }
+            except Exception:
+                game = {}
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "total_entries": len(entries),
+                    **stats,
+                    "gamification": game,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        elif tool_name == "sheaf_insights":
+            from sheaf_ai.insights import discover_associations
+            entries = _load_index()
+            if len(entries) < 3:
+                return _jsonrpc_error(req_id, -32602, "Insights require at least 3 entries")
+            try:
+                result = discover_associations()
+                return _jsonrpc_response(req_id, {
+                    "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
+                })
+            except Exception as e:
+                return _jsonrpc_error(req_id, -32603, f"Insight discovery failed: {e}")
 
         else:
             return _jsonrpc_error(req_id, -32601, f"Unknown tool: {tool_name}")
