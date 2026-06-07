@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-829%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-846%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -153,20 +153,22 @@ Sheaf ships with a built-in [Model Context Protocol](https://modelcontextprotoco
 sheaf mcp
 ```
 
-**Available tools (10 total):**
+**Available tools (10 active + 3 deprecated):**
 
 | Tool | Description |
 |------|-------------|
-| `sheaf_search` | Full-text search across all entries |
-| `sheaf_list` | List recent entries with filtering |
+| Tool | Description |
+|------|-------------|
+| `sheaf_search` | Full-text + semantic search (keyword/hybrid/quick) |
+| `sheaf_list` | List entries with pagination, filters (urgent/untagged), stats summary |
 | `sheaf_get` | Get full entry details by ID |
-| `sheaf_urgent` | Find time-sensitive entries (deadlines, CFPs) |
 | `sheaf_collect` | Add a new URL to your collection |
 | `sheaf_collect_batch` | Add multiple URLs in one batch call |
 | `sheaf_correct` | Correct a classification error |
 | `sheaf_crystallize` | Crystallize knowledge cards from a topic |
 | `sheaf_list_cards` | List crystallized cards (optional topic filter) |
 | `sheaf_get_card` | Get full card details by ID |
+| `sheaf_insights` | Discover cross-topic associations |
 
 ## Agent Integration (One Command)
 
@@ -331,12 +333,21 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 796 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 846 passing tests. We're validating with real users before beta.
 
-The browser extension under `extension/` is an experimental local companion for the HTTP API. Its manifest version is independent from the Python package version until the extension has its own release channel.
+### Chrome Extension
+
+The browser extension provides one-click collection and search from any webpage:
+
+1. Start the local API: `sheaf serve`
+2. Load the extension from `extension/` (Chrome → Manage Extensions → Developer mode → Load unpacked)
+3. Click the Sheaf icon to collect the current page or search your knowledge base
+4. Right-click any page or link → "🌾 Collect with Sheaf"
+5. Keyboard shortcut: `Alt+Shift+S`
+
+The extension connects to your local `sheaf serve` instance. Its manifest version is independent from the Python package.
 
 **Try it:** save 20+ links, run `sheaf crystallize <topic>`, then ask your agent to find them. If it works for you, open an issue or discussion to tell us what you'd change.
-
 ## License
 
 [Apache 2.0](LICENSE)
