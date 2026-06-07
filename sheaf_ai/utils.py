@@ -1,8 +1,10 @@
 """
 Sheaf Utils — URL normalization, content hashing, platform detection, timeliness extraction.
 """
+import os
 import re
 import hashlib
+import tempfile
 from datetime import datetime
 
 from sheaf_ai.config import BJT
@@ -107,3 +109,28 @@ def extract_timeliness(structured: dict) -> dict:
         "deadline_label": deadline_text if not deadline_date else None,
         "urgency": urgency,
     }
+
+
+def atomic_write(path: str | os.PathLike, content: str, encoding: str = "utf-8") -> None:
+    """Write content to a file atomically using write-to-temp-then-rename.
+
+    Prevents data corruption if the process crashes mid-write.
+    The temp file is created in the same directory as the target,
+    ensuring os.replace() is atomic on the same filesystem.
+    """
+    path = os.fspath(path)
+    parent = os.path.dirname(path)
+    os.makedirs(parent, exist_ok=True)
+
+    fd, tmp_path = tempfile.mkstemp(dir=parent, prefix=".sheaf-tmp-")
+    try:
+        with os.fdopen(fd, "w", encoding=encoding) as f:
+            f.write(content)
+        os.replace(tmp_path, path)
+    except BaseException:
+        # Clean up temp file on any failure (crash, error, etc.)
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise

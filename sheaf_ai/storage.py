@@ -10,7 +10,7 @@ from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
     TAGS_REGISTRY_FILE, BJT,
 )
-from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness
+from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness, atomic_write
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +46,9 @@ def load_tags_registry() -> dict:
 def save_tags_registry(registry: dict) -> None:
     """Save tags registry."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    TAGS_REGISTRY_FILE.write_text(
-        json.dumps(registry, ensure_ascii=False, indent=2), encoding="utf-8"
+    atomic_write(
+        TAGS_REGISTRY_FILE,
+        json.dumps(registry, ensure_ascii=False, indent=2),
     )
 
 
@@ -187,16 +188,16 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     month_dir = ENTRIES_DIR / now.strftime("%Y-%m")
     month_dir.mkdir(parents=True, exist_ok=True)
     entry_path = month_dir / f"{entry_id}.json"
-    entry_path.write_text(json.dumps(entry, ensure_ascii=False, indent=2), encoding="utf-8")
+    atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
     # Store raw text
     raw_path = RAW_DIR / f"{entry_id}.txt"
-    raw_path.write_text(fetch_result.get("text", ""), encoding="utf-8")
+    atomic_write(raw_path, fetch_result.get("text", ""))
 
     # Store summary markdown
     summary_md = build_summary_md(entry, summary_result.get("structured", {}))
     summary_path = SUMMARIES_DIR / f"{entry_id}.md"
-    summary_path.write_text(summary_md, encoding="utf-8")
+    atomic_write(summary_path, summary_md)
 
     # Update tags registry
     update_tags_registry(tags, now.isoformat())
@@ -332,7 +333,7 @@ def rebuild_index() -> int:
 
     entries.sort(key=_get_collected_at)
 
-    INDEX_FILE.write_text("", encoding="utf-8")
+    atomic_write(INDEX_FILE, "")
     for entry in entries:
         append_index(entry)
 

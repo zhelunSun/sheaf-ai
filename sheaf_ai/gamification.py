@@ -22,6 +22,7 @@ import json
 from datetime import datetime, date, timedelta
 
 from sheaf_ai.config import DATA_DIR, BJT
+from sheaf_ai.utils import atomic_write
 
 
 # ============================================================
@@ -91,10 +92,7 @@ def _load_state() -> dict:
 def _save_state(state: dict) -> None:
     """Persist gamification state to disk."""
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    GAME_FILE.write_text(
-        json.dumps(state, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+    atomic_write(GAME_FILE, json.dumps(state, ensure_ascii=False, indent=2))
 
 
 # ============================================================
