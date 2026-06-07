@@ -1,5 +1,6 @@
 """Sheaf CLI — unified entry point with subcommands + backward-compatible flags."""
 from __future__ import annotations
+import os
 import sys
 import json
 import argparse
@@ -42,7 +43,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
     p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file")
-    p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+")
+    p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("insights", "Cross-topic associations"), ("tags", "Tag statistics"),
                             ("trends", "Topic trends"), ("urgent", "Upcoming deadlines"),
@@ -173,7 +174,7 @@ def _run() -> None:
     if parsed.command is None:
         show_recent(); return
     _DISPATCH = {
-        "collect": lambda: _collect(parsed, json_auto=auto_json), "search": lambda: show_search(" ".join(parsed.query)),
+        "collect": lambda: _collect(parsed, json_auto=auto_json), "search": lambda: _search(parsed),
         "stats": show_stats, "weekly": show_weekly, "insights": show_insights,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
@@ -293,6 +294,34 @@ def _batch_collect_cli(
         sys.exit(get_exit_code_from_key("NETWORK"))
     elif batch_result.failed > 0:
         sys.exit(get_exit_code_from_key("PARTIAL"))
+
+
+def _search(p: argparse.Namespace) -> None:
+    """Search entries with optional JSON output (Issue #78)."""
+    query = " ".join(p.query)
+    limit = getattr(p, "limit", 10)
+    json_output = getattr(p, "json", False)
+
+    if json_output:
+        from sheaf_ai.search import search_fulltext
+        results = search_fulltext(query, limit=limit, include_raw=True)
+        formatted = []
+        for r in results:
+            item = r["entry"].copy()
+            item["_score"] = r["score"]
+            item["_match_locations"] = r["match_locations"]
+            if r.get("snippet"):
+                item["_snippet"] = r["snippet"]
+            if r.get("expanded_terms"):
+                item["_expanded_terms"] = r["expanded_terms"]
+            formatted.append(item)
+        print(json.dumps({
+            "query": query,
+            "total": len(formatted),
+            "results": formatted,
+        }, ensure_ascii=False, indent=2))
+    else:
+        show_search(query, limit=limit)
 
 def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
     """List collected entries with optional filtering (Issue #71)."""
@@ -552,14 +581,39 @@ def _doctor() -> None:
     else:
         checks.append(("⚠️", "Entries directory not found"))
 
-    # Check 4: API key
+    # Check 4: API key(s) — scan all providers (Issue #79)
     try:
-        from sheaf_ai.llm_client import check_api_key
-        key_set, guidance = check_api_key()
-        if key_set:
-            checks.append(("✅", "API key configured"))
+        from sheaf_ai.providers import PROVIDERS
+        configured_providers = []
+        # Unified key first
+        if os.environ.get("SHEAF_API_KEY", "").strip():
+            configured_providers.append("SHEAF_API_KEY (unified)")
+        # Check each provider-specific key
+        for pid, cfg in PROVIDERS.items():
+            if pid == "custom":
+                continue
+            key = os.environ.get(cfg["api_key_env"], "").strip()
+            if key:
+                configured_providers.append(f"{cfg['name']} ({cfg['api_key_env']})")
+        # Also check user config file
+        try:
+            from sheaf_ai.settings import list_providers
+            configured_ids = set()
+            for entry in list_providers():
+                if entry.get("api_key"):
+                    configured_ids.add(entry.get("id", ""))
+            for pid in configured_ids - {"custom"}:
+                name = PROVIDERS.get(pid, {}).get("name", pid)
+                configured_providers.append(f"{name} (config file)")
+        except (ImportError, Exception):
+            pass
+        if configured_providers:
+            for desc in configured_providers:
+                checks.append(("✅", f"API key: {desc}"))
         else:
-            checks.append(("❌", "API key not configured"))
+            checks.append(("❌", "No API key configured"))
+            from sheaf_ai.llm_client import check_api_key
+            _, guidance = check_api_key()
             checks.append(("💡", guidance.strip()))
     except Exception as e:
         checks.append(("❌", f"API key check failed: {e}"))

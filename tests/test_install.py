@@ -187,11 +187,15 @@ def test_mcp_tools_defined():
     from sheaf_ai.mcp_server import TOOLS
     tool_names = [t["name"] for t in TOOLS]
     expected = {
-        "sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent",
-        "sheaf_correct", "sheaf_collect",
+        "sheaf_search", "sheaf_list", "sheaf_get",
+        "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
         "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
+        "sheaf_insights",
     }
     assert expected <= set(tool_names), f"Missing tools: {expected - set(tool_names)}"
+    # Deprecated tools should NOT be in the active tool list
+    for deprecated in ("sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"):
+        assert deprecated not in tool_names, f"Deprecated tool {deprecated} should not be active"
 
 
 def test_mcp_initialize():
