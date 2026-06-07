@@ -25,64 +25,16 @@ from sheaf_ai.config import INDEX_FILE, RAW_DIR
 # Synonym Expansion (Issue #67)
 # ============================================================
 
-# Bi-directional synonym groups: each tuple contains equivalent terms.
-# Query expansion returns all synonyms for any matched term.
-_SYNONYM_GROUPS: list[tuple[str, ...]] = [
-    # AI / ML
-    ("ai", "artificial intelligence", "人工智能", "AI"),
-    ("machine learning", "ml", "机器学习", "ML"),
-    ("deep learning", "dl", "深度学习", "DL"),
-    ("neural network", "神经网络", "nn"),
-    ("llm", "large language model", "大语言模型", "大模型", "LLM"),
-    ("nlp", "natural language processing", "自然语言处理", "NLP"),
-    ("reinforcement learning", "rl", "强化学习"),
-    ("transformer", "注意力机制", "attention"),
-    ("gpt", "generative pretrained transformer"),
-    ("agent", "智能体", "ai agent", "AI智能体"),
-    ("multimodal", "多模态"),
-    ("computer vision", "cv", "计算机视觉"),
-    ("generative ai", "生成式AI", "genai", "aigc", "生成式人工智能"),
-    ("diffusion model", "扩散模型"),
-    ("rag", "retrieval augmented generation", "检索增强生成"),
-    ("fine-tuning", "微调", "finetune"),
-    ("prompt engineering", "提示工程", "prompt"),
-    ("embedding", "向量表示", "向量嵌入"),
-    ("foundation model", "基础模型", "底座模型"),
-    ("knowledge graph", "知识图谱", "kg"),
-    ("moe", "mixture of experts", "混合专家"),
-    ("cot", "chain of thought", "思维链"),
-    ("rlhf", "reinforcement learning from human feedback", "人类反馈强化学习"),
-    # General tech
-    ("api", "应用程序接口"),
-    ("open source", "开源"),
-    ("benchmark", "基准测试", "评测"),
-    ("dataset", "数据集"),
-    ("model", "模型"),
-    ("training", "训练"),
-    ("inference", "推理", "推断"),
-    ("deployment", "部署"),
-    ("scaling", "扩展", "缩放"),
-    ("optimization", "优化"),
-    ("architecture", "架构"),
-    ("framework", "框架"),
-    ("pipeline", "管道", "流水线"),
-    # Remote sensing
-    ("remote sensing", "遥感", "卫星遥感"),
-    ("earth observation", "地球观测", "eo"),
-    ("satellite", "卫星"),
-    ("spatial", "空间"),
-    ("geospatial", "地理空间"),
-    ("gis", "geographic information system", "地理信息系统"),
-]
+# ============================================================
+# Synonym expansion — delegated to sheaf_ai.synonyms module
+# ============================================================
+from sheaf_ai.synonyms import load_synonym_groups, build_synonym_lookup
+
+# Load groups (user config overrides built-in defaults)
+_SYNONYM_GROUPS: list[tuple[str, ...]] = load_synonym_groups()
 
 # Build lookup: normalized_term -> set of all synonyms
-_SYNONYM_LOOKUP: dict[str, set[str]] = {}
-for _group in _SYNONYM_GROUPS:
-    _normalized_group = {t.lower().strip() for t in _group}
-    for _term in _normalized_group:
-        if _term not in _SYNONYM_LOOKUP:
-            _SYNONYM_LOOKUP[_term] = set()
-        _SYNONYM_LOOKUP[_term].update(_normalized_group)
+_SYNONYM_LOOKUP: dict[str, set[str]] = build_synonym_lookup(_SYNONYM_GROUPS)
 
 
 def expand_query_synonyms(query: str) -> list[str]:
