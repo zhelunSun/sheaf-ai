@@ -334,16 +334,25 @@ class TestSearchJSON:
     def test_doctor_detects_multiple_provider_keys(self):
         """Doctor detects keys from multiple providers (Issue #79)."""
         from sheaf_ai.cli import _doctor
-        env = {
+        env_updates = {
             "SHEAF_API_KEY": "",
             "OPENAI_API_KEY": "sk-test-openai",
             "DEEPSEEK_API_KEY": "",
             "SILICONFLOW_API_KEY": "sk-test-sf",
         }
-        captured = io.StringIO()
-        with patch("sys.stdout", captured), \
-             patch.dict(os.environ, env, clear=False):
-            _doctor()
+        # Use try/finally to avoid patch.dict 32767-char limit on Windows
+        old = {k: os.environ.get(k) for k in env_updates}
+        try:
+            os.environ.update(env_updates)
+            captured = io.StringIO()
+            with patch("sys.stdout", captured):
+                _doctor()
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
 
         output = captured.getvalue()
         # Should detect both OpenAI and SiliconFlow keys
@@ -353,7 +362,7 @@ class TestSearchJSON:
     def test_doctor_no_key_shows_guidance(self):
         """Doctor shows guidance when no API key is found."""
         from sheaf_ai.cli import _doctor
-        env = {
+        env_updates = {
             "SHEAF_API_KEY": "",
             "OPENAI_API_KEY": "",
             "DEEPSEEK_API_KEY": "",
@@ -361,10 +370,19 @@ class TestSearchJSON:
             "TOGETHER_API_KEY": "",
             "GROQ_API_KEY": "",
         }
-        captured = io.StringIO()
-        with patch("sys.stdout", captured), \
-             patch.dict(os.environ, env, clear=False):
-            _doctor()
+        # Use try/finally to avoid patch.dict 32767-char limit on Windows
+        old = {k: os.environ.get(k) for k in env_updates}
+        try:
+            os.environ.update(env_updates)
+            captured = io.StringIO()
+            with patch("sys.stdout", captured):
+                _doctor()
+        finally:
+            for k, v in old.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
 
         output = captured.getvalue()
         assert "No API key configured" in output or "❌" in output

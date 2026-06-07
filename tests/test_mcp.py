@@ -26,7 +26,14 @@ class McpProcess:
     """Manage a `sheaf mcp` subprocess for stdio E2E testing."""
 
     def __init__(self):
-        sheaf_exe = sys.executable.replace("python.exe", "Scripts/sheaf.exe")
+        from pathlib import Path
+        scripts_dir = Path(sys.executable).parent
+        # On Windows venv, Scripts/ is already the parent of python.exe
+        candidate = scripts_dir / "sheaf.exe"
+        if not candidate.exists():
+            # Fallback: some layouts have Scripts/ one level deeper
+            candidate = scripts_dir / "Scripts" / "sheaf.exe"
+        sheaf_exe = str(candidate)
         self._p = subprocess.Popen(
             [sheaf_exe, "mcp"],
             stdin=subprocess.PIPE,
