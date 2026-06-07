@@ -6,12 +6,11 @@ card_service projection, and tags_registry ai_count/human_count tracking.
 """
 import json
 import pytest
-from datetime import datetime, timezone
 from unittest.mock import patch
 
 from sheaf_cards.base import KnowledgeCard, TagEntry, CardStore
 from sheaf_ai.card_service import card_to_public_dict
-from sheaf_ai.storage import update_tags_registry, load_tags_registry, save_tags_registry
+from sheaf_ai.storage import update_tags_registry, load_tags_registry
 
 
 # ============================================================
