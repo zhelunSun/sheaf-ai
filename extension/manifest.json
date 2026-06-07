@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Sheaf — Agent Context Builder",
-  "version": "0.1.0",
-  "description": "One-click knowledge collection for your AI agent's context.",
+  "version": "0.4.0",
+  "description": "One-click knowledge collection + search for your AI agent's context. Local-first, open-source.",
   "permissions": ["activeTab", "storage", "contextMenus"],
-  "host_permissions": ["http://localhost:8321/*"],
+  "host_permissions": ["http://localhost:8321/*", "http://127.0.0.1:8321/*"],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
