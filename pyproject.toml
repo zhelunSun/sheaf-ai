@@ -67,6 +67,7 @@ dev = [
 
 [project.scripts]
 sheaf = "sheaf_ai.cli:main"
+sheaf-mcp = "sheaf_ai.mcp_server:main"
 
 [project.entry-points."mcp.servers"]
 sheaf = "sheaf_ai.mcp_server:main"
