@@ -59,6 +59,12 @@ def isolated_data_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(search, "INDEX_FILE", test_data / "index.jsonl")
     monkeypatch.setattr(search, "RAW_DIR", test_data / "raw")
 
+    # Patch mcp.data module (has DATA_DIR, ENTRIES_DIR, INDEX_FILE)
+    from sheaf_ai.mcp import data as mcp_data
+    monkeypatch.setattr(mcp_data, "DATA_DIR", test_data)
+    monkeypatch.setattr(mcp_data, "ENTRIES_DIR", test_data / "entries")
+    monkeypatch.setattr(mcp_data, "INDEX_FILE", test_data / "index.jsonl")
+
     # Patch pipeline module (DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE)
     from sheaf_ai import pipeline
     monkeypatch.setattr(pipeline, "DATA_DIR", test_data)

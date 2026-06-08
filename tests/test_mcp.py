@@ -206,7 +206,7 @@ class TestMcpWithData:
             claim="Shared card shape",
             evidence="Evidence string",
         )
-        with patch("sheaf_ai.mcp_server.card_service.crystallize_cards", return_value=[card]):
+        with patch("sheaf_ai.mcp.cards.card_service.crystallize_cards", return_value=[card]):
             resp = handle_request({
                 "jsonrpc": "2.0", "id": 30,
                 "method": "tools/call",
@@ -228,7 +228,7 @@ class TestMcpWithData:
             claim="Shared card shape",
             evidence="Evidence string",
         )
-        with patch("sheaf_ai.mcp_server.card_service.list_cards", return_value=[card]):
+        with patch("sheaf_ai.mcp.cards.card_service.list_cards", return_value=[card]):
             resp = handle_request({
                 "jsonrpc": "2.0", "id": 31,
                 "method": "tools/call",
@@ -250,7 +250,7 @@ class TestMcpWithData:
             claim="Shared card shape",
             evidence="Evidence string",
         )
-        with patch("sheaf_ai.mcp_server.card_service.get_card_detail", return_value=card):
+        with patch("sheaf_ai.mcp.cards.card_service.get_card_detail", return_value=card):
             resp = handle_request({
                 "jsonrpc": "2.0", "id": 32,
                 "method": "tools/call",
