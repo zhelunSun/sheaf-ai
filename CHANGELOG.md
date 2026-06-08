@@ -2,100 +2,49 @@
 
 All notable changes to Sheaf.
 
-## [Unreleased] — Wave 2.5: Gamification Lite + Quality Gate
+## [0.5.0] — 2026-06-07
 
 ### Added
-- `sheaf_ai/gamification.py` — gamification engine v2.5:
-  - Collection progress bars (dual-dimension: sheaves + cards)
-  - Progress thresholds at 10/30/50/100
-  - 12 milestone definitions (6 core + 6 extended)
-  - Streak tracking with CLI startup display
-  - ASCII progress bars with threshold markers
-- `sheaf_ai/quality.py` — content quality gate:
-  - `QualityReport` dataclass — structured quality assessment
-  - `assess_quality()` — core quality gate (pass/warn/reject)
-  - Image density detection + alt text extraction
-  - Force mode for `--force` flag
-  - Pipeline integration at Step 1.1 (before classify/summarize)
-- `sheaf_ai/api.py` — MCP Streamable HTTP transport (`/mcp` endpoint):
-  - POST for JSON-RPC requests
-  - GET with SSE for streamable responses
-  - CORS + health check support
-- `sheaf_ai/display.py` — streak line display on CLI startup
-- Chrome Extension MVP scaffold (popup, background, options, icons)
-- CONTRIBUTING.md — public contribution guide
-- `sheaf_ai/card_extraction.py` — internal `CardExtractionEngine` boundary for swappable knowledge card extraction.
-- `sheaf_ai/card_service.py` — shared card use-case boundary and public JSON projection for CLI/MCP/HTTP adapters.
+- **CLI `sheaf search --json`** — structured JSON output for Agent consumption (#78)
+  - `--limit` / `-n` flag for result count control
+  - JSON includes query, total, results with scores, snippets, and expanded_terms
+- **MCP tools consolidated 13→10** — cleaner Agent interface
+  - `sheaf_list` enhanced: `filter` param (`urgent`/`untagged`/`recent`), returns `total` + `topics_summary`
+  - `sheaf_urgent` → deprecated (use `sheaf_list filter="urgent"`)
+  - `sheaf_healthcheck` → deprecated (use HTTP `/health`)
+  - `sheaf_stats` → deprecated (use `sheaf_list` for total + topics)
+  - Deprecated tools retain backward-compatible fallback (return data + deprecation notice)
+- **Doctor multi-provider key scan** — detects all provider API keys (#79)
+  - Checks OPENAI, DEEPSEEK, SILICONFLOW, TOGETHER, GROQ, SHEAF_API_KEY
+  - Also checks user config file (~/.sheaf/config.json)
+- **Chrome Extension v2** — from MVP skeleton to usable product
+  - Search: search input in popup, calls `/search` API, renders results with topics + date
+  - Connection wizard: guided setup when API offline (`sheaf serve` command + retry button)
+  - Enhanced collect feedback: one_liner display, contextual error hints (duplicate, quality, fetch, timeout)
+  - Settings page: connection info panel, keyboard shortcuts, About section with repo link
+  - Offline handling: `fetchWithTimeout()` for all API calls with configurable timeouts
+  - Version: 0.1.0 → 0.4.0 (independent companion versioning)
+  - Added `127.0.0.1` host permission alongside `localhost`
 
 ### Changed
-- Pipeline now runs quality gate before classify/summarize
-- Image-heavy articles auto-append alt text supplement
-- CLI shows quality hints on failure (with `--force` suggestion)
-- `sheaf stats` shows dual-dimension progress bars + milestone badges
-- Gamification update after both glean and crystallize
-- `crystallize_topic()` now delegates prompt assembly, LLM extraction, response parsing, and card mapping to the default extraction engine while preserving existing CLI/MCP/HTTP behavior.
-- Card-related CLI/MCP/HTTP adapters now share `card_service.card_to_public_dict()` for stable card JSON output.
-- Provider definitions now live in `sheaf_ai/providers.py`, shared by config, settings, and LLM client code.
-
-### Fixed
-- Restored the documented local-first data root contract: by default, Sheaf writes to `./data/` for the invoking process; set `SHEAF_DATA_DIR` for a stable shared data directory.
-- PDF collection now handles malformed or empty PDF bytes without bubbling parser exceptions into the router fallback path.
+- `show_search()` now accepts `limit` parameter (was hardcoded to 10)
+- `sheaf_list` MCP response changed from plain `list` to `{total, topics, entries}` dict
+- MCP server docstring updated to reflect 10 active + 3 deprecated tools
 
 ### Tests
-- 796 tests passed, 13 skipped, 2 warnings — includes provider registry coverage and PDF malformed-byte handling
-- Ruff lint: 0 issues
+- 846 passed (+8 new), 13 skipped, 0 failures
+- New: `TestSearchJSON` (6 tests), `TestSheafDoctor` multi-provider (2 tests), MCP consolidation (7 tests)
 
----
-
-## [Unreleased] — Wave 2: Crystallize
-
-### Release Hardening
-- Ran a pre-release hard-gate audit covering tracked private files, first-run config, build artifacts, local API/MCP boundaries, and docs consistency.
-- Aligned default model configuration with `.env.example`: provider defaults now come from `llm_client`, with optional `DEFAULT_MODEL` / task-specific overrides.
-- Unified MCP protocol version reporting across stdio and HTTP transport.
-- Tightened default CORS behavior for the local HTTP API and added a warning for non-localhost binds.
-- Fixed Windows subprocess decoding in CLI smoke tests.
-- Updated public docs to reflect 287 passing tests and pyproject extras as the dependency source of truth.
-
-### Added
-- `sheaf_ai/crystallize.py` — knowledge crystallization engine:
-  - `find_entries_by_topic()`: cross title/topics/tags/summary matching
-  - `crystallize_topic()`: LLM multi-source synthesis → KnowledgeCards with evidence tracing
-  - `crystallize_and_save(auto_embed=True)`: crystallize + dedup + persist
-  - `list_crystallized/get_card/delete_card/get_topic_stats`: card CRUD + stats
-  - `semantic_search()`: vector similarity search across cards
-  - `rebuild_embeddings()`: full index rebuild from stored cards
-  - `_embed_cards()`: best-effort embedding (fails gracefully, doesn't block core)
-- `prompts/crystallize.md` — LLM prompt template for knowledge synthesis
-- CLI `sheaf crystallize` subcommand (topic, --list, --show, --delete, --stats, --semantic, --rebuild-embeddings)
-- MCP tools: `sheaf_crystallize`, `sheaf_list_cards`, `sheaf_get_card` (9 tools total)
-- MCP `ping` method for health checks
-- E2E test environment: `D:/Agent/WorkBuddy/sheaf-e2e-test/` with `run-e2e.sh` automated suite
-- `--help` epilog with quick start examples
-- Nightly Dev Pipeline v2 with fault-tolerance and tool fallback chains
-- Agent profile: `.workbuddy/agents/nightly-dev.md`
-- Developer experience log: `internal/dev-log/` (6 entries, Sheaf-indexable)
+## [0.4.0a1] — 2026-06-06
 
 ### Fixed
-- `ensure_data_dirs()` was defined but never called → `sheaf init` crashed on storage. Fixed by adding call at start of `process_url()` (BLG-K04)
-- `sheaf_ai/query.py`: restored `TAGS_REGISTRY_FILE` import for test conftest compatibility
-- `EmbeddingBridge` now uses canonical `data/cards/knowledge_cards.json` and read-only migrates legacy `data/cards/cards.json`.
+- Atomic writes to storage, feedback, pipeline, and gamification modules
+- Retry with exponential backoff and timeout to LLM client
+- Default data directory changed to `~/.sheaf/data` when not in project context
+- Unused import lint errors in card_service and test_tag_tracking
+- CI workflow added for test/ruff/build on push and PR
 
-### Changed
-- `process_url()` now calls `ensure_data_dirs()` before any writes
-- CLI argument parser: added epilog with quick start guide
-- Commands now use proper subcommand syntax (no `--` prefix required)
-- MCP tools set expanded from 6 to 9
-- Ruff linting: 108 issues fixed, per-file-ignores for intentional CLI compact syntax
-
-### Developer Experience
-- `internal/dev-log/`: 6 entries covering pipeline fault-tolerance, test isolation, UX audit, project conventions, mock lazy import, and E2E testing
-- `.learnings/`: ERRORS.md (ERR-20260522-001) + LEARNINGS.md (LRN-001, LRN-002)
-- Ruff per-file-ignores: `sheaf_ai/cli.py` (E701/E702), `sheaf_ai/config.py` (E402)
-
----
-
-## [0.4.0-alpha] — 2026-05-19
+## [0.4.0a0] — 2026-05-19
 
 ### Added
 - Alpha public release
@@ -107,19 +56,3 @@ All notable changes to Sheaf.
 - MCP server with 6 tools (JSON-RPC over stdio)
 - DeepSeek-V3.2 via openai-compatible API
 - GitHub public repo
-
----
-
-## [0.3.x] — 2026-05-13 ~ 2026-05-17
-
-### 0.3.1a (2026-05-17)
-- Legacy migration + full reclassification
-- Dynamic tag support
-
-### 0.3.0 (2026-05-16)
-- Fetch v2 with 3-strategy fallback (requests → Playwright → manual)
-- Dynamic topic classification
-
-### 0.1.0 (2026-05-13)
-- MVP: fetch → classify → summarize → store
-- Basic CLI

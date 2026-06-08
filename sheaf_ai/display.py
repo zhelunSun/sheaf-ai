@@ -151,9 +151,9 @@ def show_stats() -> None:
         pass
 
 
-def show_search(query: str) -> None:
+def show_search(query: str, limit: int = 10) -> None:
     """Full-text search with relevance scoring and synonym expansion."""
-    results = search_fulltext(query, limit=10, include_raw=True)
+    results = search_fulltext(query, limit=limit, include_raw=True)
 
     if not results:
         print(f'No results for "{query}"')

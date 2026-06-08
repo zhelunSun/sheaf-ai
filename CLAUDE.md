@@ -1,28 +1,42 @@
-# Sheaf Agent Handoff
+# Sheaf — Quick Agent Setup
 
-## Current Branch
+## Install & Configure
 
-- Branch: `nightly/2026-06-06`
-- Current full gate: `python -m pytest tests -q --tb=short --basetemp .pytest-tmp-codex`
-- Latest observed result: 796 passed, 13 skipped, 2 warnings
-- Full lint gate: `python -m ruff check sheaf_ai/ sheaf_cards/ tests/`
+```bash
+pip install sheaf-ai
+sheaf init --auto
+```
 
-## Active Working State
+## MCP Server (for Claude Code, Cursor, etc.)
 
-- Provider definitions are centralized in `sheaf_ai/providers.py`.
-- `sheaf_ai/llm_client.py` and `sheaf_ai/settings.py` should consume provider data from that registry, not duplicate provider metadata.
-- PDF collector should gracefully return `pdf-extract` results for malformed/empty bytes; router fallback should not be used for parser-only failures.
-- `test_debug_data/` is local debug data and should stay untracked unless the human explicitly says otherwise.
+```bash
+claude mcp add sheaf -- python -m sheaf_ai.mcp_server
+```
 
-## Product Boundary
+Or with uvx (no install needed):
+```bash
+claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
+```
 
-- Open core now: CLI, local storage, collectors, search, crystallize, MCP, HTTP adapter, public card JSON contract.
-- Future commercial layer is documented in `internal/commercialization/sheaf-unit-spec.md` and `internal/TECH-ROADMAP.md`.
-- Do not implement paid/proprietary bundle registry runtime until `.sheaf` bundle format and import/export contract exist.
-- Near-term registry work should stay open-core and concrete: provider registry, handler registry, schema registries, and later public `.sheaf` JSON index design.
+## MCP Tools
 
-## Hygiene Rules
+| Tool | Purpose |
+|------|---------|
+| `sheaf_search` | Full-text + semantic search |
+| `sheaf_list` | Browse entries, with pagination |
+| `sheaf_get` | Get full entry by ID |
+| `sheaf_collect` | Collect a URL |
+| `sheaf_collect_batch` | Bulk collect URLs |
+| `sheaf_correct` | Correct entry classification |
+| `sheaf_crystallize` | Synthesize knowledge cards |
+| `sheaf_list_cards` | List knowledge cards |
+| `sheaf_get_card` | Get card details |
+| `sheaf_urgent` | Time-sensitive entries |
+| `sheaf_healthcheck` | Server health probe |
+| `sheaf_stats` | Collection statistics |
+| `sheaf_insights` | Cross-topic associations |
 
-- Do not commit `.env`, `data/`, `dist/`, `sheaf_ai.egg-info/`, `internal/`, `.workbuddy/`, or local debug folders.
-- Keep public README/CHANGELOG/AGENTS test counts aligned after full gate runs.
-- Run tests with isolated basetemp, then remove the temp dir after confirming it is under repo root.
+## Requirements
+
+- Any OpenAI-compatible API key: `OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, or `SHEAF_API_KEY`
+- Data stored locally at `~/.sheaf/data`

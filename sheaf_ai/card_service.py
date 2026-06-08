@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import Optional
 
 from sheaf_ai import crystallize
-from sheaf_cards.base import KnowledgeCard, TagEntry
+from sheaf_cards.base import KnowledgeCard
 
 
 def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) -> dict:

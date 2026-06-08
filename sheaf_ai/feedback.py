@@ -9,6 +9,7 @@ import json
 from datetime import datetime
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
+from sheaf_ai.utils import atomic_write
 
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
 
@@ -132,7 +133,7 @@ def _apply_corrections(entry_id: str, entry: dict, corrections: dict) -> None:
     date_prefix = entry_id[:7]
     month_dir = ENTRIES_DIR / date_prefix
     entry_path = month_dir / f"{entry_id}.json"
-    entry_path.write_text(json.dumps(entry, ensure_ascii=False, indent=2), encoding="utf-8")
+    atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
     _update_index_entry(entry_id, entry)
 

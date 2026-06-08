@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=380, initial-scale=1.0">
@@ -18,265 +18,243 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 16px 20px;
+      padding: 14px 20px;
       border-bottom: 1px solid #2a2a2a;
     }
-    .header h1 {
-      font-size: 18px;
-      font-weight: 600;
-      color: #fff;
-    }
-    .header .version {
-      font-size: 11px;
-      color: #666;
-    }
+    .header h1 { font-size: 18px; font-weight: 600; color: #fff; }
+    .header .version { font-size: 11px; color: #666; }
     .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 6px;
+      width: 8px; height: 8px; border-radius: 50%;
+      display: inline-block; margin-right: 6px;
     }
     .status-dot.ok { background: #4ade80; }
     .status-dot.err { background: #ef4444; }
     .status-dot.loading { background: #fbbf24; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+    /* Search */
+    .search-bar {
+      padding: 12px 20px 4px;
+    }
+    .search-input-wrap {
+      display: flex;
+      gap: 6px;
+    }
+    .search-input-wrap input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1px solid #333;
+      border-radius: 6px;
+      background: #1a1a1a;
+      color: #fff;
+      font-size: 13px;
+      outline: none;
+    }
+    .search-input-wrap input:focus { border-color: #3b82f6; }
+    .search-input-wrap input::placeholder { color: #555; }
+    .search-input-wrap button {
+      padding: 8px 12px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .search-input-wrap button:hover { background: #2563eb; }
+    .search-input-wrap button:disabled { opacity: 0.4; cursor: not-allowed; }
 
     /* Current Page */
     .current-page {
-      padding: 16px 20px;
+      padding: 12px 20px;
       border-bottom: 1px solid #2a2a2a;
     }
     .current-page .label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #888;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-    }
-    .current-page .url {
-      font-size: 12px;
-      color: #999;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 340px;
+      font-size: 11px; text-transform: uppercase; color: #888;
+      letter-spacing: 0.5px; margin-bottom: 6px;
     }
     .current-page .title {
-      font-size: 14px;
-      color: #fff;
-      margin-top: 4px;
-      line-height: 1.4;
+      font-size: 13px; color: #fff; line-height: 1.3;
+      overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .current-page .url {
+      font-size: 11px; color: #666; margin-top: 3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 340px;
     }
 
     /* Collect Button */
     .collect-btn {
-      display: block;
-      width: calc(100% - 40px);
-      margin: 16px 20px;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
+      display: block; width: calc(100% - 40px); margin: 12px 20px;
+      padding: 10px; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
-    .collect-btn.ready {
-      background: #3b82f6;
-      color: white;
+    .collect-btn.ready { background: #3b82f6; color: white; }
+    .collect-btn.ready:hover { background: #2563eb; }
+    .collect-btn.collected { background: #065f46; color: #6ee7b7; cursor: default; }
+    .collect-btn.loading { background: #1e3a5f; color: #93c5fd; cursor: wait; }
+    .collect-btn.error { background: #7f1d1d; color: #fca5a5; }
+    .collect-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Collect feedback */
+    .collect-info {
+      margin: -4px 20px 8px; padding: 6px 12px;
+      font-size: 11px; color: #6ee7b7; line-height: 1.4;
     }
-    .collect-btn.ready:hover {
-      background: #2563eb;
-    }
-    .collect-btn.collected {
-      background: #065f46;
-      color: #6ee7b7;
-      cursor: default;
-    }
-    .collect-btn.loading {
-      background: #1e3a5f;
-      color: #93c5fd;
-      cursor: wait;
-    }
-    .collect-btn.error {
-      background: #7f1d1d;
-      color: #fca5a5;
-    }
-    .collect-btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    .collect-info.error-info { color: #fca5a5; background: #1a0505; border-radius: 4px; }
 
     /* Stats */
     .stats {
-      display: flex;
-      gap: 1px;
-      background: #2a2a2a;
-      margin: 0 20px;
-      border-radius: 8px;
-      overflow: hidden;
+      display: flex; gap: 1px; background: #2a2a2a;
+      margin: 0 20px; border-radius: 8px; overflow: hidden;
     }
     .stat {
-      flex: 1;
-      text-align: center;
-      padding: 12px 8px;
-      background: #181818;
+      flex: 1; text-align: center; padding: 10px 8px; background: #181818;
     }
-    .stat .value {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-    }
-    .stat .label {
-      font-size: 10px;
-      text-transform: uppercase;
-      color: #666;
-      margin-top: 2px;
-    }
+    .stat .value { font-size: 20px; font-weight: 700; color: #fff; }
+    .stat .label { font-size: 10px; text-transform: uppercase; color: #666; margin-top: 2px; }
 
-    /* Recent */
-    .recent {
-      padding: 16px 20px;
+    /* Content area (search results / recent) */
+    .content { padding: 12px 20px; max-height: 240px; overflow-y: auto; }
+    .content .section-label {
+      font-size: 11px; text-transform: uppercase; color: #888;
+      letter-spacing: 0.5px; margin-bottom: 8px;
     }
-    .recent .label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #888;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
+    .content-item {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 7px 0; border-bottom: 1px solid #1a1a1a;
     }
-    .recent-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid #1a1a1a;
+    .content-item:last-child { border-bottom: none; }
+    .content-item .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: #3b82f6; margin-top: 5px; flex-shrink: 0;
     }
-    .recent-item:last-child { border-bottom: none; }
-    .recent-item .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #3b82f6;
-      margin-top: 6px;
-      flex-shrink: 0;
+    .content-item .dot.search { background: #8b5cf6; }
+    .content-item .text {
+      font-size: 12px; color: #aaa; line-height: 1.4;
+      overflow: hidden; text-overflow: ellipsis;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
     }
-    .recent-item .text {
-      font-size: 12px;
-      color: #aaa;
-      line-height: 1.4;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+    .content-item .meta {
+      font-size: 10px; color: #555; margin-top: 2px;
+    }
+    .empty-msg { font-size: 12px; color: #555; padding: 4px 0; }
+
+    /* Connection wizard (shown when API offline) */
+    .wizard {
+      padding: 20px; text-align: center;
+    }
+    .wizard .icon { font-size: 36px; margin-bottom: 12px; }
+    .wizard h2 { font-size: 14px; color: #fff; margin-bottom: 8px; }
+    .wizard p { font-size: 12px; color: #888; line-height: 1.5; margin-bottom: 12px; }
+    .wizard code {
+      display: block; background: #1a1a1a; border: 1px solid #333;
+      border-radius: 6px; padding: 10px 16px; font-size: 13px;
+      color: #93c5fd; margin-bottom: 12px; font-family: monospace;
+      user-select: all;
+    }
+    .wizard .retry-btn {
+      padding: 8px 20px; background: #3b82f6; color: white;
+      border: none; border-radius: 6px; font-size: 13px; cursor: pointer;
+    }
+    .wizard .retry-btn:hover { background: #2563eb; }
+
+    /* Error message */
+    .error-msg {
+      margin: 8px 20px; padding: 8px 12px;
+      background: #1a0505; border: 1px solid #4a1010;
+      border-radius: 6px; font-size: 12px; color: #fca5a5; display: none;
     }
 
     /* Footer */
     .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      border-top: 1px solid #2a2a2a;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 20px; border-top: 1px solid #2a2a2a;
     }
-    .footer a {
-      font-size: 11px;
-      color: #666;
-      text-decoration: none;
-    }
+    .footer a { font-size: 11px; color: #666; text-decoration: none; }
     .footer a:hover { color: #999; }
     .footer .settings-btn {
-      font-size: 11px;
-      color: #666;
-      background: none;
-      border: 1px solid #333;
-      padding: 4px 10px;
-      border-radius: 4px;
-      cursor: pointer;
+      font-size: 11px; color: #666; background: none;
+      border: 1px solid #333; padding: 4px 10px;
+      border-radius: 4px; cursor: pointer;
     }
-    .footer .settings-btn:hover {
-      border-color: #555;
-      color: #aaa;
-    }
+    .footer .settings-btn:hover { border-color: #555; color: #aaa; }
 
-    /* Error message */
-    .error-msg {
-      margin: 8px 20px;
-      padding: 8px 12px;
-      background: #1a0505;
-      border: 1px solid #4a1010;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #fca5a5;
-      display: none;
-    }
-
-    /* Collect info */
-    .collect-info {
-      margin: -8px 20px 8px;
-      padding: 6px 12px;
-      font-size: 11px;
-      color: #6ee7b7;
-      line-height: 1.4;
-    }
+    /* Hide sections */
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
   <!-- Header -->
   <div class="header">
-    <div>
-      <h1>🌾 Sheaf</h1>
-    </div>
+    <div><h1>🌾 Sheaf</h1></div>
     <div style="display:flex;align-items:center;">
       <span class="status-dot loading" id="statusDot"></span>
       <span class="version" id="statusText">Connecting...</span>
     </div>
   </div>
 
-  <!-- Current Page Info -->
-  <div class="current-page">
-    <div class="label">Current Page</div>
-    <div class="title" id="pageTitle">Loading...</div>
-    <div class="url" id="pageUrl"></div>
+  <!-- Search -->
+  <div class="search-bar" id="searchBar">
+    <div class="search-input-wrap">
+      <input type="text" id="searchInput" placeholder="Search your knowledge..." />
+      <button id="searchBtn" disabled>🔍</button>
+    </div>
+  </div>
+
+  <!-- Connection Wizard (shown when API is offline) -->
+  <div class="wizard hidden" id="connectionWizard">
+    <div class="icon">🔌</div>
+    <h2>Cannot connect to Sheaf</h2>
+    <p>Start your local Sheaf server first:</p>
+    <code>sheaf serve</code>
+    <p>Or install and start in one step:</p>
+    <code>pip install sheaf-ai && sheaf serve</code>
+    <button class="retry-btn" id="retryBtn">🔄 Retry Connection</button>
+  </div>
+
+  <!-- Main UI (hidden until connected) -->
+  <div id="mainUI" class="hidden">
+    <!-- Current Page Info -->
+    <div class="current-page">
+      <div class="label">Current Page</div>
+      <div class="title" id="pageTitle">—</div>
+      <div class="url" id="pageUrl"></div>
+    </div>
+
+    <!-- Collect Button -->
+    <button class="collect-btn ready" id="collectBtn" disabled>
+      📥 Collect this page
+    </button>
+    <div class="collect-info" id="collectInfo" style="display:none;"></div>
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <div class="value" id="statEntries">—</div>
+        <div class="label">Entries</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="statCards">—</div>
+        <div class="label">Cards</div>
+      </div>
+      <div class="stat">
+        <div class="value" id="statTopics">—</div>
+        <div class="label">Topics</div>
+      </div>
+    </div>
+
+    <!-- Content: search results or recent entries -->
+    <div class="content" id="contentArea">
+      <div class="section-label" id="contentLabel">Recent</div>
+      <div id="contentList">
+        <div class="empty-msg">Loading...</div>
+      </div>
+    </div>
   </div>
 
   <!-- Error message -->
   <div class="error-msg" id="errorMsg"></div>
-
-  <!-- Collect Button -->
-  <button class="collect-btn ready" id="collectBtn" disabled>
-    📥 Collect this page
-  </button>
-  <div class="collect-info" id="collectInfo" style="display:none;"></div>
-
-  <!-- Stats -->
-  <div class="stats">
-    <div class="stat">
-      <div class="value" id="statEntries">—</div>
-      <div class="label">Entries</div>
-    </div>
-    <div class="stat">
-      <div class="value" id="statCards">—</div>
-      <div class="label">Cards</div>
-    </div>
-    <div class="stat">
-      <div class="value" id="statTopics">—</div>
-      <div class="label">Topics</div>
-    </div>
-  </div>
-
-  <!-- Recent Entries -->
-  <div class="recent">
-    <div class="label">Recent</div>
-    <div id="recentList">
-      <div class="recent-item">
-        <div class="dot"></div>
-        <div class="text">Loading...</div>
-      </div>
-    </div>
-  </div>
 
   <!-- Footer -->
   <div class="footer">

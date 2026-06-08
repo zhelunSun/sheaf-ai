@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+import os
 import json
 import sys
 from unittest.mock import patch, MagicMock
@@ -230,3 +231,140 @@ class TestStructuredErrors:
             result = process_url("https://example.com")
             assert result["success"] is False
             assert result["stage"] == "quality"
+
+
+class TestSearchJSON:
+    """Test sheaf search --json output (Issue #78)."""
+
+    def test_search_json_parser(self):
+        """Search subcommand accepts --json flag."""
+        from sheaf_ai.cli import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["search", "test", "--json"])
+        assert args.command == "search"
+        assert args.json is True
+        assert args.query == ["test"]
+
+    def test_search_json_limit_parser(self):
+        """Search subcommand accepts --limit / -n flag."""
+        from sheaf_ai.cli import build_parser
+        parser = build_parser()
+        args = parser.parse_args(["search", "test", "--json", "--limit", "5"])
+        assert args.limit == 5
+
+    def test_search_json_output_structure(self):
+        """JSON output has query, total, results fields."""
+        mock_results = [
+            {
+                "entry": {
+                    "title": "Test Article",
+                    "url": "https://example.com",
+                    "topics": ["AI"],
+                    "summary": "A test summary",
+                },
+                "score": 5.0,
+                "match_locations": ["title"],
+                "snippet": "Test snippet",
+                "expanded_terms": ["test"],
+            }
+        ]
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch("sheaf_ai.search.search_fulltext", return_value=mock_results):
+            from sheaf_ai.cli import _search
+            import argparse
+            p = argparse.Namespace(query=["test"], json=True, limit=10)
+            _search(p)
+
+        output = captured.getvalue()
+        parsed = json.loads(output)
+        assert parsed["query"] == "test"
+        assert parsed["total"] == 1
+        assert len(parsed["results"]) == 1
+        assert parsed["results"][0]["title"] == "Test Article"
+        assert parsed["results"][0]["_score"] == 5.0
+        assert parsed["results"][0]["_snippet"] == "Test snippet"
+
+    def test_search_json_expanded_terms(self):
+        """JSON output includes expanded_terms when present."""
+        mock_results = [
+            {
+                "entry": {"title": "AI Research", "url": "https://example.com"},
+                "score": 3.0,
+                "match_locations": ["title"],
+                "expanded_terms": ["AI", "人工智能", "artificial intelligence"],
+            }
+        ]
+
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch("sheaf_ai.search.search_fulltext", return_value=mock_results):
+            from sheaf_ai.cli import _search
+            import argparse
+            p = argparse.Namespace(query=["AI"], json=True, limit=10)
+            _search(p)
+
+        parsed = json.loads(captured.getvalue())
+        assert parsed["results"][0]["_expanded_terms"] == ["AI", "人工智能", "artificial intelligence"]
+
+    def test_search_json_empty_results(self):
+        """JSON output handles no results gracefully."""
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch("sheaf_ai.search.search_fulltext", return_value=[]):
+            from sheaf_ai.cli import _search
+            import argparse
+            p = argparse.Namespace(query=["nonexistent"], json=True, limit=10)
+            _search(p)
+
+        parsed = json.loads(captured.getvalue())
+        assert parsed["total"] == 0
+        assert parsed["results"] == []
+
+    def test_search_text_mode_unchanged(self):
+        """Non-JSON search still calls show_search (human-readable)."""
+        with patch("sheaf_ai.cli.show_search") as mock_show:
+            from sheaf_ai.cli import _search
+            import argparse
+            p = argparse.Namespace(query=["test"], json=False, limit=10)
+            _search(p)
+            mock_show.assert_called_once_with("test", limit=10)
+
+    def test_doctor_detects_multiple_provider_keys(self):
+        """Doctor detects keys from multiple providers (Issue #79)."""
+        from sheaf_ai.cli import _doctor
+        env = {
+            "SHEAF_API_KEY": "",
+            "OPENAI_API_KEY": "sk-test-openai",
+            "DEEPSEEK_API_KEY": "",
+            "SILICONFLOW_API_KEY": "sk-test-sf",
+        }
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch.dict(os.environ, env, clear=False):
+            _doctor()
+
+        output = captured.getvalue()
+        # Should detect both OpenAI and SiliconFlow keys
+        assert "OPENAI_API_KEY" in output or "OpenAI" in output
+        assert "SILICONFLOW_API_KEY" in output or "SiliconFlow" in output
+
+    def test_doctor_no_key_shows_guidance(self):
+        """Doctor shows guidance when no API key is found."""
+        from sheaf_ai.cli import _doctor
+        env = {
+            "SHEAF_API_KEY": "",
+            "OPENAI_API_KEY": "",
+            "DEEPSEEK_API_KEY": "",
+            "SILICONFLOW_API_KEY": "",
+            "TOGETHER_API_KEY": "",
+            "GROQ_API_KEY": "",
+        }
+        captured = io.StringIO()
+        with patch("sys.stdout", captured), \
+             patch.dict(os.environ, env, clear=False):
+            _doctor()
+
+        output = captured.getvalue()
+        assert "No API key configured" in output or "❌" in output

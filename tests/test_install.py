@@ -130,7 +130,7 @@ def test_cli_version():
     )
     assert result.returncode == 0
     assert "Sheaf" in result.stdout
-    assert "0.4.0" in result.stdout
+    assert "0.5.0" in result.stdout
 
 
 def test_cli_help():
@@ -187,11 +187,15 @@ def test_mcp_tools_defined():
     from sheaf_ai.mcp_server import TOOLS
     tool_names = [t["name"] for t in TOOLS]
     expected = {
-        "sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent",
-        "sheaf_correct", "sheaf_collect",
+        "sheaf_search", "sheaf_list", "sheaf_get",
+        "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
         "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
+        "sheaf_insights",
     }
     assert expected <= set(tool_names), f"Missing tools: {expected - set(tool_names)}"
+    # Deprecated tools should NOT be in the active tool list
+    for deprecated in ("sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"):
+        assert deprecated not in tool_names, f"Deprecated tool {deprecated} should not be active"
 
 
 def test_mcp_initialize():
@@ -246,13 +250,18 @@ def test_config_data_dir():
 
 
 def test_config_data_dir_defaults_to_cwd(tmp_path):
-    """Without SHEAF_DATA_DIR, data lives in ./data for the invoking process."""
+    """Without SHEAF_DATA_DIR, data dir follows three-tier resolution:
+    - If CWD has a project marker (.git, .env, .sheaf) → ./data
+    - Otherwise → ~/.sheaf/data (stable fallback for MCP/agent context)
+    """
     env = os.environ.copy()
     env.pop("SHEAF_DATA_DIR", None)
 
     repo_root = Path(__file__).resolve().parents[1]
     env["PYTHONPATH"] = str(repo_root) + os.pathsep + env.get("PYTHONPATH", "")
 
+    # Case 1: CWD has .git marker → uses ./data (project mode)
+    (tmp_path / ".git").mkdir()
     result = subprocess.run(
         [sys.executable, "-c", "from sheaf_ai.config import DATA_DIR; print(DATA_DIR)"],
         cwd=tmp_path,
@@ -264,6 +273,20 @@ def test_config_data_dir_defaults_to_cwd(tmp_path):
     )
     assert result.returncode == 0, result.stderr
     assert Path(result.stdout.strip()) == tmp_path / "data"
+
+    # Case 2: No project marker → falls back to ~/.sheaf/data
+    (tmp_path / ".git").rmdir()
+    result2 = subprocess.run(
+        [sys.executable, "-c", "from sheaf_ai.config import DATA_DIR; print(DATA_DIR)"],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        timeout=10,
+    )
+    assert result2.returncode == 0, result2.stderr
+    assert Path(result2.stdout.strip()) == Path.home() / ".sheaf" / "data"
 
 
 def test_env_example_documents_siliconflow_embeddings():

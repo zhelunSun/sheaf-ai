@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sheaf-ai"
-version = "0.4.0a1"
+version = "0.5.0"
 description = "Sheaf — Your personal knowledge layer. Paste a link, AI does the rest."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -67,6 +67,7 @@ dev = [
 
 [project.scripts]
 sheaf = "sheaf_ai.cli:main"
+sheaf-mcp = "sheaf_ai.mcp_server:main"
 
 [project.entry-points."mcp.servers"]
 sheaf = "sheaf_ai.mcp_server:main"

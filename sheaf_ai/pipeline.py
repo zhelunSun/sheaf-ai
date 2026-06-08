@@ -13,7 +13,7 @@ from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,  # noqa: F401
     BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt, ensure_data_dirs,
 )
-from sheaf_ai.utils import extract_timeliness
+from sheaf_ai.utils import extract_timeliness, atomic_write
 from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry  # noqa: F401
 from sheaf_ai.query import check_duplicate
 
@@ -550,12 +550,12 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
             }
             entry["timeliness"] = extract_timeliness(summary_result.get("structured", {}))
 
-        entry_path.write_text(json.dumps(entry, ensure_ascii=False, indent=2), encoding="utf-8")
+        atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
         summary_md = build_summary_md(entry, summary_result.get("structured", {}))
         summary_path = SUMMARIES_DIR / f"{eid}.md"
         if summary_path.exists():
-            summary_path.write_text(summary_md, encoding="utf-8")
+            atomic_write(summary_path, summary_md)
 
         now = datetime.now(BJT).isoformat()
         update_tags_registry(tags, now)

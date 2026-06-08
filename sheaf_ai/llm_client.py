@@ -15,6 +15,7 @@ Usage:
 """
 from __future__ import annotations
 import os
+import time
 from openai import OpenAI
 
 from sheaf_ai.providers import PROVIDERS
@@ -209,7 +210,7 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
 _clients = {}
 
 
-def get_client(provider: str = None) -> OpenAI:
+def get_client(provider: str = None, timeout: float = 60) -> OpenAI:
     """Get API client (auto-reads key from .env or user config)."""
     provider = provider or DEFAULT_PROVIDER
     if provider in _clients:
@@ -223,7 +224,7 @@ def get_client(provider: str = None) -> OpenAI:
             if pc and pc.get("api_key"):
                 api_key = pc["api_key"]
                 base_url = pc.get("base_url", "")
-                _clients[provider] = OpenAI(api_key=api_key, base_url=base_url)
+                _clients[provider] = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
                 return _clients[provider]
         except ImportError:
             pass
@@ -232,7 +233,7 @@ def get_client(provider: str = None) -> OpenAI:
         )
 
     api_key, base_url = _resolve_key_and_url(provider)
-    _clients[provider] = OpenAI(api_key=api_key, base_url=base_url)
+    _clients[provider] = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
     return _clients[provider]
 
 
@@ -278,19 +279,38 @@ def chat(
     temperature: float = 0.7,
     max_tokens: int = 2048,
     provider: str = None,
+    max_retries: int = 3,
 ) -> str:
-    """Simple chat call (auto-routes to the correct provider)."""
+    """Simple chat call with retry on transient errors.
+
+    Retries on rate limits (429), timeouts, and connection errors
+    with exponential backoff (1s, 2s, 4s).
+    """
+    import openai as _openai
+
     provider = provider or DEFAULT_PROVIDER
     client = get_client(provider)
     model = model or get_model(provider)
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": system},
-            {"role": "user", "content": prompt},
-        ],
-        temperature=temperature,
-        max_tokens=max_tokens,
-    )
-    return response.choices[0].message.content
+    backoff = 1.0
+    for attempt in range(max_retries):
+        try:
+            response = client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=temperature,
+                max_tokens=max_tokens,
+            )
+            return response.choices[0].message.content
+        except (
+            _openai.RateLimitError,
+            _openai.APITimeoutError,
+            _openai.APIConnectionError,
+        ):
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(backoff)
+            backoff *= 2

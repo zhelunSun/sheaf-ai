@@ -1,14 +1,21 @@
 """
 Sheaf MCP Server — Agent-Native knowledge layer via MCP protocol (stdio transport).
 
-Tools: sheaf_search, sheaf_list, sheaf_get, sheaf_urgent, sheaf_correct,
-       sheaf_collect, sheaf_collect_batch, sheaf_crystallize,
-       sheaf_list_cards, sheaf_get_card
+10 active tools:
+  sheaf_search, sheaf_list, sheaf_get, sheaf_correct,
+  sheaf_collect, sheaf_collect_batch, sheaf_crystallize,
+  sheaf_list_cards, sheaf_get_card, sheaf_insights
+
+3 deprecated tools (fallback only, not in tools/list):
+  sheaf_urgent → use sheaf_list with filter="urgent"
+  sheaf_healthcheck → use HTTP /health endpoint
+  sheaf_stats → use sheaf_list (returns total + topics_summary)
 
 Usage:
     sheaf --mcp
 """
 import json
+import os
 import sys
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION, fix_windows_encoding
@@ -75,12 +82,39 @@ def search_knowledge(query: str, limit: int = 10) -> list:
     return results[:limit]
 
 
-def list_entries(category: str = None, limit: int = 20) -> list:
+def list_entries(category: str = None, limit: int = 20, offset: int = 0,
+                 filter_type: str = None) -> list:
     entries = _load_index()
-    if category:
-        entries = [e for e in entries if e.get("primary_category", "").lower() == category.lower()]
-    entries.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
-    return entries[:limit]
+
+    # Apply filter
+    if filter_type == "urgent":
+        entries = [e for e in entries if e.get("urgency") in ("urgent", "upcoming")]
+        entries.sort(key=lambda x: x.get("deadline_date") or "9999")
+    elif filter_type == "untagged":
+        entries = [e for e in entries if not e.get("tags")]
+        entries.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
+    else:
+        if category:
+            entries = [e for e in entries if e.get("primary_category", "").lower() == category.lower()]
+        entries.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
+
+    return entries[offset:offset + limit]
+
+
+def _compute_topics_summary(entries: list) -> dict[str, int]:
+    """Compute top-10 topic counts from entry list."""
+    topic_counts: dict[str, int] = {}
+    for e in entries:
+        for t in e.get("topics", []):
+            name = t.get("name", t) if isinstance(t, dict) else t
+            if name:
+                topic_counts[name] = topic_counts.get(name, 0) + 1
+        if not e.get("topics"):
+            cat = e.get("primary_category", "")
+            if cat:
+                topic_counts[cat] = topic_counts.get(cat, 0) + 1
+    sorted_topics = dict(sorted(topic_counts.items(), key=lambda x: -x[1])[:10])
+    return sorted_topics
 
 
 def get_entry(entry_id: str) -> dict | None:
@@ -91,6 +125,13 @@ def get_entry(entry_id: str) -> dict | None:
     if summary_path.exists():
         entry["summary_markdown"] = summary_path.read_text(encoding="utf-8")
     return entry
+
+
+# ============================================================
+# Deprecated tool names — kept for backward compatibility
+# ============================================================
+
+_DEPRECATED_TOOLS = {"sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"}
 
 
 # ============================================================
@@ -136,12 +177,22 @@ TOOLS = [
     },
     {
         "name": "sheaf_list",
-        "description": "List recent knowledge entries. Optionally filter by category.",
+        "description": (
+            "List knowledge entries with pagination and optional filters. "
+            "Returns total count and top topics summary for lightweight stats. "
+            "Use filter='urgent' for deadline-sensitive entries (replaces sheaf_urgent)."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "category": {"type": "string", "description": "Filter by topic (matches primary topic name)"},
+                "filter": {
+                    "type": "string",
+                    "description": "Predefined filter: 'urgent' (deadline-sensitive), 'untagged' (no tags), or omit for recent (default)",
+                    "enum": ["urgent", "untagged", "recent"],
+                },
                 "limit": {"type": "integer", "description": "Max results (default: 20)", "default": 20},
+                "offset": {"type": "integer", "description": "Skip first N results for pagination (default: 0)", "default": 0},
             },
         },
     },
@@ -155,11 +206,6 @@ TOOLS = [
             },
             "required": ["entry_id"],
         },
-    },
-    {
-        "name": "sheaf_urgent",
-        "description": "Get knowledge entries with upcoming deadlines or time-sensitive information.",
-        "inputSchema": {"type": "object", "properties": {}},
     },
     {
         "name": "sheaf_correct",
@@ -197,6 +243,37 @@ TOOLS = [
         },
     },
     {
+        "name": "sheaf_collect_batch",
+        "description": "Collect multiple URLs in a single batch call. Returns aggregated results with per-URL status. Agent-Native preferred over multiple sheaf_collect calls.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "description": "Array of URLs to collect",
+                },
+                "concurrency": {
+                    "type": "integer",
+                    "description": "Max parallel workers (default: 3)",
+                    "default": 3,
+                },
+                "on_error": {
+                    "type": "string",
+                    "description": "Error handling: 'continue' (default) or 'stop'",
+                    "enum": ["continue", "stop"],
+                    "default": "continue",
+                },
+                "force": {
+                    "type": "boolean",
+                    "description": "Skip dedup check for all URLs (default: false)",
+                    "default": False,
+                },
+            },
+            "required": ["urls"],
+        },
+    },
+    {
         "name": "sheaf_crystallize",
         "description": "Crystallize knowledge cards from collected entries about a topic. Synthesizes insights from 3+ related entries into structured knowledge cards with evidence tracing.",
         "inputSchema": {
@@ -229,35 +306,9 @@ TOOLS = [
         },
     },
     {
-        "name": "sheaf_collect_batch",
-        "description": "Collect multiple URLs in a single batch call. Returns aggregated results with per-URL status. Agent-Native preferred over multiple sheaf_collect calls.",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "urls": {
-                    "type": "array",
-                    "items": {"type": "string"},
-                    "description": "Array of URLs to collect",
-                },
-                "concurrency": {
-                    "type": "integer",
-                    "description": "Max parallel workers (default: 3)",
-                    "default": 3,
-                },
-                "on_error": {
-                    "type": "string",
-                    "description": "Error handling: 'continue' (default) or 'stop'",
-                    "enum": ["continue", "stop"],
-                    "default": "continue",
-                },
-                "force": {
-                    "type": "boolean",
-                    "description": "Skip dedup check for all URLs (default: false)",
-                    "default": False,
-                },
-            },
-            "required": ["urls"],
-        },
+        "name": "sheaf_insights",
+        "description": "Discover cross-topic associations and hidden connections in your knowledge base. Requires 3+ entries.",
+        "inputSchema": {"type": "object", "properties": {}},
     },
 ]
 
@@ -268,6 +319,21 @@ def _jsonrpc_response(id: int | str, result: dict) -> str:
 
 def _jsonrpc_error(id: int | str, code: int, message: str) -> str:
     return json.dumps({"jsonrpc": "2.0", "id": id, "error": {"code": code, "message": message}})
+
+
+def _deprecated_response(req_id: int | str, tool_name: str, replacement: str) -> str:
+    """Return a deprecation notice for removed tools (backward compat)."""
+    return _jsonrpc_response(req_id, {
+        "content": [{
+            "type": "text",
+            "text": json.dumps({
+                "deprecated": True,
+                "tool": tool_name,
+                "message": f"{tool_name} is deprecated. Use {replacement} instead.",
+                "data": None,
+            }, ensure_ascii=False, indent=2),
+        }]
+    })
 
 
 def handle_request(request: dict) -> str | None:
@@ -291,6 +357,59 @@ def handle_request(request: dict) -> str | None:
     if method == "tools/call":
         tool_name = params.get("name", "")
         arguments = params.get("arguments", {})
+
+        # --- Deprecated tool fallbacks (backward compat) ---
+        if tool_name == "sheaf_urgent":
+            # Still return data for smooth migration
+            results = _query_urgent()
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "deprecated": True,
+                    "message": "sheaf_urgent is deprecated. Use sheaf_list with filter='urgent'.",
+                    "results": results,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        if tool_name == "sheaf_healthcheck":
+            entries = _load_index()
+            api_key_set = bool(os.environ.get("OPENAI_API_KEY") or os.environ.get("SHEAF_API_KEY"))
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "deprecated": True,
+                    "message": "sheaf_healthcheck is deprecated. Use HTTP /health endpoint.",
+                    "version": VERSION,
+                    "data_dir": str(DATA_DIR),
+                    "entry_count": len(entries),
+                    "index_status": "ok" if INDEX_FILE.exists() else "missing",
+                    "api_key_configured": api_key_set,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        if tool_name == "sheaf_stats":
+            from sheaf_ai.query import get_collection_stats
+            from sheaf_ai.gamification import get_progress
+            entries = _load_index()
+            stats = get_collection_stats()
+            try:
+                progress = get_progress()
+                game = {
+                    "streak": progress.get("streak", 0),
+                    "next_milestone": progress.get("next_milestone", {}).get("name"),
+                    "basket_level": progress.get("basket_progress", {}).get("level"),
+                }
+            except Exception:
+                game = {}
+            return _jsonrpc_response(req_id, {
+                "content": [{"type": "text", "text": json.dumps({
+                    "deprecated": True,
+                    "message": "sheaf_stats is deprecated. Use sheaf_list (returns total + topics_summary).",
+                    "total_entries": len(entries),
+                    **stats,
+                    "gamification": game,
+                }, ensure_ascii=False, indent=2)}]
+            })
+
+        # --- Active tools ---
 
         if tool_name == "sheaf_search":
             mode = arguments.get("mode", "keyword")
@@ -344,9 +463,20 @@ def handle_request(request: dict) -> str | None:
                     })
 
         elif tool_name == "sheaf_list":
-            results = list_entries(arguments.get("category"), arguments.get("limit", 20))
+            all_entries = _load_index()
+            results = list_entries(
+                category=arguments.get("category"),
+                limit=arguments.get("limit", 20),
+                offset=arguments.get("offset", 0),
+                filter_type=arguments.get("filter"),
+            )
+            topics_summary = _compute_topics_summary(all_entries)
             return _jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
+                "content": [{"type": "text", "text": json.dumps({
+                    "total": len(all_entries),
+                    "topics": topics_summary,
+                    "entries": results,
+                }, ensure_ascii=False, indent=2)}]
             })
 
         elif tool_name == "sheaf_get":
@@ -355,12 +485,6 @@ def handle_request(request: dict) -> str | None:
                 return _jsonrpc_error(req_id, -32602, f"Entry not found: {arguments.get('entry_id')}")
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(entry, ensure_ascii=False, indent=2)}]
-            })
-
-        elif tool_name == "sheaf_urgent":
-            results = _query_urgent()
-            return _jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
             })
 
         elif tool_name == "sheaf_correct":
@@ -445,6 +569,19 @@ def handle_request(request: dict) -> str | None:
             return _jsonrpc_response(req_id, {
                 "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}]
             })
+
+        elif tool_name == "sheaf_insights":
+            from sheaf_ai.insights import discover_associations
+            entries = _load_index()
+            if len(entries) < 3:
+                return _jsonrpc_error(req_id, -32602, "Insights require at least 3 entries")
+            try:
+                result = discover_associations()
+                return _jsonrpc_response(req_id, {
+                    "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
+                })
+            except Exception as e:
+                return _jsonrpc_error(req_id, -32603, f"Insight discovery failed: {e}")
 
         else:
             return _jsonrpc_error(req_id, -32601, f"Unknown tool: {tool_name}")

@@ -26,9 +26,10 @@ class McpProcess:
     """Manage a `sheaf mcp` subprocess for stdio E2E testing."""
 
     def __init__(self):
-        sheaf_exe = sys.executable.replace("python.exe", "Scripts/sheaf.exe")
+        # Use python -m for cross-platform compatibility — no need to locate
+        # sheaf.exe (Windows) or sheaf (Linux/macOS) in the venv's Scripts/ dir.
         self._p = subprocess.Popen(
-            [sheaf_exe, "mcp"],
+            [sys.executable, "-m", "sheaf_ai.cli", "mcp"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
@@ -159,8 +160,9 @@ class TestMcpWithData:
         parsed = json.loads(resp)
         content = parsed["result"]["content"][0]["text"]
         results = json.loads(content)
-        assert isinstance(results, list)
-        assert len(results) == 0
+        assert isinstance(results, dict)
+        assert results["total"] == 0
+        assert results["entries"] == []
 
     def test_get_missing_entry(self, isolated_data_dir):
         """Get non-existent entry returns error."""
@@ -287,13 +289,19 @@ class TestMcpE2E:
         tools = resp["result"]["tools"]
         names = [t["name"] for t in tools]
         expected = [
-            "sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent",
-            "sheaf_correct", "sheaf_collect", "sheaf_crystallize",
+            "sheaf_search", "sheaf_list", "sheaf_get",
+            "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
+            "sheaf_crystallize",
             "sheaf_list_cards", "sheaf_get_card",
+            "sheaf_insights",
         ]
         for name in expected:
             assert name in names, f"Missing tool: {name}"
-        assert len(tools) == 9
+        assert len(tools) == 10
+        # Deprecated tools should NOT appear in tools/list
+        deprecated = ["sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"]
+        for d in deprecated:
+            assert d not in names, f"Deprecated tool {d} should not be in tools/list"
 
     def test_search_remote_sensing(self, mcp):
         resp = mcp.send({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
@@ -414,3 +422,71 @@ class TestToolDescriptions:
                 assert req_param in props, f"Tool {tool['name']}: required param '{req_param}' missing from properties"
                 assert props[req_param].get("description", "").strip(), \
                     f"Tool {tool['name']}: required param '{req_param}' has no description"
+
+
+
+# ============================================================
+# E2E-only subprocess tests — deprecated tool fallbacks + list filters
+# ============================================================
+
+@pytest.mark.skipif(not RUN_E2E, reason="set SHEAF_RUN_E2E=1 to run subprocess MCP E2E")
+class TestDeprecatedToolFallbacks:
+    """Test deprecated tool fallbacks and enhanced list filters via real subprocess.
+
+    Requires SHEAF_RUN_E2E=1 because these spawn a real `sheaf mcp` process.
+    Moved from TestToolDescriptions to ensure CI doesn't fail on platforms
+    where the entry point binary is unavailable.
+    """
+
+    def test_deprecated_urgent_returns_data(self, mcp):
+        """sheaf_urgent fallback still returns data with deprecation notice."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 50, "method": "tools/call",
+            "params": {"name": "sheaf_urgent", "arguments": {}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert data.get("deprecated") is True
+        assert "results" in data
+
+    def test_deprecated_healthcheck_returns_data(self, mcp):
+        """sheaf_healthcheck fallback still returns data with deprecation notice."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 51, "method": "tools/call",
+            "params": {"name": "sheaf_healthcheck", "arguments": {}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert data.get("deprecated") is True
+        assert "version" in data
+
+    def test_deprecated_stats_returns_data(self, mcp):
+        """sheaf_stats fallback still returns data with deprecation notice."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 52, "method": "tools/call",
+            "params": {"name": "sheaf_stats", "arguments": {}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert data.get("deprecated") is True
+        assert "total_entries" in data
+
+    def test_list_returns_total_and_topics(self, mcp):
+        """sheaf_list response includes total count and topics summary."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 53, "method": "tools/call",
+            "params": {"name": "sheaf_list", "arguments": {}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert "total" in data
+        assert "topics" in data
+        assert "entries" in data
+        assert isinstance(data["entries"], list)
+
+    def test_list_filter_urgent(self, mcp):
+        """sheaf_list with filter='urgent' returns only deadline entries."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 54, "method": "tools/call",
+            "params": {"name": "sheaf_list", "arguments": {"filter": "urgent"}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert "entries" in data
+        # All returned entries should have urgency set
+        for e in data["entries"]:
+            assert e.get("urgency") in ("urgent", "upcoming")
+
+    def test_list_filter_untagged(self, mcp):
+        """sheaf_list with filter='untagged' returns entries without tags."""
+        resp = mcp.send({"jsonrpc": "2.0", "id": 55, "method": "tools/call",
+            "params": {"name": "sheaf_list", "arguments": {"filter": "untagged"}}})
+        data = json.loads(resp["result"]["content"][0]["text"])
+        assert "entries" in data
+        for e in data["entries"]:
+            assert not e.get("tags") or len(e.get("tags", [])) == 0

@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "sheaf": {
+      "command": "python",
+      "args": ["-m", "sheaf_ai.mcp_server"],
+      "env": {
+        "SHEAF_DATA_DIR": "${SHEAF_DATA_DIR:-~/.sheaf/data}"
+      }
+    }
+  }
+}

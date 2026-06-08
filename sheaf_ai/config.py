@@ -28,9 +28,23 @@ def _load_env_file():
 
 _load_env_file()
 
-# Data directories — default to ./data relative to the current working directory.
-# This matches the public local-first contract; set SHEAF_DATA_DIR for stable shared storage.
-_DATA_ROOT = Path(os.environ.get("SHEAF_DATA_DIR", str(Path.cwd() / "data")))
+
+# Data directories — three-tier resolution:
+#   1. SHEAF_DATA_DIR env var (explicit override, highest priority)
+#   2. ./data if CWD has project markers (.git, .env, .sheaf) — local-first dev mode
+#   3. ~/.sheaf/data — stable fallback for MCP server / agent context
+def _resolve_data_root() -> Path:
+    explicit = os.environ.get("SHEAF_DATA_DIR", "").strip()
+    if explicit:
+        return Path(explicit)
+    cwd = Path.cwd()
+    for marker in (".git", ".env", ".sheaf"):
+        if (cwd / marker).exists():
+            return cwd / "data"
+    return Path.home() / ".sheaf" / "data"
+
+
+_DATA_ROOT = _resolve_data_root()
 DATA_DIR = _DATA_ROOT
 ENTRIES_DIR = DATA_DIR / "entries"
 SUMMARIES_DIR = DATA_DIR / "summaries"
