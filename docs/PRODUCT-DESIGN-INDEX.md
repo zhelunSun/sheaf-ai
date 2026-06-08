@@ -56,7 +56,7 @@
   - `docs/smoke-test-2026-06-01.md` — 空白环境 10/11 冒烟测试
   - GitHub Issue #62 — `sheaf init --auto`
 
-### Phase 4: Matrix — 从收藏到理解（06-01 下午）⭐ 当前
+### Phase 4: Matrix — 从收藏到理解（06-01 下午）
 - **心智模型**: "帮我看清事件全貌，不只是收藏"
 - **核心叙事**: **"Read one source, understand the whole story."**
 - **转折触发**: 收藏一篇 NVIDIA 新闻 → 意识到同一事件有 9 个来源 5 种视角 → Sheaf 应该自动发现这些
@@ -65,18 +65,32 @@
   - `docs/MATRIX-PRODUCT-DESIGN.md` — 完整产品设计 Brief
   - GitHub Issue #63 — sheaf matrix 技术路线（4 Phase）
 
+### Phase 5: Agent 终端记忆层 — Sheaf 不是 Agent，是 Agent 的记忆（06-08）⭐ 当前
+- **心智模型**: "Sheaf 不是 Agent，是 Agent 的记忆层"
+- **核心叙事**: **三层架构 — 内容层(收藏) → 记忆层(Sheaf) → 终端层(Claude Code/Kimi Work/WorkBuddy)**
+- **转折触发**: Kimi Work + WorkBuddy 企业版发布 → Agent 终端大爆发 → 每个终端都缺持久化个人记忆
+- **关键洞察**:
+  - Claude Code/Kimi Work/WorkBuddy 都在做"帮用户做事"，但都缺"记住用户读过什么"
+  - 8 大 Agent 记忆系统 (Mem0/Hindsight/Letta 等) 全部面向开发者，无个人知识产品
+  - 国内市场空白：GPT 插件生态已死，大陆无同类竞品
+- **核心定位**: Sheaf = `~/.sheaf/` 作为个人知识 home directory，任何 Agent 终端通过 MCP 接入
+- **投资人叙事**: "Agent 终端层正在爆发(Kimi Work/WorkBuddy/Claude Code)，但所有终端都缺一个共同的记忆层。Sheaf 就是那个层——本地优先、跨平台、开源。"
+- **关键文档**:
+  - 本文档 §7 三层架构详述
+  - 本对话 (2026-06-08) 完整讨论
+
 ---
 
 ## 3. 心智模型扩展图
 
 ```
-Phase 0          Phase 1             Phase 2              Phase 3           Phase 4
-收藏工具    →   Agent-Native     →  低摩擦+Agent Context → 一键安装     →  事件理解
-"保存文章"     "给Agent用的"        "收藏是入口"          "装完就能用"      "看清全貌"
+Phase 0          Phase 1             Phase 2              Phase 3           Phase 4           Phase 5
+收藏工具    →   Agent-Native     →  低摩擦+Agent Context → 一键安装     →  事件理解      →  Agent 记忆层
+"保存文章"     "给Agent用的"        "收藏是入口"          "装完就能用"      "看清全貌"        "所有Agent的记忆"
 
-  collect     →  collect + MCP   →   collect +         →  sheaf init    →  sheaf matrix
-                   + crystallize      crystallize +       --auto             (同事件
-                                      Agent Context                          多源聚合)
+  collect     →  collect + MCP   →   collect +         →  sheaf init    →  sheaf matrix  →  ~/.sheaf/
+                   + crystallize      crystallize +       --auto             (同事件          三层架构：
+                                      Agent Context                          多源聚合)         内容→记忆→终端
 ```
 
 **每一次扩展都不是推翻，而是叠加新价值层：**
@@ -84,6 +98,7 @@ Phase 0          Phase 1             Phase 2              Phase 3           Phas
 - Phase 1→2: 从技术定位到产品叙事（三层价值梯度）
 - Phase 2→3: 从功能完整到体验流畅（降低安装摩擦）
 - Phase 3→4: 从"保存"到"理解"（同事件跨源聚合 + 知识矩阵）
+- Phase 4→5: 从独立产品到生态基础设施（Agent 终端的记忆层）
 
 ---
 
@@ -168,4 +183,68 @@ Phase 0          Phase 1             Phase 2              Phase 3           Phas
 
 ---
 
+## 7. 三层架构：投资人叙事（Phase 5 核心）
+
+### 一句话 pitch
+
+> **Agent 终端层正在爆发，但所有终端都缺一个共同的记忆层。Sheaf 就是那个层——本地优先、跨平台、开源。**
+
+### 三层模型
+
+```
+┌──────────────────────────────────────────────────────┐
+│  终端层：帮用户"做事"的 Agent                          │
+│  Claude Code │ Kimi Work │ WorkBuddy │ Codex │ 更多   │
+│  "写代码"     "办公"      "企业协作"   "编程"          │
+│                                                      │
+│  ⚠️ 共同短板：没有跨会话持久化记忆                     │
+│  Claude Code /clear = 清空对话 → 之前的推理全丢        │
+│  Kimi Work 技能包 = 任务模板，不是个人知识              │
+│  WorkBuddy 团队上下文 = 组织级，非个人级                 │
+├──────────────────────────────────────────────────────┤
+│  记忆层：Sheaf — 个人知识基础设施                       │
+│  收藏 ▸ 索引 ▸ 结晶 ▸ 检索 ▸ 关联                      │
+│  ~/.sheaf/ = 个人知识 home directory                  │
+│                                                      │
+│  ✅ 任何 Agent 终端通过 MCP 接入                        │
+│  ✅ 本地优先，隐私可控                                  │
+│  ✅ 跨平台（Linux/Mac/Windows）                         │
+│  ✅ 知识卡片自动结晶                                    │
+├──────────────────────────────────────────────────────┤
+│  内容层：用户阅读的一切                                 │
+│  网页 │ 微信 │ arXiv │ PDF │ 笔记 │ GitHub │ 更多      │
+│  Chrome 插件一键收藏                                    │
+└──────────────────────────────────────────────────────┘
+```
+
+### 为什么安全：竞品空白
+
+| 层次 | 竞品 | 为何不冲突 |
+|------|------|-----------|
+| **Agent 记忆系统** | Mem0, Hindsight, Letta, Zep 等 8 个 | 全部面向**开发者**（SDK/API），非个人终端用户 |
+| **个人知识产品** | Cubox, Readwise, MyMemo 等 | 停留在**内容存储**阶段，无知识结晶/Agent 集成 |
+| **GPT 生态** | ChatGPT Memory (Dreaming V3) | **对话记忆**，非阅读收藏的知识图谱；GPT Plugins 已死 |
+| **大厂 Agent 终端** | Kimi Work, WorkBuddy | 做 Agent 终端，不做 Agent 的记忆层 |
+
+**关键数据点**：
+- 8 大 Agent 记忆系统全部是面向开发者 SDK，无一面向个人用户
+- ChatGPT Plugins 已于 2024 年停止运营，GPTs 替代品无个人知识管理品类
+- 国内市场：大陆尚无同类本地优先 + 跨平台 + Agent 可接入的个人知识层产品
+
+### 投资人三板斧
+
+1. **市场时机**: Agent 终端大爆发（Kimi Work/WorkBuddy/Claude Code），每个用户需要一个跨终端的记忆 → Sheaf 正好填这个缺
+2. **护城河**: 本地优先 + 跨平台 + 开源 → 大厂不会做（太小太底层），小厂做不了（需要 Agent 生态理解）
+3. **增长飞轮**: 每多一个 Agent 终端接入 MCP → Sheaf 的价值翻倍 → 更多终端接入
+
+### 竞争者可能出现的信号
+- 有公司做"ChatGPT 个人记忆插件"（但国内没人做）
+- Mem0 推出面向终端用户的产品（目前仅 SDK）
+- 某个 Agent 终端内置了自己的记忆系统（但用户会被锁定在一个终端）
+
+Sheaf 的先发窗口：在这些信号出现前，完成**三层架构的产品化 + 社区认知建立**。
+
+---
+
 *本文档是 Sheaf 产品设计的"北极星索引"——每次产品定位演化后更新此文件。*
+*Phase 5 新增 (2026-06-08): 三层架构 + 投资人叙事*

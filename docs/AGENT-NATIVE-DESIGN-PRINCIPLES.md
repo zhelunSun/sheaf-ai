@@ -1,7 +1,20 @@
 # Sheaf Agent-Native 设计原则升级建议
 
-> Date: 2026-06-01 | Author: Jarvis | Status: Draft v0.1 — 待 Sir 审阅
+> Date: 2026-06-01 | Author: Jarvis | Status: Draft v0.2 — 已更新三层架构 (2026-06-08)
 > Context: Sir 提出"既然面向Agent，是否需要更激进大胆的设计"
+
+---
+
+## 0. 三层架构定位（Phase 5 更新）
+
+**Sheaf 不是 Agent，是 Agent 的记忆层。**
+
+```
+内容层（用户阅读的）→ 记忆层（Sheaf）→ 终端层（Agent 干活）
+网页/微信/arXiv/PDF  →  ~/.sheaf/  →  Claude Code / Kimi Work / WorkBuddy
+```
+
+当前所有 Agent 终端（Claude Code, Kimi Work, WorkBuddy）的共同短板：**没有跨会话持久化记忆**。Sheaf 填补这个空白——不是又一个 Agent，而是让所有 Agent 共享同一个知识底座。
 
 ---
 
@@ -197,6 +210,8 @@ EFFECTIVE_KEY = os.environ.get("SHEAF_API_KEY") or FREE_TIER_KEY
 ## 4. Agent-Native 设计哲学总结
 
 > **"CLI 是 Sheaf 的调试界面，MCP 才是主界面。"**
+>
+> **"Sheaf 不是 Agent，是 Agent 的记忆层。"**
 
 | 原则 | 含义 |
 |------|------|
@@ -207,6 +222,7 @@ EFFECTIVE_KEY = os.environ.get("SHEAF_API_KEY") or FREE_TIER_KEY
 | **Idempotent** | 同一输入，同一输出，可安全重试 |
 | **Graceful degradation** | 缺 LLM key 就降级，不要拒绝服务 |
 | **Stateless MCP** | 每个 MCP 调用自包含，不依赖 session state |
+| **Memory-first MCP** | Sheaf 通过 MCP 成为任何 Agent 的持久化记忆层 |
 
 ---
 
