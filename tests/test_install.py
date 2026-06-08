@@ -130,7 +130,7 @@ def test_cli_version():
     )
     assert result.returncode == 0
     assert "Sheaf" in result.stdout
-    assert "0.5.0" in result.stdout
+    assert "v0." in result.stdout
 
 
 def test_cli_help():

@@ -26,6 +26,18 @@ _FLAG_MAP = {
     "--mcp": "mcp", "--init": "init",
 }
 
+# Human-readable labels for doctor check names
+_DOCTOR_LABELS: dict[str, str] = {
+    "data_dir": "Data dir",
+    "index": "Index",
+    "entries": "Entries",
+    "api_key": "API key",
+    "llm_client": "LLM client",
+    "playwright": "Playwright",
+    "python": "Python",
+    "sheaf_version": "Sheaf",
+}
+
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -84,8 +96,9 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("serve", help="Start HTTP API server")
     p.add_argument("--host", default="127.0.0.1", help="Host to bind (default: 127.0.0.1)")
     p.add_argument("--port", type=int, default=8321, help="Port to listen on (default: 8321)")
-    # Doctor: diagnostic command
-    sub.add_parser("doctor", help="Diagnose Sheaf configuration and health")
+    # Doctor: diagnostic command (Issue #84: --json for Agent-Native output)
+    p = sub.add_parser("doctor", help="Diagnose Sheaf configuration and health")
+    p.add_argument("--json", action="store_true", help="Machine-readable JSON output (for agents)")
     # Crystallize subcommands
     p = sub.add_parser("crystallize", help="Crystallize knowledge cards from topic")
     p.add_argument("topic", nargs="?", help="Topic to crystallize (e.g. 'AI', '遥感')")
@@ -160,6 +173,7 @@ def _run() -> None:
         json_output = "--json" in argv or auto_json
         result = _run_collect(argv[0], force="--force" in argv, json_output=json_output)
         _print_collect_result(result, json_output=json_output)
+        _exit_on_collect_failure(result)
         return
     # Bare URLs — multiple URLs
     if argv and all(a.startswith(("http://", "https://", "ftp://")) or a.startswith("-") for a in argv):
@@ -181,7 +195,7 @@ def _run() -> None:
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
         "setup": lambda: _setup(parsed),
         "config": lambda: _config(parsed),
-        "doctor": _doctor,
+        "doctor": lambda: _doctor_cli(parsed),
         "list": lambda: _list(parsed, json_auto=auto_json),
     }
     handler = _DISPATCH.get(parsed.command)
@@ -203,6 +217,7 @@ def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
     if len(urls) == 1 and not batch_file:
         result = _run_collect(urls[0], force=p.force, json_output=json_output)
         _print_collect_result(result, json_output=json_output)
+        _exit_on_collect_failure(result)
         return
 
     # Batch mode: multiple URLs
@@ -264,6 +279,34 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
         print("  ⚠ 图片主导型文章 — 核心内容可能在图片中")
     print(f"  来源: {result.get('fetch_method', '?')}")
 
+
+def _exit_on_collect_failure(result: dict) -> None:
+    """Exit with a semantic code when a single-URL collect failed.
+
+    Fixes ERROR_LEAKED (Issue #82): failed collects must not exit with 0.
+    Dedup is *not* treated as a failure — the entry already exists.
+    """
+    if result.get("success"):
+        return
+    stage = result.get("stage", "")
+    # Dedup is informational, not an error — exit 0 is correct
+    if stage == "dedup":
+        return
+    if stage == "quality":
+        sys.exit(get_exit_code_from_key("QUALITY"))
+    # fetch errors — pick code from the structured reason if available
+    fetch_err = result.get("fetch_error", {}).get("error", {})
+    reason = fetch_err.get("reason", "")
+    if reason == "invalid_url":
+        sys.exit(get_exit_code_from_key("CONFIG"))
+    if reason == "network_error":
+        sys.exit(get_exit_code_from_key("NETWORK"))
+    if reason == "js_rendering_required":
+        sys.exit(get_exit_code_from_key("PARTIAL"))
+    # Generic failure
+    sys.exit(get_exit_code_from_key("PARTIAL"))
+
+
 def _batch_collect_cli(
     urls: list[str],
     *,
@@ -315,11 +358,18 @@ def _search(p: argparse.Namespace) -> None:
             if r.get("expanded_terms"):
                 item["_expanded_terms"] = r["expanded_terms"]
             formatted.append(item)
-        print(json.dumps({
+        output = {
             "query": query,
             "total": len(formatted),
             "results": formatted,
-        }, ensure_ascii=False, indent=2))
+        }
+        if not formatted:
+            output["suggestions"] = [
+                "Try broader or simpler keywords",
+                "Use 'sheaf list' to browse all entries",
+                "Use 'sheaf search <term>' for fuzzy matching",
+            ]
+        print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
         show_search(query, limit=limit)
 
@@ -556,35 +606,40 @@ def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
         }
         print(json.dumps(deploy_result, ensure_ascii=False, indent=2))
 
-def _doctor() -> None:
-    """Run diagnostic checks and report health status."""
+
+def _build_doctor_report() -> tuple[list[tuple[str, str, str]], int, int]:
+    """Run diagnostic checks, return (checks, error_count, warning_count).
+
+    Pure function — no printing, no sys.exit.  Safe to call from tests
+    and from _doctor / _doctor_cli wrappers.
+    """
     from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE, VERSION
-    checks = []
+    checks: list[tuple[str, str, str]] = []
 
     # Check 1: Data directory
     if DATA_DIR.exists():
-        checks.append(("✅", f"Data dir: {DATA_DIR}"))
+        checks.append(("✅", "data_dir", str(DATA_DIR)))
     else:
-        checks.append(("❌", f"Data dir missing: {DATA_DIR} (run 'sheaf init')"))
+        checks.append(("❌", "data_dir", f"missing: {DATA_DIR} (run 'sheaf init')"))
 
     # Check 2: Index file
     if INDEX_FILE.exists():
         entry_count = sum(1 for line in INDEX_FILE.read_text(encoding="utf-8").splitlines() if line.strip())
-        checks.append(("✅", f"Index: {entry_count} entries"))
+        checks.append(("✅", "index", f"{entry_count} entries"))
     else:
-        checks.append(("⚠️", "Index file not found (no entries collected yet)"))
+        checks.append(("⚠️", "index", "not found (no entries collected yet)"))
 
     # Check 3: Entries directory
     if ENTRIES_DIR.exists():
         json_files = list(ENTRIES_DIR.rglob("*.json"))
-        checks.append(("✅", f"Entries: {len(json_files)} stored"))
+        checks.append(("✅", "entries", f"{len(json_files)} stored"))
     else:
-        checks.append(("⚠️", "Entries directory not found"))
+        checks.append(("⚠️", "entries", "directory not found"))
 
     # Check 4: API key(s) — scan all providers (Issue #79)
+    configured_providers = []
     try:
         from sheaf_ai.providers import PROVIDERS
-        configured_providers = []
         # Unified key first
         if os.environ.get("SHEAF_API_KEY", "").strip():
             configured_providers.append("SHEAF_API_KEY (unified)")
@@ -609,46 +664,78 @@ def _doctor() -> None:
             pass
         if configured_providers:
             for desc in configured_providers:
-                checks.append(("✅", f"API key: {desc}"))
+                checks.append(("✅", "api_key", desc))
         else:
-            checks.append(("❌", "No API key configured"))
-            from sheaf_ai.llm_client import check_api_key
-            _, guidance = check_api_key()
-            checks.append(("💡", guidance.strip()))
+            checks.append(("❌", "api_key", "No API key configured"))
     except Exception as e:
-        checks.append(("❌", f"API key check failed: {e}"))
+        checks.append(("❌", "api_key", f"check failed: {e}"))
 
     # Check 5: LLM connectivity (best-effort)
     try:
-        # Don't actually call the API, just verify client initialization
         from sheaf_ai.llm_client import get_client
         client = get_client()
-        checks.append(("✅", f"LLM client: {type(client).__name__}"))
+        checks.append(("✅", "llm_client", type(client).__name__))
     except Exception as e:
-        checks.append(("⚠️", f"LLM client issue: {e}"))
+        checks.append(("⚠️", "llm_client", f"issue: {e}"))
 
     # Check 6: Playwright (optional)
     try:
         import playwright  # noqa: F401
-        checks.append(("✅", "Playwright: installed"))
+        checks.append(("✅", "playwright", "installed"))
     except ImportError:
-        checks.append(("⚠️", "Playwright: not installed (JS-heavy sites may fail)"))
+        checks.append(("⚠️", "playwright", "not installed (JS-heavy sites may fail)"))
 
     # Check 7: Python environment
-    checks.append(("ℹ️", f"Python: {sys.version.split()[0]}"))
-    checks.append(("ℹ️", f"Sheaf: v{VERSION}"))
+    checks.append(("ℹ️", "python", sys.version.split()[0]))
+    checks.append(("ℹ️", "sheaf_version", f"v{VERSION}"))
 
-    print("Sheaf Doctor — Configuration & Health Check")
-    print("=" * 50)
-    for icon, msg in checks:
-        print(f"  {icon} {msg}")
-    print("=" * 50)
+    errors = sum(1 for icon, *_ in checks if icon == "❌")
+    warnings = sum(1 for icon, *_ in checks if icon == "⚠️")
+    return checks, errors, warnings
 
-    errors = sum(1 for icon, _ in checks if icon == "❌")
-    if errors:
-        print(f"\n{errors} issue(s) found. See above for details.")
+
+def _doctor(p: argparse.Namespace = None) -> None:
+    """Run diagnostic checks and report health status.
+
+    Legacy entry point — prints output but does *not* call sys.exit.
+    Safe to call from tests.  For the CLI dispatch path (which needs
+    exit-code semantics), use ``_doctor_cli`` instead.
+    """
+    json_output = getattr(p, "json", False) if p else False
+    checks, errors, warnings = _build_doctor_report()
+
+    if json_output:
+        result = {
+            "status": "error" if errors else ("warning" if warnings else "ok"),
+            "errors": errors,
+            "warnings": warnings,
+            "checks": [
+                {"status": "ok" if c[0] == "✅" else ("error" if c[0] == "❌" else ("warning" if c[0] == "⚠️" else "info")),
+                 "name": c[1], "message": c[2]}
+                for c in checks
+            ],
+            "version": VERSION,
+        }
+        print(json.dumps(result, ensure_ascii=False, indent=2))
     else:
-        print("\nAll checks passed! 🎉")
+        print("Sheaf Doctor — Configuration & Health Check")
+        print("=" * 50)
+        for icon, name, msg in checks:
+            label = _DOCTOR_LABELS.get(name, name)
+            print(f"  {icon} {label}: {msg}")
+        print("=" * 50)
+        if errors:
+            print(f"\n{errors} issue(s) found. See above for details.")
+        else:
+            print("\nAll checks passed! 🎉")
+
+
+def _doctor_cli(p: argparse.Namespace) -> None:
+    """CLI entry point for ``sheaf doctor`` — prints report, then exits with appropriate code."""
+    _doctor(p)
+    _, errors, _ = _build_doctor_report()
+    if errors:
+        sys.exit(1)
 
 
 def _setup(p: argparse.Namespace):

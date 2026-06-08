@@ -748,14 +748,39 @@ def fetch_article(url: str, timeout: int = 15) -> dict:
             playwright_ok = True
             return _build_result(parsed, "playwright")
 
-    # Both strategies failed — build a structured error with hints
+    # Both strategies failed — classify the error accurately
+    req_err = (requests_result.get("error") or "").lower()
+    pw_err = (pw_result.get("error") or "").lower()
+
+    # Detect input-validation errors (invalid URL, missing scheme)
+    is_input_error = (
+        "no scheme" in req_err
+        or "invalid url" in req_err
+        or "missing scheme" in req_err
+        or "invalid url" in pw_err
+    )
+    # Detect network/timeout errors (DNS failure, connection refused, timeout)
+    is_network_error = (
+        "timeout" in req_err or "timed out" in req_err
+        or "connectionerror" in req_err or "connection refused" in req_err
+        or "name or service not known" in req_err
+        or "resolve" in req_err
+        or "getaddrinfo" in req_err
+        or "nodename nor servname" in req_err
+    )
+    # True SPA detection: requests returned HTML but it's JS-heavy
     is_js_heavy = (
         (requests_result.get("html") and _is_js_heavy_page(requests_result["html"]))
-        or "playwright not installed" in (pw_result.get("error", "")).lower()
-        or not requests_ok
-    )
+        or "playwright not installed" in pw_err
+    ) and not is_input_error and not is_network_error
 
-    if is_js_heavy:
+    if is_input_error:
+        error_reason = "invalid_url"
+        error_msg = f"Invalid URL: {url}"
+    elif is_network_error:
+        error_reason = "network_error"
+        error_msg = f"Network error fetching {domain or url}"
+    elif is_js_heavy:
         error_msg = _js_rendering_hint(url)
         error_reason = "js_rendering_required"
     else:

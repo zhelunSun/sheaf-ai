@@ -64,6 +64,57 @@ chore: add .sandbox-test/ to .gitignore
 
 Well-structured Issues help contributors pick up work independently.
 
+### Language Policy
+
+- **Issue titles**: English, using Conventional Commit prefix (`fix:`, `feat:`, `refactor:`, `docs:`, etc.)
+- **Issue body**: English as primary language. Chinese supplementary notes are allowed below the English content.
+- **PR titles / changelog / release notes**: English
+- **Commit messages**: English
+- **Internal planning / personal notes**: Should NOT be filed as public issues. Use private Projects or internal docs instead.
+
+### Labels
+
+Every open issue must have **at least one type label** and optionally a priority label.
+
+**Type labels (required):**
+
+| Label | Color | Purpose |
+|-------|-------|---------|
+| `bug` | 🔴 | Real bugs that affect users |
+| `enhancement` | 🔵 | New features or improvements |
+| `release-blocker` | 🔴 | Blocks current release — must fix before shipping |
+| `research` | 🟡 | Exploratory — no short-term delivery commitment |
+| `internal` | ⚪ | Internal planning — not user-facing (business plans, personal workflow, thesis) |
+| `needs-validation` | 🟡 | Code complete but awaiting real-data / manual verification |
+| `documentation` | 🔵 | Doc improvements |
+| `refactor` | 🟣 | Code structure improvements |
+| `good first issue` | 🟢 | Suitable for new contributors |
+
+**Priority labels:**
+
+| Label | Meaning |
+|-------|---------|
+| `P0` | Must have — blocks release |
+| `P1` | Important — should have soon |
+| `P2` | Nice to have — backlog |
+
+**Domain labels (optional):**
+
+`ux`, `dev`, `uc` (Universal Collector), `extension`, `vision`, `crystallize`
+
+### Milestones
+
+Every open issue **must** have a milestone:
+
+| Milestone | Purpose |
+|-----------|---------|
+| `v0.6.0` | Current release — error classification, OutputGuard, regression tests |
+| `v0.7.0` | Next iteration — growth engine, knowledge bundle |
+| `v1.0.0` | Long-term vision / roadmap |
+| `backlog` | Unscheduled — grooming queue |
+
+### Issue Template
+
 **Required fields:**
 
 | Field | Description |
@@ -71,10 +122,6 @@ Well-structured Issues help contributors pick up work independently.
 | **Context** | Why this Issue exists (user pain point, feature gap, etc.) |
 | **Task List** | `- [ ]` checklist of concrete steps |
 | **Acceptance Criteria** | How to verify the Issue is done |
-
-**Labels:** Assign at least one priority label (`P0` / `P1` / `P2`) and one type label (`bug` / `enhancement` / `refactor` / `documentation`).
-
-**Milestones:** Every open Issue must have a milestone (`backlog` / `v0.5.0` / etc).
 
 **Example:**
 
@@ -91,6 +138,21 @@ Users sharing Chinese platform links (e.g., mp.weixin.qq.com) get empty content 
 - [ ] `sheaf collect "https://mp.weixin.qq.com/s/..."` returns non-empty content
 - [ ] Test passes on CI
 ```
+
+### Automation Comment Style
+
+When automated agents (nightly dev, bots) comment on issues, use a professional, neutral tone:
+
+```markdown
+Status: implemented in commit abc1234
+Validation: 829 tests passed, manual verification pending
+Next action: close after live data validation
+```
+
+**Do NOT use:**
+- Personal address ("Sir", "老板")
+- Informal claims ("已完成", "建议关闭") without evidence
+- Internal-only context that external contributors can't understand
 
 ## Branches
 

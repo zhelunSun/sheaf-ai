@@ -2,7 +2,29 @@
 
 All notable changes to Sheaf.
 
-## [0.5.0] — 2026-06-07
+## [0.6.0] — 2026-06-08
+
+### Added
+- **User-customizable synonym config** — `sheaf_ai/synonyms.py` module for cross-lingual search expansion
+- **Semantic exit codes for failed collects** — `invalid_url→5 (CONFIG)`, `network_error→4 (NETWORK)`, `js_rendering→1 (PARTIAL)`, `quality→3 (QUALITY)`, dedup exits cleanly with 0
+- **OutputGuard v2** — three new quality signals: `EXIT_MISMATCH`, `UNSTRUCTURED_ERROR`, `NO_SUGGESTION`
+- **LLM depth test framework** — migrated from `tests/` to `scripts/` with `--seed`, `--output` CLI, raw-vs-normalized command tracking, model/provider/version metadata in reports
+- **12 deterministic regression tests** — SPA misclassification, empty search suggestions, invalid URL friendly errors, exit code semantics
+
+### Fixed
+- **Error classification triage in fetch_article.py** — Strategy 3 no longer defaults all failures to `js_rendering_required`; now distinguishes `invalid_url`, `network_error`, and genuine SPA
+- **Doctor command refactored** — split into `_build_doctor_report()` (pure) + `_doctor()` (print-only) + `_doctor_cli()` (exit wrapper); human-readable labels restored
+- **ERROR_LEAKED vulnerability** — failed collects no longer output error text with exit code 0
+- **pytest collection warnings** — root `conftest.py` excludes `scripts/` and `internal/` from collection; 0 warnings
+- **MCP subprocess tests** — use `python -m sheaf_ai.cli` for cross-platform compatibility
+- **Doctor env patch overflow** — fixed Windows test environment variable explosion
+
+### Changed
+- Version bump: `0.5.0` → `0.6.0`
+- Test suite: 846 → 885 tests collected (867 passed + 19 skipped)
+
+### Tests
+- 885 collected, 867 passed, 19 skipped, 0 failures, 0 warnings
 
 ### Added
 - **CLI `sheaf search --json`** — structured JSON output for Agent consumption (#78)

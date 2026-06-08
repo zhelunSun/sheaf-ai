@@ -31,6 +31,8 @@ git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env scr
 
 The last command must print nothing. Local data, private planning docs, agent memory, build artifacts, and secrets must not be tracked.
 
+For the full pre-release checklist, see [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
+
 ## Public Contracts
 
 Changes to these surfaces need tests and documentation:

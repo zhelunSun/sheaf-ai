@@ -19,7 +19,6 @@
 |------|------|----------|
 | [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 产品设计总索引 — 心智模型演化、设计原则、决策日志 | 投资人、产品经理 |
 | [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | Matrix 功能设计 — 知识管理矩阵的产品化叙事 | 投资人、用户 |
-| [OBSIDIAN-INTEGRATION-RESEARCH.md](OBSIDIAN-INTEGRATION-RESEARCH.md) | Obsidian 集成方案研究 — 双向同步与知识图谱联动 | 用户、开发者 |
 
 ### 🌐 产品愿景
 
@@ -31,9 +30,7 @@
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [TECH-AUDIT.md](TECH-AUDIT.md) | 技术审计报告 — 当前架构、安全边界、已知风险 | 用户（透明度）、开发者 |
 | [agent-query-spec.md](agent-query-spec.md) | Agent 查询规范 — MCP 工具接口、KnowledgeCard JSON schema | 开发者、Agent 集成方 |
-| [ONE-CLICK-INSTALL-RESEARCH.md](ONE-CLICK-INSTALL-RESEARCH.md) | 一键安装研究 — pip/uvx/brew 多通道安装体验设计 | 用户、开发者 |
 
 ### 📋 项目治理
 
@@ -58,11 +55,12 @@
 看功能设计 / 产品形态                 → MATRIX-PRODUCT-DESIGN.md
 看商业模型 / 知识市场                 → KNOWLEDGE-MARKETPLACE-VISION.md
 把 Sheaf 接入我的 AI 助手             → mcp-setup.md
-了解技术架构 / 安全边界               → TECH-AUDIT.md
+了解技术架构 / 安全边界               → internal/tech-audit.md
 开发 Agent 集成 / MCP 调用           → agent-query-spec.md
 了解版本策略 / 发布流程               → RELEASE-LIFECYCLE.md
-研究 Obsidian 联动方案                → OBSIDIAN-INTEGRATION-RESEARCH.md
-研究安装体验优化                      → ONE-CLICK-INSTALL-RESEARCH.md
+研究安装体验优化                      → internal/research/one-click-install-research.md
+研究 Obsidian 联动方案                → internal/research/obsidian-integration-research.md
+```
 ```
 
 ---
