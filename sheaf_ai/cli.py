@@ -111,6 +111,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", metavar="FMT", choices=["text", "json", "detailed"],
                    default="text", help="Output format: text (default), json, or detailed")
     p.add_argument("--fields", metavar="FIELDS", help="Comma-separated fields to include (overrides --format defaults)")
+    # Matrix: cross-source event verification (Issue #63)
+    p = sub.add_parser("matrix", help="Cross-source event matrix for a URL")
+    p.add_argument("url", help="URL to analyze")
+    p.add_argument("--json", action="store_true", help="Output raw JSON")
+    p.add_argument("--limit", "-n", type=int, default=10, help="Max related entries (default: 10)")
     return parser
 
 
@@ -197,6 +202,7 @@ def _run() -> None:
         "config": lambda: _config(parsed),
         "doctor": lambda: _doctor_cli(parsed),
         "list": lambda: _list(parsed, json_auto=auto_json),
+        "matrix": lambda: _matrix(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
@@ -384,6 +390,21 @@ def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
         type_filter=getattr(p, "type", None),
         json_output=json_output,
     )
+
+
+def _matrix(p: argparse.Namespace) -> None:
+    """Cross-source event matrix for a URL (Issue #63)."""
+    from sheaf_ai.matrix import run_matrix, format_matrix_table, format_matrix_json
+
+    url = p.url
+    json_output = getattr(p, "json", False)
+
+    result = run_matrix(url, json_output=json_output)
+
+    if json_output:
+        print(format_matrix_json(result))
+    else:
+        print(format_matrix_table(result))
 
 
 def _reclassify(p: argparse.Namespace) -> None:
