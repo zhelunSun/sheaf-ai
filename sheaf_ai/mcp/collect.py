@@ -12,7 +12,26 @@ from sheaf_ai.pipeline import process_url
 TOOLS = [
     {
         "name": "sheaf_collect",
-        "description": "Collect a new article URL into the knowledge base.",
+        "description": (
+            "Collect a new article URL into the user's knowledge base.\n"
+            "\n"
+            "Fetches the article content, classifies it into topics, "
+            "generates an AI summary, extracts tags, and stores it locally.\n"
+            "Automatically deduplicates — returns existing entry if already collected.\n"
+            "\n"
+            "The pipeline handles: web articles, arxiv papers, GitHub repos, "
+            "PDFs, WeChat articles, ChatGPT shared conversations, and more.\n"
+            "\n"
+            "After collection, the entry can be:\n"
+            "- Found via sheaf_search\n"
+            "- Listed via sheaf_list\n"
+            "- Synthesized into knowledge cards via sheaf_crystallize\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_collect(url='https://arxiv.org/abs/2401.00001')\n"
+            "  sheaf_collect(url='https://mp.weixin.qq.com/s/...')\n"
+            "  sheaf_collect(url='https://github.com/owner/repo')"
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -24,7 +43,17 @@ TOOLS = [
     },
     {
         "name": "sheaf_collect_batch",
-        "description": "Collect multiple URLs in a single batch call. Returns aggregated results with per-URL status. Agent-Native preferred over multiple sheaf_collect calls.",
+        "description": (
+            "Collect multiple URLs in a single batch call.\n"
+            "\n"
+            "Preferred over multiple sheaf_collect calls when the user wants to "
+            "collect several URLs at once. Returns aggregated results with "
+            "per-URL success/failure status.\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_collect_batch(urls=['https://url1.com', 'https://url2.com'])\n"
+            "  sheaf_collect_batch(urls=[...], concurrency=3, force=True)"
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {

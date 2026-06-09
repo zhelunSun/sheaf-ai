@@ -12,18 +12,43 @@ from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 TOOLS = [
     {
         "name": "sheaf_crystallize",
-        "description": "Crystallize knowledge cards from collected entries about a topic. Synthesizes insights from 3+ related entries into structured knowledge cards with evidence tracing.",
+        "description": (
+            "Crystallize knowledge cards from collected entries about a topic.\n"
+            "\n"
+            "Analyzes 3+ related entries and synthesizes them into structured "
+            "knowledge cards — each with a falsifiable claim, evidence citing "
+            "specific sources, confidence score, and tags.\n"
+            "\n"
+            "This is the core value of Sheaf: turning scattered bookmarks into "
+            "Agent-consumable knowledge assets with full provenance tracing.\n"
+            "\n"
+            "Requires at least 3 entries on the topic to generate cards.\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_crystallize(topic='AI Agent')     — crystallize AI Agent knowledge\n"
+            "  sheaf_crystallize(topic='遥感')          — crystallize remote sensing knowledge\n"
+            "  sheaf_crystallize(topic='open source')"
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
-                "topic": {"type": "string", "description": "Topic to crystallize (e.g. 'AI', '遥感', 'open source')"},
+                "topic": {"type": "string", "description": "Topic to crystallize (e.g. 'AI Agent', '遥感', 'open source'). Must have 3+ collected entries on this topic."},
             },
             "required": ["topic"],
         },
     },
     {
         "name": "sheaf_list_cards",
-        "description": "List crystallized knowledge cards. Optionally filter by topic.",
+        "description": (
+            "List crystallized knowledge cards. Optionally filter by topic.\n"
+            "\n"
+            "Each card includes: title, claim, evidence, tags, confidence, "
+            "source entry IDs, and related card associations.\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_list_cards()                 — all cards\n"
+            "  sheaf_list_cards(topic='AI Agent')  — cards about AI Agent"
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -33,11 +58,18 @@ TOOLS = [
     },
     {
         "name": "sheaf_get_card",
-        "description": "Get full details of a specific knowledge card by ID.",
+        "description": (
+            "Get full details of a specific knowledge card by ID.\n"
+            "\n"
+            "Returns the card with its complete claim, evidence, source references, "
+            "confidence score, tags, and links to related cards.\n"
+            "\n"
+            "Use this to deep-dive into a card found via sheaf_list_cards."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
-                "card_id": {"type": "string", "description": "Card ID"},
+                "card_id": {"type": "string", "description": "Card ID (format: card_xxxxxxxxxxxx)"},
             },
             "required": ["card_id"],
         },

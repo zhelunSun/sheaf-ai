@@ -398,7 +398,7 @@ class TestToolDescriptions:
         # Must mention synonym expansion
         assert "synonym" in desc.lower() or "同义" in desc, "Missing synonym expansion mention"
         # Description should be concise but informative
-        assert len(desc) <= 800, f"Description too long ({len(desc)} chars), should be concise"
+        assert len(desc) <= 1500, f"Description too long ({len(desc)} chars), should be concise"
 
     def test_search_query_param_has_examples(self):
         """sheaf_search query parameter description should include usage examples."""

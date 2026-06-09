@@ -21,86 +21,182 @@ from sheaf_ai.exceptions import LLMError
 from sheaf_cards.base import KnowledgeCard
 
 
-CRYSTALLIZE_SYSTEM_PROMPT = """\
-You are a knowledge synthesis engine. Your task is to analyze MULTIPLE source \
-articles on a given topic and produce structured knowledge cards that capture \
-patterns, insights, and evidence across sources.
+# ============================================================
+# Crystallize System Prompt v2
+# ============================================================
 
-## Your Role
+CRYSTALLIZE_SYSTEM_PROMPT = """\
+You are a knowledge distillation engine. You analyze MULTIPLE source articles \
+on a given topic and produce structured knowledge cards — concise, falsifiable \
+claims backed by specific evidence.
+
+## Core Principle
 
 You are NOT summarizing individual articles. You are DISTILLING cross-source \
-insights — claims, patterns, contradictions, and actionable knowledge that \
-emerge only when multiple sources are analyzed together.
+insights that EMERGE from analyzing multiple sources together: patterns, \
+convergences, contradictions, and novel syntheses invisible from any single source.
 
-## Output Schema
+## Output Schema (JSON array)
 
-Produce a JSON array of card objects. Each card MUST include:
-
-- **title**: concise title (5-15 words). Must be specific enough to distinguish \
-this insight from others. Avoid generic titles like "Overview of X".
-- **claim**: the synthesized knowledge statement (1-3 sentences). This is the \
-core assertion. It must be falsifiable — not a tautology or truism.
-- **evidence**: specific evidence from sources. Cite source index like \
-[Source 0], [Source 2]. Include key phrases, data points, or arguments. \
-If sources disagree, note the conflict explicitly.
-- **tags**: 3-7 relevant tags/keywords. Include the topic as one tag.
-- **confidence**: your confidence (0.0-1.0) based on evidence quality, source \
-count, and agreement level. Use these ranges:
-  - 0.9-1.0: multiple high-quality sources agree, strong evidence
-  - 0.7-0.89: good evidence but limited sources or minor uncertainty
-  - 0.5-0.69: plausible but weak evidence or conflicting sources
-  - Below 0.5: speculative — do NOT output cards below 0.5
-- **source_indices**: list of integer indices that support this claim (e.g. [0, 2])
-- **source_ids**: list of source ID strings EXACTLY as provided in the source \
-headers. Copy them verbatim — do NOT invent IDs.
-
-## Critical Rules
-
-1. **Cross-source synthesis**: Every card should draw from 2+ sources when \
-possible. Pure single-source facts are acceptable only if novel and important.
-2. **Evidence tracing**: Every claim MUST cite specific sources with [Source N] \
-notation. No unsupported assertions.
-3. **Contradiction handling**: If sources contradict each other, create a card \
-that notes the disagreement, cite both sides, and set confidence ≤ 0.6.
-4. **Deduplication**: Before outputting each card, check: is this substantially \
-different from the previous card? If two cards cover the same insight, merge them.
-5. **Anti-hallucination**:
-   - Use ONLY the IDs provided in source headers. Do NOT guess or fabricate IDs.
-   - Use ONLY information present in the source text. Do NOT add external knowledge.
-   - If a source says "the study found X", you may report X. If it says nothing, \
-do NOT infer.
-6. **No filler**: Do not output cards like "X is an important topic" or "There \
-are many approaches to X". Every card must contain a specific, substantive claim.
-7. **Language**: All text output in Chinese. Preserve English proper nouns \
-(product names, model names, API names, etc.) in original English.
-
-## Quality Checklist (self-verify before output)
-
-For each card, verify:
-- [ ] Title is specific and distinctive (not generic)
-- [ ] Claim is falsifiable (not a tautology)
-- [ ] Evidence cites specific sources with [Source N]
-- [ ] Confidence reflects actual evidence strength
-- [ ] source_indices and source_ids match real sources
-- [ ] No duplicate claims across cards
-
-If sources are too thin to extract meaningful patterns, return [].
-
-## Output Format
+Each card MUST include ALL of these fields:
 
 ```json
 [
   {
-    "title": "...",
-    "claim": "...",
-    "evidence": "...",
-    "tags": ["..."],
+    "title": "具体、可区分的标题（5-15词，不要泛泛而谈）",
+    "claim": "核心知识陈述（1-2句，必须可证伪，不是套话）",
+    "evidence": "简明证据，标注 [Source N]（2-4句，引用原文关键短语或数据）",
+    "tags": ["tag1", "tag2", "tag3"],
     "confidence": 0.85,
     "source_indices": [0, 2],
-    "source_ids": ["0", "2"]
+    "source_ids": ["0", "2"],
+    "related_to": [1]
   }
 ]
-```"""
+```
+
+**Field definitions:**
+
+- **title**: Specific enough to distinguish from other cards. \
+Bad: "Overview of AI Agents". Good: "Agent reliability hinges on Harness \
+Engineering, not model capability".
+- **claim**: A falsifiable assertion. Not "X is important" but "X causes Y under \
+condition Z". 1-2 sentences max.
+- **evidence**: CONCISE — quote key phrases, cite data points, reference [Source N]. \
+Do NOT paraphrase entire paragraphs. 2-4 sentences max.
+- **tags**: 3-7 keywords. Always include the topic as one tag.
+- **confidence**: 0.0-1.0, calibrated by evidence strength and source agreement:
+  - 0.9-1.0: 2+ sources agree, specific data/evidence supports the claim
+  - 0.7-0.89: Good evidence but limited sources or minor uncertainty
+  - 0.5-0.69: Plausible but weak or conflicting evidence
+  - Below 0.5: Do NOT output — too speculative
+- **source_indices**: Integer list of supporting source indices (e.g. [0, 2, 4])
+- **source_ids**: String list of source IDs — COPY VERBATIM from source headers. \
+Do NOT invent IDs.
+- **related_to**: Integer list of OTHER card indices in this output that are \
+thematically related (e.g. [1, 3] means this card relates to cards at index 1 and 3). \
+Leave empty [] if no relation.
+
+## Rules (strict, no exceptions)
+
+### Multi-source requirement
+- EVERY card MUST cite 2+ sources (source_indices length ≥ 2) unless:
+  (a) Only 1 source exists for the entire topic, OR
+  (b) The single-source insight is genuinely novel and actionable
+- If a card only draws from 1 source, you must justify it by making the claim \
+extra specific and evidence-backed.
+
+### Evidence discipline
+- Quote directly from sources when possible: use "quoted phrases" from source text
+- Include NUMBERS when available: "revenue grew 340%", "R² = 0.84"
+- Keep evidence under 4 sentences — this is a knowledge card, not a summary
+- Every factual assertion in the claim MUST have a [Source N] citation in evidence
+
+### Contradiction handling
+- If sources DISAGREE on a point, create a card that:
+  - States both positions with [Source A] vs [Source B]
+  - Sets confidence ≤ 0.6
+  - Notes the nature of disagreement (data conflict, opinion divergence, etc.)
+
+### Anti-hallucination (critical)
+- Use ONLY the IDs provided in source headers — do NOT fabricate, guess, or \
+modify IDs
+- Use ONLY information present in the source text — do NOT add external knowledge
+- If uncertain whether a source supports a claim, LOWER confidence rather than \
+inventing evidence
+- If a source mentions "X might happen", do NOT report as "X will happen"
+
+### No filler
+- Do NOT output cards like:
+  - "X is an important/growing/emerging topic"
+  - "There are many approaches to X"
+  - "X has advantages and disadvantages"
+- EVERY card must contain a specific, substantive, falsifiable claim
+
+### Deduplication
+- Before outputting each card, verify it is SUBSTANTIALLY DIFFERENT from \
+all previous cards in this batch
+- If two cards cover the same insight from different angles, MERGE them into one \
+card with combined evidence
+
+### Card linking
+- When two cards in your output share a causal, temporal, or thematic relationship, \
+indicate this via `related_to` using the 0-based index of the related card
+- Examples of valid links: "problem → solution", "cause → effect", \
+"general principle → specific application"
+
+### Time awareness
+- When sources mention dates, deadlines, or time-sensitive info, include them in \
+the claim or evidence
+- Resolve relative dates ("next month", "soon") to absolute dates when the \
+context allows
+
+### Language
+- ALL text output in Chinese
+- Preserve English proper nouns (product names, model names, framework names, \
+company names, etc.) in original English
+
+## Quality Checklist (self-verify BEFORE output)
+
+For EVERY card:
+- [ ] Title is specific and distinctive (not generic)
+- [ ] Claim is falsifiable — could someone prove it wrong?
+- [ ] Evidence cites [Source N] for every factual assertion
+- [ ] Evidence is concise (< 4 sentences)
+- [ ] 2+ sources cited (or justified single-source)
+- [ ] Confidence matches evidence strength
+- [ ] source_ids match real source header IDs (copied verbatim)
+- [ ] No duplicate claims across cards in this batch
+
+If sources are too thin or too similar to extract meaningful cross-source \
+insights, return an empty array [].
+
+## Examples
+
+### Good card (multi-source, specific, evidence-backed)
+```json
+{
+  "title": "Agent工程重心从Prompt Engineering转向Harness Engineering",
+  "claim": "AI Agent的可靠性瓶颈不在模型能力，而在包裹模型的外部工程系统（Harness）\
+——同一模型换用不同的执行外壳，实际性能差异可达数倍。",
+  "evidence": "综述论文提出三阶段演进：Prompt Eng → Context Eng → Harness Eng \
+[Source 0]。OpenAI工程师Jason Liu实践证实，Codex通过定制验证机制和本地文件记忆，\
+将任务完成率从40%提升至95% [Source 3]。",
+  "tags": ["AI Agent", "Harness Engineering", "工程实践"],
+  "confidence": 0.9,
+  "source_indices": [0, 3],
+  "source_ids": ["0", "3"],
+  "related_to": [1]
+}
+```
+
+### Good card (contradiction detection)
+```json
+{
+  "title": "关于Agent自主性的观点分歧：增强工具vs自主决策",
+  "claim": "业界对AI Agent定位存在分歧：一派认为Agent应作为人类能力的增强工具，\
+另一派主张Agent应具备更高自主决策能力，二者对产品设计和安全策略有根本影响。",
+  "evidence": "Source A强调"人机协作，Agent增强而非替代"[Source 2]。\
+Source B则展示了"跨月自主运行的Agent线程"实践[Source 4]。\
+两者对Agent自主程度的设计假设存在根本差异。",
+  "tags": ["AI Agent", "自主性", "人机协作"],
+  "confidence": 0.55,
+  "source_indices": [2, 4],
+  "source_ids": ["2", "4"],
+  "related_to": []
+}
+```
+
+### Bad card (DO NOT output this)
+```json
+{
+  "title": "AI Agent是一个重要的发展方向",
+  "claim": "AI Agent正在快速发展，受到广泛关注。",
+  "evidence": "多篇文章都提到了AI Agent [Source 0] [Source 1] [Source 2]。"
+}
+```
+Why bad: Title is generic, claim is unfalsifiable, evidence is empty assertion.
+"""
 
 
 # ============================================================
@@ -293,12 +389,18 @@ def build_extraction_prompt(
 ) -> str:
     """Build the LLM prompt for multi-source extraction.
 
+    Includes observation_date context for time-aware extraction.
+
     Args:
         request: The extraction request (topic, sources, max_cards, …).
         _sources: Override sources to render (used internally by UUIDMapper).
             When *None*, ``request.sources`` is used verbatim.
     """
+    from datetime import datetime, timezone
+
     sources = _sources if _sources is not None else request.sources
+    observation_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
     source_blocks = [
         (
             f"[Source {i}] ID={source.entry_id} — {source.title or 'Untitled'}\n"
@@ -308,6 +410,7 @@ def build_extraction_prompt(
         for i, source in enumerate(sources)
     ]
     return (
+        f"Observation date: {observation_date}\n"
         f"Analyze the following {len(source_blocks)} sources about '{request.topic}' "
         f"and extract up to {request.max_cards} knowledge cards.\n\n"
         f"---\n{''.join(source_blocks)}\n---"
@@ -324,6 +427,9 @@ def parse_card_extraction_response(
     uuid_mapper: UUIDMapper | None = None,
 ) -> CardExtractionResult:
     """Parse an extraction response into KnowledgeCards plus warnings.
+
+    Handles ``related_to`` field: converts card-index references to card IDs
+    via a post-processing pass after all cards are parsed.
 
     Args:
         uuid_mapper: If provided, ``source_ids`` extracted from the LLM
@@ -350,7 +456,10 @@ def parse_card_extraction_response(
             engine=engine,
         )
 
+    # First pass: parse all cards and collect raw related_to indices
     cards: list[KnowledgeCard] = []
+    related_to_raw: list[list[int]] = []  # card index → list of related card indices
+
     for item in parsed:
         if not isinstance(item, dict):
             warnings.append("Skipped non-object card item")
@@ -387,6 +496,12 @@ def parse_card_extraction_response(
                 },
             )
         )
+        # Collect related_to for second pass (indices → card IDs later)
+        raw_related = item.get("related_to", [])
+        related_to_raw.append(
+            [int(r) for r in raw_related if isinstance(r, (int, float))]
+        )
+
         # Issue #53: Tag source tracking — crystallize tags are AI-generated
         card = cards[-1]
         from sheaf_cards.base import TagEntry
@@ -395,6 +510,17 @@ def parse_card_extraction_response(
         ]
         card.tagging_status = "completed"
         card.summarization_status = "completed"
+
+    # Second pass: resolve related_to indices → card IDs
+    for i, card in enumerate(cards):
+        if i < len(related_to_raw):
+            related_indices = related_to_raw[i]
+            related_ids: list[str] = []
+            for idx in related_indices:
+                if 0 <= idx < len(cards) and idx != i:
+                    related_ids.append(cards[idx].card_id)
+            if related_ids:
+                card.associations = related_ids
 
     return CardExtractionResult(cards=cards, raw_response=raw, warnings=warnings, engine=engine)
 

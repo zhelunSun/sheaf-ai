@@ -55,9 +55,23 @@ TOOLS = [
     {
         "name": "sheaf_list",
         "description": (
-            "List knowledge entries with pagination and optional filters. "
-            "Returns total count and top topics summary for lightweight stats. "
-            "Use filter='urgent' for deadline-sensitive entries (replaces sheaf_urgent)."
+            "Browse collected knowledge entries with pagination and filters.\n"
+            "\n"
+            "Returns total entry count, topics summary, and paginated entry list.\n"
+            "Each entry includes: title, URL, topics, tags, content_type, summary, "
+            "importance, and collection date.\n"
+            "\n"
+            "Filters:\n"
+            "- 'urgent': entries with upcoming deadlines or time-sensitive info\n"
+            "- 'untagged': entries without AI-generated tags (need review)\n"
+            "- 'recent' (default): most recently collected first\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_list()                           — recent 20 entries\n"
+            "  sheaf_list(limit=5)                     — recent 5\n"
+            "  sheaf_list(filter='urgent')             — deadline-sensitive\n"
+            "  sheaf_list(filter='untagged', limit=10) — entries needing tags\n"
+            "  sheaf_list(category='AI Agent')         — filter by primary topic"
         ),
         "inputSchema": {
             "type": "object",
@@ -75,7 +89,16 @@ TOOLS = [
     },
     {
         "name": "sheaf_get",
-        "description": "Get full details of a specific knowledge entry by ID.",
+        "description": (
+            "Get full details of a specific knowledge entry by ID.\n"
+            "\n"
+            "Returns all fields: title, URL, full summary, structured summary, "
+            "topics, tags, content_type, importance, quality_tier, images, "
+            "and the generated summary markdown.\n"
+            "\n"
+            "Use this when you need detailed information about a specific article "
+            "that was found via sheaf_search or sheaf_list."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -86,7 +109,17 @@ TOOLS = [
     },
     {
         "name": "sheaf_correct",
-        "description": "Submit a correction to an entry's classification or summary.",
+        "description": (
+            "Correct an entry's AI-generated classification or summary.\n"
+            "\n"
+            "Use when the user says something like:\n"
+            "- 'this should be tagged as X' → set corrections.tags\n"
+            "- 'this is actually about Y' → set corrections.category_primary\n"
+            "- 'the summary is wrong' → set corrections.summary\n"
+            "- 'this is high priority' → set corrections.importance = 'high'\n"
+            "\n"
+            "Corrections are saved and used to improve future classifications."
+        ),
         "inputSchema": {
             "type": "object",
             "properties": {

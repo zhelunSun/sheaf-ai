@@ -12,21 +12,40 @@ TOOLS = [
     {
         "name": "sheaf_search",
         "description": (
-            "Search your personal knowledge base. Supports full-text, synonym expansion "
-            "(cross-lingual: AI↔人工智能, deep learning↔深度学习), and semantic search.\n"
-            "Modes: 'keyword' (weighted fields+synonyms), 'hybrid' (BM25+semantic, recommended), "
-            "'quick' (metadata-only).\n"
-            "Advanced query syntax: #tag (tag filter), is:fav (favorites only), "
-            "after:YYYY-MM-DD / before:YYYY-MM-DD (date range), source:arxiv (origin filter). "
-            "Combine freely: \"transformer #AI source:arxiv after:2024-01-01\".\n"
-            "Returns ranked results with scores, match fields, snippets, and expanded terms."
+            "Search the user's personal knowledge base — articles, notes, and research "
+            "they have collected via Sheaf.\n"
+            "\n"
+            "Supports three search modes:\n"
+            "- 'keyword' (default): weighted field matching with synonym expansion.\n"
+            "  Cross-lingual synonyms work automatically (AI↔人工智能, deep learning↔深度学习).\n"
+            "- 'hybrid' (recommended): BM25 keyword + semantic vector fusion.\n"
+            "  Best for natural language queries. Returns combined relevance score.\n"
+            "- 'quick': metadata-only, fastest. Good for 'does anything about X exist?'.\n"
+            "\n"
+            "Advanced query syntax (keyword/hybrid modes):\n"
+            "  #tag          — filter by tag (#AI, #遥感)\n"
+            "  is:fav        — favorites only\n"
+            "  after:DATE    — collected after date (after:2025-01-01)\n"
+            "  before:DATE   — collected before date\n"
+            "  source:TYPE   — origin filter (source:arxiv, source:github)\n"
+            "\n"
+            "Combine freely: \"transformer #AI source:arxiv after:2024-01-01\"\n"
+            "\n"
+            "Examples:\n"
+            "  sheaf_search(query=\"RAG 检索增强\")         — basic search\n"
+            "  sheaf_search(query=\"AI Agent\", mode=\"hybrid\") — hybrid BM25+semantic\n"
+            "  sheaf_search(query=\"#遥感 source:arxiv\")    — tag + source filter\n"
+            "  sheaf_search(query=\"融资\", limit=5)          — limit results\n"
+            "\n"
+            "Returns ranked results with relevance scores, match locations, "
+            "snippets, and expanded synonym terms."
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
                 "query": {
                     "type": "string",
-                    "description": "Search query. Supports: plain text, #tag, is:fav, after:date, before:date, source:type. Example: \"GPT-4 #AI source:arxiv after:2024-01-01\"",
+                    "description": "Search query. Supports: plain text, #tag, is:fav, after:YYYY-MM-DD, before:YYYY-MM-DD, source:type. Combine freely.",
                 },
                 "limit": {"type": "integer", "description": "Max results to return (default: 10)", "default": 10},
                 "mode": {
