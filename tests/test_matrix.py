@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import sys
 from pathlib import Path
 from unittest.mock import patch, MagicMock
@@ -428,7 +427,7 @@ class TestMatrixCLI:
         )
 
         with patch("sheaf_ai.matrix.run_matrix", return_value=mock_result):
-            from sheaf_ai.cli import build_parser, _run
+            from sheaf_ai.cli import _run
 
             with patch("sys.argv", ["sheaf", "matrix", "https://example.com"]):
                 # Should not raise

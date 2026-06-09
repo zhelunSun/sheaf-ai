@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
+from sheaf_ai.mcp.protocol import jsonrpc_response
 from sheaf_ai.search import search_fulltext, search_hybrid, search_quick
 
 # ── Tool definition ──────────────────────────────────────────

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 
-from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE
+from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, INDEX_FILE  # noqa: F401 — DATA_DIR used by test monkeypatch
 
 
 def load_index() -> list:

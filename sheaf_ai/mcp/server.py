@@ -83,7 +83,6 @@ def _handle_deprecated(req_id: int | str, tool_name: str) -> str:
     import os
     from sheaf_ai.config import DATA_DIR, INDEX_FILE
     from sheaf_ai.mcp.entries import _load_index
-    from sheaf_ai.mcp.entries import _compute_topics_summary
 
     if tool_name == "sheaf_urgent":
         from sheaf_ai.query import query_urgent

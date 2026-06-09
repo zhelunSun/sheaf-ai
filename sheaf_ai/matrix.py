@@ -23,7 +23,6 @@ from dataclasses import dataclass, field, asdict
 from datetime import datetime
 from typing import Any
 
-from sheaf_ai.config import DATA_DIR, INDEX_FILE
 
 
 # ---------------------------------------------------------------------------
@@ -427,7 +426,7 @@ def format_matrix_table(result: MatrixResult) -> str:
     lines.append("╚" + "═" * 62 + "╝")
 
     # Summary
-    lines.append(f"")
+    lines.append("")
     lines.append(f"  {result.total_found} related article(s) found — event_id: {fp.event_id}")
 
     if result.entries:

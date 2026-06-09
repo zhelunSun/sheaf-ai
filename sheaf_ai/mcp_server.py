@@ -34,7 +34,6 @@ from sheaf_ai.mcp.entries import (  # noqa: F401
 )
 from sheaf_ai.mcp.search import search_fulltext as _sf, search_hybrid as _sh, search_quick as _sq  # noqa: F401
 from sheaf_ai.mcp.data import load_index, load_entry  # noqa: F401
-from sheaf_ai.mcp.entries import _load_index, _compute_topics_summary  # noqa: F401
 
 # Legacy aliases for any code that imports from this module
 _jsonrpc_response = _jsonrpc_response

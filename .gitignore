@@ -51,3 +51,10 @@ test_debug_data/
 
 # Pytest temp dirs
 .pytest-tmp-*/
+
+# CodeBuddy IDE
+codebuddy/
+.codebuddy/
+
+# Debug logs
+debug.log
