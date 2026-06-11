@@ -47,6 +47,7 @@ class ContentType(str, Enum):
     KR36_ARTICLE = "kr36_article"         # 36氪
     HUXIU_ARTICLE = "huxiu_article"       # 虎嗅
     IFANR_ARTICLE = "ifanr_article"       # 爱范儿
+    JIQIZHIXIN_ARTICLE = "jiqizhixin_article"  # 机器之心
     FEISHU_DOC = "feishu_doc"             # 飞书文档
     NOTION_PAGE = "notion_page"           # Notion 公开页面
     SEMANTIC_SCHOLAR_PAPER = "semantic_scholar_paper"  # Semantic Scholar (Issue #75)
@@ -75,6 +76,7 @@ class ContentType(str, Enum):
             "kr36_article": "36Kr Article",
             "huxiu_article": "Huxiu Article",
             "ifanr_article": "ifanr Article",
+            "jiqizhixin_article": "Jiqizhixin Article",
             "feishu_doc": "Feishu Doc",
             "notion_page": "Notion Page",
             "semantic_scholar_paper": "Semantic Scholar Paper",
@@ -225,6 +227,14 @@ _URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
         r'https?://36kr\.com/p/',
         re.IGNORECASE,
     ), ContentType.KR36_ARTICLE, 120),
+    (re.compile(
+        r'https?://36kr\.com/(?:newsflashes|information|motif|project|search|topic)?',
+        re.IGNORECASE,
+    ), ContentType.KR36_ARTICLE, 121),
+    (re.compile(
+        r'https?://36kr\.com/?$',
+        re.IGNORECASE,
+    ), ContentType.KR36_ARTICLE, 122),
 
     # 虎嗅
     (re.compile(
@@ -241,6 +251,12 @@ _URL_PATTERNS: list[tuple[re.Pattern, ContentType, int]] = [
         r'https?://www\.ifanr\.com/\d+',
         re.IGNORECASE,
     ), ContentType.IFANR_ARTICLE, 140),
+
+    # 机器之心
+    (re.compile(
+        r'https?://(?:www\.)?jiqizhixin\.com/',
+        re.IGNORECASE,
+    ), ContentType.JIQIZHIXIN_ARTICLE, 145),
 
     # 飞书文档
     (re.compile(
@@ -281,6 +297,9 @@ _SPA_PLATFORMS: set[ContentType] = {
     ContentType.JIKE_POST,
     ContentType.FEISHU_DOC,
     ContentType.NOTION_PAGE,
+    ContentType.KR36_ARTICLE,       # 36氪 — JS-rendered SPA
+    ContentType.SSPAI_ARTICLE,      # 少数派 — JS-rendered SPA
+    ContentType.JIQIZHIXIN_ARTICLE, # 机器之心 — JS-rendered SPA
 }
 
 

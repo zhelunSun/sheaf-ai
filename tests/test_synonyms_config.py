@@ -133,6 +133,18 @@ class TestSynonymModuleIntegration:
         assert "深度学习" in result
         assert "dl" in result
 
+    def test_cross_language_multi_agent(self):
+        """multi-agent ↔ 多智能体 mapping works."""
+        from sheaf_ai.search import expand_query_synonyms
+        result = expand_query_synonyms("multi-agent")
+        assert "多智能体" in result
+
+    def test_cross_language_multimodal(self):
+        """multimodal ↔ 多模态 mapping works."""
+        from sheaf_ai.search import expand_query_synonyms
+        result = expand_query_synonyms("multimodal")
+        assert "多模态" in result
+
     def test_search_with_custom_synonyms(self, tmp_path):
         """Custom synonyms are picked up by search."""
         from sheaf_ai.synonyms import load_synonym_groups, build_synonym_lookup

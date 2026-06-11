@@ -701,15 +701,16 @@ class TestSPADegradation:
             ContentType.JIKE_POST,
             ContentType.FEISHU_DOC,
             ContentType.NOTION_PAGE,
+            ContentType.KR36_ARTICLE,       # 36氪 — JS-rendered SPA (Issue #87)
+            ContentType.SSPAI_ARTICLE,      # 少数派 — JS-rendered SPA (Issue #87)
+            ContentType.JIQIZHIXIN_ARTICLE, # 机器之心 — JS-rendered SPA (Issue #87)
         }
         assert _SPA_PLATFORMS == expected_spa
 
     def test_ssr_platforms_not_in_spa(self):
-        """SSR platforms (知乎, 少数派, 36kr, etc.) should NOT be SPA."""
+        """SSR platforms (知乎, etc.) should NOT be SPA."""
         ssr_types = [
             ContentType.ZHIHU_ARTICLE,
-            ContentType.SSPAI_ARTICLE,
-            ContentType.KR36_ARTICLE,
             ContentType.HUXIU_ARTICLE,
             ContentType.IFANR_ARTICLE,
             ContentType.WECHAT_ARTICLE,
