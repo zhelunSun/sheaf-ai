@@ -55,8 +55,10 @@ def show_recent(limit: int = 5) -> None:
             for t in e.get("topics", [])[:3]
         )
         summary = (e.get("summary") or "")[:80]
+        source_tier = e.get("source_tier", "")
+        src_tag = f" [{source_tier}]" if source_tier else ""
         print(f"  {i}. {title}")
-        print(f"     {date}  |  {topics}")
+        print(f"     {date}  |  {topics}{src_tag}")
         if summary:
             print(f"     {summary}...")
         print()
@@ -434,9 +436,12 @@ def show_list_entries(
         tags = ", ".join(e.get("tags", [])[:5])
         summary = (e.get("summary") or "")[:90]
         quality = e.get("quality_tier", "")
+        source_tier = e.get("source_tier", "")
 
         print(f"  {i}. {title}")
-        print(f"     ID: {entry_id}  |  {date}  |  Type: {content_type}{f'  |  Tier: {quality}' if quality else ''}")
+        tier_info = f"  |  Tier: {quality}" if quality else ""
+        src_info = f"  |  Src: {source_tier}" if source_tier else ""
+        print(f"     ID: {entry_id}  |  {date}  |  Type: {content_type}{tier_info}{src_info}")
         if topics:
             print(f"     Topics: {topics}")
         if tags:

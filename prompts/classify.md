@@ -15,7 +15,13 @@
   "tags": ["标签1", "标签2", "标签3"],
   "importance": "high | medium | low",
   "content_type": "news | analysis | research | tutorial | opinion | event | product | reference",
-  "relevance_note": "一句话解释为什么提取这些主题和标签"
+  "relevance_note": "一句话解释为什么提取这些主题和标签",
+  "source_assessment": {
+    "is_primary_source": false,
+    "has_verifiable_claims": true,
+    "domain_expertise": "medium",
+    "reasoning": "一句话判断理由"
+  }
 }
 ```
 
@@ -52,3 +58,10 @@
    - 每篇文章 3-8 个标签
    - 尽量复用已有常见标签（如 "大模型"、"Agent"、"LLM"、"投资"）
    - 英文标签必须拼写正确（如 "artificial" 而非 "artifical"），不确定时用中文标签
+
+6. **source_assessment 评估**：
+   判断这篇文章的消息源可信度，输出以下字段：
+   - `is_primary_source`: true/false — 是否一手信源（原始数据/实验/官方发布）
+   - `has_verifiable_claims`: true/false — 文中是否包含可验证的引用/数据/链接
+   - `domain_expertise`: "high"/"medium"/"low" — 作者/来源在文章主题领域的专业度
+   - `reasoning`: 一句话解释判断理由

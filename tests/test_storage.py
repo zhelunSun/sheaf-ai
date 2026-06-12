@@ -114,7 +114,7 @@ class TestArticleStorage:
         assert entry["content_type"] == "research"
         assert entry["quality_tier"] == "B"
         assert entry["status"] == "active"
-        assert entry["metadata"]["schema_version"] == "1.1.0"
+        assert entry["metadata"]["schema_version"] == "1.2.0"
 
     def test_store_article_persists_explicit_quality_tier(self, isolated_data_dir):
         from sheaf_ai.storage import store_article

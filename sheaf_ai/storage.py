@@ -118,8 +118,28 @@ def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> N
 # Entry Storage
 # ============================================================
 
+def _build_source_field(summary_result: dict, platform: str, source_info: dict | None) -> dict:
+    """Build the entry source field, merging legacy author/platform with source scoring."""
+    base = {
+        "author": summary_result.get("source_author", ""),
+        "platform": platform,
+        "publish_date": None,
+    }
+    if source_info:
+        base["domain"] = source_info.get("domain", "")
+        base["score"] = source_info.get("score", 0)
+        base["tier"] = source_info.get("tier", "C")
+        base["is_primary"] = source_info.get("is_primary", False)
+        base["rule_score"] = source_info.get("rule_score", 0)
+        base["llm_score"] = source_info.get("llm_score", 0)
+        base["user_override"] = source_info.get("user_override")
+        base["freshness"] = source_info.get("freshness", 5)
+    return base
+
+
 def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict,
-                   extra_meta: dict = None, quality_tier: str = "") -> str:
+                   extra_meta: dict = None, quality_tier: str = "",
+                   source_info: dict = None) -> str:
     """Store processed article to data/ directory. Returns entry_id."""
     now = datetime.now(BJT)
     date_str = now.strftime("%Y-%m-%d")
@@ -167,17 +187,13 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             }.items() if v
         },
         "timeliness": timeliness,
-        "source": {
-            "author": summary_result.get("source_author", ""),
-            "platform": platform,
-            "publish_date": None,
-        },
+        "source": _build_source_field(summary_result, platform, source_info),
         "associations": [],
         "metadata": {
             "collected_at": now.isoformat(),
             "fetch_method": fetch_result.get("method", "unknown"),
             "language": "zh",
-            "schema_version": "1.1.0",
+            "schema_version": "1.2.0",
             "content_hash": content_h,
             **({"conversation": extra_meta} if extra_meta else {}),
         },
@@ -299,6 +315,8 @@ def append_index(entry: dict) -> None:
         "content_type": entry.get("content_type", ""),
         "importance": entry["importance"],
         "quality_tier": entry.get("quality_tier", "B"),
+        "source_tier": entry.get("source", {}).get("tier", ""),
+        "source_score": entry.get("source", {}).get("score", 0),
         "summary": entry["summary"],
         "has_deadline": timeliness.get("has_deadline", False),
         "deadline_date": timeliness.get("deadline_date"),

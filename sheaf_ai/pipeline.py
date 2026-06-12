@@ -405,12 +405,31 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         article_text,
     )
 
+    # Step 3.5: Source credibility scoring
+    from sheaf_ai.source_scoring import compute_source_score
+    from sheaf_ai.source_registry import SourceRegistry
+    from sheaf_ai.config import DATA_DIR
+
+    llm_assessment = classify_result.get("source_assessment")
+    source_registry = SourceRegistry(DATA_DIR / "source_registry.json")
+    source_info = compute_source_score(
+        url=url,
+        title=fetch_result.get("title", ""),
+        text=article_text,
+        llm_assessment=llm_assessment,
+        content_type=classify_result.get("content_type", "reference"),
+        published_date=fetch_result.get("meta", {}).get("publish_date"),
+        registry=source_registry,
+    )
+    logger.info("Source: %s score=%d tier=%s", source_info["domain"], source_info["score"], source_info["tier"])
+
     # Step 4: Store
     logger.info("Storing...")
     entry_id = store_article(
         url, fetch_result, classify_result, summary_result,
         extra_meta=conversation_meta if is_ai_conversation else None,
         quality_tier=quality_report.quality_tier,
+        source_info=source_info,
     )
     logger.info("Stored as: %s", entry_id)
 
@@ -438,6 +457,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         "entry_path": str(ENTRIES_DIR / entry_id[:7] / f"{entry_id}.json"),
         "images": images,
         "quality": quality_report.to_dict(),
+        "source": source_info,
     }
 
 

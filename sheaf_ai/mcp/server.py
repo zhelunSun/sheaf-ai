@@ -14,6 +14,7 @@ from sheaf_ai.mcp import search as _search_mod
 from sheaf_ai.mcp import entries as _entries_mod
 from sheaf_ai.mcp import cards as _cards_mod
 from sheaf_ai.mcp import insights as _insights_mod
+from sheaf_ai.mcp import verify as _verify_mod
 
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
@@ -24,6 +25,7 @@ TOOLS = (
     + _collect_mod.TOOLS
     + _cards_mod.TOOLS
     + _insights_mod.TOOLS
+    + _verify_mod.TOOLS
 )
 
 # Deprecated tool names — still handled for backward compat
@@ -64,6 +66,7 @@ def handle_request(request: dict) -> str | None:
             **_collect_mod.HANDLERS,
             **_cards_mod.HANDLERS,
             **_insights_mod.HANDLERS,
+            **_verify_mod.HANDLERS,
         }
 
         handler = handler_map.get(tool_name)
