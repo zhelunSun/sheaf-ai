@@ -79,6 +79,19 @@
   - 本文档 §7 三层架构详述
   - 本对话 (2026-06-08) 完整讨论
 
+### Phase 5.5: Source Intelligence — 消息源信任基础设施（06-12）
+- **心智模型**: "不只是收藏，还要知道谁说的、靠不靠谱"
+- **核心叙事**: **给每条收藏打上"谁说的"和"还有谁也说了"两个标签**
+- **转折触发**: Sir 收藏两篇文章后追问消息源评分机制 → 发现现有 quality gate 只评内容质量不评来源可信度
+- **两大功能**:
+  - **消息源评分 (source_score)**: 规则(0-40) + LLM(0-30) + 用户修正 + 新鲜度 → 总分 0-100, tier A/B/C/D
+  - **交叉验证 (sheaf_crosscheck)**: 库内多源事实对比，✅确认/⚠️有差异/❌仅本源/❓未提及
+- **与 Matrix 的关系**: crosscheck = matrix 的 MVP, source_score = matrix 的信任层
+- **技术特点**: LLM 评分在现有 classify 调用中一并完成，不增加 API 成本
+- **关键文档**:
+  - `docs/SOURCE-INTELLIGENCE-DESIGN.md` — 完整设计文档
+  - `internal/MCP-V2-PLAN.md` — MCP v2 架构计划
+
 ---
 
 ## 3. 心智模型扩展图
