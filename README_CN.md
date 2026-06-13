@@ -223,7 +223,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 829 passed, 16 skipped
+python -m pytest tests/ -q     # 965 passed, 22 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
