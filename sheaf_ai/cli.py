@@ -503,12 +503,11 @@ def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
     steps.append(("✅", f"Config dir: {CONFIG_DIR}"))
 
     # ── Step 3: API key detection ───────────────────────────
-    # Check common env vars (ordered by user preference)
-    key_env_vars = [
-        "SILICONFLOW_API_KEY",
-        "DEEPSEEK_API_KEY",
-        "OPENAI_API_KEY",
-        "SHEAF_API_KEY",
+    # Detect any configured provider's key from env (no default provider preference)
+    from sheaf_ai.providers import PROVIDERS
+    key_env_vars = ["SHEAF_API_KEY"]  # universal fallback first
+    key_env_vars += [
+        p["api_key_env"] for p in PROVIDERS.values() if p["api_key_env"] != "SHEAF_API_KEY"
     ]
     found_key = False
     for env_var in key_env_vars:
@@ -526,7 +525,7 @@ def _init_auto(data_dir: str | None = None, target: str | None = None) -> None:
             steps.append(("✅", "API key: configured in ~/.sheaf/config.json"))
         else:
             steps.append(("⚠️", "API key: not found"))
-            steps.append(("💡", "Run: sheaf config setup  or  set SILICONFLOW_API_KEY env var"))
+            steps.append(("💡", "Run: sheaf config setup  or  set any provider key (OPENAI_API_KEY, DEEPSEEK_API_KEY, etc.)"))
 
     # ── Step 4: Index file ──────────────────────────────────
     index_file = target_data / "index.jsonl"

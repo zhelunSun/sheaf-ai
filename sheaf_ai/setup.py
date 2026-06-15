@@ -120,12 +120,15 @@ def build_mcp_config(data_dir: Optional[str] = None) -> dict:
     if data_dir:
         env["SHEAF_DATA_DIR"] = str(Path(data_dir).resolve())
 
-    # Preserve API key if available — check all common providers
-    api_key = (
-        os.environ.get("SILICONFLOW_API_KEY")
-        or os.environ.get("DEEPSEEK_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
-    )
+    # Preserve API key if available — check all configured providers (no preference order)
+    from sheaf_ai.providers import PROVIDERS
+    api_key = os.environ.get("SHEAF_API_KEY", "").strip()
+    if not api_key:
+        for p in PROVIDERS.values():
+            env_val = os.environ.get(p["api_key_env"], "").strip()
+            if env_val:
+                api_key = env_val
+                break
     if api_key:
         env["OPENAI_API_KEY"] = api_key
 
