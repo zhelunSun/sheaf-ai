@@ -166,6 +166,23 @@ sheaf setup --target <platform>  # 一键配置 MCP（cursor/claude/workbuddy/wi
 sheaf init                       # 首次初始化
 ```
 
+## 退出码（Agent 友好）
+
+Sheaf 返回**语义化退出码**，让 Agent 可以按错误类型编程式分支处理，无需解析 stderr：
+
+| 码 | 名称        | 含义                                          |
+|----|-------------|-----------------------------------------------|
+| 0  | `SUCCESS`   | 操作成功完成                                  |
+| 1  | `PARTIAL`   | 部分成功（如批量操作有跳过）                  |
+| 2  | `DUPLICATE` | 条目已存在（去重跳过）                        |
+| 3  | `QUALITY`   | 内容质量门禁未通过                            |
+| 4  | `NETWORK`   | 网络连接或 API 调用失败                       |
+| 5  | `CONFIG`    | API key 缺失、URL 无效或配置错误              |
+| 6  | `LLM`       | LLM API 失败（限流、响应异常）                |
+| 7  | `STORAGE`   | 文件 I/O 或存储故障                           |
+
+`--json` 模式下，错误负载包含 `exit_code`、`exit_code_name` 和 `error_type` 字段，便于程序化内省。
+
 ## 架构
 
 ```

@@ -122,43 +122,103 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> NoReturn:
     fix_windows_encoding()
     debug = "--debug" in sys.argv
+    argv = sys.argv[1:]
+    is_tty = sys.stdout.isatty()
+    json_mode = "--json" in argv or (not is_tty and "--json" not in argv)
     try:
         _run()
     except KeyboardInterrupt:
         print("\nInterrupted."); sys.exit(130)
     except NetErr as e:
-        print(f"Network error: {e}\nCheck your internet connection.")
-        sys.exit(get_exit_code(e))
+        _emit_error(e, f"Network error: {e}", "Check your internet connection.",
+                    code=get_exit_code(e), json_mode=json_mode, debug=debug)
     except NetworkTimeoutError as e:
-        print(f"Network timeout: {e}\nCheck your internet connection or try again.")
-        sys.exit(get_exit_code(e))
+        _emit_error(e, f"Network timeout: {e}", "Check your internet connection or try again.",
+                    code=get_exit_code(e), json_mode=json_mode, debug=debug)
     except JSRenderingRequiredError as e:
-        print(f"JS rendering required: {e}")
-        print("Tip: pip install sheaf-ai[playwright] && sheaf playwright-install")
-        sys.exit(get_exit_code(e))
+        _emit_error(e, f"JS rendering required: {e}",
+                    "Tip: pip install sheaf-ai[playwright] && sheaf playwright-install",
+                    code=get_exit_code(e), json_mode=json_mode, debug=debug)
     except StorageError as e:
-        print(f"Storage error: {e}\nTry 'sheaf init' first.")
-        sys.exit(get_exit_code(e))
+        _emit_error(e, f"Storage error: {e}", "Try 'sheaf init' first.",
+                    code=get_exit_code(e), json_mode=json_mode, debug=debug)
     except ConfigError as e:
-        _die(f"Config error: {e}", debug, code=get_exit_code_from_key("CONFIG"))
+        _emit_error(e, f"Config error: {e}", None,
+                    code=get_exit_code_from_key("CONFIG"), json_mode=json_mode, debug=debug)
     except ValueError as e:
         msg = str(e)
         if "API Key not found" in msg:
             from sheaf_ai.llm_client import check_api_key
             _, guidance = check_api_key()
+            if json_mode:
+                _emit_error(e, msg, guidance, code=get_exit_code_from_key("CONFIG"),
+                            json_mode=True, debug=debug)
             print(guidance)
             sys.exit(get_exit_code_from_key("CONFIG"))
-        _die(f"Error: {e}", debug)
+        _die(f"Error: {e}", debug, json_mode=json_mode)
     except SheafError as e:
-        _die(f"Error: {e}", debug, code=get_exit_code(e))
+        _die(f"Error: {e}", debug, code=get_exit_code(e), json_mode=json_mode)
     except Exception as e:
-        _die(f"Error: {e}", debug)
+        _die(f"Error: {e}", debug, json_mode=json_mode)
 
 
-def _die(msg: str, debug: bool = False, code: int = 1) -> NoReturn:
-    print(msg)
-    if debug: import traceback; traceback.print_exc()
-    else: print("Run with --debug for details.")
+def _exit_code_name(code: int) -> str:
+    """Reverse-lookup the symbolic name for an exit code (for JSON output)."""
+    from sheaf_ai.exceptions import EXIT_CODES
+    for name, value in EXIT_CODES.items():
+        if value == code:
+            return name
+    return "UNKNOWN"
+
+
+def _emit_error(exc: Exception, msg: str, hint: str | None, *,
+                code: int, json_mode: bool, debug: bool) -> NoReturn:
+    """Emit an error in human or JSON form, then exit with the semantic code."""
+    if json_mode:
+        payload = {
+            "success": False,
+            "error": msg,
+            "exit_code": code,
+            "exit_code_name": _exit_code_name(code),
+            "error_type": type(exc).__name__,
+        }
+        if hint:
+            payload["hint"] = hint
+        if debug:
+            import traceback
+            payload["traceback"] = traceback.format_exc()
+        print(json.dumps(payload, ensure_ascii=False))
+    else:
+        print(msg)
+        if hint:
+            print(hint)
+        if debug:
+            import traceback
+            traceback.print_exc()
+        else:
+            print("Run with --debug for details.")
+    sys.exit(code)
+
+
+def _die(msg: str, debug: bool = False, code: int = 1, *, json_mode: bool = False) -> NoReturn:
+    if json_mode:
+        payload = {
+            "success": False,
+            "error": msg,
+            "exit_code": code,
+            "exit_code_name": _exit_code_name(code),
+        }
+        if debug:
+            import traceback
+            payload["traceback"] = traceback.format_exc()
+        print(json.dumps(payload, ensure_ascii=False))
+    else:
+        print(msg)
+        if debug:
+            import traceback
+            traceback.print_exc()
+        else:
+            print("Run with --debug for details.")
     sys.exit(code)
 
 

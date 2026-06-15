@@ -207,6 +207,27 @@ Sheaf handles more than just web articles:
 
 Under the hood, every input goes through the same pipeline: **fetch → classify → summarize → store**. The output is always a structured entry your agents can search and cite.
 
+## Exit Codes (Agent-Native)
+
+Sheaf returns **semantic exit codes** so agents can programmatically branch on error type instead of parsing stderr:
+
+| Code | Name         | Meaning                                      |
+|------|--------------|----------------------------------------------|
+| 0    | `SUCCESS`    | Operation completed successfully             |
+| 1    | `PARTIAL`    | Partial success (e.g. batch ops with skips) |
+| 2    | `DUPLICATE`  | Entry already exists (dedup skip)            |
+| 3    | `QUALITY`    | Content quality gate rejected the input      |
+| 4    | `NETWORK`    | Network connectivity or API call failure     |
+| 5    | `CONFIG`     | Missing API key, invalid URL, or bad config  |
+| 6    | `LLM`        | LLM API failure (rate limit, bad response)   |
+| 7    | `STORAGE`    | File I/O or data storage failure             |
+
+In `--json` mode, error payloads include `exit_code`, `exit_code_name`, and `error_type` fields for programmatic introspection:
+
+```json
+{"success": false, "error": "Config error: missing API key", "exit_code": 5, "exit_code_name": "CONFIG", "error_type": "ConfigError", "hint": "Set SHEAF_API_KEY"}
+```
+
 ## Architecture
 
 ```

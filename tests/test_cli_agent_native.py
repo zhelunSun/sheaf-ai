@@ -175,6 +175,61 @@ class TestExitCodeSemantics:
         assert get_exit_code_from_key("SUCCESS") == 0
         assert get_exit_code_from_key("NONEXISTENT") == 1  # fallback
 
+    def test_json_error_includes_exit_code_field(self):
+        """Issue #88: --json error output must include exit_code field.
+
+        Verifies _emit_error produces structured JSON with success, exit_code,
+        exit_code_name, error, and error_type fields.
+        """
+        from sheaf_ai.cli import _emit_error
+        from sheaf_ai.exceptions import ConfigError
+
+        buf = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = buf
+        try:
+            _emit_error(
+                ConfigError("missing API key"),
+                "Config error: missing API key",
+                "Set SHEAF_API_KEY",
+                code=5, json_mode=True, debug=False,
+            )
+        except SystemExit as e:
+            assert e.code == 5
+        finally:
+            sys.stdout = old_stdout
+
+        payload = json.loads(buf.getvalue())
+        assert payload["success"] is False
+        assert payload["exit_code"] == 5
+        assert payload["exit_code_name"] == "CONFIG"
+        assert payload["error_type"] == "ConfigError"
+        assert payload["hint"] == "Set SHEAF_API_KEY"
+
+    def test_json_error_includes_error_type(self):
+        """Issue #88: --json error output should expose error_type for Agent introspection."""
+        from sheaf_ai.cli import _emit_error
+        from sheaf_ai.exceptions import NetworkError
+
+        buf = io.StringIO()
+        old_stdout = sys.stdout
+        sys.stdout = buf
+        try:
+            _emit_error(
+                NetworkError("conn refused"),
+                "Network error: conn refused",
+                None,
+                code=4, json_mode=True, debug=False,
+            )
+        except SystemExit as e:
+            assert e.code == 4
+        finally:
+            sys.stdout = old_stdout
+
+        payload = json.loads(buf.getvalue())
+        assert payload["error_type"] == "NetworkError"
+        assert payload["exit_code_name"] == "NETWORK"
+
 
 class TestStructuredErrors:
     """Test structured error output for Agent consumption."""
