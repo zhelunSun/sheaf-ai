@@ -7,8 +7,12 @@ platform's config file, reducing the deploy process to a single command:
     sheaf setup --target cursor
     sheaf setup --target workbuddy
     sheaf setup --target claude
+    sheaf setup --target codex
 
-Supports: cursor, claude, workbuddy, windsurf.
+For claude & codex it also deploys a bundled skill / AGENTS note so the agent
+is guided to use the `sheaf` CLI for the non-core operations.
+
+Supports: cursor, claude, codex, workbuddy, windsurf.
 """
 from __future__ import annotations
 
@@ -18,6 +22,14 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Optional
+
+# TOML support — Codex MCP config lives in ~/.codex/config.toml. tomllib is
+# stdlib in 3.11+; tomli is the 3.10 backport. tomli_w writes TOML for merges.
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:  # pragma: no cover - exercised only on 3.10
+    import tomli as tomllib  # type: ignore[no-redef]
+import tomli_w
 
 
 # ============================================================
@@ -32,7 +44,7 @@ def _home() -> Path:
 def get_config_path(target: str) -> Path:
     """Return the expected MCP config file path for *target* platform.
 
-    Supported targets: cursor, claude, workbuddy, windsurf.
+    Supported targets: cursor, claude, codex, workbuddy, windsurf.
     """
     home = _home()
     cwd = Path.cwd()
@@ -42,12 +54,32 @@ def get_config_path(target: str) -> Path:
     elif target == "claude":
         # Claude Code stores MCP config in ~/.claude.json (top-level key "mcpServers")
         return home / ".claude.json"
+    elif target == "codex":
+        # OpenAI Codex CLI stores MCP config in ~/.codex/config.toml ([mcp_servers.*])
+        return home / ".codex" / "config.toml"
     elif target == "workbuddy":
         return home / ".workbuddy" / "mcp.json"
     elif target == "windsurf":
         return cwd / ".windsurf" / "mcp.json"
     else:
-        raise ValueError(f"Unknown target: {target!r}. Supported: cursor, claude, workbuddy, windsurf")
+        raise ValueError(
+            f"Unknown target: {target!r}. Supported: cursor, claude, codex, workbuddy, windsurf"
+        )
+
+
+def get_skill_path(target: str) -> Optional[Path]:
+    """Return the destination path for the bundled skill / AGENTS note, or None.
+
+    claude → ~/.claude/skills/sheaf-guide.md  (Claude Code native Skills)
+    codex  → ~/.codex/AGENTS.sheaf.md         (Codex AGENTS.md convention)
+    others → None (no first-class skill mechanism)
+    """
+    home = _home()
+    if target == "claude":
+        return home / ".claude" / "skills" / "sheaf-guide.md"
+    elif target == "codex":
+        return home / ".codex" / "AGENTS.sheaf.md"
+    return None
 
 
 # ============================================================
@@ -70,10 +102,23 @@ def detect_sheaf_entry() -> str:
     return f"{detect_python_path()} -m sheaf_ai.cli"
 
 
+def _resolve_mcp_command() -> tuple[str, list[str]]:
+    """Resolve the MCP server launch command.
+
+    Prefer the ``sheaf-mcp`` console script — it is path-independent: it keeps
+    working after the venv used at install time is removed, as long as
+    sheaf-ai is installed somewhere on PATH. Fall back to
+    ``<python> -m sheaf_ai.mcp_server`` when the script is not on PATH.
+    """
+    if shutil.which("sheaf-mcp"):
+        return ("sheaf-mcp", [])
+    return (detect_python_path(), ["-m", "sheaf_ai.mcp_server"])
+
+
 def detect_all_platforms() -> list[str]:
     """Detect all Agent platforms present on this machine.
 
-    Returns a list of platform IDs: cursor, claude, workbuddy, windsurf.
+    Returns a list of platform IDs: cursor, claude, codex, workbuddy, windsurf.
     Checks both CWD project markers and global config files.
     """
     found = []
@@ -84,9 +129,13 @@ def detect_all_platforms() -> list[str]:
     if (cwd / ".cursor").exists() or (cwd / ".cursorrules").exists():
         found.append("cursor")
 
-    # Claude Code: ~/.claude.json exists
-    if (home / ".claude.json").exists():
+    # Claude Code: ~/.claude.json exists or `claude` on PATH
+    if (home / ".claude.json").exists() or shutil.which("claude"):
         found.append("claude")
+
+    # Codex CLI: ~/.codex/ dir or `codex` on PATH
+    if (home / ".codex").exists() or shutil.which("codex"):
+        found.append("codex")
 
     # WorkBuddy: ~/.workbuddy/ dir
     if (home / ".workbuddy").exists():
@@ -106,13 +155,14 @@ def detect_all_platforms() -> list[str]:
 def build_mcp_config(data_dir: Optional[str] = None) -> dict:
     """Build a Sheaf MCP server config block.
 
-    Returns a dict suitable for nesting under ``mcpServers.sheaf``.
+    Returns a dict suitable for nesting under ``mcpServers.sheaf`` (JSON
+    targets) or ``mcp_servers.sheaf`` (Codex TOML).
     """
-    python_path = detect_python_path()
+    command, args = _resolve_mcp_command()
 
     config: dict = {
-        "command": python_path,
-        "args": ["-m", "sheaf_ai.mcp_server"],
+        "command": command,
+        "args": args,
     }
 
     # Pass data dir via env if custom
@@ -120,15 +170,12 @@ def build_mcp_config(data_dir: Optional[str] = None) -> dict:
     if data_dir:
         env["SHEAF_DATA_DIR"] = str(Path(data_dir).resolve())
 
-    # Preserve API key if available — check all configured providers (no preference order)
-    from sheaf_ai.providers import PROVIDERS
-    api_key = os.environ.get("SHEAF_API_KEY", "").strip()
-    if not api_key:
-        for p in PROVIDERS.values():
-            env_val = os.environ.get(p["api_key_env"], "").strip()
-            if env_val:
-                api_key = env_val
-                break
+    # Preserve API key if available — check all common providers
+    api_key = (
+        os.environ.get("SILICONFLOW_API_KEY")
+        or os.environ.get("DEEPSEEK_API_KEY")
+        or os.environ.get("OPENAI_API_KEY")
+    )
     if api_key:
         env["OPENAI_API_KEY"] = api_key
 
@@ -143,18 +190,19 @@ def build_full_config(target: str, data_dir: Optional[str] = None) -> dict:
 
     For *claude*, the config is the top-level ``.claude.json`` where
     ``mcpServers`` is a nested key.  For other targets the file is
-    an MCP-only JSON (``{ "mcpServers": { ... } }``).
+    an MCP-only JSON (``{ "mcpServers": { ... } }``).  Codex is TOML and is
+    not handled here — see ``setup_target``.
     """
     sheaf_block = build_mcp_config(data_dir=data_dir)
 
-    if target == "claude":
-        return {"mcpServers": {"sheaf": sheaf_block}}
-    else:
-        return {"mcpServers": {"sheaf": sheaf_block}}
+    if target == "codex":
+        raise ValueError("Codex uses TOML — use setup_target(), not build_full_config()")
+
+    return {"mcpServers": {"sheaf": sheaf_block}}
 
 
 # ============================================================
-# Config file operations
+# JSON config file operations
 # ============================================================
 
 def read_existing_config(path: Path) -> dict:
@@ -191,6 +239,89 @@ def merge_config(existing: dict, sheaf_entry: dict) -> dict:
 
 
 # ============================================================
+# TOML config file operations (Codex)
+# ============================================================
+
+def read_existing_config_toml(path: Path) -> dict:
+    """Read and parse an existing TOML config file. Returns {} on any failure."""
+    if not path.exists():
+        return {}
+    try:
+        text = path.read_text(encoding="utf-8").strip()
+        if not text:
+            return {}
+        return tomllib.loads(text)
+    except (tomllib.TOMLDecodeError, OSError):
+        return {}
+
+
+def merge_toml_mcp(parsed: dict, sheaf_entry: dict) -> dict:
+    """Merge the sheaf MCP entry into a parsed Codex config dict.
+
+    - Creates the ``mcp_servers`` table if absent.
+    - Overwrites the ``sheaf`` entry if present.
+    - Preserves all other keys ([model], [profiles], other mcp_servers.*, …).
+    """
+    merged = dict(parsed)
+    servers = dict(merged.get("mcp_servers", {}))
+    servers["sheaf"] = sheaf_entry
+    merged["mcp_servers"] = servers
+    return merged
+
+
+def write_config_toml(path: Path, parsed: dict) -> None:
+    """Write *parsed* as TOML to *path*, creating parent dirs."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(tomli_w.dumps(parsed), encoding="utf-8")
+
+
+# ============================================================
+# Skill / AGENTS note deployment
+# ============================================================
+
+def _skills_dir() -> Path:
+    """Return the directory bundled skill markdown files live in."""
+    return Path(__file__).resolve().parent / "skills"
+
+
+def deploy_skill(target: str) -> Optional[dict]:
+    """Deploy the bundled skill / AGENTS note for *target*.
+
+    claude → copies sheaf-guide.md to ~/.claude/skills/sheaf-guide.md
+    codex  → copies AGENTS.sheaf.md to ~/.codex/AGENTS.sheaf.md
+    others → returns None (no first-class skill mechanism).
+
+    Idempotent — overwrites with the bundled version. Returns a result dict on
+    deployment (or attempted), None when there is nothing to deploy.
+    """
+    dest = get_skill_path(target)
+    if dest is None:
+        return None
+
+    src_name = "sheaf-guide.md" if target == "claude" else "AGENTS.sheaf.md"
+    src = _skills_dir() / src_name
+    if not src.exists():
+        return {"ok": False, "target": target, "dest": str(dest), "error": f"bundled skill missing: {src}"}
+
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+    return {"ok": True, "target": target, "dest": str(dest)}
+
+
+# ============================================================
+# Backup
+# ============================================================
+
+def _backup_if_exists(path: Path) -> Optional[Path]:
+    """Copy *path* to ``<path>.sheaf-bak`` if it exists. Defense against bad merges."""
+    if path.exists():
+        bak = path.with_name(path.name + ".sheaf-bak")
+        shutil.copy2(path, bak)
+        return bak
+    return None
+
+
+# ============================================================
 # Public API
 # ============================================================
 
@@ -201,19 +332,35 @@ def setup_target(
 ) -> dict:
     """Run the setup for a specific target platform.
 
+    JSON targets (cursor/claude/workbuddy/windsurf): merge into the platform's
+    ``mcpServers`` JSON. Codex: merge into ``~/.codex/config.toml`` (TOML,
+    key ``mcp_servers``). For claude & codex it also deploys the bundled skill
+    / AGENTS note. A ``<file>.sheaf-bak`` backup is written before overwriting
+    an existing config.
+
     Returns a result dict with keys:
-        ok, target, config_path, created, sheaf_entry, next_steps
+        ok, target, config_path, created, sheaf_entry, merged_config, skill, next_steps
 
     The function is side-effect-free when *dry_run* is True.
     """
     config_path = get_config_path(target)
     sheaf_entry = build_mcp_config(data_dir=data_dir)
 
-    existing = read_existing_config(config_path)
-    merged = merge_config(existing, sheaf_entry)
+    if target == "codex":
+        existing = read_existing_config_toml(config_path)
+        merged = merge_toml_mcp(existing, sheaf_entry)
+        if not dry_run:
+            _backup_if_exists(config_path)
+            write_config_toml(config_path, merged)
+    else:
+        existing = read_existing_config(config_path)
+        merged = merge_config(existing, sheaf_entry)
+        if not dry_run:
+            _backup_if_exists(config_path)
+            write_config(config_path, merged)
 
-    if not dry_run:
-        write_config(config_path, merged)
+    # Deploy skill / AGENTS note (claude & codex only). Skipped on dry_run.
+    skill_result = None if dry_run else deploy_skill(target)
 
     return {
         "ok": True,
@@ -222,6 +369,7 @@ def setup_target(
         "created": not existing,
         "sheaf_entry": sheaf_entry,
         "merged_config": merged,
+        "skill": skill_result,
         "next_steps": _next_steps(target, config_path),
     }
 
@@ -235,10 +383,20 @@ def _next_steps(target: str, config_path: Path) -> list[str]:
             f"3. Config written to: {config_path}",
         ]
     elif target == "claude":
+        skill = get_skill_path("claude")
         return [
             "1. Restart Claude Code.",
             "2. Run: claude mcp list  (should show 'sheaf').",
-            f"3. Config written to: {config_path}",
+            f"3. Agent skill deployed to: {skill}",
+            f"4. Config written to: {config_path}",
+        ]
+    elif target == "codex":
+        skill = get_skill_path("codex")
+        return [
+            "1. Restart Codex CLI (or start a new session).",
+            "2. The Sheaf MCP tools should auto-load.",
+            f"3. Agent guide deployed to: {skill}",
+            f"4. MCP config written to: {config_path}",
         ]
     elif target == "workbuddy":
         return [
@@ -275,6 +433,13 @@ def print_setup_result(result: dict) -> None:
     print(f"  Command: {entry.get('command')} {' '.join(entry.get('args', []))}")
     if entry.get("env"):
         print(f"  Env vars: {', '.join(entry['env'].keys())}")
+
+    skill = result.get("skill")
+    if skill:
+        if skill.get("ok"):
+            print(f"  Skill:   deployed → {skill['dest']}")
+        else:
+            print(f"  Skill:   {skill.get('error', 'deploy failed')}")
 
     print()
     steps = result.get("next_steps", [])

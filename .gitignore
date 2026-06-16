@@ -58,3 +58,4 @@ codebuddy/
 
 # Debug logs
 debug.log
+.sandbox-neutral/

@@ -2,6 +2,28 @@
 
 All notable changes to Sheaf.
 
+## [0.6.1-beta.1] — 2026-06-12 (feat/mcp-v2, pending merge to main)
+
+### Added (Beta)
+- **Source Credibility Score** — hybrid rule+LLM scoring, every entry now carries `source.score` (0-100) and `tier` (A/B/C/D)
+  - Rule base (0-40): domain authority table + primary/secondary detection + author + citations
+  - LLM bonus (0-30): `is_primary_source`, `has_verifiable_claims`, `domain_expertise` (no extra API cost — runs inside classify call)
+  - Freshness (0-10): news decay bonus
+  - User override: persisted to `source_registry.json` for domain-level caching
+- **`sheaf_crosscheck` MCP tool** — cross-verify claims against other entries in the knowledge base
+  - Returns a fact comparison matrix with status per claim: ✅ confirmed / ⚠️ divergent / ❌ lone source / ❓ not covered
+  - Overall confidence: high / medium / low
+- **Source Intelligence design** — `docs/SOURCE-INTELLIGENCE-DESIGN.md` (draft v0.1)
+- **MCP v2 architecture plan** — `internal/MCP-V2-PLAN.md` (元工具 + 角色专属工具两层草案)
+
+### Positioning
+- Phase 5.5 in `PRODUCT-EVOLUTION.md` — "消息源信任基础设施"
+- Bridges current collect pipeline to Phase 4 Matrix (v0.7.0) and Phase 5 Agent Memory Layer
+
+### Known Gaps (blocking v0.6.1 release)
+- ⚠️ **#67** SiliconFlow live rebuild verification (open 9d, blocked by Sir network window)
+- ⚠️ Manual test checklist written but not yet executed end-to-end (`docs/manual-test-checklist-2026-06-15.md`)
+
 ## [0.6.0] — 2026-06-08
 
 ### Added

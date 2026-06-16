@@ -1,6 +1,6 @@
 # Sheaf 产品设计文档总索引
 
-> **最后更新**: 2026-06-01 | **维护者**: Jarvis
+> **最后更新**: 2026-06-16 | **维护者**: Jarvis
 > **目的**: 让产品设计思路可追溯、有逻辑、能沉淀为经验
 
 ---
@@ -79,7 +79,7 @@
   - 本文档 §7 三层架构详述
   - 本对话 (2026-06-08) 完整讨论
 
-### Phase 5.5: Source Intelligence — 消息源信任基础设施（06-12）
+### Phase 5.5: Source Intelligence — 消息源信任基础设施（06-12）✅ 已实现 (feat/mcp-v2)
 - **心智模型**: "不只是收藏，还要知道谁说的、靠不靠谱"
 - **核心叙事**: **给每条收藏打上"谁说的"和"还有谁也说了"两个标签**
 - **转折触发**: Sir 收藏两篇文章后追问消息源评分机制 → 发现现有 quality gate 只评内容质量不评来源可信度
@@ -88,21 +88,27 @@
   - **交叉验证 (sheaf_crosscheck)**: 库内多源事实对比，✅确认/⚠️有差异/❌仅本源/❓未提及
 - **与 Matrix 的关系**: crosscheck = matrix 的 MVP, source_score = matrix 的信任层
 - **技术特点**: LLM 评分在现有 classify 调用中一并完成，不增加 API 成本
+- **实现状态**: ✅ feat/mcp-v2 分支已实现（e27c63b + 77bb915），⚠️ 等 #67 联网验证后 merge
 - **关键文档**:
   - `docs/SOURCE-INTELLIGENCE-DESIGN.md` — 完整设计文档
   - `internal/MCP-V2-PLAN.md` — MCP v2 架构计划
+
+### Phase 5.6: MemTensor 调研后的定位再确认（06-16）
+- **调研结论**: MemOS 给 AI 装记忆，Sheaf 给人装外脑 — **互补而非竞争**
+- **3 条建议**: 🔴 Extension 升级为知识注入助手 / 🟡 Card schema 对齐 MemOS / 🟢 agent-legion 借鉴 MemScheduler
+- **不影响 Phase 5 三层架构叙事**
 
 ---
 
 ## 3. 心智模型扩展图
 
 ```
-Phase 0          Phase 1             Phase 2              Phase 3           Phase 4           Phase 5
-收藏工具    →   Agent-Native     →  低摩擦+Agent Context → 一键安装     →  事件理解      →  Agent 记忆层
-"保存文章"     "给Agent用的"        "收藏是入口"          "装完就能用"      "看清全貌"        "所有Agent的记忆"
+Phase 0          Phase 1             Phase 2              Phase 3           Phase 4           Phase 5           Phase 5.5
+收藏工具    →   Agent-Native     →  低摩擦+Agent Context → 一键安装     →  事件理解      →  Agent 记忆层   →  消息源信任
+"保存文章"     "给Agent用的"        "收藏是入口"          "装完就能用"      "看清全貌"        "所有Agent的记忆"  "谁说的+还有谁说了"
 
-  collect     →  collect + MCP   →   collect +         →  sheaf init    →  sheaf matrix  →  ~/.sheaf/
-                   + crystallize      crystallize +       --auto             (同事件          三层架构：
+  collect     →  collect + MCP   →   collect +         →  sheaf init    →  sheaf matrix  →  ~/.sheaf/      →  source_score
+                   + crystallize      crystallize +       --auto             (同事件          三层架构：          + crosscheck
                                       Agent Context                          多源聚合)         内容→记忆→终端
 ```
 
@@ -112,6 +118,7 @@ Phase 0          Phase 1             Phase 2              Phase 3           Phas
 - Phase 2→3: 从功能完整到体验流畅（降低安装摩擦）
 - Phase 3→4: 从"保存"到"理解"（同事件跨源聚合 + 知识矩阵）
 - Phase 4→5: 从独立产品到生态基础设施（Agent 终端的记忆层）
+- Phase 5→5.5: 从"记住什么"到"判断谁靠谱"（消息源信任基础设施）
 
 ---
 

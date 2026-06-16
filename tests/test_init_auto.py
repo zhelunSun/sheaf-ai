@@ -59,6 +59,9 @@ class TestDetectAllPlatforms:
         from sheaf_ai.setup import detect_all_platforms
         monkeypatch.setattr("sheaf_ai.setup._home", lambda: tmp_path)
         monkeypatch.chdir(tmp_path)
+        # Prevent PATH-resident binaries (e.g. claude) from polluting the
+        # "no platforms detected" assertion on dev machines.
+        monkeypatch.setattr("sheaf_ai.setup.shutil.which", lambda _: None)
         result = detect_all_platforms()
         assert result == []
 

@@ -83,7 +83,10 @@ class TestGetConfigPath:
 
 class TestBuildMcpConfig:
     def test_basic_structure(self):
-        config = build_mcp_config()
+        # Force the fallback path (no sheaf-mcp console script on PATH) so the
+        # args are deterministic regardless of the dev machine install state.
+        with patch("sheaf_ai.setup.shutil.which", return_value=None):
+            config = build_mcp_config()
         assert "command" in config
         assert "args" in config
         assert config["args"] == ["-m", "sheaf_ai.mcp_server"]
@@ -175,7 +178,10 @@ class TestBuildMcpConfig:
 
 class TestBuildFullConfig:
     def test_cursor_format(self):
-        config = build_full_config("cursor")
+        # Force the fallback path so args are deterministic on dev machines
+        # where sheaf-mcp console script is installed on PATH.
+        with patch("sheaf_ai.setup.shutil.which", return_value=None):
+            config = build_full_config("cursor")
         assert "mcpServers" in config
         assert "sheaf" in config["mcpServers"]
         assert config["mcpServers"]["sheaf"]["args"] == ["-m", "sheaf_ai.mcp_server"]

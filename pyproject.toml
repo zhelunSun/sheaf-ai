@@ -30,6 +30,10 @@ dependencies = [
     "requests>=2.32.0",
     "beautifulsoup4>=4.12.0",
     "numpy>=1.24.0",
+    # Codex MCP config is TOML (~/.codex/config.toml). 3.10 has no stdlib
+    # tomllib (added 3.11); tomli_w writes TOML for the merge path.
+    "tomli>=1.1.0; python_version < '3.11'",
+    "tomli_w>=1.0.0",
 ]
 
 [project.urls]
@@ -78,6 +82,7 @@ include = ["sheaf_ai*", "sheaf_cards*", "prompts*"]
 
 [tool.setuptools.package-data]
 prompts = ["*.md"]
+sheaf_ai = ["skills/*.md"]
 
 [tool.ruff]
 line-length = 100
