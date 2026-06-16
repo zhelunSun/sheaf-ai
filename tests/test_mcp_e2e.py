@@ -80,13 +80,14 @@ print(f"  Tools: {len(tools)}")
 tool_names = [t["name"] for t in tools]
 print(f"  Names: {tool_names}")
 expected = [
-    "sheaf_search", "sheaf_list", "sheaf_get", "sheaf_urgent",
-    "sheaf_correct", "sheaf_collect", "sheaf_crystallize",
-    "sheaf_list_cards", "sheaf_get_card",
+    "sheaf_collect", "sheaf_search",
+    "sheaf_crystallize", "sheaf_get_card",
 ]
 for name in expected:
     assert name in tool_names, f"Missing tool: {name}"
-print("  All 9 tools present ✅")
+# Default surface is 4 core tools; the other 7 are CLI-only (Issue #91).
+assert len(tools) == 4, f"Expected 4 core tools, got {len(tools)}: {tool_names}"
+print("  All 4 core tools present ✅")
 
 # --- 5. sheaf_search ---
 print("\n=== 5. sheaf_search ===")

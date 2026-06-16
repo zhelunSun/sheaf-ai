@@ -183,19 +183,46 @@ def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
 
 
 def test_mcp_tools_defined():
-    """MCP server has all expected tools."""
+    """MCP server exposes the 4 core tools by default (Issue #91).
+
+    The full 11-tool set is available via SHEAF_MCP_TOOLS=all; here we verify the
+    default surface. The 7 demoted tools' handlers stay registered for backward
+    compat (tested via tools/call elsewhere).
+    """
     from sheaf_ai.mcp_server import TOOLS
     tool_names = [t["name"] for t in TOOLS]
-    expected = {
-        "sheaf_search", "sheaf_list", "sheaf_get",
-        "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
-        "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
-        "sheaf_insights",
+    core_expected = {
+        "sheaf_collect", "sheaf_search",
+        "sheaf_crystallize", "sheaf_get_card",
     }
-    assert expected <= set(tool_names), f"Missing tools: {expected - set(tool_names)}"
-    # Deprecated tools should NOT be in the active tool list
+    assert core_expected <= set(tool_names), f"Missing core tools: {core_expected - set(tool_names)}"
+    # Default surface is exactly the 4 core tools.
+    assert len(tool_names) == 4, f"Expected 4 core tools, got {len(tool_names)}: {tool_names}"
+    # Deprecated tools should NEVER be in the active tool list.
     for deprecated in ("sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"):
         assert deprecated not in tool_names, f"Deprecated tool {deprecated} should not be active"
+
+
+def test_mcp_tools_full_surface_via_env(monkeypatch):
+    """SHEAF_MCP_TOOLS=all re-exposes all 11 tools for power users / migration."""
+    import importlib
+    monkeypatch.setenv("SHEAF_MCP_TOOLS", "all")
+    # Force re-import so the module-level TOOLS picks up the env var.
+    import sheaf_ai.mcp.server as srv
+    importlib.reload(srv)
+    try:
+        tool_names = [t["name"] for t in srv.TOOLS]
+        full_expected = {
+            "sheaf_search", "sheaf_list", "sheaf_get",
+            "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
+            "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
+            "sheaf_insights", "sheaf_crosscheck",
+        }
+        assert full_expected <= set(tool_names), f"Missing tools in full surface: {full_expected - set(tool_names)}"
+    finally:
+        # Restore default module state to avoid leaking into other tests.
+        monkeypatch.delenv("SHEAF_MCP_TOOLS", raising=False)
+        importlib.reload(srv)
 
 
 def test_mcp_initialize():
@@ -226,7 +253,8 @@ def test_mcp_tools_list():
     parsed = json.loads(response)
     assert parsed["id"] == 2
     tools = parsed["result"]["tools"]
-    assert len(tools) >= 6
+    # Default MCP surface exposes 4 core tools (Issue #91).
+    assert len(tools) == 4
 
 
 def test_mcp_unknown_method():

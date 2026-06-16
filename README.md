@@ -153,22 +153,27 @@ Sheaf ships with a built-in [Model Context Protocol](https://modelcontextprotoco
 sheaf mcp
 ```
 
-**Available tools (10 active + 3 deprecated):**
+**Available tools (4 core + 7 CLI-only, see [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91)):**
 
-| Tool | Description |
-|------|-------------|
-| Tool | Description |
-|------|-------------|
-| `sheaf_search` | Full-text + semantic search (keyword/hybrid/quick) |
-| `sheaf_list` | List entries with pagination, filters (urgent/untagged), stats summary |
-| `sheaf_get` | Get full entry details by ID |
-| `sheaf_collect` | Add a new URL to your collection |
-| `sheaf_collect_batch` | Add multiple URLs in one batch call |
-| `sheaf_correct` | Correct a classification error |
-| `sheaf_crystallize` | Crystallize knowledge cards from a topic |
-| `sheaf_list_cards` | List crystallized cards (optional topic filter) |
-| `sheaf_get_card` | Get full card details by ID |
-| `sheaf_insights` | Discover cross-topic associations |
+| Tool | Type | Description |
+|------|------|-------------|
+| `sheaf_collect` | Core MCP | Add a new URL to your collection |
+| `sheaf_search` | Core MCP | Full-text + semantic search (keyword/hybrid/quick) |
+| `sheaf_crystallize` | Core MCP | Crystallize knowledge cards from a topic |
+| `sheaf_get_card` | Core MCP | Get full card details by ID |
+| `sheaf_collect_batch` | CLI / on-demand | Batch-collect via `sheaf collect URL1 URL2 ...` |
+| `sheaf_list` | CLI / on-demand | `sheaf list [--topic T] [--tag T] [--json]` |
+| `sheaf_get` | CLI / on-demand | Full entry detail (MCP `tools/call` fallback) |
+| `sheaf_correct` | CLI / on-demand | Correct classification (MCP `tools/call` fallback) |
+| `sheaf_insights` | CLI / on-demand | `sheaf insights` — cross-topic associations |
+| `sheaf_crosscheck` | CLI / on-demand | Fact matrix (MCP `tools/call`; see also `sheaf matrix`) |
+| `sheaf_list_cards` | CLI / on-demand | `sheaf crystallize --list` |
+
+The 4 core tools cover ~90% of automated agent workflows and keep the MCP schema
+lean (~1.5k tokens vs ~5k before). The 7 demoted tools keep their handlers
+registered for backward compat — call them via `tools/call`, or re-expose the
+full set with `SHEAF_MCP_TOOLS=all sheaf mcp` (power users / migration). See the
+`sheaf-cli-extended` skill for CLI examples.
 
 ## Agent Integration (One Command)
 
@@ -354,7 +359,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 885 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 965 passing tests. We're validating with real users before beta.
 
 ### Chrome Extension
 

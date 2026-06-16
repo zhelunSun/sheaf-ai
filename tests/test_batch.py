@@ -362,13 +362,18 @@ class TestCLIBatchParsing:
 
 class TestMCPBatchTool:
     def test_tool_in_tools_list(self):
-        from sheaf_ai.mcp_server import TOOLS
-        tool_names = [t["name"] for t in TOOLS]
+        """sheaf_collect_batch is registered in ALL_TOOLS (Issue #91).
+
+        It is demoted from the default 4-tool MCP surface but its handler stays
+        registered for backward compat — verify via the full surface.
+        """
+        from sheaf_ai.mcp.server import ALL_TOOLS
+        tool_names = [t["name"] for t in ALL_TOOLS]
         assert "sheaf_collect_batch" in tool_names
 
     def test_tool_schema(self):
-        from sheaf_ai.mcp_server import TOOLS
-        tool = next(t for t in TOOLS if t["name"] == "sheaf_collect_batch")
+        from sheaf_ai.mcp.server import ALL_TOOLS
+        tool = next(t for t in ALL_TOOLS if t["name"] == "sheaf_collect_batch")
         schema = tool["inputSchema"]
         assert "urls" in schema["properties"]
         assert schema["required"] == ["urls"]

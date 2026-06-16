@@ -86,7 +86,9 @@ class TestMcpProtocol:
         parsed = json.loads(resp)
         tools = parsed["result"]["tools"]
         assert isinstance(tools, list)
-        assert len(tools) >= 6
+        # Default MCP surface exposes 4 core tools (Issue #91).
+        # Full set is available via SHEAF_MCP_TOOLS=all.
+        assert len(tools) == 4
 
     def test_unknown_tool_error(self):
         resp = handle_request({
@@ -288,20 +290,25 @@ class TestMcpE2E:
         resp = mcp.send({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
         tools = resp["result"]["tools"]
         names = [t["name"] for t in tools]
+        # Default MCP surface — 4 core tools (Issue #91).
         expected = [
-            "sheaf_search", "sheaf_list", "sheaf_get",
-            "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
-            "sheaf_crystallize",
-            "sheaf_list_cards", "sheaf_get_card",
-            "sheaf_insights",
+            "sheaf_collect", "sheaf_search",
+            "sheaf_crystallize", "sheaf_get_card",
         ]
         for name in expected:
-            assert name in names, f"Missing tool: {name}"
-        assert len(tools) == 10
+            assert name in names, f"Missing core tool: {name}"
+        assert len(tools) == 4
         # Deprecated tools should NOT appear in tools/list
         deprecated = ["sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"]
         for d in deprecated:
             assert d not in names, f"Deprecated tool {d} should not be in tools/list"
+        # Demoted tools (Issue #91) should NOT be in the default surface.
+        demoted = [
+            "sheaf_collect_batch", "sheaf_list", "sheaf_get", "sheaf_correct",
+            "sheaf_insights", "sheaf_crosscheck", "sheaf_list_cards",
+        ]
+        for d in demoted:
+            assert d not in names, f"Demoted tool {d} should not be in default tools/list (use SHEAF_MCP_TOOLS=all)"
 
     def test_search_remote_sensing(self, mcp):
         resp = mcp.send({"jsonrpc": "2.0", "id": 3, "method": "tools/call",

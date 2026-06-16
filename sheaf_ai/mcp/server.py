@@ -5,6 +5,7 @@ Registers tools from domain modules and dispatches requests.
 from __future__ import annotations
 
 import json
+import os
 import sys
 
 from sheaf_ai.config import VERSION, fix_windows_encoding
@@ -18,8 +19,8 @@ from sheaf_ai.mcp import verify as _verify_mod
 
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
-# Collect all tool definitions from domain modules
-TOOLS = (
+# All tool definitions from domain modules (full surface).
+ALL_TOOLS = (
     _search_mod.TOOLS
     + _entries_mod.TOOLS
     + _collect_mod.TOOLS
@@ -27,6 +28,29 @@ TOOLS = (
     + _insights_mod.TOOLS
     + _verify_mod.TOOLS
 )
+
+# Default MCP surface — the 4 high-frequency entry points (collect / search /
+# crystallize / get_card). The remaining 7 tools stay callable via tools/call
+# (handler_map is full) for backward compat; agents are guided to the `sheaf`
+# CLI for them by the deployed skill (sheaf-cli-extended). Set
+# SHEAF_MCP_TOOLS=all to re-expose the full set (migration / power users).
+# See: https://github.com/zhelunSun/sheaf-ai/issues/91
+CORE_TOOL_NAMES = {"sheaf_collect", "sheaf_search", "sheaf_crystallize", "sheaf_get_card"}
+
+
+def _select_tools() -> list:
+    """Return the tools exposed via tools/list.
+
+    Default: the 4 core entry points. With SHEAF_MCP_TOOLS=all: the full set.
+    """
+    if os.environ.get("SHEAF_MCP_TOOLS", "").lower() == "all":
+        return ALL_TOOLS
+    return [t for t in ALL_TOOLS if t["name"] in CORE_TOOL_NAMES]
+
+
+# Module-level default snapshot (imported by tests / parametrize). Reflects the
+# default 4-tool surface unless SHEAF_MCP_TOOLS=all was set at import time.
+TOOLS = _select_tools()
 
 # Deprecated tool names — still handled for backward compat
 _DEPRECATED_TOOLS = {"sheaf_urgent", "sheaf_healthcheck", "sheaf_stats"}
@@ -49,7 +73,7 @@ def handle_request(request: dict) -> str | None:
         return jsonrpc_response(req_id, {})
 
     if method == "tools/list":
-        return jsonrpc_response(req_id, {"tools": TOOLS})
+        return jsonrpc_response(req_id, {"tools": _select_tools()})
 
     if method == "tools/call":
         tool_name = params.get("name", "")
