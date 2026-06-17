@@ -115,6 +115,44 @@ def _resolve_mcp_command() -> tuple[str, list[str]]:
     return (detect_python_path(), ["-m", "sheaf_ai.mcp_server"])
 
 
+def _resolve_active_provider() -> tuple[str, str, str]:
+    """Resolve ``(provider_id, api_key, base_url)`` for the MCP env block.
+
+    The MCP server is a *subprocess*, so it inherits only what we inject — it
+    does not see the user's shell config. Previously build_mcp_config injected
+    whatever key it found under the hardcoded name ``OPENAI_API_KEY`` without a
+    ``DEFAULT_PROVIDER``, so a DeepSeek/SiliconFlow user's MCP calls silently
+    routed to OpenAI and failed (audit P0).
+
+    Resolution order:
+      1. ``settings.resolve_provider(None)`` — honors ``DEFAULT_PROVIDER`` env
+         and ``~/.sheaf/config.json`` (the ``sheaf config setup`` path).
+      2. Reverse-lookup: whichever provider's ``api_key_env`` is set in the
+         environment (e.g. ``DEEPSEEK_API_KEY`` → ``deepseek``), so a bare env
+         key without ``DEFAULT_PROVIDER`` still routes correctly.
+      3. ``("", "", "")`` — nothing resolvable; setup writes no key env and
+         ``sheaf doctor`` flags the gap. Strictly better than the old behavior
+         of injecting a DeepSeek key under the ``OPENAI_API_KEY`` name.
+    """
+    try:
+        from sheaf_ai.settings import resolve_provider
+        return resolve_provider(None)
+    except (ValueError, Exception):
+        pass
+    # Reverse-lookup from provider env vars (bare key, no DEFAULT_PROVIDER).
+    try:
+        from sheaf_ai.providers import PROVIDERS
+        for pid, cfg in PROVIDERS.items():
+            if pid == "custom":
+                continue
+            key = os.environ.get(cfg.get("api_key_env", ""), "").strip()
+            if key:
+                return pid, key, cfg.get("base_url", "")
+    except Exception:  # pragma: no cover - defensive
+        pass
+    return "", "", ""
+
+
 def detect_all_platforms() -> list[str]:
     """Detect all Agent platforms present on this machine.
 
@@ -170,14 +208,18 @@ def build_mcp_config(data_dir: Optional[str] = None) -> dict:
     if data_dir:
         env["SHEAF_DATA_DIR"] = str(Path(data_dir).resolve())
 
-    # Preserve API key if available — check all common providers
-    api_key = (
-        os.environ.get("SILICONFLOW_API_KEY")
-        or os.environ.get("DEEPSEEK_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
-    )
+    # Inject a self-describing provider env block so the MCP subprocess uses the
+    # SAME provider/key/base_url as the CLI — not a hardcoded OPENAI_API_KEY that
+    # misroutes non-OpenAI users (audit P0). DEFAULT_PROVIDER + SHEAF_API_KEY is
+    # the universal set; OPENAI_API_KEY is kept for backward compat with older
+    # code paths that read it directly.
+    provider_id, api_key, base_url = _resolve_active_provider()
     if api_key:
+        env["DEFAULT_PROVIDER"] = provider_id
+        env["SHEAF_API_KEY"] = api_key
         env["OPENAI_API_KEY"] = api_key
+        if base_url:
+            env["OPENAI_BASE_URL"] = base_url
 
     if env:
         config["env"] = env

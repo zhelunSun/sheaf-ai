@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-846%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-983%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -59,7 +59,7 @@ sheaf search "transformer architecture"
 sheaf crystallize AI
 ```
 
-无需注册，无需云端。数据本地存储在 `./data/`，格式为 Markdown + JSON。
+无需注册，无需云端。数据本地存储 —— 在项目目录内为 `./data/`，否则为 `~/.sheaf/data`，格式为 Markdown + JSON。可用 `SHEAF_DATA_DIR` 覆盖。
 
 ## 核心功能
 
@@ -109,20 +109,26 @@ $ sheaf crystallize AI
 sheaf mcp
 ```
 
-**10 个工具可用：**
+**默认暴露 4 个核心工具**（覆盖 ~90% 自动化 agent 工作流），其余走 `sheaf` CLI + `--json`：
 
-| 工具 | 说明 |
-|------|------|
-| `sheaf_search` | 全文搜索所有条目 |
-| `sheaf_list` | 列出最近条目（支持过滤） |
-| `sheaf_get` | 按 ID 获取条目详情 |
-| `sheaf_urgent` | 查找有时效性的条目（截止日期、征稿通知） |
-| `sheaf_collect` | 添加新 URL 到收藏 |
-| `sheaf_collect_batch` | 批量添加多个 URL |
-| `sheaf_correct` | 纠正分类错误 |
-| `sheaf_crystallize` | 从主题结晶知识卡片 |
-| `sheaf_list_cards` | 列出已结晶的卡片 |
-| `sheaf_get_card` | 按 ID 获取卡片详情 |
+| 工具 | 类型 | 说明 |
+|------|------|------|
+| `sheaf_collect` | 核心 MCP | 添加新 URL 到收藏 |
+| `sheaf_search` | 核心 MCP | 全文 + 语义搜索（keyword/hybrid/quick） |
+| `sheaf_crystallize` | 核心 MCP | 从主题结晶知识卡片 |
+| `sheaf_get_card` | 核心 MCP | 按 ID 获取卡片详情 |
+| `sheaf_collect_batch` | CLI | `sheaf collect URL1 URL2 ...` |
+| `sheaf_list` | CLI | `sheaf list [--topic T] [--json]` |
+| `sheaf_get` | CLI | `sheaf get <id> --json` |
+| `sheaf_correct` | CLI | MCP `tools/call` 兜底 |
+| `sheaf_insights` | CLI | `sheaf insights` |
+| `sheaf_crosscheck` | CLI | MCP `tools/call`；另见 `sheaf matrix` |
+| `sheaf_list_cards` | CLI | `sheaf crystallize --list` |
+
+> 4 个核心工具让 MCP schema 更精简（~1.5k vs ~5k tokens）。其余 7 个工具的
+> handler 全部保留，可经 `tools/call` 调用；设 `SHEAF_MCP_TOOLS=all` 恢复全部
+> 11 个。Claude Code / Codex 的 `sheaf setup` 还会一并部署 skill / 说明书
+> （`sheaf-guide.md` / `AGENTS.sheaf.md`），引导 agent 何时用 CLI。
 
 ### 一键接入 Agent
 
@@ -134,12 +140,18 @@ sheaf setup --target cursor      # 写入 .cursor/mcp.json
 sheaf setup --target windsurf    # 写入 .windsurf/mcp.json
 sheaf setup --target workbuddy   # 写入 ~/.workbuddy/mcp.json
 
-# Claude Code
-sheaf setup --target claude      # 写入 ~/.claude.json
+# Claude Code — 写入 ~/.claude.json，并部署 ~/.claude/skills/sheaf-guide.md
+sheaf setup --target claude
+
+# OpenAI Codex — 写入 ~/.codex/config.toml，并部署 ~/.codex/AGENTS.sheaf.md
+sheaf setup --target codex
 
 # 自动检测当前环境
-sheaf setup                      # 自动识别 cursor/windsurf/workbuddy
+sheaf setup                      # 自动识别 claude/codex/cursor/windsurf/workbuddy
 ```
+
+> MCP 默认只暴露 4 个核心工具，`sheaf setup` 会一并部署 skill / 说明书。
+> 详见上方「Agent 就绪」节的工具矩阵。
 
 **预览但不写入：**
 ```bash
@@ -208,7 +220,7 @@ URL → 抓取 → 分类 → 摘要 → 存储 → 查询
 
 **你的数据不会离开你的机器，除非你主动选择。**
 
-- 所有内容本地存储在 `./data/`（可通过 `SHEAF_DATA_DIR` 配置）
+- 所有内容本地存储 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`（可用 `SHEAF_DATA_DIR` 覆盖）
 - LLM 调用发送到**你选择的** API 提供商
 - 无遥测、无分析、无账号
 - Markdown + JSONL 格式 — 完全可迁移，零锁定
@@ -240,7 +252,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 965 passed, 22 skipped
+python -m pytest tests/ -q     # 986 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -248,7 +260,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态
 
-Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，796 个测试通过、13 个跳过。我们正在用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，986 个测试通过、19 个跳过。我们正在用真实用户验证，准备进入 Beta。
 
 浏览器扩展（`extension/`）是 HTTP API 的实验性本地伴侣，其 manifest 版本独立于 Python 包版本，直到扩展拥有自己的发布渠道。
 

@@ -12,14 +12,19 @@ import pytest
 from sheaf_ai.setup import (
     build_full_config,
     build_mcp_config,
+    deploy_skill,
     detect_python_path,
     detect_sheaf_entry,
     get_config_path,
+    get_skill_path,
     merge_config,
+    merge_toml_mcp,
     print_setup_result,
     read_existing_config,
+    read_existing_config_toml,
     setup_target,
     write_config,
+    write_config_toml,
 )
 
 
@@ -144,6 +149,60 @@ class TestBuildMcpConfig:
                 os.environ["SILICONFLOW_API_KEY"] = saved_sf
             else:
                 os.environ.pop("SILICONFLOW_API_KEY", None)
+
+    def test_deepseek_env_injects_default_provider(self):
+        """Audit P0 fix: a bare DEEPSEEK_API_KEY must route to deepseek, not
+        silently call the OpenAI endpoint. The injected env must carry
+        DEFAULT_PROVIDER=deepseek + the correct base_url."""
+        keys = ["OPENAI_API_KEY", "DEEPSEEK_API_KEY", "SILICONFLOW_API_KEY",
+                "SHEAF_API_KEY", "DEFAULT_PROVIDER"]
+        saved = {k: os.environ.get(k) for k in keys}
+        try:
+            for k in keys:
+                os.environ.pop(k, None)
+            os.environ["DEEPSEEK_API_KEY"] = "ds-test-key"
+            config = build_mcp_config()
+            env = config.get("env", {})
+            assert env.get("DEFAULT_PROVIDER") == "deepseek"
+            assert env.get("SHEAF_API_KEY") == "ds-test-key"
+            assert "deepseek.com" in env.get("OPENAI_BASE_URL", "")
+        finally:
+            for k, v in saved.items():
+                if v is not None:
+                    os.environ[k] = v
+                else:
+                    os.environ.pop(k, None)
+
+    def test_openai_env_injects_default_provider(self):
+        keys = ["OPENAI_API_KEY", "DEEPSEEK_API_KEY", "SILICONFLOW_API_KEY",
+                "SHEAF_API_KEY", "DEFAULT_PROVIDER"]
+        saved = {k: os.environ.get(k) for k in keys}
+        try:
+            for k in keys:
+                os.environ.pop(k, None)
+            os.environ["OPENAI_API_KEY"] = "sk-test-key-123"
+            config = build_mcp_config()
+            env = config.get("env", {})
+            assert env.get("DEFAULT_PROVIDER") == "openai"
+            assert env.get("OPENAI_API_KEY") == "sk-test-key-123"
+        finally:
+            for k, v in saved.items():
+                if v is not None:
+                    os.environ[k] = v
+                else:
+                    os.environ.pop(k, None)
+
+    def test_no_key_injects_no_provider_env(self):
+        """When no key is resolvable anywhere, setup must NOT inject a key env —
+        and must not crash. (Old code injected under the wrong name; the fix is to
+        inject nothing and let doctor flag the gap.) Patches _resolve_active_provider
+        so the test is environment-independent."""
+        with patch("sheaf_ai.setup._resolve_active_provider", return_value=("", "", "")):
+            config = build_mcp_config()
+        env = config.get("env", {})
+        assert "DEFAULT_PROVIDER" not in env
+        assert "SHEAF_API_KEY" not in env
+        assert "OPENAI_API_KEY" not in env
 
     def test_no_api_key_no_env(self):
         saved = os.environ.get("OPENAI_API_KEY")
@@ -376,3 +435,190 @@ class TestPrintSetupResult:
         print_setup_result(result)
         captured = capsys.readouterr()
         assert "Env vars" in captured.out
+
+
+# ============================================================
+# Codex target — config path, TOML I/O, idempotency, skill
+# ============================================================
+
+class TestCodexConfigPath:
+    def test_codex_path(self):
+        path = get_config_path("codex")
+        assert path.name == "config.toml"
+        assert path.parent == Path.home() / ".codex"
+
+    def test_codex_skill_path(self):
+        path = get_skill_path("codex")
+        assert path == Path.home() / ".codex" / "AGENTS.sheaf.md"
+
+    def test_claude_skill_path(self):
+        path = get_skill_path("claude")
+        assert path == Path.home() / ".claude" / "skills" / "sheaf-guide.md"
+
+    def test_no_skill_path_for_others(self):
+        # cursor / windsurf / workbuddy have no first-class skill mechanism
+        assert get_skill_path("cursor") is None
+        assert get_skill_path("windsurf") is None
+        assert get_skill_path("workbuddy") is None
+
+    def test_build_full_config_rejects_codex(self):
+        # codex is TOML — build_full_config (JSON) must refuse it explicitly
+        with pytest.raises(ValueError, match="TOML"):
+            build_full_config("codex")
+
+
+class TestTomlIO:
+    def test_read_nonexistent_toml(self, tmp_path):
+        assert read_existing_config_toml(tmp_path / "nope.toml") == {}
+
+    def test_read_empty_toml(self, tmp_path):
+        f = tmp_path / "empty.toml"
+        f.write_text("")
+        assert read_existing_config_toml(f) == {}
+
+    def test_read_invalid_toml_returns_empty(self, tmp_path):
+        f = tmp_path / "bad.toml"
+        f.write_text("this is = = not valid toml [[")
+        assert read_existing_config_toml(f) == {}
+
+    def test_read_valid_toml(self, tmp_path):
+        f = tmp_path / "good.toml"
+        f.write_text('model = "gpt-5"\n[mcp_servers.other]\ncommand = "node"\n')
+        parsed = read_existing_config_toml(f)
+        assert parsed["model"] == "gpt-5"
+        assert parsed["mcp_servers"]["other"]["command"] == "node"
+
+    def test_write_toml_roundtrip(self, tmp_path):
+        f = tmp_path / "deep" / "config.toml"
+        data = {"mcp_servers": {"sheaf": {"command": "sheaf-mcp", "args": []}}}
+        write_config_toml(f, data)
+        assert f.exists()
+        assert read_existing_config_toml(f) == data
+
+    def test_merge_toml_preserves_other_keys(self):
+        existing = {
+            "model": "gpt-5",
+            "mcp_servers": {"other": {"command": "node"}},
+            "projects": {"x": {"trust_level": "trusted"}},
+        }
+        merged = merge_toml_mcp(existing, {"command": "sheaf-mcp", "args": []})
+        assert merged["model"] == "gpt-5"
+        assert merged["projects"]["x"]["trust_level"] == "trusted"
+        assert merged["mcp_servers"]["other"]["command"] == "node"
+        assert merged["mcp_servers"]["sheaf"]["command"] == "sheaf-mcp"
+
+    def test_merge_toml_overwrites_sheaf(self):
+        existing = {"mcp_servers": {"sheaf": {"command": "old"}}}
+        merged = merge_toml_mcp(existing, {"command": "new"})
+        assert merged["mcp_servers"]["sheaf"]["command"] == "new"
+
+    def test_merge_toml_creates_table_if_absent(self):
+        merged = merge_toml_mcp({"model": "gpt-5"}, {"command": "sheaf-mcp"})
+        assert "mcp_servers" in merged
+        assert merged["mcp_servers"]["sheaf"]["command"] == "sheaf-mcp"
+
+
+class TestCodexSetupTarget:
+    def test_codex_writes_toml(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "config.toml"
+        monkeypatch.setattr("sheaf_ai.setup.get_config_path", lambda t: cfg)
+        with patch("sheaf_ai.setup.deploy_skill", return_value=None):
+            result = setup_target("codex")
+        assert result["ok"] is True
+        assert cfg.exists()
+        parsed = read_existing_config_toml(cfg)
+        assert "sheaf" in parsed["mcp_servers"]
+        assert parsed["mcp_servers"]["sheaf"]["command"] in ("sheaf-mcp",) or \
+            parsed["mcp_servers"]["sheaf"]["args"] == ["-m", "sheaf_ai.mcp_server"]
+
+    def test_codex_idempotent(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "config.toml"
+        monkeypatch.setattr("sheaf_ai.setup.get_config_path", lambda t: cfg)
+        with patch("sheaf_ai.setup.deploy_skill", return_value=None):
+            r1 = setup_target("codex")
+            r2 = setup_target("codex")
+        assert r1["created"] is True   # first write creates the file
+        assert r2["created"] is False  # second run is an update, not create
+        # content stable across both runs
+        assert read_existing_config_toml(cfg) == read_existing_config_toml(cfg)
+
+    def test_codex_preserves_user_config(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "config.toml"
+        cfg.write_text(
+            'model = "gpt-5"\n'
+            '[mcp_servers.other]\n'
+            'command = "node"\n'
+        )
+        monkeypatch.setattr("sheaf_ai.setup.get_config_path", lambda t: cfg)
+        with patch("sheaf_ai.setup.deploy_skill", return_value=None):
+            setup_target("codex")
+        parsed = read_existing_config_toml(cfg)
+        # user's model + other server preserved
+        assert parsed["model"] == "gpt-5"
+        assert parsed["mcp_servers"]["other"]["command"] == "node"
+        # sheaf inserted
+        assert "sheaf" in parsed["mcp_servers"]
+
+    def test_codex_creates_backup(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "config.toml"
+        cfg.write_text('model = "gpt-5"\n')
+        monkeypatch.setattr("sheaf_ai.setup.get_config_path", lambda t: cfg)
+        with patch("sheaf_ai.setup.deploy_skill", return_value=None):
+            setup_target("codex")
+        bak = tmp_path / "config.toml.sheaf-bak"
+        assert bak.exists()
+        assert bak.read_text() == 'model = "gpt-5"\n'
+
+    def test_codex_next_steps_mention_guide(self, tmp_path, monkeypatch):
+        cfg = tmp_path / "config.toml"
+        monkeypatch.setattr("sheaf_ai.setup.get_config_path", lambda t: cfg)
+        with patch("sheaf_ai.setup.deploy_skill", return_value=None):
+            result = setup_target("codex")
+        joined = " ".join(result["next_steps"])
+        assert "AGENTS.sheaf.md" in joined
+
+
+class TestCommandHardening:
+    def test_prefers_sheaf_mcp_on_path(self):
+        # When sheaf-mcp console script is on PATH, use it (path-independent).
+        with patch("sheaf_ai.setup.shutil.which", return_value="/usr/bin/sheaf-mcp"):
+            config = build_mcp_config()
+        assert config["command"] == "sheaf-mcp"
+        assert config["args"] == []
+
+    def test_falls_back_to_python_module(self):
+        # When sheaf-mcp is NOT on PATH, fall back to <python> -m sheaf_ai.mcp_server.
+        with patch("sheaf_ai.setup.shutil.which", return_value=None):
+            config = build_mcp_config()
+        assert config["command"] == sys.executable
+        assert config["args"] == ["-m", "sheaf_ai.mcp_server"]
+
+
+class TestSkillDeployment:
+    def test_deploy_skill_claude(self, tmp_path, monkeypatch):
+        dest = tmp_path / "skills" / "sheaf-guide.md"
+        monkeypatch.setattr("sheaf_ai.setup.get_skill_path", lambda t: dest if t == "claude" else None)
+        result = deploy_skill("claude")
+        assert result["ok"] is True
+        assert dest.exists()
+        assert "sheaf-guide" in dest.read_text(encoding="utf-8") or "Sheaf" in dest.read_text(encoding="utf-8")
+
+    def test_deploy_skill_codex(self, tmp_path, monkeypatch):
+        dest = tmp_path / "AGENTS.sheaf.md"
+        monkeypatch.setattr("sheaf_ai.setup.get_skill_path", lambda t: dest if t == "codex" else None)
+        result = deploy_skill("codex")
+        assert result["ok"] is True
+        assert dest.exists()
+
+    def test_deploy_skill_none_for_unsupported(self):
+        # cursor / windsurf / workbuddy → None (no skill to deploy)
+        assert deploy_skill("cursor") is None
+        assert deploy_skill("windsurf") is None
+
+    def test_deploy_skill_idempotent(self, tmp_path, monkeypatch):
+        dest = tmp_path / "sheaf-guide.md"
+        monkeypatch.setattr("sheaf_ai.setup.get_skill_path", lambda t: dest if t == "claude" else None)
+        deploy_skill("claude")
+        first = dest.read_text(encoding="utf-8")
+        deploy_skill("claude")  # second run overwrites cleanly
+        assert dest.read_text(encoding="utf-8") == first

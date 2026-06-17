@@ -3,6 +3,7 @@ Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 """
 import json
 import logging
+import threading
 import uuid
 from datetime import datetime
 
@@ -13,6 +14,13 @@ from sheaf_ai.config import (
 from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness, atomic_write
 
 logger = logging.getLogger(__name__)
+
+# Serialize read-modify-write on the shared JSONL/JSON state files.
+# ``batch collect`` runs ThreadPoolExecutor across URLs; without this guard two
+# threads can both load tags_registry.json, mutate, and the second save clobbers
+# the first (lost-update race). Also protects append_index line interleaving on
+# Windows. In-process only (batch uses threads, not processes).
+_STORAGE_LOCK = threading.RLock()
 
 
 def _extract_entities_for_index(title: str, summary: str) -> list[dict]:
@@ -52,17 +60,13 @@ def save_tags_registry(registry: dict) -> None:
     )
 
 
-def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> None:
-    """Update registry with new tags from an article. Auto-merges similar tags (threshold 0.85).
+def _merge_tags_into_registry(registry: dict, tags: list, now_iso: str, attached_by: str = "ai") -> None:
+    """Pure mutation: merge ``tags`` into ``registry`` in place (no I/O).
 
-    Args:
-        tags: List of tag strings
-        now_iso: Current ISO timestamp
-        attached_by: "ai" (auto-generated) or "human" (manual) — Issue #53
+    Auto-merges similar tags (threshold 0.85). Factored out so the load/save
+    boundary in ``update_tags_registry`` can be locked as one atomic RMW.
     """
     import difflib
-    registry = load_tags_registry()
-
     for tag in tags:
         tag_lower = tag.lower().strip()
         if not tag_lower:
@@ -111,7 +115,21 @@ def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> N
                 "human_count": 1 if attached_by == "human" else 0,
             }
 
-    save_tags_registry(registry)
+
+def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> None:
+    """Update registry with new tags from an article. Auto-merges similar tags (threshold 0.85).
+
+    Args:
+        tags: List of tag strings
+        now_iso: Current ISO timestamp
+        attached_by: "ai" (auto-generated) or "human" (manual) — Issue #53
+    """
+    # Lock the full read-modify-write so concurrent batch-collect threads don't
+    # clobber each other's tag updates (lost-update race on tags_registry.json).
+    with _STORAGE_LOCK:
+        registry = load_tags_registry()
+        _merge_tags_into_registry(registry, tags, now_iso, attached_by)
+        save_tags_registry(registry)
 
 
 # ============================================================
@@ -325,8 +343,9 @@ def append_index(entry: dict) -> None:
         "content_hash": entry["metadata"].get("content_hash", ""),
         "entities": entities,  # Issue #58
     }
-    with open(INDEX_FILE, "a", encoding="utf-8") as f:
-        f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
+    with _STORAGE_LOCK:
+        with open(INDEX_FILE, "a", encoding="utf-8") as f:
+            f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
 
 
 def rebuild_index() -> int:

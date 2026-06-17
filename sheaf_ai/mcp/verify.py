@@ -6,7 +6,7 @@ import logging
 from urllib.parse import urlparse
 
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
-from sheaf_ai.mcp.data import load_index, load_entry
+from sheaf_ai.mcp.data import load_entry
 from sheaf_ai.search import search_fulltext
 
 logger = logging.getLogger(__name__)

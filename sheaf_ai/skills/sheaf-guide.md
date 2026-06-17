@@ -1,6 +1,6 @@
 ---
 name: sheaf-guide
-description: Operate Sheaf — a local-first knowledge layer — to collect URLs into structured entries, search the knowledge base, and crystallize knowledge cards. Use this when the user wants to save/read/verify web content, search what they've collected, or distill cards from a topic. Covers the 3 MCP entry tools (sheaf_collect / sheaf_search / sheaf_crystallize) and when to use the `sheaf` CLI for everything else (list, get, correct, crosscheck, insights, cards, batch).
+description: Operate Sheaf — a local-first knowledge layer — to collect URLs into structured entries, search the knowledge base, and crystallize knowledge cards. Use this when the user wants to save/read/verify web content, search what they've collected, or distill cards from a topic. Covers the 4 MCP entry tools (sheaf_collect / sheaf_search / sheaf_crystallize / sheaf_get_card) and when to use the `sheaf` CLI for everything else (list, get, correct, crosscheck, insights, cards, batch).
 ---
 
 # Sheaf — Agent Operating Guide
@@ -10,9 +10,9 @@ classifies, summarizes, and stores a **structured entry**. Agents then search,
 cite, and reason over everything collected. Data lives in `~/.sheaf/data/`
 (Markdown + JSON). No cloud, no accounts.
 
-## Tool surface — 3 MCP entry points + CLI for the rest
+## Tool surface — 4 MCP entry points + CLI for the rest
 
-To keep the tool list lean, only **3 MCP tools** are exposed by default.
+To keep the tool list lean, only **4 MCP tools** are exposed by default.
 Everything else is done via the `sheaf` CLI with `--json` for structured output.
 
 | Goal | How |
@@ -20,6 +20,7 @@ Everything else is done via the `sheaf` CLI with `--json` for structured output.
 | **Save** a URL → knowledge | MCP `sheaf_collect(url)` — or `sheaf collect <url>` |
 | **Search** the KB | MCP `sheaf_search(query)` — or `sheaf search "<q>" --json` |
 | **Crystallize** cards from a topic | MCP `sheaf_crystallize(topic)` — or `sheaf crystallize <topic>` |
+| **Read** one card by ID | MCP `sheaf_get_card(card_id)` — or `sheaf crystallize --show <id>` |
 | List / browse entries | `sheaf list [--json]` (`--filter urgent\|untagged`, `--category`, `--limit`, `--offset`) |
 | Get one entry's full detail | `sheaf get <id> --json` |
 | Correct a mis-classification | `sheaf correct <id> --field topics\|tags ... ` |
@@ -52,6 +53,11 @@ locations, and snippets.
 Distills 3+ related entries into falsifiable **knowledge cards** — each with a
 confidence score and evidence tracing to source entries. This is Sheaf's
 differentiator. Call it once a topic has ≥3 collected entries.
+
+### `sheaf_get_card(card_id)`
+Read one crystallized knowledge card in full — claim, evidence, confidence,
+tags, and links to the source entries that contributed. Use this to inspect or
+cite a card surfaced by search or crystallize.
 
 ## When to choose MCP vs CLI
 

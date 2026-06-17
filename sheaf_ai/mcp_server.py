@@ -5,10 +5,11 @@ Sheaf MCP Server — Backward-compatible wrapper.
     Use ``from sheaf_ai.mcp import handle_request, main, TOOLS`` instead.
     This module re-exports everything for backward compatibility.
 
-10 active tools:
-  sheaf_search, sheaf_list, sheaf_get, sheaf_correct,
-  sheaf_collect, sheaf_collect_batch, sheaf_crystallize,
-  sheaf_list_cards, sheaf_get_card, sheaf_insights
+Default MCP surface (4 core entry tools):
+  sheaf_collect, sheaf_search, sheaf_crystallize, sheaf_get_card
+The remaining tools (list/get/correct/list_cards/insights/crosscheck/collect_batch)
+stay callable via tools/call for backward compat, but agents are guided to the
+`sheaf` CLI (with --json) for them. Set SHEAF_MCP_TOOLS=all to re-expose all 11.
 
 3 deprecated tools (fallback only, not in tools/list):
   sheaf_urgent → use sheaf_list with filter="urgent"

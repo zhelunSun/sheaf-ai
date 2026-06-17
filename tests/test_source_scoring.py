@@ -12,11 +12,6 @@ Covers:
   - SourceRegistry persistence
   - score_to_tier mapping
 """
-import json
-from pathlib import Path
-
-import pytest
-
 from sheaf_ai.source_registry import (
     get_domain_score,
     SourceRegistry,

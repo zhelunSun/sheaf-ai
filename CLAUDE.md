@@ -20,28 +20,47 @@ claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
 
 ## MCP Tools
 
-**Active (10):**
+Default MCP surface = **4 core entry tools** (Issue #91). The remaining 7 stay
+callable via `tools/call` for backward compat, but agents are guided to the
+`sheaf` CLI (`--json`) by the deployed skill. Set `SHEAF_MCP_TOOLS=all` to
+re-expose the full 11.
+
+**Core (4, default in `tools/list`):**
 
 | Tool | Purpose |
 |------|---------|
-| `sheaf_search` | Full-text + semantic search |
-| `sheaf_list` | Browse entries, with pagination + filters |
-| `sheaf_get` | Get full entry by ID |
 | `sheaf_collect` | Collect a URL |
-| `sheaf_collect_batch` | Bulk collect URLs |
-| `sheaf_correct` | Correct entry classification |
+| `sheaf_search` | Full-text + semantic search |
 | `sheaf_crystallize` | Synthesize knowledge cards |
-| `sheaf_list_cards` | List knowledge cards |
 | `sheaf_get_card` | Get card details |
-| `sheaf_insights` | Cross-topic associations |
+
+**Demoted (7, via CLI `--json` or `tools/call` / `SHEAF_MCP_TOOLS=all`):**
+
+| Tool | CLI equivalent |
+|------|-------------|
+| `sheaf_list` | `sheaf list [--topic T] [--json]` |
+| `sheaf_get` | `sheaf get <id> --json` |
+| `sheaf_insights` | `sheaf insights --json` |
+| `sheaf_list_cards` | `sheaf crystallize --list` |
+| `sheaf_collect_batch` | `sheaf collect URL1 URL2 ...` |
+| `sheaf_correct` | MCP `tools/call` only (complex nested params) |
+| `sheaf_crosscheck` | MCP `tools/call`; see also `sheaf matrix <url>` |
 
 **Deprecated (3, retained as fallback):**
 
 | Tool | Replacement |
 |------|-------------|
-| `sheaf_urgent` | `sheaf_list` with `filter="urgent"` |
+| `sheaf_urgent` | `sheaf list --filter urgent` |
 | `sheaf_healthcheck` | HTTP `GET /health` |
-| `sheaf_stats` | `sheaf_list` returns `total` + `topics_summary` |
+| `sheaf_stats` | `sheaf list` returns `total` + `topics_summary` |
+
+**Agent wiring (writes MCP config + deploys skill/AGENTS note):**
+
+```bash
+sheaf setup --target claude   # ~/.claude.json + ~/.claude/skills/sheaf-guide.md
+sheaf setup --target codex    # ~/.codex/config.toml + ~/.codex/AGENTS.sheaf.md
+sheaf setup --target cursor|windsurf|workbuddy
+```
 
 ## Issue Governance (Agent Quick Reference)
 

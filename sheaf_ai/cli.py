@@ -15,7 +15,7 @@ from sheaf_ai.exceptions import (
 )
 from sheaf_ai.display import (
     show_recent, show_stats, show_search, show_weekly,
-    show_insights, show_tags, show_trends, show_urgent,
+    show_tags, show_trends, show_urgent,
 )
 
 # Legacy --flag → subcommand translation
@@ -57,10 +57,17 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file")
     p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
-                            ("insights", "Cross-topic associations"), ("tags", "Tag statistics"),
+                            ("tags", "Tag statistics"),
                             ("trends", "Topic trends"), ("urgent", "Upcoming deadlines"),
                             ("mcp", "Start MCP server (stdio)")]:
         sub.add_parser(name, help=help_text)
+    # insights: cross-topic associations, with --json for agent consumption
+    p = sub.add_parser("insights", help="Discover cross-topic associations")
+    p.add_argument("--json", action="store_true", help="Output raw JSON (for agents)")
+    # get: read a single entry by ID (MCP sheaf_get equivalent, --json default for agents)
+    p = sub.add_parser("get", help="Get full entry details by ID")
+    p.add_argument("id", help="Entry ID")
+    p.add_argument("--json", action="store_true", help="Output raw JSON (default when piped)")
     # init subcommand with --auto flag (Issue #62)
     p = sub.add_parser("init", help="First-time onboarding")
     p.add_argument("--auto", action="store_true", help="Agent-Native one-line deploy: init + MCP setup + health check")
@@ -254,7 +261,7 @@ def _run() -> None:
         show_recent(); return
     _DISPATCH = {
         "collect": lambda: _collect(parsed, json_auto=auto_json), "search": lambda: _search(parsed),
-        "stats": show_stats, "weekly": show_weekly, "insights": show_insights,
+        "stats": show_stats, "weekly": show_weekly,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
@@ -262,6 +269,8 @@ def _run() -> None:
         "config": lambda: _config(parsed),
         "doctor": lambda: _doctor_cli(parsed),
         "list": lambda: _list(parsed, json_auto=auto_json),
+        "insights": lambda: _insights(parsed, json_auto=auto_json),
+        "get": lambda: _get(parsed, json_auto=auto_json),
         "matrix": lambda: _matrix(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
@@ -450,6 +459,50 @@ def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
         type_filter=getattr(p, "type", None),
         json_output=json_output,
     )
+
+
+def _get(p: argparse.Namespace, json_auto: bool = False) -> None:
+    """Get full entry details by ID — MCP sheaf_get equivalent."""
+    json_output = getattr(p, "json", False) or json_auto
+    from sheaf_ai.mcp.data import load_entry
+    entry = load_entry(p.id)
+    if not entry:
+        msg = f"Entry not found: {p.id}"
+        if json_output:
+            print(json.dumps({"success": False, "error": msg, "entry_id": p.id}, ensure_ascii=False))
+        else:
+            print(msg)
+        sys.exit(1)
+    if json_output:
+        print(json.dumps(entry, ensure_ascii=False, indent=2))
+    else:
+        title = entry.get("title") or entry.get("original_title") or "(untitled)"
+        topics = ", ".join(
+            (t.get("name", t) if isinstance(t, dict) else str(t)) for t in entry.get("topics", [])
+        )
+        tags = ", ".join(entry.get("tags", []))
+        print(f"# {title}")
+        print(f"  id:     {entry.get('id', p.id)}")
+        if entry.get("url"):
+            print(f"  url:    {entry['url']}")
+        if topics:
+            print(f"  topics: {topics}")
+        if tags:
+            print(f"  tags:   {tags}")
+        if entry.get("one_liner") or entry.get("summary"):
+            print(f"  summary: {entry.get('one_liner') or entry.get('summary')}")
+
+
+def _insights(p: argparse.Namespace, json_auto: bool = False) -> None:
+    """Discover cross-topic associations — --json for agent consumption."""
+    json_output = getattr(p, "json", False) or json_auto
+    if json_output:
+        from sheaf_ai.insights import discover_associations
+        data = discover_associations()
+        print(json.dumps(data, ensure_ascii=False, indent=2))
+    else:
+        from sheaf_ai.display import show_insights
+        show_insights()
 
 
 def _matrix(p: argparse.Namespace) -> None:
@@ -769,6 +822,42 @@ def _build_doctor_report() -> tuple[list[tuple[str, str, str]], int, int]:
     checks.append(("ℹ️", "python", sys.version.split()[0]))
     checks.append(("ℹ️", "sheaf_version", f"v{VERSION}"))
 
+    # Check 8: MCP config + skill deployment (per detected Agent platform)
+    try:
+        import shutil as _shutil
+        from sheaf_ai.setup import (
+            detect_all_platforms,
+            get_config_path,
+            get_skill_path,
+            read_existing_config,
+            read_existing_config_toml,
+        )
+        for plat in detect_all_platforms():
+            cfg_path = get_config_path(plat)
+            if plat == "codex":
+                block = read_existing_config_toml(cfg_path).get("mcp_servers", {}).get("sheaf")
+            else:
+                block = read_existing_config(cfg_path).get("mcpServers", {}).get("sheaf")
+            if not block:
+                checks.append(("⚠️", f"mcp_{plat}",
+                               f"not configured → run: sheaf setup --target {plat}"))
+            else:
+                cmd = block.get("command", "")
+                if cmd == "sheaf-mcp" and not _shutil.which("sheaf-mcp"):
+                    checks.append(("❌", f"mcp_{plat}",
+                                   "configured but 'sheaf-mcp' not in PATH"))
+                else:
+                    checks.append(("✅", f"mcp_{plat}", f"configured (command: {cmd})"))
+            skill_dest = get_skill_path(plat)
+            if skill_dest is not None:
+                if skill_dest.exists():
+                    checks.append(("✅", f"skill_{plat}", f"deployed ({skill_dest.name})"))
+                else:
+                    checks.append(("ℹ️", f"skill_{plat}",
+                                   f"not deployed → run: sheaf setup --target {plat}"))
+    except Exception as e:
+        checks.append(("⚠️", "mcp_check", f"check failed: {e}"))
+
     errors = sum(1 for icon, *_ in checks if icon == "❌")
     warnings = sum(1 for icon, *_ in checks if icon == "⚠️")
     return checks, errors, warnings
@@ -805,7 +894,11 @@ def _doctor(p: argparse.Namespace = None) -> None:
             print(f"  {icon} {label}: {msg}")
         print("=" * 50)
         if errors:
-            print(f"\n{errors} issue(s) found. See above for details.")
+            print(f"\n{errors} error(s) found. See above for details.")
+        elif warnings:
+            # Warnings are non-fatal (e.g. Playwright not installed) but claiming
+            # "all checks passed" while listing ⚠️ lines is misleading — surface them.
+            print(f"\n{warnings} warning(s) — non-fatal, but review the ⚠️ items above.")
         else:
             print("\nAll checks passed! 🎉")
 

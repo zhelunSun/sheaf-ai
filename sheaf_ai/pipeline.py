@@ -408,7 +408,6 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     # Step 3.5: Source credibility scoring
     from sheaf_ai.source_scoring import compute_source_score
     from sheaf_ai.source_registry import SourceRegistry
-    from sheaf_ai.config import DATA_DIR
 
     llm_assessment = classify_result.get("source_assessment")
     source_registry = SourceRegistry(DATA_DIR / "source_registry.json")

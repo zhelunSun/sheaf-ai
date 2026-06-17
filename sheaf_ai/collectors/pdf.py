@@ -35,15 +35,19 @@ _DEFAULT_MAX_PAGES = 100
 
 
 def _extract_with_pypdf2(content: bytes, max_pages: int = _DEFAULT_MAX_PAGES) -> tuple[str, dict[str, Any]]:
-    """Extract text using PyPDF2 (pure Python).
+    """Extract text using a pure-Python PDF reader.
+
+    Prefers ``pypdf`` (the maintained successor) over the deprecated ``PyPDF2``
+    to avoid the PyPDF2 DeprecationWarning. Both expose the same ``PdfReader``
+    API, so the rest of the function is library-agnostic.
 
     Returns (text, metadata_dict).
     """
     try:
-        from PyPDF2 import PdfReader
+        from pypdf import PdfReader
     except ImportError:
         try:
-            from pypdf import PdfReader
+            from PyPDF2 import PdfReader  # deprecated, fallback only
         except ImportError:
             return "", {"_unsupported": True}
 

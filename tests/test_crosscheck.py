@@ -11,10 +11,7 @@ Covers:
   - _get_domain helper
 """
 import json
-import os
-from unittest.mock import patch, MagicMock
-
-import pytest
+from unittest.mock import patch
 
 from sheaf_ai.mcp.verify import (
     _crosscheck_entry,
@@ -23,7 +20,6 @@ from sheaf_ai.mcp.verify import (
     TOOLS,
     HANDLERS,
 )
-from sheaf_ai.mcp.protocol import jsonrpc_response
 
 
 # ============================================================

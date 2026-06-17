@@ -45,6 +45,94 @@ class TestTagsRegistry:
         first_key = list(registry.keys())[0]
         assert registry[first_key]["count"] == 2
 
+    def test_concurrent_update_no_lost_tags(self, isolated_data_dir):
+        """Regression: concurrent batch-collect threads must not lose tag updates.
+
+        Pre-fix, update_tags_registry was an unlocked read-modify-write. Two
+        failure modes without the lock: (1) lost-update — threads load the same
+        registry, mutate, and the last save clobbers the others; (2) on Windows,
+        concurrent atomic_write -> os.replace on the same target raises
+        PermissionError [WinError 5], aborting saves outright. The _STORAGE_LOCK
+        serializes the full RMW so every distinct tag survives.
+
+        Tags use uuid hex so pairwise similarity is < 0.85 — otherwise the
+        registry's own similarity-merge would collapse them and mask the race.
+        A barrier releases all threads at once to maximize the contention window.
+        """
+        import threading
+        import uuid
+        from sheaf_ai.storage import update_tags_registry, load_tags_registry
+
+        n = 40
+        tags = [uuid.uuid4().hex for _ in range(n)]  # pairwise dissimilar
+        barrier = threading.Barrier(n)
+        errors = []
+
+        def worker(tag):
+            try:
+                barrier.wait()  # release all threads at once → maximize overlap
+                update_tags_registry([tag], "2026-05-19T12:00:00")
+            except Exception as e:  # pragma: no cover - defensive
+                errors.append(e)
+
+        threads = [threading.Thread(target=worker, args=(t,)) for t in tags]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert not errors, f"threads raised: {errors}"
+        registry = load_tags_registry()
+        present = {t for t in tags if t in registry}
+        # Every thread's distinct tag must survive — no lost updates, no save aborts.
+        assert len(present) == n, (
+            f"lost-update/save-abort race: expected {n} tags, registry has {len(present)} "
+            f"(missing {n - len(present)})"
+        )
+
+    def test_concurrent_append_index_no_lost_lines(self, isolated_data_dir):
+        """Regression: concurrent append_index must not interleave/drop lines.
+
+        Each JSONL line must be intact (parseable) and all N lines present.
+        """
+        import threading
+        from sheaf_ai.storage import append_index
+
+        n = 40
+        barrier = threading.Barrier(n)
+        errors = []
+
+        def worker(i):
+            try:
+                barrier.wait()
+                append_index({
+                    "id": f"2026-05-19_{i:08d}",
+                    "url": f"https://example.com/{i}",
+                    "title": f"Entry {i}",
+                    "topics": [],
+                    "category": {"primary": "test", "sub": ""},
+                    "tags": [],
+                    "importance": "medium",
+                    "summary": "x",
+                    "metadata": {"collected_at": "2026-05-19T12:00:00"},
+                })
+            except Exception as e:  # pragma: no cover - defensive
+                errors.append(e)
+
+        threads = [threading.Thread(target=worker, args=(i,)) for i in range(n)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert not errors, f"threads raised: {errors}"
+        from sheaf_ai.config import INDEX_FILE
+        lines = [ln for ln in INDEX_FILE.read_text(encoding="utf-8").splitlines() if ln.strip()]
+        # All lines present and every line is valid JSON (no interleaving corruption).
+        assert len(lines) == n, f"expected {n} index lines, got {len(lines)}"
+        for ln in lines:
+            json.loads(ln)  # raises if a line was interleaved/corrupted
+
 
 class TestArticleStorage:
     def _make_test_data(self):

@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-885%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-983%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -80,7 +80,7 @@ sheaf search "transformer architecture"
 sheaf crystallize AI
 ```
 
-No accounts. No cloud. Your data lives in `./data/` as Markdown + JSON.
+No accounts. No cloud. Your data lives locally — `./data/` when run inside a project dir, otherwise `~/.sheaf/data` — as Markdown + JSON. Override with `SHEAF_DATA_DIR`.
 
 ## The Problem
 
@@ -172,12 +172,15 @@ sheaf mcp
 The 4 core tools cover ~90% of automated agent workflows and keep the MCP schema
 lean (~1.5k tokens vs ~5k before). The 7 demoted tools keep their handlers
 registered for backward compat — call them via `tools/call`, or re-expose the
-full set with `SHEAF_MCP_TOOLS=all sheaf mcp` (power users / migration). See the
-`sheaf-cli-extended` skill for CLI examples.
+full set with `SHEAF_MCP_TOOLS=all sheaf mcp` (power users / migration). For
+Claude Code & Codex, `sheaf setup` also deploys a bundled skill / AGENTS note
+(`sheaf-guide.md` / `AGENTS.sheaf.md`) so the agent knows when to use the
+`sheaf` CLI for the demoted tools.
 
 ## Agent Integration (One Command)
 
-Connect Sheaf to your AI coding agent in a single step:
+Connect Sheaf to your AI coding agent in a single step — this writes the MCP
+config **and** deploys the bundled skill / agents note (Claude Code & Codex):
 
 ```bash
 # Cursor / Windsurf / WorkBuddy
@@ -185,16 +188,30 @@ sheaf setup --target cursor      # writes .cursor/mcp.json
 sheaf setup --target windsurf    # writes .windsurf/mcp.json
 sheaf setup --target workbuddy   # writes ~/.workbuddy/mcp.json
 
-# Claude Code
-sheaf setup --target claude      # writes ~/.claude.json
+# Claude Code — writes ~/.claude.json + deploys ~/.claude/skills/sheaf-guide.md
+sheaf setup --target claude
 
-# Auto-detect from CWD
-sheaf setup                      # detects cursor/windsurf/workbuddy
+# OpenAI Codex — writes ~/.codex/config.toml + deploys ~/.codex/AGENTS.sheaf.md
+sheaf setup --target codex
+
+# Auto-detect from CWD + installed agents
+sheaf setup                      # detects claude/codex/cursor/windsurf/workbuddy
+```
+
+**Zero-install alternative (no `pip install` needed):**
+
+```bash
+# Claude Code
+claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
+# Codex — add to ~/.codex/config.toml:
+#   [mcp_servers.sheaf]
+#   command = "uvx"
+#   args = ["--from", "sheaf-ai", "sheaf-mcp"]
 ```
 
 **Preview without writing:**
 ```bash
-sheaf setup --target cursor --dry-run
+sheaf setup --target codex --dry-run
 ```
 
 See [docs/mcp-setup.md](docs/mcp-setup.md) for detailed platform guides and troubleshooting.
@@ -258,7 +275,7 @@ URL → fetch → classify → summarize → store → query
 
 **Your data never leaves your machine unless you choose to.**
 
-- All content stored locally in `./data/` (configurable via `SHEAF_DATA_DIR`)
+- All content stored locally — `./data/` inside a project dir, otherwise `~/.sheaf/data` (override via `SHEAF_DATA_DIR`)
 - LLM calls go to **your** chosen API provider
 - No telemetry, no analytics, no accounts
 - Markdown + JSONL format — fully portable, zero lock-in
@@ -351,7 +368,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 965 passed, 22 skipped
+python -m pytest tests/ -q     # 986 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -359,7 +376,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 965 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 986 passing tests. We're validating with real users before beta.
 
 ### Chrome Extension
 

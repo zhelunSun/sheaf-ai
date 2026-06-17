@@ -2,16 +2,17 @@
 
 This file is deployed by `sheaf setup --target codex` into `~/.codex/`.
 Sheaf is wired into Codex as an MCP server (`~/.codex/config.toml` →
-`[mcp_servers.sheaf]`) and exposes **3 tools** by default. Use the `sheaf` CLI
+`[mcp_servers.sheaf]`) and exposes **4 tools** by default. Use the `sheaf` CLI
 (with `--json`) for everything else.
 
-## The 3 MCP tools (default surface)
+## The 4 MCP tools (default surface)
 
 | Tool | Use for |
 |------|---------|
 | `sheaf_collect(url)` | Save a URL → structured entry (id, title, summary, topics, tags) |
 | `sheaf_search(query, ...)` | Hybrid BM25 + semantic search. `#tag`, `after:`, `source:`, `is:fav`. Cross-lingual synonyms (AI ↔ 人工智能) |
 | `sheaf_crystallize(topic)` | Distill 3+ entries into knowledge cards with confidence + evidence tracing |
+| `sheaf_get_card(card_id)` | Read one card in full (claim, evidence, confidence, sources) |
 
 ## Everything else — use the `sheaf` CLI (always with `--json`)
 
