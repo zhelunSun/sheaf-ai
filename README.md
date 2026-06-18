@@ -368,7 +368,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 986 passed, 19 skipped
+python -m pytest tests/ -q     # 983 passed, 22 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -376,7 +376,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 986 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 983 passing tests. We're validating with real users before beta.
 
 ### Chrome Extension
 

@@ -252,7 +252,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 986 passed, 19 skipped
+python -m pytest tests/ -q     # 983 passed, 22 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -260,7 +260,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态
 
-Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，986 个测试通过、19 个跳过。我们正在用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，983 个测试通过、22 个跳过。我们正在用真实用户验证，准备进入 Beta。
 
 浏览器扩展（`extension/`）是 HTTP API 的实验性本地伴侣，其 manifest 版本独立于 Python 包版本，直到扩展拥有自己的发布渠道。
 
