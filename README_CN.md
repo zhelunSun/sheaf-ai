@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-983%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-988%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -34,29 +34,35 @@ Sheaf 解决这个问题。你保存的每一条链接都变成一个**结构化
 
 ## 快速开始
 
+**一行接入 Claude Code —— 无需安装 Python：**
+
 ```bash
-# 从 PyPI 安装
+claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
+```
+
+然后让 agent *收藏一个链接*、*搜索知识库*、或 *结晶某个主题* —— 就这些。`uvx` 是 npm 风格的运行器（`brew install uv` / `winget install astral-sh.uv`）；需要一个 OpenAI 兼容的 API Key —— 设置 `SHEAF_API_KEY`，或运行一次 `uvx --from sheaf-ai sheaf config setup`。
+
+<details>
+<summary><b>OpenAI Codex CLI</b> —— 加到 <code>~/.codex/config.toml</code></summary>
+
+```toml
+[mcp_servers.sheaf]
+command = "uvx"
+args = ["--from", "sheaf-ai", "sheaf-mcp"]
+```
+
+</details>
+
+**偏好 CLI 或 Python 库？**
+
+```bash
 pip install sheaf-ai
+sheaf config setup          # 交互式 API Key 向导（推荐）
 
-# 或从源码安装
-git clone https://github.com/zhelunSun/sheaf-ai.git
-cd sheaf-ai
-pip install -e .
-
-# 配置 LLM API Key（支持任何 OpenAI 兼容接口）
-export OPENAI_API_KEY=sk-...
-
-# 首次初始化（自动收集 3 篇示例文章）
-sheaf init
-
-# 收藏一篇文章
-sheaf collect https://arxiv.org/abs/2401.00000
-
-# 搜索你的收藏
-sheaf search "transformer architecture"
-
-# 结晶知识卡片
-sheaf crystallize AI
+# 然后开始使用
+sheaf collect https://arxiv.org/abs/2401.00000   # 收藏
+sheaf search "transformer architecture"          # 搜索
+sheaf crystallize AI                             # 结晶知识卡片
 ```
 
 无需注册，无需云端。数据本地存储 —— 在项目目录内为 `./data/`，否则为 `~/.sheaf/data`，格式为 Markdown + JSON。可用 `SHEAF_DATA_DIR` 覆盖。
@@ -252,7 +258,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 983 passed, 22 skipped
+python -m pytest tests/ -q     # 988 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -260,7 +266,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态
 
-Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，983 个测试通过、22 个跳过。我们正在用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，988 个测试通过、19 个跳过。我们正在用真实用户验证，准备进入 Beta。
 
 浏览器扩展（`extension/`）是 HTTP API 的实验性本地伴侣，其 manifest 版本独立于 Python 包版本，直到扩展拥有自己的发布渠道。
 

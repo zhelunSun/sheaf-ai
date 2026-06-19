@@ -2,6 +2,25 @@
 
 All notable changes to Sheaf.
 
+## [0.6.1] — 2026-06-19
+
+### One-click agent install + MCP surface slim (closes #91)
+- **One-line agent wiring (uvx, npm-equivalent)** — `claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp`; no Python install needed for agent users. README Quick Start now leads with this; `pip install` kept for CLI/library users.
+- **Codex CLI support** — `sheaf setup --target codex` writes `~/.codex/config.toml` (TOML, idempotent merge preserving user config) + deploys `AGENTS.sheaf.md`. Claude Code path deploys `~/.claude/skills/sheaf-guide.md`.
+- **MCP surface slimmed to 4 core tools** — `sheaf_collect`, `sheaf_search`, `sheaf_crystallize`, `sheaf_get_card` (~1.5k vs ~5k tokens). The other 7 keep their handlers (callable via `tools/call`) and are guided to the `sheaf` CLI (`--json`); `SHEAF_MCP_TOOLS=all` re-exposes all 11.
+- **Command hardening** — `sheaf setup` now writes `command=sheaf-mcp` (path-independent) instead of a fragile absolute venv python path.
+- **Provider routing fix** — `build_mcp_config` now injects `DEFAULT_PROVIDER` + key + `OPENAI_BASE_URL` (was hardcoding `OPENAI_API_KEY`, which silently misrouted non-OpenAI users in the MCP subprocess).
+- **`sheaf doctor` MCP+skill self-check** + warnings honesty (no longer prints "All checks passed" while listing ⚠️).
+- New CLI: `sheaf get <id>` and `sheaf insights --json` (high-frequency demoted-tool fallbacks).
+
+### Reliability (Codex prelaunch audit fixes)
+- **Concurrency lock** — `update_tags_registry` / `append_index` are now serialized via `_STORAGE_LOCK`; fixes both a lost-update race and a Windows `os.replace` `WinError 5` crash under concurrent batch-collect. Regression tests added.
+- **PyPDF2 deprecation** — PDF collector now prefers `pypdf` (maintained) over `PyPDF2` (fallback). Eliminates the last test warning.
+- ruff clean (10 errors resolved), README/README_CN/STATUS fact drift corrected (test count, data-dir resolution, MCP tool count).
+
+### Stats
+- 986 tests passing, 0 warnings.
+
 ## [0.6.1-beta.1] — 2026-06-12 (feat/mcp-v2, pending merge to main)
 
 ### Added (Beta)

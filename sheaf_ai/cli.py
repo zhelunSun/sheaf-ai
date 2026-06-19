@@ -54,7 +54,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--version", "-v", action="version", version=f"Sheaf v{VERSION}")
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
-    p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file")
+    p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file"); p.add_argument("--text", metavar="TEXT", help="Collect freeform text directly (skips URL fetch)")
     p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("tags", "Tag statistics"),
@@ -283,6 +283,18 @@ def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
     urls = getattr(p, "url", []) or []
     batch_file = getattr(p, "batch", None)
 
+    # Freeform-text mode: --text "..." collects pasted text directly, skipping
+    # the URL fetch. A synthetic URL keys the entry (pipeline needs a url arg).
+    manual_text = getattr(p, "text", None)
+    if manual_text:
+        import uuid as _uuid
+        synth_url = f"manual://{_uuid.uuid4().hex[:8]}"
+        result = _run_collect(synth_url, force=p.force, json_output=json_output,
+                              manual_text=manual_text)
+        _print_collect_result(result, json_output=json_output)
+        _exit_on_collect_failure(result)
+        return
+
     # Batch mode: --batch file
     if batch_file:
         from sheaf_ai.batch import load_urls_from_file
@@ -312,10 +324,15 @@ def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
     sys.exit(get_exit_code_from_key("CONFIG"))
 
 
-def _run_collect(url: str, force: bool = False, json_output: bool = False) -> dict:
+def _run_collect(url: str, force: bool = False, json_output: bool = False,
+                 manual_text: str | None = None) -> dict:
     """Run collect — pipeline uses logging, so no stdout isolation needed."""
     from sheaf_ai.pipeline import process_url
 
+    # Only pass manual_text when set, so the common (no-text) call signature
+    # stays process_url(url, force=...) — backward compatible with existing mocks.
+    if manual_text:
+        return process_url(url, manual_text=manual_text, force=force)
     return process_url(url, force=force)
 
 

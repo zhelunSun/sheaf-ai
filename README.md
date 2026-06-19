@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-983%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-988%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -26,17 +26,30 @@ A **sheaf** is a bundle of grain — the basic unit a farmer brings to market. S
 
 ## Quick Start
 
+**Add Sheaf to Claude Code in one line — no Python install needed:**
+
 ```bash
-# Install from PyPI (all platforms)
+claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
+```
+
+Then ask your agent to *collect a URL*, *search your knowledge base*, or *crystallize a topic* — that's it. `uvx` is the npm-style runner (`brew install uv` / `winget install astral-sh.uv`); an OpenAI-compatible API key is needed — set `SHEAF_API_KEY`, or run `uvx --from sheaf-ai sheaf config setup` once.
+
+<details>
+<summary><b>OpenAI Codex CLI</b> — add to <code>~/.codex/config.toml</code></summary>
+
+```toml
+[mcp_servers.sheaf]
+command = "uvx"
+args = ["--from", "sheaf-ai", "sheaf-mcp"]
+```
+
+</details>
+
+**Prefer the CLI or Python library?**
+
+```bash
 pip install sheaf-ai
-
-# Or install from source
-git clone https://github.com/zhelunSun/sheaf-ai.git
-cd sheaf-ai
-pip install -e .
-
-# Configure your LLM API key (interactive wizard — recommended for all platforms)
-sheaf config setup
+sheaf config setup          # interactive API-key wizard (recommended)
 ```
 
 > **Already have a key?** Set it via [environment variable](#option-2-environment-variables) instead.
@@ -368,7 +381,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 983 passed, 22 skipped
+python -m pytest tests/ -q     # 988 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -376,7 +389,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 983 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 988 passing tests. We're validating with real users before beta.
 
 ### Chrome Extension
 

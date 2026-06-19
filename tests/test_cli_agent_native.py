@@ -73,6 +73,63 @@ class TestJSONFirstTTYDetection:
             json.loads(output)
 
 
+class TestCollectTextFlag:
+    """`sheaf collect --text "..."` collects freeform text, skipping URL fetch.
+
+    Regression: the README advertised --text but the CLI never exposed it; the
+    pipeline's manual_text param was dead infrastructure. This locks the wiring.
+    """
+
+    def _text_namespace(self):
+        import argparse
+        p = argparse.Namespace(
+            url=[], batch=None, force=False, json=True, text="Some pasted insight.",
+            concurrency=1, on_error="continue", output=None,
+        )
+        return p
+
+    def test_text_flag_calls_process_url_with_manual_text(self):
+        from sheaf_ai import cli as cli_mod
+
+        captured = {}
+
+        def fake_process_url(url, manual_text=None, force=False):
+            captured["url"] = url
+            captured["manual_text"] = manual_text
+            captured["force"] = force
+            return {"success": True, "entry_id": "2026-06-19_abcd1234", "url": url}
+
+        with patch.object(cli_mod, "_print_collect_result") as mock_print, \
+             patch.object(cli_mod, "_exit_on_collect_failure"), \
+             patch("sheaf_ai.pipeline.process_url", side_effect=fake_process_url):
+            cli_mod._collect(self._text_namespace())
+
+        # manual_text must flow through; URL is a synthetic manual:// key.
+        assert captured["manual_text"] == "Some pasted insight."
+        assert captured["url"].startswith("manual://")
+        assert mock_print.called
+
+    def test_text_flag_overrides_url_positional(self):
+        """If both --text and a URL are given, --text wins (no fetch)."""
+        from sheaf_ai import cli as cli_mod
+
+        ns = self._text_namespace()
+        ns.url = ["https://example.com/ignored"]
+
+        captured = {}
+
+        def fake_process_url(url, manual_text=None, force=False):
+            captured["manual_text"] = manual_text
+            return {"success": True, "entry_id": "x", "url": url}
+
+        with patch.object(cli_mod, "_print_collect_result"), \
+             patch.object(cli_mod, "_exit_on_collect_failure"), \
+             patch("sheaf_ai.pipeline.process_url", side_effect=fake_process_url):
+            cli_mod._collect(ns)
+
+        assert captured["manual_text"] == "Some pasted insight."
+
+
 class TestSheafDoctor:
     """Test the sheaf doctor diagnostic command."""
 
