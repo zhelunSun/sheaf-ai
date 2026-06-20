@@ -29,7 +29,7 @@ re-expose the full 11.
 
 | Tool | Purpose |
 |------|---------|
-| `sheaf_collect` | Collect a URL |
+| `sheaf_collect` | Collect a URL **or a pasted note** (`url` or `text`) |
 | `sheaf_search` | Full-text + semantic search |
 | `sheaf_crystallize` | Synthesize knowledge cards |
 | `sheaf_get_card` | Get card details |

@@ -17,7 +17,7 @@ Everything else is done via the `sheaf` CLI with `--json` for structured output.
 
 | Goal | How |
 |------|-----|
-| **Save** a URL → knowledge | MCP `sheaf_collect(url)` — or `sheaf collect <url>` |
+| **Save** a URL **or a pasted note** | MCP `sheaf_collect(url=…)` (fetch a link) or `sheaf_collect(text=…)` (store a note) — CLI: `sheaf collect <url>` / `sheaf collect --text "…"` |
 | **Search** the KB | MCP `sheaf_search(query)` — or `sheaf search "<q>" --json` |
 | **Crystallize** cards from a topic | MCP `sheaf_crystallize(topic)` — or `sheaf crystallize <topic>` |
 | **Read** one card by ID | MCP `sheaf_get_card(card_id)` — or `sheaf crystallize --show <id>` |
@@ -35,19 +35,49 @@ Everything else is done via the `sheaf` CLI with `--json` for structured output.
 
 ## MCP tool details
 
-### `sheaf_collect(url, force=false)`
-Save a URL into the KB. Returns the structured entry
-(`id`, `title`, `one_liner` summary, `topics`, `tags`, `importance`).
-Prefer this MCP tool for single saves — the result is handed back structured.
-For >1 URL, use the CLI: `sheaf collect a b c`.
-Supported: arXiv, GitHub, web articles, ChatGPT/Claude shared chats, WeChat/Zhihu.
+### `sheaf_collect(url=… | text=…, force=false)`
+The agent's main **write** to the knowledge base. For most agents, **capturing
+notes from conversation (`text`) is the most frequent and most valuable use** —
+users express decisions, facts, and insights in chat far more often than they
+paste URLs into a terminal. Give **exactly one** of:
+- **`text`** *(the common agent case)* — store a conversational insight / decision /
+  quote / takeaway directly (no fetch). Tagged `content_type:"note"`, gets an AI
+  title + summary, bypasses the short-content gate. **Default to this** when the
+  user shares content with no URL.
+- **`url`** — fetch + classify + summarize a link (arXiv, GitHub, web articles,
+  ChatGPT/Claude shared chats, WeChat/Zhihu, PDFs). Use when the user shares a link.
+
+Returns the structured entry (`id`, `title`, `one_liner`, `topics`, `tags`,
+`content_type`, `importance`). For >1 URL, use CLI: `sheaf collect a b c`.
+
+> **🧠 Proactive capture — judge by information density.** Capture as a note
+> *without* waiting for an explicit "save" when the user states something **dense
+> and reusable**: **decisions** ("we'll use Postgres") · **durable facts /
+> constraints** (deadlines, budgets, requirements) · **preferences** ·
+> **commitments** ("I'll send it Friday"). These survive the moment — that's the
+> signal they're worth keeping. **Skip** status updates, small talk, and ephemeral
+> chatter (low density). One self-contained sentence each (not a transcript dump);
+> the AI titles + summarizes it. Light ack: `📝 Noted: <title>`.
+
+> **"收藏/保存/记下 X"** decision:
+> - X is a URL (`http…`) → `sheaf_collect(url=X)`
+> - X is text/an idea → `sheaf_collect(text=X)`
+> - Ambiguous (could be either) → if it parses as a URL, `url`; else `text`.
 
 ### `sheaf_search(query, mode="hybrid", limit=10, ...)`
 Hybrid (BM25 + semantic) search by default; also `"keyword"` and `"quick"`.
 Advanced syntax: `#tag`, `after:YYYY-MM-DD` / `before:`, `source:arxiv`,
 `is:fav`. Cross-lingual synonyms expand automatically (AI ↔ 人工智能,
 deep learning ↔ 深度学习). Returns ranked results with scores, match
-locations, and snippets.
+locations, snippets, **and the full entry** (`id`, `title`, `summary`, …) —
+so you usually have the content in-hand and don't need a separate read. For the
+raw file path or to re-fetch later, note the `id` (human CLI also prints it:
+`sheaf search "<q>"`).
+
+> **🧠 Proactive recall** — the complement of capture. Before answering a
+> **knowledge-shaped** question (about a topic / project / entity you may have
+> notes on), do **one** focused `sheaf_search` — prior context often changes the
+> answer. Skip for trivial or purely operational tasks; don't search every turn.
 
 ### `sheaf_crystallize(topic)`
 Distills 3+ related entries into falsifiable **knowledge cards** — each with a
@@ -66,6 +96,18 @@ cite a card surfaced by search or crystallize.
 - **CLI** (`--json`): browsing, batch, deep analysis (crosscheck / insights),
   corrections, or anything you'd script/chain. Always append `--json` so the
   output is machine-parseable.
+
+## Make the memory visible — lightly
+
+When your answer **materially drew on Sheaf memory**, add a one-line footer so
+the user sees the value (not noise). Skip it entirely when Sheaf wasn't used.
+
+- Recalled notes/cards: `📖 via Sheaf KB (3 notes, 1 card)`
+- Just crystallized: `✨ synthesized 5 notes → 2 cards`
+
+Rules: **conditional, never reflexive** — one short line, only when Sheaf truly
+contributed. This is *operational transparency* (the "labor illusion"), not a
+badge to slap on every reply.
 
 ## Typical workflows
 

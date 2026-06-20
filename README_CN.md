@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-988%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-1003%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -119,7 +119,7 @@ sheaf mcp
 
 | 工具 | 类型 | 说明 |
 |------|------|------|
-| `sheaf_collect` | 核心 MCP | 添加新 URL 到收藏 |
+| `sheaf_collect` | 核心 MCP | 收藏一个 **URL 或一段笔记**（`url` 或 `text`） |
 | `sheaf_search` | 核心 MCP | 全文 + 语义搜索（keyword/hybrid/quick） |
 | `sheaf_crystallize` | 核心 MCP | 从主题结晶知识卡片 |
 | `sheaf_get_card` | 核心 MCP | 按 ID 获取卡片详情 |
@@ -169,8 +169,12 @@ sheaf setup --target cursor --dry-run
 ## 命令一览
 
 ```bash
+sheaf help                       # 命令总览（分组）—— 或 `sheaf <命令> --help`
 sheaf collect <url>              # 收藏文章、论文或网页
-sheaf search <query>             # 全文搜索
+sheaf collect --text "..."       # 保存一条笔记/洞察（不抓取，标记为 note）
+sheaf search <query>             # 全文搜索（结果显示 entry id）
+sheaf list [--page N]            # 浏览条目，分页
+sheaf get <id>                   # 查看一条条目的完整详情
 sheaf stats                      # 收藏统计与主题趋势
 sheaf crystallize <topic>        # 结晶知识卡片
 sheaf crystallize --list         # 列出所有已结晶卡片
@@ -258,7 +262,7 @@ export OPENAI_BASE_URL=https://api.together.xyz/v1
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 988 passed, 19 skipped
+python -m pytest tests/ -q     # 1003 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -266,7 +270,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态
 
-Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，988 个测试通过、19 个跳过。我们正在用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha 阶段。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，1003 个测试通过、19 个跳过。我们正在用真实用户验证，准备进入 Beta。
 
 浏览器扩展（`extension/`）是 HTTP API 的实验性本地伴侣，其 manifest 版本独立于 Python 包版本，直到扩展拥有自己的发布渠道。
 

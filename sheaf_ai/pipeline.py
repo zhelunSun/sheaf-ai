@@ -12,6 +12,7 @@ from typing import Optional
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,  # noqa: F401
     BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt, ensure_data_dirs,
+    SCHEMA_VERSION,
 )
 from sheaf_ai.utils import extract_timeliness, atomic_write
 from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry  # noqa: F401
@@ -344,10 +345,12 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
 
     # Step 1.1: Quality gate — image density detection + content quality
     from sheaf_ai.quality import assess_quality, format_quality_hint, format_image_supplement
+    # Notes (manual_text) bypass the short-content reject — a pasted insight is
+    # intentionally short. The dedup `force` above stays independent of this gate bypass.
     quality_report = assess_quality(
         fetch_result.get("text", ""),
         images,
-        force=force,
+        force=(force or bool(manual_text)),
     )
     quality_hint = format_quality_hint(quality_report)
     if quality_hint:
@@ -389,6 +392,13 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         classify_result.setdefault("tags", []).extend(
             t for t in ["AI对话", "ChatGPT", "对话归档"]
             if t not in classify_result.get("tags", [])
+        )
+
+    # Manual/pasted text → distinct 'note' content_type (provenance + filtering).
+    if manual_text:
+        classify_result["content_type"] = "note"
+        classify_result.setdefault("tags", []).extend(
+            t for t in ["笔记", "note"] if t not in classify_result.get("tags", [])
         )
 
     topics = [t.get("name", "") for t in classify_result.get("topics", [])]
@@ -554,7 +564,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
         entry["tags"] = tags
         entry["content_type"] = content_type
         entry["importance"] = importance
-        entry["metadata"]["schema_version"] = "1.1.0"
+        entry["metadata"]["schema_version"] = SCHEMA_VERSION
 
         new_summary = summary_result.get("one_liner", "")
         if new_summary:

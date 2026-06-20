@@ -59,6 +59,10 @@ def isolated_data_dir(tmp_path, monkeypatch):
     monkeypatch.setattr(search, "INDEX_FILE", test_data / "index.jsonl")
     monkeypatch.setattr(search, "RAW_DIR", test_data / "raw")
 
+    # Patch display module (reads INDEX_FILE at call time for recent/list/stats)
+    from sheaf_ai import display
+    monkeypatch.setattr(display, "INDEX_FILE", test_data / "index.jsonl")
+
     # Patch mcp.data module (has DATA_DIR, ENTRIES_DIR, INDEX_FILE)
     from sheaf_ai.mcp import data as mcp_data
     monkeypatch.setattr(mcp_data, "DATA_DIR", test_data)

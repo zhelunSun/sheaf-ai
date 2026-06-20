@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-988%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-1003%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/pyversions/sheaf-ai.svg" alt="Python Version"></a>
 </p>
@@ -113,8 +113,12 @@ Sheaf fixes this. Every link you save becomes a **structured entry** — a singl
 ## Core Commands
 
 ```bash
+sheaf help                  # Command overview (grouped) — or `sheaf <cmd> --help`
 sheaf collect <url>         # Collect an article, paper, or webpage
-sheaf search <query>        # Full-text search across your collection
+sheaf collect --text "..."  # Save a pasted note/insight (no fetch, tagged 'note')
+sheaf search <query>        # Full-text search (results show the entry id)
+sheaf list [--page N]       # Browse entries, paginated
+sheaf get <id>              # Full detail of one entry
 sheaf stats                 # Collection statistics with topic trends
 sheaf crystallize <topic>   # Crystallize knowledge cards from a topic
 sheaf crystallize --list    # List all crystallized cards
@@ -170,7 +174,7 @@ sheaf mcp
 
 | Tool | Type | Description |
 |------|------|-------------|
-| `sheaf_collect` | Core MCP | Add a new URL to your collection |
+| `sheaf_collect` | Core MCP | Add a URL **or a pasted note** (`url` or `text`) to your collection |
 | `sheaf_search` | Core MCP | Full-text + semantic search (keyword/hybrid/quick) |
 | `sheaf_crystallize` | Core MCP | Crystallize knowledge cards from a topic |
 | `sheaf_get_card` | Core MCP | Get full card details by ID |
@@ -381,7 +385,7 @@ Set the default provider via `sheaf config use <id>` or the `DEFAULT_PROVIDER` e
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q     # 988 passed, 19 skipped
+python -m pytest tests/ -q     # 1003 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -389,7 +393,7 @@ Dependencies are managed through `pyproject.toml` extras. Use `.[dev]` for local
 
 ## Alpha Status
 
-Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 988 passing tests. We're validating with real users before beta.
+Sheaf is in early alpha. The core collect → search → crystallize → MCP pipeline works and is tested with 1003 passing tests. We're validating with real users before beta.
 
 ### Chrome Extension
 

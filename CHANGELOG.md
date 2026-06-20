@@ -2,6 +2,25 @@
 
 All notable changes to Sheaf.
 
+## [0.6.2] — 2026-06-20
+
+### Agent-native collect (freeform text via MCP)
+- **`sheaf_collect(text=…)`** — the MCP tool now accepts `text` as an alternative to `url`, so an agent can save a pasted insight/note without a URL (closes the "收藏这个观点" gap). url/text are mutually exclusive; validated in the handler.
+- **Notes are a first-class type** — manual/pasted entries are tagged `content_type:"note"`, bypass the short-content quality gate (a note is intentionally short), and get an AI-generated title (the summarize step now generates a title when none is provided) with a deterministic first-sentence fallback.
+- **Agent memory UX in the skill** — proactive capture (judge by information density), gated proactive recall (one search on knowledge-shaped questions), and light value-visibility footer (`📖 via Sheaf KB`) when memory materially contributed. Design + iteration plan in `internal/AGENT-MEMORY-UX.md`.
+
+### Human CLI UX
+- **`sheaf help`** — a curated, grouped command overview (Collect / Read / Crystallize / Agent). `sheaf help <cmd>` delegates to argparse. Distinct from the agent-facing skill.
+- **`sheaf search` shows the entry ID** per result (so you can `sheaf get <id>` or open the file). MCP search already returned full entries.
+- **`sheaf list --page N`** — 1-indexed pagination with page navigation hints.
+- **CLI beautification** — new zero-dependency `sheaf_ai/term.py` ANSI helper (respects `NO_COLOR` / non-TTY); applied to recent / search / list for a cleaner, Claude-Code-style terminal feel. No new deps, no perf impact.
+
+### Under the hood
+- **`SCHEMA_VERSION` centralized** in `config.py` (was inconsistently stamped `1.1.0` in pipeline vs `1.2.0` in storage, and never read). Now single-source `1.2.0`; stamped but not yet used for migration — design in `internal/DATA-LIFECYCLE.md`.
+
+### Stats
+- 1003 tests passing, 0 warnings, ruff clean.
+
 ## [0.6.1] — 2026-06-19
 
 ### One-click agent install + MCP surface slim (closes #91)

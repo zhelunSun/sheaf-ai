@@ -65,6 +65,12 @@ from sheaf_ai import __version__
 
 VERSION = __version__
 
+# Entry data-schema version. Single source — both write paths (store_article +
+# reclassify) must stamp this so entries never disagree. NOTE: currently stamped
+# but NOT yet used for migration; the upgrade/backfill design lives in
+# internal/DATA-LIFECYCLE.md. Bump only on a real schema change.
+SCHEMA_VERSION = "1.2.0"
+
 
 def ensure_data_dirs():
     """Create data directories if they don't exist."""

@@ -8,6 +8,7 @@ import json
 from sheaf_ai.config import INDEX_FILE, VERSION
 from sheaf_ai.query import tag_stats, topic_trends, get_collection_stats
 from sheaf_ai.search import search_fulltext
+from sheaf_ai.term import bold, dim, gray, green, yellow
 
 
 def show_recent(limit: int = 5) -> None:
@@ -35,7 +36,7 @@ def show_recent(limit: int = 5) -> None:
     recent = entries[-limit:]  # index is append-ordered, last = newest
     recent.reverse()
 
-    print(f"Sheaf v{VERSION} — {total} sheave{'s' if total != 1 else ''} collected")
+    print(f"{bold(f'Sheaf v{VERSION}')} — {total} sheave{'s' if total != 1 else ''} collected")
 
     # Streak line (W2.5-02: one-line display on CLI startup)
     try:
@@ -50,6 +51,7 @@ def show_recent(limit: int = 5) -> None:
     for i, e in enumerate(recent, 1):
         title = e.get("title", "Untitled")[:60]
         date = e.get("collected_at", "")[:10]
+        entry_id = e.get("id", "")
         topics = ", ".join(
             t.get("name", t) if isinstance(t, dict) else t
             for t in e.get("topics", [])[:3]
@@ -57,8 +59,13 @@ def show_recent(limit: int = 5) -> None:
         summary = (e.get("summary") or "")[:80]
         source_tier = e.get("source_tier", "")
         src_tag = f" [{source_tier}]" if source_tier else ""
-        print(f"  {i}. {title}")
-        print(f"     {date}  |  {topics}{src_tag}")
+        ctype = e.get("content_type", "")
+        type_tag = yellow(f" {ctype}") if ctype else ""
+        print(f"  {green(i)}. {bold(title)}")
+        meta = f"{date}  |  {topics}{src_tag}{type_tag}"
+        if entry_id:
+            meta += f"  |  {gray(f'id: {entry_id}')}"
+        print(f"     {dim(meta)}")
         if summary:
             print(f"     {summary}...")
         print()
@@ -169,7 +176,7 @@ def show_search(query: str, limit: int = 10) -> None:
     if synonyms:
         synonym_hint = f" (expanded: {', '.join(synonyms[:5])}{'...' if len(synonyms) > 5 else ''})"
 
-    print(f'Search results for "{query}" ({len(results)} found){synonym_hint}:')
+    print(f'{bold("Search results")} for "{query}" ({len(results)} found){synonym_hint}:')
     print()
     for i, r in enumerate(results, 1):
         entry = r["entry"]
@@ -177,11 +184,16 @@ def show_search(query: str, limit: int = 10) -> None:
         locations = ", ".join(r["match_locations"])
         title = entry.get("title", "?")[:70]
         date = entry.get("collected_at", "")[:10]
+        entry_id = entry.get("id", "")
 
-        print(f"  {i}. [{score:.1f}] {title}")
-        print(f"     Date: {date} | Matched: {locations}")
+        print(f"  {green(i)}. {bold(title)}  {dim(f'[{score:.1f}]')}")
+        meta = f"{date} | matched: {locations}"
+        if entry_id:
+            # Show the ID so the user/agent can drill in: `sheaf get <id>`
+            meta += f" | {gray(f'id: {entry_id}')}"
+        print(f"     {dim(meta)}")
         if r.get("snippet"):
-            print(f"     >> {r['snippet'][:100]}")
+            print(f"     {dim('›')} {r['snippet'][:100]}")
         print()
 
 
@@ -353,11 +365,12 @@ def show_list_entries(
     tag_filter: str = None,
     type_filter: str = None,
     json_output: bool = False,
+    page: int = 1,
 ) -> None:
     """List collected entries with optional filtering (Issue #71).
 
-    Supports --topic, --tag, --type filters. Outputs human-readable table
-    by default, or raw JSON with --json flag.
+    Supports --topic, --tag, --type filters and --page pagination (1-indexed).
+    Outputs human-readable table by default, or raw JSON with --json flag.
     """
     if not INDEX_FILE.exists():
         print("Your basket is empty. Start collecting: sheaf <url>")
@@ -407,24 +420,32 @@ def show_list_entries(
             if e.get("content_type", "").lower() == type_lower
         ]
 
-    # Sort newest first, limit
+    # Sort newest first, then apply pagination (page is 1-indexed).
     filtered.sort(key=lambda x: x.get("collected_at", ""), reverse=True)
     total_matching = len(filtered)
-    filtered = filtered[:limit]
+    page = max(1, int(page or 1))
+    per_page = max(1, int(limit))
+    total_pages = max(1, (total_matching + per_page - 1) // per_page)
+    offset = (page - 1) * per_page
+    page_slice = filtered[offset:offset + per_page]
 
     if json_output:
-        print(json.dumps(filtered, ensure_ascii=False, indent=2))
+        print(json.dumps(page_slice, ensure_ascii=False, indent=2))
         return
 
     # Human-readable output
-    if not filtered:
-        print("No entries match the filter criteria.")
+    if not page_slice:
+        print("No entries match the filter criteria"
+              + (f" on page {page}" if page > 1 else "") + ".")
         return
 
-    print(f"Sheaf — {total_matching} entries{' (showing ' + str(len(filtered)) + ')' if total_matching > limit else ''}")
+    header = f"{bold('Sheaf')} — {total_matching} entries"
+    if total_matching > per_page:
+        header += f"  {dim(f'(page {page}/{total_pages}, --page N to navigate)')}"
+    print(header)
     print()
 
-    for i, e in enumerate(filtered, 1):
+    for i, e in enumerate(page_slice, 1):
         title = e.get("title", "Untitled")[:65]
         date = e.get("collected_at", "")[:10]
         entry_id = e.get("id", "?")
@@ -438,18 +459,23 @@ def show_list_entries(
         quality = e.get("quality_tier", "")
         source_tier = e.get("source_tier", "")
 
-        print(f"  {i}. {title}")
+        row = offset + i
+        print(f"  {green(row)}. {bold(title)}")
         tier_info = f"  |  Tier: {quality}" if quality else ""
         src_info = f"  |  Src: {source_tier}" if source_tier else ""
-        print(f"     ID: {entry_id}  |  {date}  |  Type: {content_type}{tier_info}{src_info}")
+        type_part = yellow(content_type) if content_type else content_type
+        print(f"     {dim(f'ID: {entry_id}  |  {date}  |  Type: {type_part}{tier_info}{src_info}')}")
         if topics:
-            print(f"     Topics: {topics}")
+            print(f"     {dim('Topics:')} {topics}")
         if tags:
-            print(f"     Tags: {tags}")
+            print(f"     {dim('Tags:')} {tags}")
         if summary:
             print(f"     {summary}")
         print()
 
-    if total_matching > limit:
-        print(f"  ... {total_matching - limit} more entries. Use --limit to show more.")
-    print(f"  Total: {len(entries)} entries in collection")
+    if total_matching > per_page:
+        nav = f"page {page}/{total_pages}"
+        if page < total_pages:
+            nav += f" — {dim('next:')} --page {page + 1}"
+        print(f"  {dim(nav)}")
+    print(f"  {dim(f'Total: {len(entries)} entries in collection')}")

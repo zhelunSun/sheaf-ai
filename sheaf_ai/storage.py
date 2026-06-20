@@ -3,13 +3,14 @@ Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 """
 import json
 import logging
+import re
 import threading
 import uuid
 from datetime import datetime
 
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
-    TAGS_REGISTRY_FILE, BJT,
+    TAGS_REGISTRY_FILE, BJT, SCHEMA_VERSION,
 )
 from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness, atomic_write
 
@@ -168,9 +169,12 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
         or fetch_result.get("title", "")
     )
     if not title and fetch_result.get("text"):
-        first_line = fetch_result["text"].split("\n")[0].strip()[:100]
-        if first_line:
-            title = first_line
+        # Deterministic fallback when the LLM didn't return a title (e.g. a short
+        # note): take the first sentence / line, capped, rather than the whole text
+        # (manual text is one "line", so the old split('\n')[0] grabbed everything).
+        raw = fetch_result["text"].strip()
+        first_sentence = re.split(r"[。！？\n.!?]", raw, maxsplit=1)[0].strip()
+        title = (first_sentence or raw)[:80]
 
     platform = detect_platform(url)
     timeliness = extract_timeliness(summary_result.get("structured", {}))
@@ -211,7 +215,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "collected_at": now.isoformat(),
             "fetch_method": fetch_result.get("method", "unknown"),
             "language": "zh",
-            "schema_version": "1.2.0",
+            "schema_version": SCHEMA_VERSION,
             "content_hash": content_h,
             **({"conversation": extra_meta} if extra_meta else {}),
         },

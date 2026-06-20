@@ -9,10 +9,18 @@ Sheaf is wired into Codex as an MCP server (`~/.codex/config.toml` →
 
 | Tool | Use for |
 |------|---------|
-| `sheaf_collect(url)` | Save a URL → structured entry (id, title, summary, topics, tags) |
-| `sheaf_search(query, ...)` | Hybrid BM25 + semantic search. `#tag`, `after:`, `source:`, `is:fav`. Cross-lingual synonyms (AI ↔ 人工智能) |
+| `sheaf_collect(url=\|text=)` | Save a **URL** (fetch+summarize) **or a pasted note** (`text`, no fetch, tagged `content_type:"note"`) → structured entry |
+| `sheaf_search(query, ...)` | Hybrid BM25 + semantic search. `#tag`, `after:`, `source:`, `is:fav`. Cross-lingual synonyms (AI ↔ 人工智能). Returns the **full entry** per hit — usually no separate read needed |
 | `sheaf_crystallize(topic)` | Distill 3+ entries into knowledge cards with confidence + evidence tracing |
 | `sheaf_get_card(card_id)` | Read one card in full (claim, evidence, confidence, sources) |
+
+> **"收藏/保存/记下 X"**: X is a URL → `sheaf_collect(url=X)`; X is text/idea → `sheaf_collect(text=X)`.
+>
+> **🧠 Proactive capture (judge by information density)**: when the user states something dense & reusable — a **decision**, durable **fact/constraint**, **preference**, or **commitment** — capture it as `sheaf_collect(text=…)` without waiting for "save". Skip status/small-talk (low density). One self-contained sentence; AI titles it. This is the most frequent agent use of Sheaf.
+>
+> **🧠 Proactive recall**: before answering a *knowledge-shaped* question (about a topic/project you may have notes on), do ONE focused `sheaf_search`. Skip trivial/operational turns.
+>
+> **Make memory visible — lightly**: when your answer materially used Sheaf, add a one-line footer `📖 via Sheaf KB (3 notes)`. Skip when it didn't. Never reflexive.
 
 ## Everything else — use the `sheaf` CLI (always with `--json`)
 

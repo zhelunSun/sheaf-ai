@@ -78,10 +78,11 @@ def build_parser() -> argparse.ArgumentParser:
     # List: browse collected entries (Issue #71)
     p = sub.add_parser("list", help="List collected entries")
     p.add_argument("--recent", action="store_true", help="Show most recent entries (default)")
-    p.add_argument("--limit", "-n", type=int, default=10, help="Number of entries to show (default: 10)")
+    p.add_argument("--limit", "-n", type=int, default=10, help="Entries per page (default: 10)")
+    p.add_argument("--page", type=int, default=1, help="Page number, 1-indexed (default: 1)")
     p.add_argument("--topic", "-t", default=None, help="Filter by topic")
     p.add_argument("--tag", default=None, help="Filter by tag")
-    p.add_argument("--type", default=None, help="Filter by content type")
+    p.add_argument("--type", default=None, help="Filter by content type (e.g. note, research, ai_conversation)")
     p.add_argument("--json", action="store_true", help="Output raw JSON")
     p = sub.add_parser("reclassify", help="Re-classify legacy entries"); p.add_argument("--dry-run", action="store_true")
     # Config: API key and provider management
@@ -123,6 +124,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("url", help="URL to analyze")
     p.add_argument("--json", action="store_true", help="Output raw JSON")
     p.add_argument("--limit", "-n", type=int, default=10, help="Max related entries (default: 10)")
+    # Help: human-facing overview (distinct from --help argparse; grouped + curated)
+    p = sub.add_parser("help", help="Show this command overview (or `sheaf help <command>`)")
+    p.add_argument("subcmd", nargs="?", default=None, help="Specific command to show help for")
     return parser
 
 
@@ -272,10 +276,59 @@ def _run() -> None:
         "insights": lambda: _insights(parsed, json_auto=auto_json),
         "get": lambda: _get(parsed, json_auto=auto_json),
         "matrix": lambda: _matrix(parsed),
+        "help": lambda: _help(parsed),
     }
     handler = _DISPATCH.get(parsed.command)
     if handler: handler()
     else: print(f"Unknown: {parsed.command}"); sys.exit(get_exit_code_from_key("CONFIG"))
+
+
+def _help(p: argparse.Namespace) -> None:
+    """Human-facing command overview (grouped + curated).
+
+    Distinct from argparse ``--help``: this is the friendly front door for
+    people. ``sheaf help <command>`` delegates to that command's argparse help.
+    """
+    from sheaf_ai.term import bold, dim, green, cyan
+
+    target = getattr(p, "subcmd", None)
+    if target:
+        # Delegate to the subcommand's own --help (argparse prints + exits 0).
+        build_parser().parse_args([target, "--help"])
+        return
+
+    print(f"{bold('Sheaf')} {dim(f'v{VERSION}')} — local-first knowledge layer for agents")
+    print(dim("Harvest what you read, crystallize it, let your agent query it."))
+    print()
+    groups = [
+        ("Collect", [
+            ("sheaf <url>", "collect a link (fetch + classify + summarize)"),
+            ('sheaf collect --text "…"', "save a pasted note/insight (no fetch)"),
+            ("sheaf collect a b c", "batch-collect several URLs"),
+        ]),
+        ("Read", [
+            ("sheaf search <query>", "full-text + semantic search (shows entry id)"),
+            ("sheaf list [--page N]", "browse entries, paginated"),
+            ("sheaf get <id>", "full detail of one entry"),
+            ("sheaf stats / tags / weekly", "overview of your collection"),
+        ]),
+        ("Crystallize", [
+            ("sheaf crystallize <topic>", "distill 3+ entries into knowledge cards"),
+            ("sheaf crystallize --list", "browse cards"),
+        ]),
+        ("Agent / setup", [
+            ("sheaf mcp", "start the MCP server (Claude Code / Codex)"),
+            ("sheaf setup --target claude|codex", "one-command agent wiring + skill"),
+            ("sheaf doctor", "health check (data, key, MCP, skill)"),
+            ("sheaf config setup", "configure API key / provider"),
+        ]),
+    ]
+    for title, rows in groups:
+        print(f"  {green(title)}")
+        for cmd, desc in rows:
+            print(f"    {cyan(cmd)}   {dim('— ' + desc)}")
+        print()
+    print(dim("First time: pip install sheaf-ai → sheaf init   |   sheaf <cmd> --help for flags"))
 
 
 def _collect(p: argparse.Namespace, json_auto: bool = False) -> None:
@@ -475,6 +528,7 @@ def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
         tag_filter=p.tag,
         type_filter=getattr(p, "type", None),
         json_output=json_output,
+        page=getattr(p, "page", 1),
     )
 
 

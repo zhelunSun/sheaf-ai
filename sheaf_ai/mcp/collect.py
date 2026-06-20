@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import uuid
 
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 from sheaf_ai.pipeline import process_url
@@ -13,32 +14,32 @@ TOOLS = [
     {
         "name": "sheaf_collect",
         "description": (
-            "Collect a new article URL into the user's knowledge base.\n"
+            "Collect into the user's knowledge base — either a URL or freeform text.\n"
             "\n"
-            "Fetches the article content, classifies it into topics, "
-            "generates an AI summary, extracts tags, and stores it locally.\n"
-            "Automatically deduplicates — returns existing entry if already collected.\n"
+            "Provide ONE of:\n"
+            "- url: fetch + classify + summarize a web article/paper/repo (web articles, "
+            "arxiv, GitHub, PDFs, WeChat, ChatGPT shares, …). Automatically deduplicates.\n"
+            "- text: store a pasted insight/note directly (no fetch). Tagged content_type "
+            "'note', gets an AI-generated title + summary, bypasses the short-content gate. "
+            "For most agents this is the MOST FREQUENT capture — users express decisions, "
+            "facts, and takeaways in conversation far more often than they paste URLs. Capture "
+            "proactively when the user shares something worth recalling; don't wait to be asked.\n"
             "\n"
-            "The pipeline handles: web articles, arxiv papers, GitHub repos, "
-            "PDFs, WeChat articles, ChatGPT shared conversations, and more.\n"
-            "\n"
-            "After collection, the entry can be:\n"
-            "- Found via sheaf_search\n"
-            "- Listed via sheaf_list\n"
-            "- Synthesized into knowledge cards via sheaf_crystallize\n"
+            "After collection, the entry can be found via sheaf_search, listed, or "
+            "synthesized into knowledge cards via sheaf_crystallize.\n"
             "\n"
             "Examples:\n"
             "  sheaf_collect(url='https://arxiv.org/abs/2401.00001')\n"
-            "  sheaf_collect(url='https://mp.weixin.qq.com/s/...')\n"
-            "  sheaf_collect(url='https://github.com/owner/repo')"
+            "  sheaf_collect(text='RAG retrieval quality is the main bottleneck; CRAG adds a retrieval evaluator.')"
         ),
         "inputSchema": {
             "type": "object",
             "properties": {
-                "url": {"type": "string", "description": "Article URL to collect"},
+                "url": {"type": "string", "description": "Article URL to collect (mutually exclusive with text)"},
+                "text": {"type": "string", "description": "Freeform note/insight to store directly, no fetch (mutually exclusive with url)"},
                 "force": {"type": "boolean", "description": "Skip dedup check (default: false)", "default": False},
             },
-            "required": ["url"],
+            # url OR text required — validated in the handler (JSON Schema can't express cleanly here).
         },
     },
     {
@@ -88,9 +89,22 @@ TOOLS = [
 # ── Handlers ─────────────────────────────────────────────────
 
 def _handle_collect(req_id: int | str, arguments: dict) -> str:
-    url = arguments.get("url", "")
+    url = (arguments.get("url") or "").strip()
+    text = (arguments.get("text") or "").strip()
     force = arguments.get("force", False)
-    result = process_url(url, force=force)
+
+    # Validate: exactly one of url / text.
+    if url and text:
+        return jsonrpc_error(req_id, -32602, "Provide either 'url' OR 'text', not both.")
+    if not url and not text:
+        return jsonrpc_error(req_id, -32602, "Missing required parameter: provide 'url' (to fetch) or 'text' (to store a note).")
+
+    if text:
+        # Freeform note: synthesize a manual:// key (pipeline needs a url), bypass fetch.
+        url = f"manual://{uuid.uuid4().hex[:8]}"
+        result = process_url(url, manual_text=text, force=force)
+    else:
+        result = process_url(url, force=force)
     return jsonrpc_response(req_id, {
         "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
     })
