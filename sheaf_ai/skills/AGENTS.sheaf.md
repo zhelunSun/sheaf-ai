@@ -25,18 +25,19 @@ Sheaf is wired into Codex as an MCP server (`~/.codex/config.toml` →
 ## Everything else — use the `sheaf` CLI (always with `--json`)
 
 ```bash
-sheaf list [--json] [--filter urgent|untagged] [--category T]   # browse entries
+sheaf list [--topic T] [--tag T] [--type T] [--page N] [--json]  # browse entries
 sheaf get <id> --json                                            # full entry detail
-sheaf correct <id> --field topics ...                            # fix classification
-sheaf crosscheck <id> --json                                     # fact-verify claims (✅/⚠️/❌)
 sheaf insights --json                                            # cross-topic associations
 sheaf crystallize --list                                         # list knowledge cards
 sheaf crystallize --show <card_id>                               # read one card
 sheaf collect <url1> <url2> <url3>                               # batch save
+sheaf matrix <url>                                               # cross-source matrix for a URL
+sheaf urgent                                                     # entries with upcoming deadlines
 sheaf doctor                                                     # health check
 ```
 
-> Set `SHEAF_MCP_TOOLS=all` to re-expose the full 11-tool MCP surface.
+> `sheaf_correct` and `sheaf_crosscheck` are demoted MCP tools — call them via
+> MCP `tools/call` (or set `SHEAF_MCP_TOOLS=all` to re-expose the full 11-tool surface).
 
 ## Rule of thumb
 - **MCP tool** for a single high-frequency action that needs a structured result

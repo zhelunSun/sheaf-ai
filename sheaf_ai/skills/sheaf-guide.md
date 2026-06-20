@@ -1,6 +1,6 @@
 ---
 name: sheaf-guide
-description: Operate Sheaf — a local-first knowledge layer — to collect URLs into structured entries, search the knowledge base, and crystallize knowledge cards. Use this when the user wants to save/read/verify web content, search what they've collected, or distill cards from a topic. Covers the 4 MCP entry tools (sheaf_collect / sheaf_search / sheaf_crystallize / sheaf_get_card) and when to use the `sheaf` CLI for everything else (list, get, correct, crosscheck, insights, cards, batch).
+description: Operate Sheaf — a local-first knowledge layer — to collect URLs into structured entries, search the knowledge base, and crystallize knowledge cards. Use this when the user wants to save/read/verify web content, search what they've collected, or distill cards from a topic. Covers the 4 MCP entry tools (sheaf_collect / sheaf_search / sheaf_crystallize / sheaf_get_card), the `sheaf` CLI for the rest (list, get, insights, cards, batch), and MCP `tools/call` for correct/crosscheck.
 ---
 
 # Sheaf — Agent Operating Guide
@@ -21,10 +21,10 @@ Everything else is done via the `sheaf` CLI with `--json` for structured output.
 | **Search** the KB | MCP `sheaf_search(query)` — or `sheaf search "<q>" --json` |
 | **Crystallize** cards from a topic | MCP `sheaf_crystallize(topic)` — or `sheaf crystallize <topic>` |
 | **Read** one card by ID | MCP `sheaf_get_card(card_id)` — or `sheaf crystallize --show <id>` |
-| List / browse entries | `sheaf list [--json]` (`--filter urgent\|untagged`, `--category`, `--limit`, `--offset`) |
+| List / browse entries | `sheaf list [--topic T] [--tag T] [--type T] [--page N] [--json]` (deadline view: `sheaf urgent`) |
 | Get one entry's full detail | `sheaf get <id> --json` |
-| Correct a mis-classification | `sheaf correct <id> --field topics\|tags ... ` |
-| Cross-verify an entry's claims | `sheaf crosscheck <id> --json` |
+| Correct a mis-classification | MCP `tools/call sheaf_correct` (demoted tool) |
+| Cross-verify an entry's claims | MCP `tools/call sheaf_crosscheck`, or `sheaf matrix <url>` |
 | Discover cross-topic links | `sheaf insights --json` |
 | List / show knowledge cards | `sheaf crystallize --list` / `sheaf crystallize --show <card_id>` |
 | Batch collect | `sheaf collect <url1> <url2> <url3>` |
@@ -114,7 +114,7 @@ badge to slap on every reply.
 **Save a new source and verify it:**
 1. `sheaf_collect` the URL
 2. `sheaf get <id> --json` for full detail
-3. `sheaf crosscheck <id> --json` to fact-check claims against other entries
+3. MCP `tools/call sheaf_crosscheck` to fact-check claims against other entries
 
 **Answer "what did I read about X?":**
 1. `sheaf_search "X"` → scan ranked results
@@ -122,7 +122,7 @@ badge to slap on every reply.
 3. `sheaf crystallize <topic>` once you have enough material
 
 **Distill a topic into citable cards:**
-1. Confirm ≥3 entries: `sheaf list --category <topic> --json`
+1. Confirm ≥3 entries: `sheaf list --topic <topic> --json`
 2. `sheaf crystallize <topic>` → cards with confidence + evidence
 3. `sheaf crystallize --show <card_id>` to read one in full
 

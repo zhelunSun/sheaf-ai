@@ -95,7 +95,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--model", default=None, help="Default model")
     # Setup: auto-configure MCP for Agent platforms
     p = sub.add_parser("setup", help="Auto-configure MCP server for your Agent platform")
-    p.add_argument("--target", "-t", choices=["cursor", "claude", "workbuddy", "windsurf"],
+    p.add_argument("--target", "-t", choices=["cursor", "claude", "codex", "workbuddy", "windsurf"],
                    default=None, help="Target platform (default: detect)")
     p.add_argument("--data-dir", default=None, help="Custom data directory for Sheaf")
     p.add_argument("--dry-run", action="store_true", help="Show what would be written without writing")

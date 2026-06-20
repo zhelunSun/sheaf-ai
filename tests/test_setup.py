@@ -466,6 +466,14 @@ class TestCodexConfigPath:
         with pytest.raises(ValueError, match="TOML"):
             build_full_config("codex")
 
+    def test_cli_setup_target_codex_parses(self):
+        # Regression: the argparse `setup --target` choices once omitted "codex"
+        # even though the setup function supported it — so `sheaf setup --target
+        # codex` failed at the parser. The skill contract test guards this too.
+        from sheaf_ai.cli import build_parser
+        ns = build_parser().parse_args(["setup", "--target", "codex"])
+        assert ns.target == "codex"
+
 
 class TestTomlIO:
     def test_read_nonexistent_toml(self, tmp_path):
