@@ -2,6 +2,16 @@
 
 All notable changes to Sheaf.
 
+## [0.6.3] — 2026-06-21
+
+### Agent-doc contract test + drift repair (v0.7 Phase 1)
+- **New `tests/test_skill_contract.py`** — parses the agent skill (`sheaf-guide.md` / `AGENTS.sheaf.md`) and asserts every referenced CLI command, MCP tool, and flag resolves against the real CLI parser + MCP registry. A CI guardrail so skill/CLI drift surfaces in tests, not at agent runtime. On first run it caught 6 live drifts, all repaired:
+  - **Skill drift** — the skill told agents to run `sheaf correct` / `sheaf crosscheck`, which are not CLI commands → rerouted to MCP `tools/call` (Issue #91's demoted-tool design) / `sheaf matrix`; and `list --filter` / `--category` / `--offset` don't exist → real flags (`--topic` / `--tag` / `--type` / `--page`) + `sheaf urgent`.
+  - **Code bug fixed** — `sheaf setup --target codex` was rejected by argparse (the `--target` choices omitted `codex` though the setup function supported it). Added `codex` to the choices; regression test `test_cli_setup_target_codex_parses` added.
+
+### Stats
+- 1010 tests passing (+7), 19 skipped, 0 warnings, ruff clean.
+
 ## [0.6.2] — 2026-06-20
 
 ### Agent-native collect (freeform text via MCP)
