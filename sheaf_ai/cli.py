@@ -554,8 +554,12 @@ def _get(p: argparse.Namespace, json_auto: bool = False) -> None:
         tags = ", ".join(entry.get("tags", []))
         print(f"# {title}")
         print(f"  id:     {entry.get('id', p.id)}")
-        if entry.get("url"):
-            print(f"  url:    {entry['url']}")
+        url = entry.get("url", "")
+        if url:
+            if url.startswith("manual://"):
+                print("  source: 📝 note (pasted text)")
+            else:
+                print(f"  url:    {url}")
         if topics:
             print(f"  topics: {topics}")
         if tags:
