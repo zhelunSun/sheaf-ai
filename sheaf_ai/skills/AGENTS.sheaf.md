@@ -39,6 +39,10 @@ sheaf doctor                                                     # health check
 > `sheaf_correct` and `sheaf_crosscheck` are demoted MCP tools — call them via
 > MCP `tools/call` (or set `SHEAF_MCP_TOOLS=all` to re-expose the full 11-tool surface).
 
+## Browse the KB (MCP Resources, read-only)
+
+`resources/list` → `sheaf://entries/recent` · `sheaf://entries/{id}` · `sheaf://stats` · `sheaf://tags`. Read one with `resources/read {uri}`. Peek `sheaf://entries/recent` before searching a knowledge-shaped question.
+
 ## Rule of thumb
 - **MCP tool** for a single high-frequency action that needs a structured result
   returned to you (collect / search / crystallize).

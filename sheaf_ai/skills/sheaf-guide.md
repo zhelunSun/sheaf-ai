@@ -97,6 +97,22 @@ cite a card surfaced by search or crystallize.
   corrections, or anything you'd script/chain. Always append `--json` so the
   output is machine-parseable.
 
+## Browse the knowledge base (MCP Resources)
+
+Besides tools, Sheaf exposes **read-only resources** — browse the KB structure
+without a tool side-effect. `resources/list` enumerates them; `resources/read`
+with a `uri` fetches one.
+
+| URI | What |
+|------|------|
+| `sheaf://entries/recent` | 10 most recent entries (id, title, topics, tags) |
+| `sheaf://entries/{id}` | one entry's full detail (template — find ids via recent) |
+| `sheaf://stats` | total / topic / type / tag counts |
+| `sheaf://tags` | tags ranked by frequency |
+
+Good first move on a knowledge-shaped question: read `sheaf://entries/recent`
+to see what's there before deciding to search.
+
 ## Make the memory visible — lightly
 
 When your answer **materially drew on Sheaf memory**, add a one-line footer so

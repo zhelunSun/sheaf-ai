@@ -16,6 +16,7 @@ from sheaf_ai.mcp import entries as _entries_mod
 from sheaf_ai.mcp import cards as _cards_mod
 from sheaf_ai.mcp import insights as _insights_mod
 from sheaf_ai.mcp import verify as _verify_mod
+from sheaf_ai.mcp import resources as _resources_mod
 
 MCP_PROTOCOL_VERSION = "2025-06-18"
 
@@ -65,7 +66,7 @@ def handle_request(request: dict) -> str | None:
     if method == "initialize":
         return jsonrpc_response(req_id, {
             "protocolVersion": MCP_PROTOCOL_VERSION,
-            "capabilities": {"tools": {}},
+            "capabilities": {"tools": {}, "resources": {}},
             "serverInfo": {"name": "sheaf", "version": VERSION},
         })
 
@@ -98,6 +99,15 @@ def handle_request(request: dict) -> str | None:
             return handler(req_id, arguments)
 
         return jsonrpc_error(req_id, -32601, f"Unknown tool: {tool_name}")
+
+    if method == "resources/list":
+        return jsonrpc_response(req_id, {"resources": _resources_mod.list_resources()})
+
+    if method == "resources/templates/list":
+        return jsonrpc_response(req_id, {"resourceTemplates": _resources_mod.list_resource_templates()})
+
+    if method == "resources/read":
+        return _resources_mod.read_resource(req_id, params.get("uri", ""))
 
     if method == "notifications/initialized":
         return None

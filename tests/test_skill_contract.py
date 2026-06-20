@@ -192,3 +192,25 @@ def test_setup_targets_parse(code):
     assert targets, "no --target values found in skill to test"
     bad = [t for t in sorted(targets) if not _flag_value_accepted("setup", "--target", t)]
     assert not bad, f"skill advertises invalid `setup --target` values: {bad}"
+
+
+def test_skill_resource_uris_resolve(code):
+    """F: every `sheaf://` URI in the skill is a real resource or the {id} template."""
+    from sheaf_ai.mcp.resources import RESOURCES, RESOURCE_TEMPLATES
+    static_uris = {r["uri"] for r in RESOURCES}
+    template_literals = {t["uriTemplate"] for t in RESOURCE_TEMPLATES}
+    entry_id_pat = re.compile(r"^sheaf://entries/[A-Za-z0-9_-]+$")
+    uri_re = re.compile(r"sheaf://[A-Za-z0-9_{}/.-]+")
+
+    bad: list[str] = []
+    seen = False
+    for name, text in code.items():
+        for uri in uri_re.findall(text):
+            seen = True
+            if uri in static_uris or uri in template_literals:
+                continue
+            if entry_id_pat.match(uri):  # concrete id example → valid template instance
+                continue
+            bad.append(f"{name}: {uri}")
+    assert seen, "skill documents no sheaf:// resource URIs (browse capability missing)"
+    assert not bad, f"skill references unknown resource URIs: {bad}"

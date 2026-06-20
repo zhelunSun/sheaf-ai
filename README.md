@@ -101,6 +101,8 @@ sheaf setup --target codex --dry-run # preview without writing
 
 The MCP server exposes **4 core tools** — `sheaf_collect`, `sheaf_search`, `sheaf_crystallize`, `sheaf_get_card` — covering ~90% of automated agent workflows and kept lean by design (~1.5k vs ~5k tokens). 7 more stay reachable via the `sheaf` CLI (`--json`) or MCP `tools/call`; re-expose all with `SHEAF_MCP_TOOLS=all`. Full tool matrix + rationale: [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91). Setup details: [docs/mcp-setup.md](docs/mcp-setup.md).
 
+Agents can also **browse** the knowledge base read-only via MCP Resources — `sheaf://entries/recent`, `sheaf://entries/{id}`, `sheaf://stats`, `sheaf://tags` (`resources/list` / `resources/read`). Spec: [docs/agent-query-spec.md](docs/agent-query-spec.md).
+
 ## Commands
 
 ```bash

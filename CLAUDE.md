@@ -25,6 +25,11 @@ callable via `tools/call` for backward compat, but agents are guided to the
 `sheaf` CLI (`--json`) by the deployed skill. Set `SHEAF_MCP_TOOLS=all` to
 re-expose the full 11.
 
+The server also exposes **MCP Resources** (read-only browse, Issue #89):
+`resources/list` + `resources/read` over `sheaf://entries/recent` /
+`sheaf://entries/{id}` / `sheaf://stats` / `sheaf://tags`. `initialize`
+advertises the `resources` capability. Handlers in `sheaf_ai/mcp/resources.py`.
+
 **Core (4, default in `tools/list`):**
 
 | Tool | Purpose |

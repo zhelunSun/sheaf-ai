@@ -101,6 +101,8 @@ sheaf setup --target codex --dry-run # 预览但不写入
 
 MCP 服务器默认暴露 **4 个核心工具** —— `sheaf_collect`、`sheaf_search`、`sheaf_crystallize`、`sheaf_get_card` —— 覆盖约 90% 的自动化 agent 工作流，刻意保持精简（~1.5k vs ~5k tokens）。其余 7 个仍可通过 `sheaf` CLI（`--json`）或 MCP `tools/call` 调用；设 `SHEAF_MCP_TOOLS=all` 恢复全部。完整工具矩阵与设计理由见 [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91)，接入细节见 [docs/mcp-setup.md](docs/mcp-setup.md)。
 
+Agent 还可经 **MCP Resources** 只读**浏览**知识库 —— `sheaf://entries/recent`、`sheaf://entries/{id}`、`sheaf://stats`、`sheaf://tags`（`resources/list` / `resources/read`）。规范见 [docs/agent-query-spec.md](docs/agent-query-spec.md)。
+
 ## 命令一览
 
 ```bash

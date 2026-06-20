@@ -18,6 +18,32 @@ Agent 通过 MCP Server（`sheaf_ai/mcp_server.py`）访问知识库。所有交
 | `sheaf_correct` | 纠正分类 | entry_id, corrections, note? | 纠正结果 |
 | `sheaf_collect` | 新收录 | url, force? | 处理结果 |
 
+## MCP Resources（只读浏览）
+
+除工具外，Sheaf 通过 **MCP Resources** 暴露知识库为可读 URI——`resources/list` 枚举，`resources/read {uri}` 读取。`initialize` 的 `capabilities` 包含 `resources`。内容均为 `application/json`。
+
+| URI | 内容 | 数据来源 |
+|-----|------|----------|
+| `sheaf://entries/recent` | 最近 10 条条目（轻量索引字段） | `load_index()` |
+| `sheaf://entries/{id}` | 单条完整详情（参数化模板，id 见 recent） | `load_entry(id)` |
+| `sheaf://stats` | total / topic / type / tag 计数 | `get_collection_stats()` |
+| `sheaf://tags` | 按频次排序的标签列表 | `tag_stats()` |
+
+### resources/read 响应格式
+
+```json
+{
+  "jsonrpc": "2.0", "id": 1,
+  "result": {
+    "contents": [
+      {"uri": "sheaf://stats", "mimeType": "application/json", "text": "<JSON 字符串>"}
+    ]
+  }
+}
+```
+
+未知 URI 或 entry 不存在 → `-32602`。entry id 校验 `^[A-Za-z0-9_-]+$`（防路径穿越）。
+
 ## 返回格式规范
 
 ### 成功响应

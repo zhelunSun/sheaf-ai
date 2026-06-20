@@ -115,6 +115,95 @@ class TestMcpProtocol:
         assert resp is None
 
 
+class TestMcpResources:
+    """MCP Resources — browsable sheaf:// URIs (Issue #89, design Principle F)."""
+
+    def test_initialize_advertises_resources(self):
+        resp = handle_request({"jsonrpc": "2.0", "id": 1, "method": "initialize"})
+        caps = json.loads(resp)["result"]["capabilities"]
+        assert "resources" in caps, "server must advertise resources capability"
+
+    def test_resources_list_shape(self):
+        resp = handle_request({"jsonrpc": "2.0", "id": 2, "method": "resources/list"})
+        resources = json.loads(resp)["result"]["resources"]
+        assert {r["uri"] for r in resources} == {
+            "sheaf://entries/recent", "sheaf://stats", "sheaf://tags",
+        }
+        for r in resources:
+            assert all(k in r for k in ("uri", "name", "description", "mimeType"))
+            assert r["mimeType"] == "application/json"
+
+    def test_resources_templates_list(self):
+        resp = handle_request({"jsonrpc": "2.0", "id": 3, "method": "resources/templates/list"})
+        templates = json.loads(resp)["result"]["resourceTemplates"]
+        assert any(t["uriTemplate"] == "sheaf://entries/{id}" for t in templates)
+
+    def test_read_recent_empty(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 4, "method": "resources/read",
+                               "params": {"uri": "sheaf://entries/recent"}})
+        contents = json.loads(resp)["result"]["contents"]
+        assert len(contents) == 1
+        assert json.loads(contents[0]["text"]) == []
+
+    def test_read_stats_empty(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 5, "method": "resources/read",
+                               "params": {"uri": "sheaf://stats"}})
+        payload = json.loads(json.loads(resp)["result"]["contents"][0]["text"])
+        assert payload["total"] == 0
+        assert "topic_counts" in payload
+
+    def test_read_tags_empty(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 6, "method": "resources/read",
+                               "params": {"uri": "sheaf://tags"}})
+        assert json.loads(json.loads(resp)["result"]["contents"][0]["text"]) == []
+
+    def test_read_entry_after_store(self, isolated_data_dir):
+        from sheaf_ai.storage import store_article
+        entry_id = store_article(
+            "https://example.com/rc-entry",
+            {"success": True, "title": "Resource Entry", "text": "Body.", "method": "requests"},
+            {"topics": [{"name": "MCP", "confidence": 0.9}], "tags": ["mcp"],
+             "content_type": "reference", "importance": "medium"},
+            {"one_liner": "Resource test.", "original_title": "Resource Entry",
+             "source_author": "", "structured": {}},
+        )
+        resp = handle_request({"jsonrpc": "2.0", "id": 7, "method": "resources/read",
+                               "params": {"uri": f"sheaf://entries/{entry_id}"}})
+        entry = json.loads(json.loads(resp)["result"]["contents"][0]["text"])
+        assert entry["id"] == entry_id
+        assert entry["title"] == "Resource Entry"
+
+    def test_read_recent_after_store(self, isolated_data_dir):
+        from sheaf_ai.storage import store_article
+        store_article(
+            "https://example.com/rc-recent",
+            {"success": True, "title": "Recent One", "text": "x", "method": "requests"},
+            {"topics": [], "tags": [], "content_type": "reference", "importance": "medium"},
+            {"one_liner": "", "original_title": "Recent One", "source_author": "", "structured": {}},
+        )
+        resp = handle_request({"jsonrpc": "2.0", "id": 8, "method": "resources/read",
+                               "params": {"uri": "sheaf://entries/recent"}})
+        recent = json.loads(json.loads(resp)["result"]["contents"][0]["text"])
+        assert len(recent) == 1
+        assert recent[0]["title"] == "Recent One"
+
+    def test_read_entry_not_found(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 9, "method": "resources/read",
+                               "params": {"uri": "sheaf://entries/2026-01-01_deadbeef"}})
+        assert json.loads(resp)["error"]["code"] == -32602
+
+    def test_read_entry_rejects_traversal(self, isolated_data_dir):
+        """A crafted id with a path separator must be rejected, not traversed."""
+        resp = handle_request({"jsonrpc": "2.0", "id": 10, "method": "resources/read",
+                               "params": {"uri": "sheaf://entries/foo/bar"}})
+        assert json.loads(resp)["error"]["code"] == -32602
+
+    def test_read_unknown_uri(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 11, "method": "resources/read",
+                               "params": {"uri": "sheaf://bogus"}})
+        assert json.loads(resp)["error"]["code"] == -32602
+
+
 class TestToolSchemas:
     """Validate MCP tool schemas are well-formed."""
 
