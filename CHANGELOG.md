@@ -7,7 +7,7 @@ All notable changes to Sheaf.
 ### Agent-native collect (freeform text via MCP)
 - **`sheaf_collect(text=…)`** — the MCP tool now accepts `text` as an alternative to `url`, so an agent can save a pasted insight/note without a URL (closes the "收藏这个观点" gap). url/text are mutually exclusive; validated in the handler.
 - **Notes are a first-class type** — manual/pasted entries are tagged `content_type:"note"`, bypass the short-content quality gate (a note is intentionally short), and get an AI-generated title (the summarize step now generates a title when none is provided) with a deterministic first-sentence fallback.
-- **Agent memory UX in the skill** — proactive capture (judge by information density), gated proactive recall (one search on knowledge-shaped questions), and light value-visibility footer (`📖 via Sheaf KB`) when memory materially contributed. Design + iteration plan in `internal/AGENT-MEMORY-UX.md`.
+- **Agent memory UX in the skill** — proactive capture (judge by information density), gated proactive recall (one search on knowledge-shaped questions), and light value-visibility footer (`📖 via Sheaf KB`) when memory materially contributed. Design + iteration plan in `internal/design/AGENT-MEMORY-UX.md`.
 
 ### Human CLI UX
 - **`sheaf help`** — a curated, grouped command overview (Collect / Read / Crystallize / Agent). `sheaf help <cmd>` delegates to argparse. Distinct from the agent-facing skill.
@@ -16,7 +16,7 @@ All notable changes to Sheaf.
 - **CLI beautification** — new zero-dependency `sheaf_ai/term.py` ANSI helper (respects `NO_COLOR` / non-TTY); applied to recent / search / list for a cleaner, Claude-Code-style terminal feel. No new deps, no perf impact.
 
 ### Under the hood
-- **`SCHEMA_VERSION` centralized** in `config.py` (was inconsistently stamped `1.1.0` in pipeline vs `1.2.0` in storage, and never read). Now single-source `1.2.0`; stamped but not yet used for migration — design in `internal/DATA-LIFECYCLE.md`.
+- **`SCHEMA_VERSION` centralized** in `config.py` (was inconsistently stamped `1.1.0` in pipeline vs `1.2.0` in storage, and never read). Now single-source `1.2.0`; stamped but not yet used for migration — design in `internal/design/DATA-LIFECYCLE.md`.
 
 ### Stats
 - 1003 tests passing, 0 warnings, ruff clean.
@@ -52,7 +52,7 @@ All notable changes to Sheaf.
   - Returns a fact comparison matrix with status per claim: ✅ confirmed / ⚠️ divergent / ❌ lone source / ❓ not covered
   - Overall confidence: high / medium / low
 - **Source Intelligence design** — `docs/SOURCE-INTELLIGENCE-DESIGN.md` (draft v0.1)
-- **MCP v2 architecture plan** — `internal/MCP-V2-PLAN.md` (元工具 + 角色专属工具两层草案)
+- **MCP v2 architecture plan** — `internal/design/MCP-V2-PLAN.md` (元工具 + 角色专属工具两层草案)
 
 ### Positioning
 - Phase 5.5 in `PRODUCT-EVOLUTION.md` — "消息源信任基础设施"
@@ -60,7 +60,7 @@ All notable changes to Sheaf.
 
 ### Known Gaps (blocking v0.6.1 release)
 - ⚠️ **#67** SiliconFlow live rebuild verification (open 9d, blocked by Sir network window)
-- ⚠️ Manual test checklist written but not yet executed end-to-end (`docs/manual-test-checklist-2026-06-15.md`)
+- ⚠️ Manual test checklist written but not yet executed end-to-end (`internal/test-reports/manual-test-checklist-2026-06-15.md`)
 
 ## [0.6.0] — 2026-06-08
 

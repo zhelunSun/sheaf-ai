@@ -4,6 +4,7 @@
 > **作者**: Jarvis (参谋长) | **审阅**: Sir
 > **分支**: `feat/mcp-v2` (从 main v0.6.0 切出)
 > **定位**: Phase 4 Matrix 的前置能力，Phase 5 记忆层的信任基础设施
+> **状态**: ⚠️ Beta — 已实现于 `feat/mcp-v2`,**尚未合并入 main**;主分支当前为精简后的 4 核心 MCP(见 [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91))。本文为设计参考,不代表已发布能力。
 
 ---
 

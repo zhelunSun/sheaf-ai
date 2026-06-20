@@ -88,10 +88,10 @@
   - **交叉验证 (sheaf_crosscheck)**: 库内多源事实对比，✅确认/⚠️有差异/❌仅本源/❓未提及
 - **与 Matrix 的关系**: crosscheck = matrix 的 MVP, source_score = matrix 的信任层
 - **技术特点**: LLM 评分在现有 classify 调用中一并完成，不增加 API 成本
-- **实现状态**: ✅ feat/mcp-v2 分支已实现（e27c63b + 77bb915），⚠️ 等 #67 联网验证后 merge
+- **实现状态**: ✅ 已合并入 main（feat/mcp-v2 全量吸收）;source scoring 在 pipeline Step 3.5 生效,`sheaf_crosscheck` 经 CLI / `tools/call` 可用。#67 联网验证为独立项,不阻塞已发布版本。
 - **关键文档**:
-  - `docs/SOURCE-INTELLIGENCE-DESIGN.md` — 完整设计文档
-  - `internal/MCP-V2-PLAN.md` — MCP v2 架构计划
+  - `docs/SOURCE-INTELLIGENCE-DESIGN.md` — 完整设计文档(Beta 草案)
+  - `internal/design/MCP-V2-PLAN.md` — MCP v2 架构计划
 
 ### Phase 5.6: MemTensor 调研后的定位再确认（06-16）
 - **调研结论**: MemOS 给 AI 装记忆，Sheaf 给人装外脑 — **互补而非竞争**
