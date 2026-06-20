@@ -36,11 +36,11 @@ sheaf setup --show-config
 ### Claude Code
 
 ```bash
-# Option A: Sheaf auto-setup
-sheaf setup --target claude
+# Option A: zero-install via uvx (recommended — no pip install needed)
+claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
 
-# Option B: Claude CLI (if uvx is available)
-claude mcp add sheaf -- python -m sheaf_ai.mcp_server
+# Option B: Sheaf auto-setup (writes config + deploys the skill)
+sheaf setup --target claude
 ```
 
 **Config location**: `~/.claude.json`
@@ -90,32 +90,30 @@ After setup:
 
 ## Available MCP Tools
 
-| Tool | Description |
-|------|-------------|
-| `sheaf_search` | Full-text search across all collected entries |
-| `sheaf_list` | List entries with optional category filter |
-| `sheaf_get` | Get full details of a specific entry by ID |
-| `sheaf_urgent` | Get entries with upcoming deadlines |
-| `sheaf_correct` | Submit corrections/feedback for an entry |
-| `sheaf_collect` | Collect a URL into the knowledge base |
+Sheaf's MCP surface is intentionally lean — **4 core tools** cover ~90% of agent workflows and keep the schema small (~1.5k tokens). See [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91) for the rationale.
+
+| Core tool | Description |
+|-----------|-------------|
+| `sheaf_collect` | Collect a URL **or a pasted note** (`url` or `text`) |
+| `sheaf_search` | Full-text + semantic search (keyword / hybrid / quick) |
 | `sheaf_crystallize` | Crystallize knowledge cards from a topic |
-| `sheaf_list_cards` | List crystallized knowledge cards |
 | `sheaf_get_card` | Get full details of a knowledge card |
+
+7 more tools (`sheaf_list`, `sheaf_get`, `sheaf_correct`, `sheaf_insights`, `sheaf_crosscheck`, `sheaf_list_cards`, `sheaf_collect_batch`) stay reachable via the `sheaf` CLI (`--json`) or MCP `tools/call` — their handlers are kept for backward compatibility. Re-expose the full set with `SHEAF_MCP_TOOLS=all`. For Claude Code & Codex, `sheaf setup` also deploys a bundled skill / AGENTS note that tells the agent when to use the CLI for these.
 
 ---
 
 ## Manual Configuration
 
-If you prefer to configure manually, add this to your MCP config file:
+Prefer `sheaf setup` (above) — it writes the right format for each platform. If you configure manually, prefer the path-independent `sheaf-mcp` command (or `uvx` for zero-install) over a hard-coded Python path, which breaks when the venv moves:
 
 ```json
 {
   "mcpServers": {
     "sheaf": {
-      "command": "/path/to/python",
-      "args": ["-m", "sheaf_ai.mcp_server"],
+      "command": "sheaf-mcp",
       "env": {
-        "OPENAI_API_KEY": "your-api-key-here",
+        "SHEAF_API_KEY": "your-openai-compatible-key",
         "SHEAF_DATA_DIR": "/path/to/sheaf/data"
       }
     }
@@ -124,10 +122,9 @@ If you prefer to configure manually, add this to your MCP config file:
 ```
 
 **Notes:**
-- `command`: Use the full path to the Python interpreter where `sheaf-ai` is installed
-- `args`: The MCP server module path (`sheaf_ai.mcp_server`)
-- `env.OPENAI_API_KEY`: Required for LLM-powered features (classify, summarize, crystallize)
-- `env.SHEAF_DATA_DIR`: Optional — defaults to `./data` relative to CWD
+- `command`: `sheaf-mcp` (installed by `pip install sheaf-ai`) or `uvx --from sheaf-ai sheaf-mcp` (zero-install). Fallback: `python -m sheaf_ai.mcp_server`.
+- API key: any OpenAI-compatible key. `SHEAF_API_KEY` is generic; or use a provider-specific var (`OPENAI_API_KEY`, `DEEPSEEK_API_KEY`, …) and set `DEFAULT_PROVIDER` + `OPENAI_BASE_URL` for non-OpenAI endpoints. `sheaf config setup` stores keys in `~/.sheaf/config.json` so you can omit them here.
+- `SHEAF_DATA_DIR`: optional. Without it, Sheaf resolves data three-tier: `SHEAF_DATA_DIR` → `./data` (if CWD has project markers) → `~/.sheaf/data`.
 
 ## Troubleshooting
 
