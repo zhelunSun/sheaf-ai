@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-1010%20pass-brightgreen" alt="Tests"></a>
+  <a href="tests/"><img src="https://img.shields.io/badge/tests-1024%20pass-brightgreen" alt="Tests"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
 </p>
 
@@ -98,6 +98,8 @@ sheaf setup --target cursor          # .cursor/mcp.json   (also: windsurf, workb
 sheaf setup                          # auto-detect from CWD + installed agents
 sheaf setup --target codex --dry-run # preview without writing
 ```
+
+> **MCP + skill are one install.** `sheaf setup` deploys the MCP server **and** the skill together — the skill is what tells your agent *when* to proactively capture a note or recall from the KB, so it's not optional decoration. Prefer it over the bare `uvx` one-liner (which wires MCP only). Do it all at once — key + MCP + skill + health check — with `sheaf init --auto`.
 
 The MCP server exposes **4 core tools** — `sheaf_collect`, `sheaf_search`, `sheaf_crystallize`, `sheaf_get_card` — covering ~90% of automated agent workflows and kept lean by design (~1.5k vs ~5k tokens). 7 more stay reachable via the `sheaf` CLI (`--json`) or MCP `tools/call`; re-expose all with `SHEAF_MCP_TOOLS=all`. Full tool matrix + rationale: [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91). Setup details: [docs/mcp-setup.md](docs/mcp-setup.md).
 
@@ -205,7 +207,7 @@ URL → fetch → classify → summarize → store → query
 ```bash
 git clone https://github.com/zhelunSun/sheaf-ai.git && cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q          # 1003 passed, 19 skipped
+python -m pytest tests/ -q          # 1024 passed, 19 skipped
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -213,7 +215,7 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 ## Status & Chrome Extension
 
-Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by **1003 passing tests**. We're validating with real users before beta.
+Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by **1024 passing tests**. We're validating with real users before beta.
 
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 

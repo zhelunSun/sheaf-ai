@@ -2,6 +2,22 @@
 
 All notable changes to Sheaf.
 
+## [0.7.0] — 2026-06-21
+
+### MCP Resources — browse the knowledge base (Issue #89, design Principle F)
+Agents can now **browse** the KB read-only via MCP Resources (`resources/list` / `resources/read`), complementing the 4 tools (write/act) with a read/browse surface:
+- `sheaf://entries/recent` — 10 most recent entries
+- `sheaf://entries/{id}` — one entry's full detail (template)
+- `sheaf://entries/{id}/raw` — the **original fetched text**, so an agent can verify a summary or quote the source without re-fetching (works even if the source is gone)
+- `sheaf://stats` / `sheaf://tags` — aggregate counts and tag frequency
+- `initialize` advertises the `resources` capability. New module `sheaf_ai/mcp/resources.py` reuses existing data functions — zero new data code. Entry-id validation blocks path traversal.
+
+### Install: MCP + skill unified
+- Clarified that `sheaf setup` deploys the MCP server **and** the skill together (the skill drives proactive capture/recall — not optional). `sheaf init --auto` does it all (key + MCP + skill + health) in one command. Bare `uvx` wires MCP only.
+
+### Stats
+- 1024 tests passing (+14 since 0.6.3: 11 MCP-resource + 1 raw-resource + 2 contract), 19 skipped, 0 warnings, ruff clean.
+
 ## [0.6.3] — 2026-06-21
 
 ### Agent-doc contract test + drift repair (v0.7 Phase 1)
