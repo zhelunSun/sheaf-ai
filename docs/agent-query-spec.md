@@ -26,6 +26,7 @@ Agent 通过 MCP Server（`sheaf_ai/mcp_server.py`）访问知识库。所有交
 |-----|------|----------|
 | `sheaf://entries/recent` | 最近 10 条条目（轻量索引字段） | `load_index()` |
 | `sheaf://entries/{id}` | 单条完整详情（参数化模板，id 见 recent） | `load_entry(id)` |
+| `sheaf://entries/{id}/raw` | 该条目的原始抓取正文（核对摘要/引用原文，无需重新抓取） | `RAW_DIR/{id}.txt` |
 | `sheaf://stats` | total / topic / type / tag 计数 | `get_collection_stats()` |
 | `sheaf://tags` | 按频次排序的标签列表 | `tag_stats()` |
 

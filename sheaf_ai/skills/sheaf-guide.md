@@ -107,6 +107,7 @@ with a `uri` fetches one.
 |------|------|
 | `sheaf://entries/recent` | 10 most recent entries (id, title, topics, tags) |
 | `sheaf://entries/{id}` | one entry's full detail (template — find ids via recent) |
+| `sheaf://entries/{id}/raw` | the original fetched text — read to verify a summary or quote the source (no re-fetch) |
 | `sheaf://stats` | total / topic / type / tag counts |
 | `sheaf://tags` | tags ranked by frequency |
 

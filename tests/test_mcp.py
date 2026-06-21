@@ -136,7 +136,9 @@ class TestMcpResources:
     def test_resources_templates_list(self):
         resp = handle_request({"jsonrpc": "2.0", "id": 3, "method": "resources/templates/list"})
         templates = json.loads(resp)["result"]["resourceTemplates"]
-        assert any(t["uriTemplate"] == "sheaf://entries/{id}" for t in templates)
+        templates_set = {t["uriTemplate"] for t in templates}
+        assert "sheaf://entries/{id}" in templates_set
+        assert "sheaf://entries/{id}/raw" in templates_set
 
     def test_read_recent_empty(self, isolated_data_dir):
         resp = handle_request({"jsonrpc": "2.0", "id": 4, "method": "resources/read",
@@ -201,6 +203,25 @@ class TestMcpResources:
     def test_read_unknown_uri(self, isolated_data_dir):
         resp = handle_request({"jsonrpc": "2.0", "id": 11, "method": "resources/read",
                                "params": {"uri": "sheaf://bogus"}})
+        assert json.loads(resp)["error"]["code"] == -32602
+
+    def test_read_entry_raw_after_store(self, isolated_data_dir):
+        from sheaf_ai.storage import store_article
+        entry_id = store_article(
+            "https://example.com/rc-raw",
+            {"success": True, "title": "Raw One", "text": "The original body text here.", "method": "requests"},
+            {"topics": [], "tags": [], "content_type": "reference", "importance": "medium"},
+            {"one_liner": "", "original_title": "Raw One", "source_author": "", "structured": {}},
+        )
+        resp = handle_request({"jsonrpc": "2.0", "id": 12, "method": "resources/read",
+                               "params": {"uri": f"sheaf://entries/{entry_id}/raw"}})
+        block = json.loads(resp)["result"]["contents"][0]
+        assert block["mimeType"] == "text/plain"
+        assert "original body text" in block["text"]
+
+    def test_read_entry_raw_not_found(self, isolated_data_dir):
+        resp = handle_request({"jsonrpc": "2.0", "id": 13, "method": "resources/read",
+                               "params": {"uri": "sheaf://entries/2026-01-01_deadbeef/raw"}})
         assert json.loads(resp)["error"]["code"] == -32602
 
 

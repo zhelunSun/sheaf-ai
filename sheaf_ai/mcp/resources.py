@@ -44,6 +44,12 @@ RESOURCE_TEMPLATES = [
         "description": "Full detail of one entry by id (e.g. 2026-06-01_58fb4a92). Discover ids via sheaf://entries/recent.",
         "mimeType": "application/json",
     },
+    {
+        "uriTemplate": "sheaf://entries/{id}/raw",
+        "name": "Entry original text",
+        "description": "The original fetched text Sheaf stored for an entry — read this to verify a summary or quote the source without re-fetching (works even if the source is gone).",
+        "mimeType": "text/plain",
+    },
 ]
 
 # Entry ids are ``YYYY-MM-DD_<hex>``. Restrict to URL-safe alphanumerics so a
@@ -52,6 +58,7 @@ RESOURCE_TEMPLATES = [
 _ENTRY_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 _ENTRIES_PREFIX = "sheaf://entries/"
+_RAW_SUFFIX = "/raw"
 
 
 def list_resources() -> list:
@@ -88,11 +95,24 @@ def read_resource(req_id, uri: str) -> str:
         from sheaf_ai.query import tag_stats
         return jsonrpc_response(req_id, {"contents": [_content(uri, tag_stats(sort_by="count"))]})
 
-    # Parameterized: sheaf://entries/{id}
+    # Parameterized: sheaf://entries/{id} or sheaf://entries/{id}/raw
     if uri.startswith(_ENTRIES_PREFIX):
-        entry_id = uri[len(_ENTRIES_PREFIX):]
+        rest = uri[len(_ENTRIES_PREFIX):]
+        want_raw = rest.endswith(_RAW_SUFFIX)
+        if want_raw:
+            rest = rest[: -len(_RAW_SUFFIX)]
+        entry_id = rest
         if not entry_id or not _ENTRY_ID_RE.fullmatch(entry_id):
             return jsonrpc_error(req_id, -32602, f"Invalid entry id in URI: {uri}")
+        if want_raw:
+            from sheaf_ai.config import RAW_DIR
+            raw_path = RAW_DIR / f"{entry_id}.txt"
+            if not raw_path.exists():
+                return jsonrpc_error(req_id, -32602, f"Raw text not found for entry: {entry_id}")
+            text = raw_path.read_text(encoding="utf-8", errors="replace")
+            return jsonrpc_response(req_id, {"contents": [
+                {"uri": uri, "mimeType": "text/plain", "text": text}
+            ]})
         from sheaf_ai.mcp.data import load_entry
         entry = load_entry(entry_id)
         if entry is None:

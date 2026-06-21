@@ -199,7 +199,7 @@ def test_skill_resource_uris_resolve(code):
     from sheaf_ai.mcp.resources import RESOURCES, RESOURCE_TEMPLATES
     static_uris = {r["uri"] for r in RESOURCES}
     template_literals = {t["uriTemplate"] for t in RESOURCE_TEMPLATES}
-    entry_id_pat = re.compile(r"^sheaf://entries/[A-Za-z0-9_-]+$")
+    entry_id_pat = re.compile(r"^sheaf://entries/[A-Za-z0-9_-]+(/raw)?$")
     uri_re = re.compile(r"sheaf://[A-Za-z0-9_{}/.-]+")
 
     bad: list[str] = []
