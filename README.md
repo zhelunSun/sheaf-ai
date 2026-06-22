@@ -8,7 +8,7 @@
 
 <h1 align="center">Sheaf</h1>
 
-<p align="center"><b>Harvest your knowledge. Bundle it. Share it.</b></p>
+<p align="center"><b>Harvest your knowledge. Bundle it. Share it (soon).</b></p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
@@ -217,6 +217,8 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by **1024 passing tests**. We're validating with real users before beta.
 
+**On the roadmap:** portable `.sheaf` bundle export (share your distilled knowledge), more source handlers (B站 / YouTube), bookmark import, and a Web Store extension.
+
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 
 **Try it:** save 20+ links, run `sheaf crystallize <topic>`, then ask your agent to find them. If it clicks for you, open an issue or discussion and tell us what you'd change.
@@ -229,4 +231,4 @@ A Chrome extension (`extension/`) adds one-click collect + search from any page:
 
 ---
 
-*A **sheaf** is a bundle of harvested grain — the unit a farmer brings to market. In mathematics, a [sheaf](https://en.wikipedia.org/wiki/Sheaf_(mathematics)) attaches local data to open sets and glues them into a global picture. Sheaf the tool does both: gather scattered knowledge into coherent bundles, ready for your agents to consume or for you to share.*
+*A **sheaf** is a bundle of harvested grain — the unit a farmer brings to market. In mathematics, a [sheaf](https://en.wikipedia.org/wiki/Sheaf_(mathematics)) attaches local data to open sets and glues them into a global picture. Sheaf the tool does both: gather scattered knowledge into coherent bundles, ready for your agents to consume (and, soon, to share as a portable bundle).*
