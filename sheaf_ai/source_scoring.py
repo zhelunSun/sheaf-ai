@@ -45,16 +45,30 @@ def _detect_primary_source(text: str) -> int:
     """Detect if article is a primary (first-hand) source.
 
     Returns 5 if likely primary, 0 if secondary.
+
+    Fix #97-3: "据" alone is too aggressive — academic reposts commonly use
+    "据 arXiv XXX" to cite their own work. Only treat as secondary when
+    followed by a media/agency name, or when explicit repost markers appear.
     """
     if not text:
         return 0
-    secondary_markers = [
-        "据", "转自", "援引", "综合报道",
+    # Explicit repost markers (high confidence secondary)
+    explicit_secondary = [
+        "转自", "援引", "综合报道", "转载自",
         "reported by", "according to", "cited by", "reposted from",
     ]
     text_lower = text[:3000].lower()
-    for marker in secondary_markers:
+    for marker in explicit_secondary:
         if marker in text_lower:
+            return 0
+    # "据" + media/agency name pattern (e.g. "据路透社", "据报道")
+    # but NOT "据 arXiv" / "据论文" (academic self-citation)
+    ju_media_patterns = [
+        r"据(?:报道|路透社|新华社|法新社|彭博|华尔街日报|金融时报|21世纪|第一财经)",
+        r"据(?:央视|人民日报|科技日报|光明日报|经济日报|中新社)",
+    ]
+    for pat in ju_media_patterns:
+        if re.search(pat, text[:3000]):
             return 0
     return 5
 
@@ -106,6 +120,49 @@ def _detect_citations(text: str) -> int:
     return 0
 
 
+# Fix #97-1: Institution prestige override
+# When text mentions a known top-tier institution, the domain is treated as T1
+# regardless of its base tier. This corrects the systematic underrating of
+# institutional WeChat official accounts (e.g. 清华 AIR, 北大, 中科院).
+PRESTIGE_INSTITUTIONS: list[str] = [
+    # Chinese universities
+    "清华大学", "北京大学", "复旦大学", "上海交通大学", "浙江大学",
+    "中国科学技术大学", "南京大学", "中山大学", "武汉大学", "华中科技大学",
+    "中科院", "中国科学院", "社科院", "中国社会科学院",
+    # Chinese AI research institutes
+    "清华AIR", "清华 AIR", "AIR研究院", "上海算法创新研究院",
+    "北京智源", "智源研究院", "上海AI实验室", "上海人工智能实验室",
+    # International
+    "OpenAI", "DeepMind", "Anthropic", "Meta AI", "Google AI",
+    "MIT", "Stanford", "CMU", "Berkeley", "Princeton",
+    "Cambridge", "Oxford", "ETH", "Max Planck",
+]
+
+# Top-tier tech media that should also get prestige boost on WeChat
+PRESTIGE_MEDIA: list[str] = [
+    "机器之心", "量子位", "智源社区", "新智元", "PaperWeekly",
+]
+
+
+def _detect_prestige_override(text: str) -> bool:
+    """Detect if text mentions a prestige institution or top-tier media.
+
+    Fix #97-1: When true, domain_score is boosted to T1 (15 pts) regardless
+    of base tier. This corrects the T2 ceiling defect where authoritative
+    WeChat official accounts (清华 AIR, 机器之心) can never reach A tier.
+    """
+    if not text:
+        return False
+    sample = text[:3000]
+    for inst in PRESTIGE_INSTITUTIONS:
+        if inst in sample:
+            return True
+    for media in PRESTIGE_MEDIA:
+        if media in sample:
+            return True
+    return False
+
+
 def _compute_freshness(content_type: str, published_date: str | None) -> int:
     """Compute freshness bonus (0-10) — only relevant for news content."""
     if content_type != "news" or not published_date:
@@ -127,9 +184,14 @@ def _compute_llm_bonus(assessment: dict | None) -> tuple[int, bool]:
 
     Returns:
         (bonus_score, is_primary_source)
+
+    Fix #97-2: When ``assessment`` is None (e.g. no API key configured), return
+    a conservative midpoint (15) instead of 0. The LLM bonus is designed as an
+    *extra*加分, not part of the base score — missing API key should not punish
+    content quality. 15 = midpoint between 0 (no bonus) and 30 (full bonus).
     """
     if not assessment:
-        return 0, False
+        return 15, False
 
     bonus = 0
     is_primary = bool(assessment.get("is_primary_source", False))
@@ -178,7 +240,16 @@ def compute_source_score(
         domain = domain[4:]
 
     # Step 2: Rule base (0-40)
-    domain_score, _ = get_domain_score(domain)           # 0-15
+    domain_score, domain_tier = get_domain_score(domain)
+
+    # Fix #97-1: Prestige institution override — boost domain to T1 if text
+    # mentions a known top-tier institution or authoritative AI media.
+    # This corrects the T2 ceiling defect (mp.weixin.qq.com can never reach A).
+    prestige_override = _detect_prestige_override(text)
+    if prestige_override and domain_score < 15:
+        domain_score = 15
+        domain_tier = "T1*"
+
     primary_bonus = _detect_primary_source(text)         # 0 or 5
     author_bonus = _detect_author(title, text)            # 0-5
     citation_bonus = _detect_citations(text)              # 0 or 5
@@ -213,4 +284,5 @@ def compute_source_score(
         "llm_score": llm_score,
         "user_override": user_override,
         "freshness": freshness,
+        "prestige_override": prestige_override,
     }

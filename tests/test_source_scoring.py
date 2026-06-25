@@ -185,8 +185,9 @@ class TestLlmBonus:
     """Test _compute_llm_bonus mapping."""
 
     def test_no_assessment(self):
+        """Fix #97-2: None assessment returns midpoint (15), not 0."""
         bonus, is_primary = _compute_llm_bonus(None)
-        assert bonus == 0
+        assert bonus == 15
         assert is_primary is False
 
     def test_full_assessment(self):
@@ -279,7 +280,10 @@ class TestComputeSourceScore:
             title="My Thoughts",
             text="I think AI is cool.",
         )
-        assert result["score"] <= 15  # Only freshness + possible rule components
+        # Fix #97-2: None LLM assessment now returns 15 (midpoint), not 0.
+        # So minimum score = 0(domain) + 5(primary) + 0(author) + 0(citation)
+        #                  + 15(llm midpoint) + 5(freshness default) = 25
+        assert result["score"] <= 25
         assert result["domain"] == "my-random-blog.example.com"
 
     def test_with_llm_assessment_boost(self):
@@ -326,6 +330,87 @@ class TestComputeSourceScore:
             },
         )
         assert 0 <= result["score"] <= 100
+
+
+# ============================================================
+# Test: Fix #97 — WeChat / prestige institution / academic repost
+# ============================================================
+
+class TestFix97WeChatPrestige:
+    """Regression tests for issue #97: systematic underrating of WeChat articles."""
+
+    def test_wechat_prestige_institution_boost(self):
+        """清华 AIR WeChat article should benefit from prestige override."""
+        result = compute_source_score(
+            url="https://mp.weixin.qq.com/s/abc123",
+            title="AIM 研究",
+            text="清华AIR研究院发布了新研究。作者：王彦桥。arxiv.org/abs/2606.24899",
+            content_type="news",
+            published_date="2026-06-25T10:00:00+00:00",
+        )
+        assert result["prestige_override"] is True
+        assert result["score"] >= 45  # Should reach at least high-C / low-B
+
+    def test_wechat_machine_heart_media_boost(self):
+        """机器之心 WeChat article should benefit from prestige media override."""
+        result = compute_source_score(
+            url="https://mp.weixin.qq.com/s/def456",
+            title="AI 新闻",
+            text="机器之心报道。OpenAI 发布了新模型。",
+            content_type="news",
+            published_date="2026-06-25T10:00:00+00:00",
+        )
+        assert result["prestige_override"] is True
+        assert result["score"] >= 40
+
+    def test_wechat_spam_no_prestige_boost(self):
+        """Spam WeChat article should NOT get prestige boost."""
+        result = compute_source_score(
+            url="https://mp.weixin.qq.com/s/spam789",
+            title="限时优惠",
+            text="点击领取优惠券！限时抢购！数量有限！",
+            content_type="news",
+        )
+        assert result["prestige_override"] is False
+        assert result["score"] < 40
+
+    def test_academic_arxiv_not_secondary(self):
+        """Fix #97-3: '据 arXiv XXX' should NOT be flagged as secondary source."""
+        from sheaf_ai.source_scoring import _detect_primary_source
+        # Academic self-citation
+        assert _detect_primary_source("据arXiv 2606.24899，本研究提出...") == 5
+        # Explicit repost still detected
+        assert _detect_primary_source("转自路透社。") == 0
+        assert _detect_primary_source("据报道，某公司...") == 0
+        # Plain "据" without media name is NOT secondary
+        assert _detect_primary_source("据论文所述，方法有效。") == 5
+
+    def test_llm_bonus_midpoint_when_no_api_key(self):
+        """Fix #97-2: None assessment returns 15 (midpoint), not 0."""
+        from sheaf_ai.source_scoring import _compute_llm_bonus
+        bonus, is_primary = _compute_llm_bonus(None)
+        assert bonus == 15
+        assert is_primary is False
+
+    def test_wechat_before_after_fix_comparison(self):
+        """The core fix: WeChat + prestige should score much higher than before."""
+        # Before fix (simulated): T2 domain(10) + primary(0,误判) + author(2)
+        #                        + citation(5) + llm(0,无key) + freshness(5) = 22 (D)
+        # After fix: T1*(15) + primary(5) + author(5) + citation(5)
+        #          + llm(15,降级) + freshness(10,news) = 55 (B)
+        result = compute_source_score(
+            url="https://mp.weixin.qq.com/s/aim123",
+            title="AIM: 从元想法到高级数学发现",
+            text="""作者：王彦桥（清华AIR）
+清华大学智能产业研究院（AIR）发布。
+据arXiv 2606.24899，本研究提出新方法。
+论文地址：arxiv.org/abs/2606.24899""",
+            content_type="news",
+            published_date="2026-06-25T10:00:00+00:00",
+        )
+        assert result["score"] >= 50, f"Expected >=50 (B tier), got {result['score']}"
+        assert result["tier"] in ("B", "A")
+        assert result["prestige_override"] is True
 
 
 # ============================================================
