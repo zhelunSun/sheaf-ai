@@ -210,8 +210,12 @@ def check_api_key(provider: str = None) -> tuple[bool, str]:
 _clients = {}
 
 
-def get_client(provider: str = None, timeout: float = 60) -> OpenAI:
-    """Get API client (auto-reads key from .env or user config)."""
+def get_client(provider: str = None, timeout: float = 30) -> OpenAI:
+    """Get API client (auto-reads key from .env or user config).
+
+    Uses httpx.Timeout (connect=5s / read=30s) to prevent indefinite hangs
+    on slow or unreachable API endpoints (e.g. invalid key, network issues).
+    """
     provider = provider or DEFAULT_PROVIDER
     if provider in _clients:
         return _clients[provider]
@@ -224,7 +228,7 @@ def get_client(provider: str = None, timeout: float = 60) -> OpenAI:
             if pc and pc.get("api_key"):
                 api_key = pc["api_key"]
                 base_url = pc.get("base_url", "")
-                _clients[provider] = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
+                _clients[provider] = _build_openai_client(api_key, base_url, timeout)
                 return _clients[provider]
         except ImportError:
             pass
@@ -233,8 +237,28 @@ def get_client(provider: str = None, timeout: float = 60) -> OpenAI:
         )
 
     api_key, base_url = _resolve_key_and_url(provider)
-    _clients[provider] = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout)
+    _clients[provider] = _build_openai_client(api_key, base_url, timeout)
     return _clients[provider]
+
+
+def _build_openai_client(api_key: str, base_url: str, timeout: float = 30) -> OpenAI:
+    """Build an OpenAI client with granular httpx timeouts.
+
+    A bare float timeout does not reliably bound connect / SSL-read phases in
+    httpx, which can cause indefinite hangs.  Explicit per-phase timeouts fix
+    this (Bug #1: collect hangs with no valid API key).
+    """
+    import httpx
+    http_timeout = httpx.Timeout(
+        connect=5.0,   # fail fast on TCP/TLS connect
+        read=timeout,  # bounded API response wait
+        write=10.0,
+        pool=5.0,
+    )
+    return OpenAI(
+        api_key=api_key, base_url=base_url,
+        timeout=http_timeout, max_retries=0,
+    )
 
 
 def get_model(provider: str = None) -> str:
