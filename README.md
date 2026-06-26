@@ -23,6 +23,10 @@ Sheaf turns the links you save every day into a **searchable knowledge base your
 
 > A **sheaf** is a bundle of grain a farmer brings to market. Sheaf does the same for knowledge — gather, bundle, trade.
 
+> **Design note:** Sheaf is not meant to be just another bookmark manager. Saved links are the input; the goal is a local, source-backed knowledge layer that coding agents can search, quote, and check.
+> Read the v0.7.0 discussion: [Sheaf v0.7.0: a local-first knowledge layer for coding agents](https://github.com/zhelunSun/sheaf-ai/discussions/94)
+
+
 ## Quick Start
 
 **1 · Install (works everywhere):**
