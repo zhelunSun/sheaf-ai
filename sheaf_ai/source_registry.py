@@ -17,16 +17,39 @@ logger = logging.getLogger(__name__)
 
 # Tier 1: Academic / official (15 pts)
 TIER1_DOMAINS: set[str] = {
+    # Preprint servers
     "arxiv.org",
+    "openreview.net",
+    "www.biorxiv.org",
+    "biorxiv.org",
+    "www.chemrxiv.org",
+    "chemrxiv.org",
+    "papers.ssrn.com",
+    # Publishers / DOI
+    "doi.org",
     "nature.com",
     "science.org",
     "ieee.org",
     "dl.acm.org",
+    "aclanthology.org",
+    "proceedings.mlr.press",
     "springer.com",
     "sciencedirect.com",
+    "wiley.com",
+    "sciencedirect.com",
+    "pnas.org",
+    "cell.com",
+    # Indexers
     "scholar.google.com",
+    "semanticscholar.org",
+    # Gov / official
     "gov.cn",
     "stats.gov.cn",
+    "nasa.gov",
+    "usgs.gov",
+    "esa.int",
+    # Model / code hosts (一手源权重)
+    "huggingface.co",
 }
 
 # Tier 1 wildcard patterns — matched by suffix
@@ -37,7 +60,7 @@ TIER1_SUFFIXES: tuple[str, ...] = (
     ".ac.jp",
 )
 
-# Tier 2: Authoritative media (10 pts)
+# Tier 2: Authoritative media + official code host (10 pts)
 TIER2_DOMAINS: set[str] = {
     "mp.weixin.qq.com",
     "36kr.com",
@@ -53,6 +76,8 @@ TIER2_DOMAINS: set[str] = {
     "apnews.com",
     "bbc.com",
     "nytimes.com",
+    # GitHub moved from T3 → T2 (Fix #98): README/源码是开源一手源，非社区博客
+    "github.com",
 }
 
 # Tier 3: Community / blog (5 pts)
@@ -61,7 +86,7 @@ TIER3_DOMAINS: set[str] = {
     "zhuanlan.zhihu.com",
     "medium.com",
     "substack.com",
-    "github.com",
+    # github.com moved to TIER2 (Fix #98)
     "reddit.com",
     "juejin.cn",
     "csdn.net",

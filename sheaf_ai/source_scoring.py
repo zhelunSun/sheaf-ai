@@ -120,6 +120,40 @@ def _detect_citations(text: str) -> int:
     return 0
 
 
+# Fix #98-3: Academic source URL bonus
+# An arxiv.org/abs/XXXX URL itself is a verifiable academic identifier —
+# treat it as carrying an implicit citation. Same for OpenReview/forum,
+# DOI, ACL, MLR Proceedings, bio/chemrxiv. Returns 10 or 0.
+ACADEMIC_URL_PATTERNS: tuple[str, ...] = (
+    r'arxiv\.org/(?:abs|pdf)/\d+\.\d+',           # arXiv paper path
+    r'openreview\.net/forum\?',                   # OpenReview submission
+    r'openreview\.net/pdf\?',                     # OpenReview PDF
+    r'doi\.org/10\.',                              # DOI resolver
+    r'aclanthology\.org/.+\.pdf',                 # ACL Anthology
+    r'proceedings\.mlr\.press/v\d+',              # MLR / PMLR
+    r'(?:www\.)?(?:bio|chem)rxiv\.org/content/',  # bio/chemrxiv
+    r'semanticscholar\.org/(?:paper|corpus)/',    # Semantic Scholar
+    r'papers\.ssrn\.com/',                         # SSRN
+)
+
+
+def _detect_academic_source_bonus(url: str) -> int:
+    """Detect if URL itself is a verifiable academic source identifier.
+
+    Fix #98-3: arXiv/OpenReview/DOI URLs carry implicit academic citation
+    weight. Without this bonus, a typical arXiv paper (no author byline in
+    abstract, no inline DOI citation) scores 40 → C tier, which is a 2-tier
+    underestimate. This function adds +10 when the URL path matches a known
+    academic paper pattern, lifting such sources to B tier.
+    """
+    if not url:
+        return 0
+    for pat in ACADEMIC_URL_PATTERNS:
+        if re.search(pat, url, flags=re.IGNORECASE):
+            return 10
+    return 0
+
+
 # Fix #97-1: Institution prestige override
 # When text mentions a known top-tier institution, the domain is treated as T1
 # regardless of its base tier. This corrects the systematic underrating of
@@ -253,7 +287,8 @@ def compute_source_score(
     primary_bonus = _detect_primary_source(text)         # 0 or 5
     author_bonus = _detect_author(title, text)            # 0-5
     citation_bonus = _detect_citations(text)              # 0 or 5
-    rule_score = min(40, domain_score + primary_bonus + author_bonus + citation_bonus)
+    academic_bonus = _detect_academic_source_bonus(url)   # 0 or 10 (Fix #98)
+    rule_score = min(40, domain_score + primary_bonus + author_bonus + citation_bonus + academic_bonus)
 
     # Step 3: LLM bonus (0-30)
     llm_score, is_primary = _compute_llm_bonus(llm_assessment)
@@ -285,4 +320,5 @@ def compute_source_score(
         "user_override": user_override,
         "freshness": freshness,
         "prestige_override": prestige_override,
+        "academic_bonus": academic_bonus,
     }

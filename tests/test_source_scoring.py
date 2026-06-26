@@ -412,6 +412,81 @@ class TestFix97WeChatPrestige:
         assert result["tier"] in ("B", "A")
         assert result["prestige_override"] is True
 
+    # ============================================================
+    # Fix #98: Academic source URL bonus tests
+    # ============================================================
+
+    def test_academic_arxiv_url_bonus(self):
+        """Fix #98-3: arXiv URL itself is an academic identifier → +10 bonus."""
+        from sheaf_ai.source_scoring import _detect_academic_source_bonus
+        assert _detect_academic_source_bonus("https://arxiv.org/abs/2509.23141") == 10
+        assert _detect_academic_source_bonus("https://arxiv.org/pdf/2406.07089") == 10
+        # Just arxiv.org homepage, no paper path → no bonus
+        assert _detect_academic_source_bonus("https://arxiv.org/") == 0
+
+    def test_academic_openreview_bonus(self):
+        """Fix #98-3: OpenReview forum/PDF URLs get bonus."""
+        from sheaf_ai.source_scoring import _detect_academic_source_bonus
+        assert _detect_academic_source_bonus("https://openreview.net/forum?id=abc123") == 10
+        assert _detect_academic_source_bonus("https://openreview.net/pdf?id=abc123") == 10
+
+    def test_academic_doi_bonus(self):
+        """Fix #98-3: DOI resolver URLs get bonus."""
+        from sheaf_ai.source_scoring import _detect_academic_source_bonus
+        assert _detect_academic_source_bonus("https://doi.org/10.1038/s41586-025-12345") == 10
+
+    def test_academic_non_academic_url_no_bonus(self):
+        """Fix #98-3: Non-academic URLs get no bonus."""
+        from sheaf_ai.source_scoring import _detect_academic_source_bonus
+        assert _detect_academic_source_bonus("https://someblog.com/post") == 0
+        assert _detect_academic_source_bonus("https://github.com/user/repo") == 0
+        assert _detect_academic_source_bonus("") == 0
+
+    def test_arxiv_paper_reaches_b_tier(self):
+        """Fix #98: arXiv paper should reach B tier, not stuck at C.
+
+        Before fix: 15+5+0+0+15+5 = 40 → C (underestimate)
+        After fix:  15+5+0+0+10+15+5 = 50 → B
+        """
+        result = compute_source_score(
+            url="https://arxiv.org/abs/2509.23141",
+            title="Earth-Agent: Unlocking Earth Observation",
+            text="We present Earth-Agent, a framework for earth observation with agents.",
+        )
+        assert result["academic_bonus"] == 10, "arXiv URL should trigger academic bonus"
+        assert result["score"] >= 50, f"arXiv paper should reach B tier (>=50), got {result['score']}"
+        assert result["tier"] in ("B", "A"), f"Expected B or A, got {result['tier']}"
+
+    def test_openreview_reaches_b_tier(self):
+        """Fix #98-1: OpenReview now T1 (was unknown)."""
+        from sheaf_ai.source_registry import get_domain_score
+        score, tier = get_domain_score("openreview.net")
+        assert tier == "T1"
+        assert score == 15
+
+    def test_github_now_t2(self):
+        """Fix #98-2: GitHub moved T3 → T2 (一手源)."""
+        from sheaf_ai.source_registry import get_domain_score
+        score, tier = get_domain_score("github.com")
+        assert tier == "T2", f"GitHub should be T2 after fix, got {tier}"
+        assert score == 10
+
+    def test_huggingface_now_t1(self):
+        """Fix #98-1: HuggingFace added to T1 (model weights 一手源)."""
+        from sheaf_ai.source_registry import get_domain_score
+        score, tier = get_domain_score("huggingface.co")
+        assert tier == "T1"
+
+    def test_random_blog_unchanged(self):
+        """Fix #98 should NOT inflate random blog scores."""
+        result = compute_source_score(
+            url="https://someblog.example.com/post",
+            title="Random thoughts",
+            text="Just thinking about things today.",
+        )
+        assert result["academic_bonus"] == 0
+        assert result["score"] < 35, f"Random blog should stay low, got {result['score']}"
+
 
 # ============================================================
 # Test: SourceRegistry
