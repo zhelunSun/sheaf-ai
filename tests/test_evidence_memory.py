@@ -42,12 +42,30 @@ def _entry(
     domain: str = "example.com",
     quality_tier: str = "A",
     is_primary: bool = False,
+    authority_topics: tuple[str, ...] = (),
+    authority_fact_keys: tuple[str, ...] = (),
+    corrects: tuple[str, ...] = (),
 ) -> dict:
+    source: dict[str, object] = {
+        "domain": domain,
+        "tier": tier,
+        "is_primary": is_primary,
+    }
+    if authority_topics or authority_fact_keys:
+        source["authority_scope"] = {
+            "topics": list(authority_topics),
+            "fact_keys": list(authority_fact_keys),
+        }
+    if corrects:
+        source["correction_relations"] = [
+            {"relation": "corrects", "entry_id": entry_id_to_correct}
+            for entry_id_to_correct in corrects
+        ]
     return {
         "id": entry_id,
         "url": f"https://{domain}/{entry_id}",
         "source_tier": tier,
-        "source": {"domain": domain, "tier": tier, "is_primary": is_primary},
+        "source": source,
         "quality_tier": quality_tier,
         "content_hash": f"hash-{entry_id}",
     }
@@ -318,7 +336,17 @@ def test_contest_preserves_both_sides_then_official_correction_resolves(tmp_path
     contested_result = memory.apply_transition(
         "CONTEST",
         topic="topic",
-        entries=[_entry("correction", tier="A", domain="official.example", is_primary=True)],
+        entries=[
+            _entry(
+                "correction",
+                tier="A",
+                domain="official.example",
+                is_primary=True,
+                authority_topics=("topic",),
+                authority_fact_keys=("release.status",),
+                corrects=("old",),
+            )
+        ],
         source_ids=["correction"],
         target_card_ids=[original.card_id],
         card={
@@ -360,6 +388,7 @@ def test_contest_preserves_both_sides_then_official_correction_resolves(tmp_path
             "authoritative_fact_value": "shipped",
             "authority_source_id": "correction",
             "corrects_entry_id": "old",
+            "correction_relation": "corrects",
         },
     )
     resolved_snapshot = EvidenceLedger(memory.ledger.path).snapshot()
@@ -374,6 +403,7 @@ def test_contest_preserves_both_sides_then_official_correction_resolves(tmp_path
     assert dict(resolution_event.resolution_metadata) == {
         "authoritative_fact_value": "shipped",
         "authority_source_id": "correction",
+        "correction_relation": "corrects",
         "corrects_entry_id": "old",
     }
     assert [event.action for event in resolved_snapshot.events] == [
@@ -470,6 +500,9 @@ def test_new_official_evidence_can_correct_the_contested_proposal(tmp_path):
                 tier="A",
                 domain="authority.example",
                 is_primary=True,
+                authority_topics=("topic",),
+                authority_fact_keys=("deadline.status",),
+                corrects=("claim-b",),
             )
         ],
         source_ids=["correction-c"],
@@ -485,6 +518,7 @@ def test_new_official_evidence_can_correct_the_contested_proposal(tmp_path):
             "authority_source_id": "correction-c",
             "corrects_entry_id": "claim-b",
             "authoritative_fact_value": "extended",
+            "correction_relation": "corrects",
         },
     )
     snapshot = memory.snapshot()
@@ -519,7 +553,15 @@ def test_official_correction_metadata_must_bind_the_output_value(tmp_path):
         memory.apply_transition(
             "UPDATE",
             topic="topic",
-            entries=[_entry("official", is_primary=True)],
+            entries=[
+                _entry(
+                    "official",
+                    is_primary=True,
+                    authority_topics=("topic",),
+                    authority_fact_keys=("status",),
+                    corrects=("proposal",),
+                )
+            ],
             source_ids=["official"],
             target_card_ids=[card_id],
             card={"claim": "new", "fact_key": "status", "fact_value": "new"},
@@ -529,6 +571,7 @@ def test_official_correction_metadata_must_bind_the_output_value(tmp_path):
                 "authority_source_id": "official",
                 "corrects_entry_id": "proposal",
                 "authoritative_fact_value": "different",
+                "correction_relation": "corrects",
             },
         )
 

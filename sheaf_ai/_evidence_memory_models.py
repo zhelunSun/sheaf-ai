@@ -3,15 +3,25 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import MappingProxyType
-from typing import Mapping
+from typing import Mapping, Sequence
 
 
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 LEGACY_ALGORITHM_VERSION = "evidence-rule-v1"
-ALGORITHM_VERSION = "evidence-rule-v2"
-VALID_ALGORITHM_VERSIONS = frozenset({LEGACY_ALGORITHM_VERSION, ALGORITHM_VERSION})
+DIGEST_ALGORITHM_VERSION = "evidence-rule-v2"
+ALGORITHM_VERSION = "evidence-rule-v3"
+VALID_ALGORITHM_VERSIONS = frozenset({
+    LEGACY_ALGORITHM_VERSION,
+    DIGEST_ALGORITHM_VERSION,
+    ALGORITHM_VERSION,
+})
+LEGACY_GOVERNANCE_VERSION = "evidence-governance-v1"
+GOVERNANCE_VERSION = "evidence-governance-v2"
+VALID_GOVERNANCE_VERSIONS = frozenset(
+    {LEGACY_GOVERNANCE_VERSION, GOVERNANCE_VERSION}
+)
 VALID_ACTIONS = frozenset({"CREATE", "UPDATE", "MERGE", "RETIRE", "CONTEST"})
 VALID_TIERS = frozenset({"A", "B", "C", "D", "U"})
 VALID_RESOLUTION_BASES = frozenset(
@@ -27,6 +37,49 @@ def _identity_hash(value: object) -> str:
 
 def _identity_text(value: object) -> str:
     return " ".join(str(value or "").casefold().split())
+
+
+def _strict_string(data: Mapping[str, object], key: str, default: str = "") -> str:
+    value = data.get(key, default)
+    if not isinstance(value, str):
+        raise ValueError(f"{key} must be a string")
+    return value
+
+
+def _strict_int(data: Mapping[str, object], key: str, default: int) -> int:
+    value = data.get(key, default)
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{key} must be an integer")
+    return value
+
+
+def _strict_bool(data: Mapping[str, object], key: str, default: bool = False) -> bool:
+    value = data.get(key, default)
+    if not isinstance(value, bool):
+        raise ValueError(f"{key} must be a boolean")
+    return value
+
+
+def _strict_number(
+    data: Mapping[str, object],
+    key: str,
+    default: float = 0.0,
+) -> float:
+    value = data.get(key, default)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{key} must be a number")
+    return float(value)
+
+
+def _string_tuple(data: Mapping[str, object], key: str) -> tuple[str, ...]:
+    value = data.get(key, [])
+    if (
+        not isinstance(value, Sequence)
+        or isinstance(value, (str, bytes, bytearray))
+        or any(not isinstance(item, str) for item in value)
+    ):
+        raise ValueError(f"{key} must be an array of strings")
+    return tuple(value)
 
 
 def claim_identity(
@@ -55,9 +108,18 @@ def claim_identity(
     return f"claim_{_identity_hash(body)}"
 
 
-def evidence_use_identity(entry_id: str, atomic_claim_identity: str) -> str:
-    """Return the identity of using one Entry to support one atomic claim."""
+def legacy_evidence_use_identity(entry_id: str, atomic_claim_identity: str) -> str:
+    """Return the pre-span v2 identity for replaying old ledgers."""
     return f"use_{_identity_hash([str(entry_id).strip(), atomic_claim_identity])}"
+
+
+def evidence_use_identity(
+    entry_id: str,
+    atomic_claim_identity: str,
+    locator_identity: str = "whole_entry",
+) -> str:
+    """Return the identity of one Entry span supporting one atomic claim."""
+    return f"use_{_identity_hash([str(entry_id).strip(), atomic_claim_identity, locator_identity])}"
 
 
 class EvidenceMemoryError(RuntimeError):
@@ -85,6 +147,62 @@ class ConflictResolutionRequired(TransitionValidationError):
 
 
 @dataclass(frozen=True)
+class EvidenceLocator:
+    """Verified location of supporting text within an Entry body."""
+
+    kind: str = "whole_entry"
+    start: int = -1
+    end: int = -1
+    quote: str = ""
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object] | None) -> "EvidenceLocator":
+        if data is None:
+            return cls()
+        if not isinstance(data, Mapping):
+            raise ValueError("locator must be an object")
+        return cls(
+            kind=_strict_string(data, "kind", "whole_entry"),
+            start=_strict_int(data, "start", -1),
+            end=_strict_int(data, "end", -1),
+            quote=_strict_string(data, "quote"),
+        )
+
+
+def locator_identity(locator: EvidenceLocator) -> str:
+    """Canonicalise quote and char-span locators for duplicate detection."""
+    if locator.kind == "whole_entry":
+        return "whole_entry"
+    return f"span_{_identity_hash([locator.start, locator.end, locator.quote])}"
+
+
+@dataclass(frozen=True, order=True)
+class EvidenceDuplicateRelation:
+    """Immutable duplicate decision copied from Entry metadata."""
+
+    related_entry_id: str
+    classification: str
+    similarity: float
+    rule: str
+    reason: str
+    algorithm_version: str
+
+    @classmethod
+    def from_dict(cls, data: Mapping[str, object]) -> "EvidenceDuplicateRelation":
+        similarity = data.get("similarity", 0.0)
+        if isinstance(similarity, bool) or not isinstance(similarity, (int, float)):
+            raise ValueError("similarity must be a number")
+        return cls(
+            related_entry_id=_strict_string(data, "related_entry_id"),
+            classification=_strict_string(data, "classification"),
+            similarity=float(similarity),
+            rule=_strict_string(data, "rule"),
+            reason=_strict_string(data, "reason"),
+            algorithm_version=_strict_string(data, "algorithm_version"),
+        )
+
+
+@dataclass(frozen=True)
 class EvidenceRef:
     """Immutable reference to an allowlisted collected entry."""
 
@@ -93,17 +211,43 @@ class EvidenceRef:
     source_key: str
     content_hash: str = ""
     evidence_digest: str = ""
+    locator: EvidenceLocator = field(default_factory=EvidenceLocator)
     is_primary: bool = False
+    authority_topics: tuple[str, ...] = ()
+    authority_fact_keys: tuple[str, ...] = ()
+    corrects_entry_ids: tuple[str, ...] = ()
+    duplicate_detection_version: str = ""
+    duplicate_relations: tuple[EvidenceDuplicateRelation, ...] = ()
+    independence_identity: str = ""
 
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> "EvidenceRef":
+        raw_relations = data.get("duplicate_relations", [])
+        if (
+            not isinstance(raw_relations, Sequence)
+            or isinstance(raw_relations, (str, bytes, bytearray))
+            or not all(isinstance(item, Mapping) for item in raw_relations)
+        ):
+            raise ValueError("duplicate_relations must be an array of objects")
         return cls(
             entry_id=str(data.get("entry_id", "")),
             source_tier=str(data.get("source_tier", "U")),
             source_key=str(data.get("source_key", "unknown")),
             content_hash=str(data.get("content_hash", "")),
             evidence_digest=str(data.get("evidence_digest", "")),
-            is_primary=bool(data.get("is_primary", False)),
+            locator=EvidenceLocator.from_dict(data.get("locator")),  # type: ignore[arg-type]
+            is_primary=_strict_bool(data, "is_primary"),
+            authority_topics=_string_tuple(data, "authority_topics"),
+            authority_fact_keys=_string_tuple(data, "authority_fact_keys"),
+            corrects_entry_ids=_string_tuple(data, "corrects_entry_ids"),
+            duplicate_detection_version=str(
+                data.get("duplicate_detection_version", "")
+            ),
+            duplicate_relations=tuple(
+                EvidenceDuplicateRelation.from_dict(item)
+                for item in raw_relations
+            ),
+            independence_identity=str(data.get("independence_identity", "")),
         )
 
 
@@ -115,6 +259,7 @@ class EvidenceStrength:
     band: str
     algorithm: str
     independent_source_count: int
+    source_group_count: int
     tier_counts: tuple[tuple[str, int], ...]
     conflict_penalty: float
     rationale: tuple[str, ...]
@@ -123,16 +268,38 @@ class EvidenceStrength:
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> "EvidenceStrength":
         raw_counts = data.get("tier_counts", [])
-        counts = tuple((str(item[0]), int(item[1])) for item in raw_counts)  # type: ignore[index]
+        if (
+            not isinstance(raw_counts, Sequence)
+            or isinstance(raw_counts, (str, bytes, bytearray))
+        ):
+            raise ValueError("tier_counts must be an array of pairs")
+        counts: list[tuple[str, int]] = []
+        for item in raw_counts:
+            if (
+                not isinstance(item, Sequence)
+                or isinstance(item, (str, bytes, bytearray))
+                or len(item) != 2
+                or not isinstance(item[0], str)
+                or isinstance(item[1], bool)
+                or not isinstance(item[1], int)
+            ):
+                raise ValueError("tier_counts must contain string/integer pairs")
+            counts.append((item[0], item[1]))
+        independent_count = _strict_int(data, "independent_source_count", 0)
         return cls(
-            score=float(data.get("score", 0.0)),
-            band=str(data.get("band", "low")),
-            algorithm=str(data.get("algorithm", LEGACY_ALGORITHM_VERSION)),
-            independent_source_count=int(data.get("independent_source_count", 0)),
-            tier_counts=counts,
-            conflict_penalty=float(data.get("conflict_penalty", 0.0)),
-            rationale=tuple(str(item) for item in data.get("rationale", [])),  # type: ignore[arg-type]
-            is_probability=bool(data.get("is_probability", False)),
+            score=_strict_number(data, "score"),
+            band=_strict_string(data, "band", "low"),
+            algorithm=_strict_string(data, "algorithm", LEGACY_ALGORITHM_VERSION),
+            independent_source_count=independent_count,
+            source_group_count=_strict_int(
+                data,
+                "source_group_count",
+                independent_count,
+            ),
+            tier_counts=tuple(counts),
+            conflict_penalty=_strict_number(data, "conflict_penalty"),
+            rationale=_string_tuple(data, "rationale"),
+            is_probability=_strict_bool(data, "is_probability"),
         )
 
 
@@ -261,10 +428,12 @@ class TransitionEvent:
     parent_version_ids: tuple[str, ...]
     output_version_ids: tuple[str, ...]
     evidence_ids: tuple[str, ...]
+    evidence_use_ids: tuple[str, ...]
     reason: str
     idempotency_key: str
     request_hash: str
     algorithm_version: str
+    governance_version: str
     resolution_basis: str
     resolution_metadata: tuple[tuple[str, str], ...]
     created_at: str
@@ -285,11 +454,17 @@ class TransitionEvent:
             evidence_ids=tuple(
                 str(item) for item in data.get("evidence_ids", [])  # type: ignore[arg-type]
             ),
+            evidence_use_ids=tuple(
+                str(item) for item in data.get("evidence_use_ids", [])  # type: ignore[arg-type]
+            ),
             reason=str(data.get("reason", "")),
             idempotency_key=str(data.get("idempotency_key", "")),
             request_hash=str(data.get("request_hash", "")),
             algorithm_version=str(
                 data.get("algorithm_version", LEGACY_ALGORITHM_VERSION)
+            ),
+            governance_version=str(
+                data.get("governance_version", LEGACY_GOVERNANCE_VERSION)
             ),
             resolution_basis=str(data.get("resolution_basis", "")),
             resolution_metadata=tuple(

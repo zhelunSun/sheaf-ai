@@ -30,6 +30,7 @@ _TRANSITION_FIELDS = frozenset(
         "action",
         "topic",
         "source_ids",
+        "evidence_locators",
         "target_card_ids",
         "card",
         "reason",
@@ -54,6 +55,23 @@ MEMORY_TRANSITION_REQUEST_SCHEMA = {
             "items": {"type": "string", "minLength": 1},
             "uniqueItems": True,
             "default": [],
+        },
+        "evidence_locators": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {
+                    "kind": {
+                        "type": "string",
+                        "enum": ["whole_entry", "quote", "char_span"],
+                    },
+                    "start": {"type": "integer", "minimum": 0},
+                    "end": {"type": "integer", "minimum": 1},
+                    "quote": {"type": "string"},
+                },
+            },
+            "default": {},
         },
         "target_card_ids": {
             "type": "array",
@@ -106,6 +124,7 @@ class EvidenceTransitionRequest:
     action: str
     topic: str
     source_ids: tuple[str, ...]
+    evidence_locators: Mapping[str, Mapping[str, object]]
     target_card_ids: tuple[str, ...]
     card: Mapping[str, object]
     reason: str
@@ -130,6 +149,13 @@ class EvidenceTransitionRequest:
         reason = _request_string(raw, "reason", required=True)
 
         source_ids = _string_tuple(raw.get("source_ids", ()), "source_ids")
+        evidence_locators = _locator_map(raw.get("evidence_locators", {}))
+        extra_locator_ids = set(evidence_locators) - set(source_ids)
+        if extra_locator_ids:
+            raise ValueError(
+                "evidence_locators reference unrequested source_ids: "
+                + ", ".join(sorted(extra_locator_ids))
+            )
         target_card_ids = _string_tuple(raw.get("target_card_ids", ()), "target_card_ids")
 
         card = raw.get("card", {})
@@ -167,6 +193,7 @@ class EvidenceTransitionRequest:
             action=action,
             topic=topic,
             source_ids=source_ids,
+            evidence_locators=evidence_locators,
             target_card_ids=target_card_ids,
             card=dict(card),
             reason=reason,
@@ -198,6 +225,40 @@ def _string_tuple(raw: object, field_name: str) -> tuple[str, ...]:
             raise ValueError(f"{field_name} must not contain duplicates")
         values.append(value)
     return tuple(values)
+
+
+def _locator_map(raw: object) -> dict[str, dict[str, object]]:
+    if not isinstance(raw, Mapping):
+        raise ValueError("evidence_locators must be a JSON object")
+    result: dict[str, dict[str, object]] = {}
+    allowed = {"kind", "start", "end", "quote"}
+    for source_id, locator in raw.items():
+        if not isinstance(source_id, str) or not source_id.strip():
+            raise ValueError("evidence_locators keys must be non-empty source IDs")
+        if not isinstance(locator, Mapping):
+            raise ValueError("Each evidence locator must be a JSON object")
+        unknown = set(locator) - allowed
+        if unknown:
+            raise ValueError(
+                "Unsupported evidence locator fields: " + ", ".join(sorted(unknown))
+            )
+        kind = locator.get("kind", "whole_entry")
+        if kind not in {"whole_entry", "quote", "char_span"}:
+            raise ValueError(f"Unsupported evidence locator kind: {kind!r}")
+        for field_name in ("start", "end"):
+            value = locator.get(field_name)
+            if value is not None and (isinstance(value, bool) or not isinstance(value, int)):
+                raise ValueError(f"evidence locator {field_name} must be an integer")
+        quote = locator.get("quote")
+        if quote is not None and not isinstance(quote, str):
+            raise ValueError("evidence locator quote must be a string")
+        canonical_source_id = source_id.strip()
+        if canonical_source_id in result:
+            raise ValueError(
+                "evidence_locators must not repeat a source ID after trimming"
+            )
+        result[canonical_source_id] = dict(locator)
+    return result
 
 
 def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) -> dict:
@@ -267,8 +328,41 @@ def _load_real_entries(source_ids: Sequence[str]) -> dict[str, Mapping[str, obje
             raise EvidenceValidationError(f"Stored Entry is unreadable: {entry_id}") from exc
         if not isinstance(entry, Mapping) or str(entry.get("id", "")) != entry_id:
             raise EvidenceValidationError(f"Stored Entry identity does not match: {entry_id}")
-        entries[entry_id] = entry
+        trusted_entry = dict(entry)
+        raw_path = config.RAW_DIR / f"{entry_id}.txt"
+        if raw_path.is_file():
+            try:
+                trusted_entry["raw_text"] = raw_path.read_text(encoding="utf-8")
+            except (OSError, UnicodeError) as exc:
+                raise EvidenceValidationError(
+                    f"Stored Entry body is unreadable: {entry_id}"
+                ) from exc
+        entries[entry_id] = trusted_entry
     return entries
+
+
+def _source_ids(refs) -> list[str]:
+    return list(dict.fromkeys(ref.entry_id for ref in refs))
+
+
+def _evidence_ref_projection(ref) -> dict[str, object]:
+    return {
+        "entry_id": ref.entry_id,
+        "locator": asdict(ref.locator),
+        "source_tier": ref.source_tier,
+        "source_key": ref.source_key,
+        "content_hash": ref.content_hash,
+        "evidence_digest": ref.evidence_digest,
+        "is_primary": ref.is_primary,
+        "authority_topics": list(ref.authority_topics),
+        "authority_fact_keys": list(ref.authority_fact_keys),
+        "corrects_entry_ids": list(ref.corrects_entry_ids),
+        "duplicate_detection_version": ref.duplicate_detection_version,
+        "duplicate_relations": [
+            asdict(relation) for relation in ref.duplicate_relations
+        ],
+        "independence_identity": ref.independence_identity,
+    }
 
 
 def _strength_projection(strength) -> dict:
@@ -286,7 +380,10 @@ def _proposal_projection(proposal) -> dict | None:
         "evidence": proposal.evidence,
         "fact_key": proposal.fact_key,
         "fact_value": proposal.fact_value,
-        "source_ids": [ref.entry_id for ref in proposal.evidence_refs],
+        "source_ids": _source_ids(proposal.evidence_refs),
+        "evidence_refs": [
+            _evidence_ref_projection(ref) for ref in proposal.evidence_refs
+        ],
         "strength": _strength_projection(proposal.strength),
     }
 
@@ -303,7 +400,7 @@ def project_memory_version(version: CardVersion, *, public_state: str | None = N
         evidence=version.evidence,
         tags=list(version.tags),
         confidence=version.strength.score,
-        source_ids=[ref.entry_id for ref in version.evidence_refs],
+        source_ids=_source_ids(version.evidence_refs),
         provenance={
             "topic": version.topic,
             "memory_version_id": version.version_id,
@@ -324,6 +421,9 @@ def project_memory_version(version: CardVersion, *, public_state: str | None = N
                 "strength": strength,
                 "fact_key": version.fact_key,
                 "fact_value": version.fact_value,
+                "evidence_refs": [
+                    _evidence_ref_projection(ref) for ref in version.evidence_refs
+                ],
                 "proposed_conflict": proposal,
             }
         },
@@ -343,6 +443,9 @@ def _event_projection(event, snapshot) -> dict:
         "parent_version_ids": list(event.parent_version_ids),
         "output_version_ids": list(event.output_version_ids),
         "source_ids": list(event.evidence_ids),
+        "evidence_use_ids": list(event.evidence_use_ids),
+        "algorithm_version": event.algorithm_version,
+        "governance_version": event.governance_version,
         "reason": event.reason,
         "idempotency_key": event.idempotency_key,
         "request_hash": event.request_hash,
@@ -370,6 +473,7 @@ def apply_evidence_transition(
         topic=transition.topic,
         entries=entries,
         source_ids=transition.source_ids,
+        evidence_locators=transition.evidence_locators,
         card=transition.card,
         target_card_ids=transition.target_card_ids,
         reason=transition.reason,

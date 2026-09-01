@@ -7,6 +7,7 @@ import re
 import threading
 import uuid
 from datetime import datetime
+from pathlib import Path
 
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
@@ -18,6 +19,11 @@ from sheaf_ai.utils import (
     detect_platform,
     evidence_digest,
     extract_timeliness,
+)
+from sheaf_ai.source_independence import (
+    SOURCE_INDEPENDENCE_VERSION,
+    SourceIndependenceDecision,
+    assess_source_pair,
 )
 
 logger = logging.getLogger(__name__)
@@ -159,7 +165,118 @@ def _build_source_field(summary_result: dict, platform: str, source_info: dict |
         base["llm_score"] = source_info.get("llm_score", 0)
         base["user_override"] = source_info.get("user_override")
         base["freshness"] = source_info.get("freshness", 5)
+        for field in (
+            "authority_scope",
+            "correction_relations",
+            "independent_observation",
+            "method_provenance",
+            "observation_id",
+            "experiment_id",
+            "measurement_id",
+            "run_id",
+            "sample_id",
+        ):
+            if field in source_info:
+                base[field] = source_info[field]
     return base
+
+
+def _relation_payload(
+    decision: SourceIndependenceDecision,
+    related_entry_id: str,
+) -> dict[str, object]:
+    return {
+        "related_entry_id": related_entry_id,
+        "classification": decision.classification,
+        "similarity": decision.similarity,
+        "rule": decision.rule,
+        "reason": decision.reason,
+        "algorithm_version": SOURCE_INDEPENDENCE_VERSION,
+    }
+
+
+def _load_existing_sources() -> tuple[list[tuple[dict, str]], list[str]]:
+    sources: list[tuple[dict, str]] = []
+    errors: list[str] = []
+    if not ENTRIES_DIR.exists():
+        return sources, errors
+    for entry_path in sorted(ENTRIES_DIR.glob("20*/*.json")):
+        try:
+            entry = json.loads(entry_path.read_text(encoding="utf-8"))
+            entry_id = str(entry.get("id", "")).strip()
+            if not entry_id:
+                raise ValueError("missing id")
+            raw_path = RAW_DIR / f"{entry_id}.txt"
+            raw_text = raw_path.read_text(encoding="utf-8")
+        except Exception as exc:
+            errors.append(f"{entry_path.name}: {exc}")
+            continue
+        if entry.get("status") != "deleted":
+            sources.append((entry, raw_text))
+    return sources, errors
+
+
+def _assess_duplicate_relations(
+    entry: dict,
+    raw_text: str,
+    existing_sources: list[tuple[dict, str]],
+    *,
+    initial_errors: list[str] | None = None,
+) -> tuple[list[dict[str, object]], dict[str, object]]:
+    relations: list[dict[str, object]] = []
+    errors = list(initial_errors or [])
+    counts = {"exact": 0, "near_duplicate": 0, "independent": 0, "undetermined": 0}
+    candidate = {**entry, "raw_text": raw_text}
+    for existing, existing_raw in sorted(
+        existing_sources,
+        key=lambda item: str(item[0].get("id", "")),
+    ):
+        existing_id = str(existing.get("id", "")).strip()
+        if not existing_id or existing_id == entry.get("id"):
+            continue
+        try:
+            decision = assess_source_pair(
+                candidate,
+                {**existing, "raw_text": existing_raw},
+            )
+        except Exception as exc:
+            errors.append(f"{existing_id}: {exc}")
+            continue
+        counts[decision.classification] += 1
+        if decision.should_collapse:
+            relations.append(_relation_payload(decision, existing_id))
+    relations.sort(key=lambda relation: str(relation["related_entry_id"]))
+    status = "degraded" if errors else "ok"
+    reason = "; ".join(errors[:5])
+    if len(errors) > 5:
+        reason += f"; and {len(errors) - 5} more error(s)"
+    diagnostic: dict[str, object] = {
+        "algorithm_version": SOURCE_INDEPENDENCE_VERSION,
+        "status": status,
+        "reason_code": "partial_failure" if errors else "ok",
+        "reason": reason[:1000],
+        "compared_entries": sum(counts.values()),
+        "relations_found": len(relations),
+        "classification_counts": counts,
+    }
+    return relations, diagnostic
+
+
+def _failed_duplicate_detection(exc: Exception) -> dict[str, object]:
+    return {
+        "algorithm_version": SOURCE_INDEPENDENCE_VERSION,
+        "status": "degraded",
+        "reason_code": "detection_failed",
+        "reason": " ".join(str(exc).split())[:1000],
+        "compared_entries": 0,
+        "relations_found": 0,
+        "classification_counts": {
+            "exact": 0,
+            "near_duplicate": 0,
+            "independent": 0,
+            "undetermined": 0,
+        },
+    }
 
 
 def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict,
@@ -230,26 +347,39 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
         "status": "active",
     }
 
-    # Store JSON entry
-    month_dir = ENTRIES_DIR / now.strftime("%Y-%m")
-    month_dir.mkdir(parents=True, exist_ok=True)
-    entry_path = month_dir / f"{entry_id}.json"
-    atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
+    raw_text = str(fetch_result.get("text", ""))
+    with _STORAGE_LOCK:
+        try:
+            existing_sources, loading_errors = _load_existing_sources()
+            duplicate_relations, duplicate_diagnostic = _assess_duplicate_relations(
+                entry,
+                raw_text,
+                existing_sources,
+                initial_errors=loading_errors,
+            )
+        except Exception as exc:
+            logger.warning("Duplicate detection failed for %s: %s", entry_id, exc)
+            duplicate_relations = []
+            duplicate_diagnostic = _failed_duplicate_detection(exc)
+        entry["metadata"]["duplicate_detection"] = duplicate_diagnostic
+        entry["metadata"]["duplicate_relations"] = duplicate_relations
 
-    # Store raw text
-    raw_path = RAW_DIR / f"{entry_id}.txt"
-    atomic_write(raw_path, fetch_result.get("text", ""))
+        # Persist the relation snapshot with the Entry before exposing it in the
+        # index. Detection failures are data, not collection failures.
+        month_dir = ENTRIES_DIR / now.strftime("%Y-%m")
+        month_dir.mkdir(parents=True, exist_ok=True)
+        entry_path = month_dir / f"{entry_id}.json"
+        atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
-    # Store summary markdown
-    summary_md = build_summary_md(entry, summary_result.get("structured", {}))
-    summary_path = SUMMARIES_DIR / f"{entry_id}.md"
-    atomic_write(summary_path, summary_md)
+        raw_path = RAW_DIR / f"{entry_id}.txt"
+        atomic_write(raw_path, raw_text)
 
-    # Update tags registry
-    update_tags_registry(tags, now.isoformat())
+        summary_md = build_summary_md(entry, summary_result.get("structured", {}))
+        summary_path = SUMMARIES_DIR / f"{entry_id}.md"
+        atomic_write(summary_path, summary_md)
 
-    # Append to index
-    append_index(entry)
+        update_tags_registry(tags, now.isoformat())
+        append_index(entry)
 
     # Entry embeddings are opt-in to bootstrap because they may call a paid
     # provider. Once the user has explicitly built the index, keep it current
@@ -363,11 +493,113 @@ def append_index(entry: dict) -> None:
         "urgency": timeliness.get("urgency", "evergreen"),
         "collected_at": entry["metadata"]["collected_at"],
         "content_hash": entry["metadata"].get("content_hash", ""),
+        "metadata": {
+            "evidence_digest": entry["metadata"].get("evidence_digest", ""),
+            "duplicate_detection": entry["metadata"].get(
+                "duplicate_detection",
+                {},
+            ),
+            "duplicate_relations": entry["metadata"].get(
+                "duplicate_relations",
+                [],
+            ),
+        },
+        "source": entry.get("source", {}),
         "entities": entities,  # Issue #58
     }
     with _STORAGE_LOCK:
         with open(INDEX_FILE, "a", encoding="utf-8") as f:
             f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
+
+
+def rebuild_duplicate_relations() -> dict[str, int]:
+    """Backfill deterministic duplicate relations without rewriting history.
+
+    Existing non-empty relation snapshots are immutable.  A rebuild may enrich
+    an older Entry that has no snapshot, but a disagreement is recorded as a
+    degraded diagnostic and the known relations are preserved.
+    """
+    report = {
+        "entries_processed": 0,
+        "relations_found": 0,
+        "degraded_entries": 0,
+        "invalid_entries": 0,
+    }
+    with _STORAGE_LOCK:
+        records: list[tuple[Path, dict, str | None, str]] = []
+        if ENTRIES_DIR.exists():
+            for entry_path in sorted(ENTRIES_DIR.glob("20*/*.json")):
+                try:
+                    entry = json.loads(entry_path.read_text(encoding="utf-8"))
+                    entry_id = str(entry.get("id", "")).strip()
+                    if not entry_id:
+                        raise ValueError("missing id")
+                except Exception:
+                    report["invalid_entries"] += 1
+                    continue
+                raw_text: str | None = None
+                raw_error = ""
+                try:
+                    raw_text = (RAW_DIR / f"{entry_id}.txt").read_text(
+                        encoding="utf-8"
+                    )
+                except Exception as exc:
+                    raw_error = str(exc)
+                records.append((entry_path, entry, raw_text, raw_error))
+        def history_order(item: tuple[Path, dict, str | None, str]) -> tuple[str, str]:
+            metadata = item[1].get("metadata")
+            collected_at = (
+                str(metadata.get("collected_at", ""))
+                if isinstance(metadata, dict)
+                else ""
+            )
+            return collected_at, str(item[1].get("id", ""))
+
+        records.sort(key=history_order)
+
+        prior_sources: list[tuple[dict, str]] = []
+        for entry_path, entry, raw_text, raw_error in records:
+            report["entries_processed"] += 1
+            metadata = entry.get("metadata")
+            if not isinstance(metadata, dict):
+                metadata = {}
+                entry["metadata"] = metadata
+            known_relations = metadata.get("duplicate_relations", [])
+            if raw_text is None:
+                relations = list(known_relations) if isinstance(known_relations, list) else []
+                diagnostic = _failed_duplicate_detection(
+                    RuntimeError(f"raw Entry text is unavailable: {raw_error}")
+                )
+            else:
+                relations, diagnostic = _assess_duplicate_relations(
+                    entry,
+                    raw_text,
+                    prior_sources,
+                )
+                if known_relations and known_relations != relations:
+                    relations = list(known_relations)
+                    diagnostic = {
+                        **diagnostic,
+                        "status": "degraded",
+                        "reason_code": "identity_conflict",
+                        "reason": (
+                            "Recomputed duplicate relations disagree with the "
+                            "persisted Entry identity; preserved the stored snapshot"
+                        ),
+                        "relations_found": len(relations),
+                    }
+            metadata["duplicate_relations"] = relations
+            metadata["duplicate_detection"] = diagnostic
+            atomic_write(
+                entry_path,
+                json.dumps(entry, ensure_ascii=False, indent=2),
+            )
+            report["relations_found"] += len(relations)
+            if diagnostic["status"] != "ok":
+                report["degraded_entries"] += 1
+            if raw_text is not None and entry.get("status") != "deleted":
+                prior_sources.append((entry, raw_text))
+    return report
 
 
 def rebuild_index() -> int:

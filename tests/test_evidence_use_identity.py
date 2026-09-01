@@ -158,7 +158,7 @@ def test_schema_v1_replays_then_migrates_when_new_claim_is_written(tmp_path):
     _create(reopened, claim="The policy applies to public agencies")
 
     migrated = json.loads(ledger_path.read_text(encoding="utf-8"))
-    assert migrated["schema_version"] == 2
+    assert migrated["schema_version"] == 3
     assert len(migrated["processed_evidence"]) == 2
     assert {item["entry_id"] for item in migrated["processed_evidence"].values()} == {
         "entry-1"

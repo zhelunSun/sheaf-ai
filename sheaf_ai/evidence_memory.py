@@ -18,6 +18,8 @@ from typing import Mapping, Sequence
 
 from sheaf_ai._evidence_memory_models import (
     ALGORITHM_VERSION,
+    DIGEST_ALGORITHM_VERSION,
+    GOVERNANCE_VERSION,
     VALID_ACTIONS,
     VALID_RESOLUTION_BASES,
     CardVersion,
@@ -26,6 +28,8 @@ from sheaf_ai._evidence_memory_models import (
     ContestedClaim,
     EvidenceAlreadyProcessedError,
     EvidenceMemoryError,
+    EvidenceLocator,
+    EvidenceDuplicateRelation,
     EvidenceRef,
     EvidenceStrength,
     EvidenceValidationError,
@@ -36,6 +40,7 @@ from sheaf_ai._evidence_memory_models import (
     TransitionValidationError,
     claim_identity_for_version,
     evidence_use_identity,
+    locator_identity,
 )
 from sheaf_ai._evidence_memory_rules import (
     _canonical_hash,
@@ -52,16 +57,20 @@ from sheaf_ai._evidence_memory_rules import (
 
 __all__ = [
     "ALGORITHM_VERSION",
+    "DIGEST_ALGORITHM_VERSION",
     "VALID_ACTIONS",
     "VALID_RESOLUTION_BASES",
     "CardVersion",
     "ConflictAssessment",
     "ConflictResolutionRequired",
     "ContestedClaim",
+    "GOVERNANCE_VERSION",
     "EvidenceAlreadyProcessedError",
     "EvidenceGovernedMemory",
     "EvidenceLedger",
     "EvidenceMemoryError",
+    "EvidenceLocator",
+    "EvidenceDuplicateRelation",
     "EvidenceRef",
     "EvidenceStrength",
     "EvidenceValidationError",
@@ -106,6 +115,7 @@ class EvidenceGovernedMemory:
         topic: str,
         entries: Sequence[Mapping[str, object]] | Mapping[str, Mapping[str, object]],
         source_ids: Sequence[object] | None = None,
+        evidence_locators: Mapping[str, Mapping[str, object]] | None = None,
         card: Mapping[str, object] | None = None,
         target_card_ids: Sequence[object] = (),
         reason: str,
@@ -135,7 +145,7 @@ class EvidenceGovernedMemory:
         elif payload_source_ids is not None:
             if _dedupe_strings(source_ids) != _dedupe_strings(payload_source_ids):
                 raise EvidenceValidationError("Card source_ids disagree with transition source_ids")
-        refs = allowlisted_evidence(entries, source_ids)
+        refs = allowlisted_evidence(entries, source_ids, evidence_locators)
         targets = tuple(sorted(_dedupe_strings(target_card_ids)))
         basis = str(resolution_basis).strip()
         resolution = _normalise_resolution_metadata(resolution_metadata)
@@ -244,6 +254,9 @@ class EvidenceGovernedMemory:
                     resolution,
                     effective_fact_value,
                     allow_unresolved=action == "CONTEST",
+                    governance_version=GOVERNANCE_VERSION,
+                    topic=topic,
+                    fact_key=effective_fact_key,
                 )
 
                 event_id = f"evt_{uuid.uuid4().hex}"
@@ -263,7 +276,14 @@ class EvidenceGovernedMemory:
                 )
                 atomic_claim_identity = claim_identity_for_version(version, action)
                 evidence_uses = tuple(
-                    (ref, evidence_use_identity(ref.entry_id, atomic_claim_identity))
+                    (
+                        ref,
+                        evidence_use_identity(
+                            ref.entry_id,
+                            atomic_claim_identity,
+                            locator_identity(ref.locator),
+                        ),
+                    )
                     for ref in refs
                 )
                 reused = [
@@ -273,7 +293,8 @@ class EvidenceGovernedMemory:
                 ]
                 if reused:
                     raise EvidenceAlreadyProcessedError(
-                        "Evidence already supports this atomic claim: " + ", ".join(reused)
+                        "The same evidence span already supports this atomic claim: "
+                        + ", ".join(reused)
                     )
                 event = TransitionEvent(
                     event_id=event_id,
@@ -282,10 +303,12 @@ class EvidenceGovernedMemory:
                     parent_version_ids=tuple(parent.version_id for parent in parents),
                     output_version_ids=(version_id,),
                     evidence_ids=tuple(ref.entry_id for ref in refs),
+                    evidence_use_ids=tuple(use_id for _, use_id in evidence_uses),
                     reason=reason,
                     idempotency_key=key,
                     request_hash=request_hash,
                     algorithm_version=ALGORITHM_VERSION,
+                    governance_version=GOVERNANCE_VERSION,
                     resolution_basis=basis,
                     resolution_metadata=resolution,
                     created_at=now,
@@ -303,6 +326,7 @@ class EvidenceGovernedMemory:
                         "content_hash": ref.content_hash,
                         "evidence_digest": ref.evidence_digest,
                         "source_key": ref.source_key,
+                        "locator_identity": locator_identity(ref.locator),
                         "processed_at": now,
                     }
                 _decode_and_replay(raw)

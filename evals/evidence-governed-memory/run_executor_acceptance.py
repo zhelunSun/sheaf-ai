@@ -31,13 +31,31 @@ def _entry(
     tier: str,
     domain: str,
     is_primary: bool = False,
+    authority_topics: tuple[str, ...] = (),
+    authority_fact_keys: tuple[str, ...] = (),
+    corrects_entry_ids: tuple[str, ...] = (),
 ) -> dict[str, object]:
     content_hash = hashlib.sha256(entry_id.encode("utf-8")).hexdigest()
+    source: dict[str, object] = {
+        "domain": domain,
+        "tier": tier,
+        "is_primary": is_primary,
+    }
+    if authority_topics or authority_fact_keys:
+        source["authority_scope"] = {
+            "topics": list(authority_topics),
+            "fact_keys": list(authority_fact_keys),
+        }
+    if corrects_entry_ids:
+        source["correction_relations"] = [
+            {"relation": "corrects", "entry_id": target}
+            for target in corrects_entry_ids
+        ]
     return {
         "id": entry_id,
         "url": f"https://{domain}/{entry_id}",
         "source_tier": tier,
-        "source": {"domain": domain, "tier": tier, "is_primary": is_primary},
+        "source": source,
         "content_hash": content_hash,
     }
 
@@ -103,6 +121,9 @@ def run_acceptance() -> dict[str, object]:
                     tier="A",
                     domain="authority.example",
                     is_primary=True,
+                    authority_topics=("release-policy",),
+                    authority_fact_keys=("deadline.status",),
+                    corrects_entry_ids=("claim-b",),
                 )
             ],
             source_ids=["correction-c"],
@@ -118,6 +139,7 @@ def run_acceptance() -> dict[str, object]:
                 "authority_source_id": "correction-c",
                 "corrects_entry_id": "claim-b",
                 "authoritative_fact_value": "extended",
+                "correction_relation": "corrects",
             },
             idempotency_key="acceptance-resolve-c",
         )
@@ -162,6 +184,7 @@ def run_acceptance() -> dict[str, object]:
                 == {
                     "authoritative_fact_value": "extended",
                     "authority_source_id": "correction-c",
+                    "correction_relation": "corrects",
                     "corrects_entry_id": "claim-b",
                 }
             ),
@@ -177,7 +200,7 @@ def run_acceptance() -> dict[str, object]:
             ),
         }
         return {
-            "suite": "evidence_memory_executor_acceptance_v1",
+            "suite": "evidence_memory_executor_acceptance_v2",
             "scope": "deterministic executor invariants; no LLM policy or G0-G3 quality run",
             "passed": all(checks.values()),
             "checks": checks,

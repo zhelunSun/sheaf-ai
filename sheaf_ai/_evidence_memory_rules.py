@@ -3,24 +3,36 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from datetime import datetime
+from itertools import combinations
 from typing import Mapping, Sequence
 from urllib.parse import urlparse
 
 from sheaf_ai._evidence_memory_models import (
     ALGORITHM_VERSION,
+    DIGEST_ALGORITHM_VERSION,
+    GOVERNANCE_VERSION,
     LEGACY_ALGORITHM_VERSION,
+    LEGACY_GOVERNANCE_VERSION,
     TIER_WEIGHTS,
     VALID_RESOLUTION_BASES,
     VALID_TIERS,
     CardVersion,
     ConflictAssessment,
     ConflictResolutionRequired,
+    EvidenceLocator,
+    EvidenceDuplicateRelation,
     EvidenceRef,
     EvidenceStrength,
     EvidenceValidationError,
     TransitionValidationError,
+    locator_identity,
+)
+from sheaf_ai.source_independence import (
+    SOURCE_INDEPENDENCE_VERSION,
+    independent_provenance_identity,
 )
 
 
@@ -94,9 +106,175 @@ def _is_primary(entry: Mapping[str, object]) -> bool:
     return isinstance(source, Mapping) and source.get("is_primary") is True
 
 
+def _normalised_scope_values(value: object) -> tuple[str, ...]:
+    if isinstance(value, (str, bytes)) or not isinstance(value, Sequence):
+        return ()
+    return tuple(sorted({_normalise_text(item) for item in value if _normalise_text(item)}))
+
+
+def _authority_fields(entry: Mapping[str, object]) -> tuple[tuple[str, ...], ...]:
+    source = entry.get("source")
+    if not isinstance(source, Mapping):
+        return (), (), ()
+    scope = source.get("authority_scope")
+    topics: tuple[str, ...] = ()
+    fact_keys: tuple[str, ...] = ()
+    if isinstance(scope, Mapping):
+        topics = _normalised_scope_values(scope.get("topics"))
+        fact_keys = _normalised_scope_values(scope.get("fact_keys"))
+    raw_relations = source.get("correction_relations")
+    corrected: set[str] = set()
+    if isinstance(raw_relations, Sequence) and not isinstance(raw_relations, (str, bytes)):
+        for relation in raw_relations:
+            if not isinstance(relation, Mapping):
+                continue
+            if _normalise_text(relation.get("relation")) != "corrects":
+                continue
+            entry_id = str(relation.get("entry_id", "")).strip()
+            if entry_id:
+                corrected.add(entry_id)
+    return topics, fact_keys, tuple(sorted(corrected))
+
+
+def _duplicate_relation_fields(
+    entry: Mapping[str, object],
+    entry_id: str,
+) -> tuple[str, tuple[EvidenceDuplicateRelation, ...], str]:
+    metadata = entry.get("metadata")
+    if not isinstance(metadata, Mapping):
+        metadata = {}
+    diagnostic = metadata.get("duplicate_detection")
+    detection_version = ""
+    if isinstance(diagnostic, Mapping):
+        detection_version = str(diagnostic.get("algorithm_version", "")).strip()
+        if detection_version and detection_version != SOURCE_INDEPENDENCE_VERSION:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} has unsupported duplicate detection version"
+            )
+    raw_relations = metadata.get("duplicate_relations", ())
+    if isinstance(raw_relations, (str, bytes)) or not isinstance(
+        raw_relations,
+        Sequence,
+    ):
+        raise EvidenceValidationError(f"Entry {entry_id} duplicate relations must be a list")
+    relations: dict[str, EvidenceDuplicateRelation] = {}
+    for raw_relation in raw_relations:
+        if not isinstance(raw_relation, Mapping):
+            raise EvidenceValidationError(
+                f"Entry {entry_id} contains an invalid duplicate relation"
+            )
+        relation = EvidenceDuplicateRelation.from_dict(raw_relation)
+        if not relation.related_entry_id or relation.related_entry_id == entry_id:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} duplicate relation has an invalid target"
+            )
+        if relation.classification not in {"exact", "near_duplicate"}:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} duplicate relation has an invalid classification"
+            )
+        if (
+            not math.isfinite(relation.similarity)
+            or not 0.0 <= relation.similarity <= 1.0
+        ):
+            raise EvidenceValidationError(
+                f"Entry {entry_id} duplicate relation has an invalid similarity"
+            )
+        if relation.algorithm_version != SOURCE_INDEPENDENCE_VERSION:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} duplicate relation has an unsupported algorithm"
+            )
+        if not relation.rule or not relation.reason:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} duplicate relation lacks audit rationale"
+            )
+        previous = relations.get(relation.related_entry_id)
+        if previous is not None and previous != relation:
+            raise EvidenceValidationError(
+                f"Entry {entry_id} has conflicting duplicate relations"
+            )
+        relations[relation.related_entry_id] = relation
+    if relations and not detection_version:
+        detection_version = SOURCE_INDEPENDENCE_VERSION
+    return (
+        detection_version,
+        tuple(sorted(relations.values())),
+        independent_provenance_identity(entry),
+    )
+
+
+def _entry_body(entry: Mapping[str, object]) -> str | None:
+    for field_name in ("raw_text", "text", "content", "body"):
+        value = entry.get(field_name)
+        if isinstance(value, str):
+            return value
+    return None
+
+
+def _verified_locator(
+    entry: Mapping[str, object],
+    raw_locator: Mapping[str, object] | None,
+) -> EvidenceLocator:
+    if raw_locator is None:
+        return EvidenceLocator()
+    if not isinstance(raw_locator, Mapping):
+        raise EvidenceValidationError("Evidence locator must be an object")
+    kind = str(raw_locator.get("kind", "whole_entry")).strip()
+    if kind == "whole_entry":
+        if set(raw_locator) - {"kind"}:
+            raise EvidenceValidationError("whole_entry locator does not accept span fields")
+        return EvidenceLocator()
+    if kind not in {"quote", "char_span"}:
+        raise EvidenceValidationError(f"Unsupported evidence locator kind: {kind!r}")
+    body = _entry_body(entry)
+    if body is None:
+        raise EvidenceValidationError("Quote/span locator requires the allowlisted Entry body")
+
+    if kind == "quote":
+        if set(raw_locator) - {"kind", "quote"}:
+            raise EvidenceValidationError("quote locator accepts only kind and quote")
+        quote = str(raw_locator.get("quote", ""))
+        if not quote:
+            raise EvidenceValidationError("quote locator requires non-empty quote")
+        starts: list[int] = []
+        cursor = 0
+        while True:
+            found = body.find(quote, cursor)
+            if found < 0:
+                break
+            starts.append(found)
+            cursor = found + 1
+            if len(starts) > 1:
+                raise EvidenceValidationError("Evidence quote is ambiguous in the Entry body")
+        if not starts:
+            raise EvidenceValidationError("Evidence quote was not found in the Entry body")
+        start = starts[0]
+        return EvidenceLocator(kind="quote", start=start, end=start + len(quote), quote=quote)
+
+    if set(raw_locator) - {"kind", "start", "end", "quote"}:
+        raise EvidenceValidationError("char_span locator contains unsupported fields")
+    start = raw_locator.get("start")
+    end = raw_locator.get("end")
+    if (
+        isinstance(start, bool)
+        or isinstance(end, bool)
+        or not isinstance(start, int)
+        or not isinstance(end, int)
+        or start < 0
+        or end <= start
+        or end > len(body)
+    ):
+        raise EvidenceValidationError("char_span locator has invalid bounds")
+    quote = body[start:end]
+    supplied_quote = raw_locator.get("quote")
+    if supplied_quote is not None and str(supplied_quote) != quote:
+        raise EvidenceValidationError("char_span quote does not match the Entry body")
+    return EvidenceLocator(kind="char_span", start=start, end=end, quote=quote)
+
+
 def allowlisted_evidence(
     entries: Sequence[Mapping[str, object]] | Mapping[str, Mapping[str, object]],
     requested_source_ids: Sequence[object],
+    evidence_locators: Mapping[str, Mapping[str, object]] | None = None,
 ) -> tuple[EvidenceRef, ...]:
     """Resolve untrusted source IDs against current entries and deduplicate.
 
@@ -139,17 +317,40 @@ def allowlisted_evidence(
             "Source IDs are not in the current evidence allowlist: " + ", ".join(unknown)
         )
 
-    return tuple(
-        EvidenceRef(
+    raw_locators = dict(evidence_locators or {})
+    extra_locators = set(raw_locators) - set(source_ids)
+    if extra_locators:
+        raise EvidenceValidationError(
+            "Evidence locators reference unrequested source IDs: "
+            + ", ".join(sorted(extra_locators))
+        )
+
+    refs: list[EvidenceRef] = []
+    for source_id in source_ids:
+        authority_topics, authority_fact_keys, corrects_entry_ids = _authority_fields(
+            allowed[source_id]
+        )
+        duplicate_version, duplicate_relations, independence_identity = (
+            _duplicate_relation_fields(allowed[source_id], source_id)
+        )
+        refs.append(
+            EvidenceRef(
             entry_id=source_id,
             source_tier=_source_tier(allowed[source_id]),
             source_key=_source_key(allowed[source_id]),
             content_hash=_content_hash(allowed[source_id]),
             evidence_digest=_evidence_digest(allowed[source_id]),
+            locator=_verified_locator(allowed[source_id], raw_locators.get(source_id)),
             is_primary=_is_primary(allowed[source_id]),
+            authority_topics=authority_topics,
+            authority_fact_keys=authority_fact_keys,
+            corrects_entry_ids=corrects_entry_ids,
+            duplicate_detection_version=duplicate_version,
+            duplicate_relations=duplicate_relations,
+            independence_identity=independence_identity,
         )
-        for source_id in source_ids
-    )
+        )
+    return tuple(refs)
 
 
 def compute_evidence_strength(
@@ -162,8 +363,10 @@ def compute_evidence_strength(
 
     Duplicate entry IDs are removed.  Corroboration is counted by independent
     source groups.  All versions collapse a shared ``source_key``.  Version 2
-    additionally collapses a shared, versioned full SHA-256 ``evidence_digest``;
-    legacy short ``content_hash`` values are audit metadata only.  Each group
+    additionally collapses a shared, versioned full SHA-256 ``evidence_digest``.
+    Version 3 also consumes immutable persisted exact/near-duplicate relations,
+    while distinct explicit observation provenance prevents automatic collapse.
+    Legacy short ``content_hash`` values are audit metadata only.  Each group
     contributes only its best tier.  Formula::
 
         score = 0.65 * mean(source tier weights)
@@ -173,11 +376,21 @@ def compute_evidence_strength(
     The score is useful for ordering and guardrails only.  It is not trained or
     empirically calibrated and must not be described as a probability.
     """
-    if algorithm_version not in {LEGACY_ALGORITHM_VERSION, ALGORITHM_VERSION}:
+    if algorithm_version not in {
+        LEGACY_ALGORITHM_VERSION,
+        DIGEST_ALGORITHM_VERSION,
+        ALGORITHM_VERSION,
+    }:
         raise TransitionValidationError(
             f"Unsupported evidence-strength algorithm: {algorithm_version!r}"
         )
     unique_refs = {ref.entry_id: ref for ref in refs}
+    if algorithm_version == ALGORITHM_VERSION:
+        return _compute_v3_evidence_strength(
+            unique_refs,
+            conflict=conflict,
+            algorithm_version=algorithm_version,
+        )
     source_parents: dict[str, str] = {}
 
     def find_source(source_key: str) -> str:
@@ -247,6 +460,97 @@ def compute_evidence_strength(
         band=band,
         algorithm=algorithm_version,
         independent_source_count=source_count,
+        source_group_count=source_count,
+        tier_counts=counts_tuple,
+        conflict_penalty=penalty,
+        rationale=rationale,
+    )
+
+
+def _compute_v3_evidence_strength(
+    unique_refs: Mapping[str, EvidenceRef],
+    *,
+    conflict: bool,
+    algorithm_version: str,
+) -> EvidenceStrength:
+    """Compute conservative v3 source groups without assumed independence."""
+    parents = {entry_id: entry_id for entry_id in unique_refs}
+    members = {entry_id: {entry_id} for entry_id in unique_refs}
+
+    def find(entry_id: str) -> str:
+        root = entry_id
+        while parents[root] != root:
+            root = parents[root]
+        while parents[entry_id] != entry_id:
+            parent = parents[entry_id]
+            parents[entry_id] = root
+            entry_id = parent
+        return root
+
+    def union(left_id: str, right_id: str) -> None:
+        left_root = find(left_id)
+        right_root = find(right_id)
+        if left_root == right_root:
+            return
+        root, child = sorted((left_root, right_root))
+        parents[child] = root
+        members[root].update(members.pop(child))
+
+    refs = [unique_refs[entry_id] for entry_id in sorted(unique_refs)]
+    for left, right in combinations(refs, 2):
+        if left.source_key == right.source_key:
+            union(left.entry_id, right.entry_id)
+        if (
+            _SHA256_EVIDENCE_DIGEST.fullmatch(left.evidence_digest.strip())
+            and left.evidence_digest == right.evidence_digest
+        ):
+            union(left.entry_id, right.entry_id)
+    for ref in refs:
+        for relation in ref.duplicate_relations:
+            if relation.related_entry_id in unique_refs and relation.classification in {
+                "exact",
+                "near_duplicate",
+            }:
+                union(ref.entry_id, relation.related_entry_id)
+
+    best_by_group: dict[str, float] = {}
+    tier_counts = {tier: 0 for tier in ("A", "B", "C", "D", "U")}
+    for ref in refs:
+        tier = ref.source_tier if ref.source_tier in VALID_TIERS else "U"
+        tier_counts[tier] += 1
+        root = find(ref.entry_id)
+        best_by_group[root] = max(best_by_group.get(root, 0.0), TIER_WEIGHTS[tier])
+
+    source_group_count = len(best_by_group)
+    # A non-duplicate document is not automatically an independent observation.
+    # Until a trusted provenance registry can attest independent experiments,
+    # v3 deliberately awards no corroboration credit to extra singleton groups.
+    source_count = 1 if source_group_count else 0
+    best_weight = max(best_by_group.values(), default=0.0)
+    tier_component = 0.65 * best_weight
+    corroboration = 0.0
+    penalty = 0.20 if conflict else 0.0
+    score = round(max(0.0, min(0.95, tier_component + corroboration - penalty)), 4)
+    band = "strong" if score >= 0.65 else "moderate" if score >= 0.35 else "weak"
+    counts_tuple = tuple((tier, count) for tier, count in tier_counts.items() if count)
+    rationale = (
+        f"{source_group_count} non-duplicate source group(s) after source-key, "
+        "trusted SHA-256 digest, "
+        "and persisted exact/near-duplicate relations",
+        "self-declared provenance never overrides source or content deduplication",
+        "undetermined groups receive no independence count or corroboration bonus",
+        "trusted provenance registry is required before independent corroboration",
+        f"tier component={tier_component:.4f} from source_tier weights",
+        f"corroboration bonus={corroboration:.4f}",
+        f"structured-conflict penalty={penalty:.4f}",
+        "ordinal rule score; not a calibrated probability",
+    )
+    return EvidenceStrength(
+        score=score,
+        band=band,
+        algorithm=algorithm_version,
+        independent_source_count=source_count,
+        source_group_count=source_group_count,
         tier_counts=counts_tuple,
         conflict_penalty=penalty,
         rationale=rationale,
@@ -366,6 +670,9 @@ def validate_resolution_basis(
     *,
     allow_unresolved: bool = False,
     algorithm_version: str = ALGORITHM_VERSION,
+    governance_version: str = GOVERNANCE_VERSION,
+    topic: str = "",
+    fact_key: str = "",
 ) -> None:
     """Validate a conflict decision without treating source tier as truth.
 
@@ -422,11 +729,14 @@ def validate_resolution_basis(
     if basis == "official_correction":
         if not refs:
             raise ConflictResolutionRequired("official_correction requires resolution evidence")
-        values = _require_metadata(
-            metadata,
-            {"authoritative_fact_value", "authority_source_id", "corrects_entry_id"},
-            basis,
-        )
+        required_metadata = {
+            "authoritative_fact_value",
+            "authority_source_id",
+            "corrects_entry_id",
+        }
+        if governance_version != LEGACY_GOVERNANCE_VERSION:
+            required_metadata.add("correction_relation")
+        values = _require_metadata(metadata, required_metadata, basis)
         authority = next(
             (ref for ref in refs if ref.entry_id == values["authority_source_id"]),
             None,
@@ -436,6 +746,27 @@ def validate_resolution_basis(
                 "official_correction authority_source_id must reference a new allowlisted "
                 "entry whose source.is_primary is true"
             )
+        if governance_version != LEGACY_GOVERNANCE_VERSION:
+            if values["correction_relation"] != "corrects":
+                raise ConflictResolutionRequired(
+                    "official_correction correction relation must be 'corrects'"
+                )
+            if not authority.authority_topics or not authority.authority_fact_keys:
+                raise ConflictResolutionRequired(
+                    "official_correction requires explicit authority scope"
+                )
+            if _normalise_text(topic) not in authority.authority_topics:
+                raise ConflictResolutionRequired(
+                    "official_correction authority scope does not cover the topic"
+                )
+            if _normalise_text(fact_key) not in authority.authority_fact_keys:
+                raise ConflictResolutionRequired(
+                    "official_correction authority scope does not cover fact_key"
+                )
+            if values["corrects_entry_id"] not in authority.corrects_entry_ids:
+                raise ConflictResolutionRequired(
+                    "official_correction correction relation does not cover corrected entry"
+                )
         parent_evidence_ids = {
             ref.entry_id for parent in parents for ref in parent.evidence_refs
         }
@@ -499,19 +830,36 @@ def validate_resolution_basis(
 
 def merge_evidence_refs(*groups: Sequence[EvidenceRef]) -> tuple[EvidenceRef, ...]:
     """Union references by Entry ID, enriching unknown hashes without mutation."""
-    merged: dict[str, EvidenceRef] = {}
+    merged: dict[tuple[str, str], EvidenceRef] = {}
     for group in groups:
         for ref in group:
-            previous = merged.get(ref.entry_id)
+            key = (ref.entry_id, locator_identity(ref.locator))
+            previous = merged.get(key)
             if previous is None:
-                merged[ref.entry_id] = ref
+                merged[key] = ref
                 continue
-            merged[ref.entry_id] = EvidenceRef(
+            merged[key] = EvidenceRef(
                 entry_id=previous.entry_id,
                 source_tier=previous.source_tier,
                 source_key=previous.source_key,
                 content_hash=previous.content_hash or ref.content_hash,
                 evidence_digest=previous.evidence_digest or ref.evidence_digest,
+                locator=previous.locator,
                 is_primary=previous.is_primary,
+                authority_topics=previous.authority_topics or ref.authority_topics,
+                authority_fact_keys=(
+                    previous.authority_fact_keys or ref.authority_fact_keys
+                ),
+                corrects_entry_ids=previous.corrects_entry_ids or ref.corrects_entry_ids,
+                duplicate_detection_version=(
+                    previous.duplicate_detection_version
+                    or ref.duplicate_detection_version
+                ),
+                duplicate_relations=(
+                    previous.duplicate_relations or ref.duplicate_relations
+                ),
+                independence_identity=(
+                    previous.independence_identity or ref.independence_identity
+                ),
             )
     return tuple(merged.values())

@@ -51,8 +51,10 @@ def test_legacy_short_hash_does_not_collapse_cross_domain_sources():
         "domain:original.example",
         "domain:mirror.example",
     }
-    assert strength.independent_source_count == 2
-    assert "corroboration bonus=0.1000" in strength.rationale
+    assert strength.independent_source_count == 1
+    assert strength.source_group_count == 2
+    assert "2 non-duplicate source group(s)" in strength.rationale[0]
+    assert "corroboration bonus=0.0000" in strength.rationale
 
 
 def test_trusted_sha256_digest_collapses_cross_domain_mirrors():
@@ -75,6 +77,7 @@ def test_trusted_sha256_digest_collapses_cross_domain_mirrors():
 
     assert {ref.evidence_digest for ref in refs} == {digest}
     assert strength.independent_source_count == 1
+    assert strength.source_group_count == 1
     assert strength.score == single_source_strength.score
     assert "corroboration bonus=0.0000" in strength.rationale
 
@@ -94,10 +97,12 @@ def test_unversioned_or_malformed_digest_is_not_a_strong_identity():
     refs, strength = _strength(first, second)
 
     assert {ref.evidence_digest for ref in refs} == {""}
-    assert strength.independent_source_count == 2
+    assert strength.independent_source_count == 1
+    assert strength.source_group_count == 2
+    assert "2 non-duplicate source group(s)" in strength.rationale[0]
 
 
-def test_cross_domain_different_content_counts_as_independent_sources():
+def test_cross_domain_different_content_is_not_assumed_independent():
     first = _entry(
         "first",
         domain="first.example",
@@ -111,8 +116,9 @@ def test_cross_domain_different_content_counts_as_independent_sources():
 
     _, strength = _strength(first, second)
 
-    assert strength.independent_source_count == 2
-    assert "corroboration bonus=0.1000" in strength.rationale
+    assert strength.independent_source_count == 1
+    assert "2 non-duplicate source group(s)" in strength.rationale[0]
+    assert "corroboration bonus=0.0000" in strength.rationale
 
 
 def test_empty_content_hash_does_not_merge_unrelated_sources():
@@ -121,8 +127,9 @@ def test_empty_content_hash_does_not_merge_unrelated_sources():
 
     _, strength = _strength(first, second)
 
-    assert strength.independent_source_count == 2
-    assert "corroboration bonus=0.1000" in strength.rationale
+    assert strength.independent_source_count == 1
+    assert "2 non-duplicate source group(s)" in strength.rationale[0]
+    assert "corroboration bonus=0.0000" in strength.rationale
 
 
 def test_empty_evidence_digest_does_not_merge_unrelated_sources():
@@ -131,8 +138,9 @@ def test_empty_evidence_digest_does_not_merge_unrelated_sources():
 
     _, strength = _strength(first, second)
 
-    assert strength.independent_source_count == 2
-    assert "corroboration bonus=0.1000" in strength.rationale
+    assert strength.independent_source_count == 1
+    assert "2 non-duplicate source group(s)" in strength.rationale[0]
+    assert "corroboration bonus=0.0000" in strength.rationale
 
 
 def test_same_domain_keeps_only_its_best_tier_for_strength():

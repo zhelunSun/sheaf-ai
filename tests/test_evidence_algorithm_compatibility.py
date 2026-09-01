@@ -87,7 +87,7 @@ def test_legacy_v1_mirror_ledger_replays_and_migrates(tmp_path):
     )
 
     migrated = json.loads(ledger_path.read_text(encoding="utf-8"))
-    assert migrated["schema_version"] == 2
+    assert migrated["schema_version"] == 3
     assert "algorithm_version" not in migrated["events"][0]
     assert migrated["events"][1]["algorithm_version"] == ALGORITHM_VERSION
     final = reopened.snapshot()
@@ -196,4 +196,4 @@ def test_legacy_update_and_contest_history_replays_before_v2_resolution(tmp_path
     final = reopened.snapshot()
     assert len(final.events) == 4
     assert final.events[-1].algorithm_version == ALGORITHM_VERSION
-    assert json.loads(ledger_path.read_text(encoding="utf-8"))["schema_version"] == 2
+    assert json.loads(ledger_path.read_text(encoding="utf-8"))["schema_version"] == 3

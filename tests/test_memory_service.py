@@ -65,6 +65,26 @@ def test_request_schema_rejects_free_form_fields():
         EvidenceTransitionRequest.from_mapping(request)
 
 
+def test_request_schema_rejects_locator_for_unrequested_source():
+    request = _create_request("entry-id")
+    request["evidence_locators"] = {
+        "different-entry": {"kind": "quote", "quote": "evidence"}
+    }
+    with pytest.raises(ValueError, match="unrequested source_ids"):
+        EvidenceTransitionRequest.from_mapping(request)
+
+
+def test_request_schema_rejects_locator_ids_that_collide_after_trimming():
+    request = _create_request("entry-id")
+    request["evidence_locators"] = {
+        "entry-id": {"kind": "whole_entry"},
+        " entry-id ": {"kind": "whole_entry"},
+    }
+
+    with pytest.raises(ValueError, match="after trimming"):
+        EvidenceTransitionRequest.from_mapping(request)
+
+
 def test_apply_loads_real_entry_and_projects_public_card(isolated_data_dir):
     entry_id = _store_entry("create")
 
@@ -78,6 +98,51 @@ def test_apply_loads_real_entry_and_projects_public_card(isolated_data_dir):
     )
     assert result["card"]["provenance"]["is_probability"] is False
     assert (config.DATA_DIR / EVIDENCE_MEMORY_LEDGER_NAME).is_file()
+
+
+def test_apply_verifies_stored_quote_and_projects_locator(isolated_data_dir):
+    entry_id = _store_entry("located")
+    request = _create_request(entry_id)
+    request["idempotency_key"] = "memory-service-located"
+    request["evidence_locators"] = {
+        entry_id: {"kind": "quote", "quote": "Evidence text for located."}
+    }
+
+    result = apply_evidence_transition(request)
+
+    evidence_refs = result["card"]["extra"]["evidence_governance"]["evidence_refs"]
+    assert len(evidence_refs) == 1
+    ref = evidence_refs[0]
+    assert ref["entry_id"] == entry_id
+    assert ref["locator"] == {
+        "kind": "quote",
+        "start": 0,
+        "end": len("Evidence text for located."),
+        "quote": "Evidence text for located.",
+    }
+    assert ref["source_tier"] == "B"
+    assert ref["source_key"] == "domain:located.example"
+    assert ref["authority_topics"] == []
+    assert ref["authority_fact_keys"] == []
+    assert ref["corrects_entry_ids"] == []
+    assert ref["duplicate_detection_version"] == "source-independence-v1"
+    assert ref["duplicate_relations"] == []
+    assert ref["independence_identity"] == ""
+    assert ref["evidence_digest"].startswith("sha256:")
+    assert len(result["event"]["evidence_use_ids"]) == 1
+    assert result["event"]["governance_version"] == "evidence-governance-v2"
+
+
+def test_apply_rejects_quote_not_present_in_trusted_raw_body(isolated_data_dir):
+    entry_id = _store_entry("wrong-quote")
+    request = _create_request(entry_id)
+    request["idempotency_key"] = "memory-service-wrong-quote"
+    request["evidence_locators"] = {
+        entry_id: {"kind": "quote", "quote": "Invented supporting sentence."}
+    }
+
+    with pytest.raises(EvidenceValidationError, match="not found"):
+        apply_evidence_transition(request)
 
 
 def test_apply_rejects_nonexistent_source_before_creating_ledger(isolated_data_dir):
