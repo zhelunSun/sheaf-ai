@@ -16,10 +16,10 @@ TOOLS = [
             "they have collected via Sheaf.\n"
             "\n"
             "Supports three search modes:\n"
-            "- 'keyword' (default): weighted field matching with synonym expansion.\n"
-            "  Cross-lingual synonyms work automatically (AI↔人工智能, deep learning↔深度学习).\n"
-            "- 'hybrid' (recommended): BM25 keyword + semantic vector fusion.\n"
+            "- 'hybrid' (default): BM25 keyword + semantic vector fusion.\n"
             "  Best for natural language queries. Returns combined relevance score.\n"
+            "- 'keyword': weighted field matching with synonym expansion.\n"
+            "  Cross-lingual synonyms work automatically (AI↔人工智能, deep learning↔深度学习).\n"
             "- 'quick': metadata-only, fastest. Good for 'does anything about X exist?'.\n"
             "\n"
             "Advanced query syntax (keyword/hybrid modes):\n"
@@ -38,7 +38,7 @@ TOOLS = [
             "  sheaf_search(query=\"融资\", limit=5)          — limit results\n"
             "\n"
             "Returns ranked results with relevance scores, match locations, "
-            "snippets, and expanded synonym terms."
+            "snippets, expanded synonym terms, and semantic backend diagnostics."
         ),
         "inputSchema": {
             "type": "object",
@@ -50,9 +50,9 @@ TOOLS = [
                 "limit": {"type": "integer", "description": "Max results to return (default: 10)", "default": 10},
                 "mode": {
                     "type": "string",
-                    "description": "Search mode: 'keyword' (weighted fields+synonyms), 'hybrid' (BM25+semantic fusion, recommended), or 'quick' (metadata-only). Default: 'keyword'.",
+                    "description": "Search mode: 'hybrid' (default; BM25+semantic fusion), 'keyword' (weighted fields+synonyms), or 'quick' (metadata-only).",
                     "enum": ["keyword", "hybrid", "quick"],
-                    "default": "keyword",
+                    "default": "hybrid",
                 },
                 "deep": {"type": "boolean", "description": "Search full article text in addition to metadata (default: true). Only for keyword mode.", "default": True},
                 "alpha": {
@@ -70,55 +70,126 @@ TOOLS = [
 # ── Handler ──────────────────────────────────────────────────
 
 def _handle_search(req_id: int | str, arguments: dict) -> str:
-    mode = arguments.get("mode", "keyword")
+    mode = arguments.get("mode", "hybrid")
     limit = arguments.get("limit", 10)
     query_str = arguments.get("query", "")
 
     if mode == "hybrid":
         alpha = arguments.get("alpha", 0.6)
-        results = search_hybrid(query_str, limit=limit, alpha=alpha, include_raw=True)
-        formatted = []
-        for r in results:
-            item = r["entry"].copy()
-            item["_score"] = r["score"]
-            item["_bm25_score"] = r.get("bm25_score", 0.0)
-            item["_semantic_score"] = r.get("semantic_score", 0.0)
-            item["_match_locations"] = r["match_locations"]
-            if r.get("snippet"):
-                item["_snippet"] = r["snippet"]
-            if r.get("expanded_terms"):
-                item["_expanded_terms"] = r["expanded_terms"]
-            formatted.append(item)
-        return jsonrpc_response(req_id, {
-            "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
-        })
+        raw_diagnostics: dict[str, object] = {}
+        results = search_hybrid(
+            query_str,
+            limit=limit,
+            alpha=alpha,
+            include_raw=True,
+            diagnostics=raw_diagnostics,
+        )
+        formatted = _format_ranked_results(results, hybrid=True)
+        diagnostics = _semantic_diagnostics(results, raw_diagnostics)
+        return _search_response(req_id, formatted, diagnostics)
     elif mode == "quick":
         results = search_quick(query_str, limit=limit)
-        return jsonrpc_response(req_id, {
-            "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
-        })
+        return _search_response(
+            req_id,
+            results,
+            {
+                "semantic_backend": "disabled",
+                "degraded": False,
+                "reason": "quick mode explicitly requested",
+            },
+        )
     else:  # keyword (legacy)
         deep = arguments.get("deep", True)
         if deep:
             results = search_fulltext(query_str, limit=limit, include_raw=True)
-            formatted = []
-            for r in results:
-                item = r["entry"].copy()
-                item["_score"] = r["score"]
-                item["_match_locations"] = r["match_locations"]
-                if r.get("snippet"):
-                    item["_snippet"] = r["snippet"]
-                if r.get("expanded_terms"):
-                    item["_expanded_terms"] = r["expanded_terms"]
-                formatted.append(item)
-            return jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps(formatted, ensure_ascii=False, indent=2)}]
-            })
+            formatted = _format_ranked_results(results, hybrid=False)
+            return _search_response(
+                req_id,
+                formatted,
+                {
+                    "semantic_backend": "disabled",
+                    "degraded": False,
+                    "reason": "keyword mode explicitly requested",
+                },
+            )
         else:
             results = search_quick(query_str, limit=limit)
-            return jsonrpc_response(req_id, {
-                "content": [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
-            })
+            return _search_response(
+                req_id,
+                results,
+                {
+                    "semantic_backend": "disabled",
+                    "degraded": False,
+                    "reason": "keyword mode with deep=false uses quick search",
+                },
+            )
+
+
+def _format_ranked_results(results: list[dict], *, hybrid: bool) -> list[dict]:
+    """Preserve the legacy flattened MCP result shape."""
+    formatted: list[dict] = []
+    for result in results:
+        item = result["entry"].copy()
+        item["_score"] = result["score"]
+        item["_match_locations"] = result.get("match_locations", [])
+        if hybrid:
+            item["_bm25_score"] = result.get("bm25_score", 0.0)
+            item["_semantic_score"] = result.get("semantic_score", 0.0)
+        if result.get("snippet"):
+            item["_snippet"] = result["snippet"]
+        if result.get("expanded_terms"):
+            item["_expanded_terms"] = result["expanded_terms"]
+        formatted.append(item)
+    return formatted
+
+
+def _semantic_diagnostics(
+    results: list[dict],
+    diagnostics: dict[str, object] | None = None,
+) -> dict[str, object]:
+    if diagnostics:
+        return {
+            "semantic_backend": str(
+                diagnostics.get(
+                    "semantic_backend",
+                    diagnostics.get("backend", "unknown"),
+                )
+            ),
+            "degraded": bool(diagnostics.get("degraded", False)),
+            "reason": str(diagnostics.get("reason", "")),
+        }
+    if not results:
+        return {
+            "semantic_backend": "unknown",
+            "degraded": True,
+            "reason": "No result-level semantic diagnostics are available",
+        }
+    first = results[0]
+    return {
+        "semantic_backend": str(first.get("semantic_backend", "unknown")),
+        "degraded": bool(first.get("semantic_degraded", False)),
+        "reason": str(first.get("semantic_reason", "")),
+    }
+
+
+def _search_response(
+    req_id: int | str,
+    results: list[dict],
+    diagnostics: dict[str, object],
+) -> str:
+    """Keep text-list compatibility while adding structured diagnostics."""
+    return jsonrpc_response(
+        req_id,
+        {
+            "content": [
+                {
+                    "type": "text",
+                    "text": json.dumps(results, ensure_ascii=False, indent=2),
+                }
+            ],
+            "structuredContent": {"results": results, **diagnostics},
+        },
+    )
 
 
 HANDLERS = {

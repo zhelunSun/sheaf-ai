@@ -217,7 +217,7 @@ class TestParseWithMapper:
         raw = json.dumps([{
             "title": "No source_ids field",
             "claim": "Missing source_ids.",
-            "evidence": "From [Source 0]",
+            "evidence": "From [Source 0] and [Source 1]",
             "tags": ["test"],
             "confidence": 0.7,
             "source_indices": [0, 1],

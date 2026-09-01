@@ -18,7 +18,9 @@ import json
 import math
 import re
 from dataclasses import dataclass, field
+from numbers import Real
 from sheaf_ai.config import INDEX_FILE, RAW_DIR
+from sheaf_ai.retrieval_service import EntryRetrievalService
 
 
 # ============================================================
@@ -468,52 +470,137 @@ def _normalize_scores(scores: list[float]) -> list[float]:
 
 
 def _fetch_semantic_scores(
-    query: str, entries: list[dict], top_k: int = 50
+    query: str,
+    entries: list[dict],
+    top_k: int = 50,
+    *,
+    diagnostics: dict[str, object] | None = None,
 ) -> dict[str, float]:
-    """Fetch semantic similarity scores from the embedding engine.
+    """Fetch Entry-level semantic scores, with a legacy migration fallback.
 
-    Best-effort: returns empty dict if embeddings unavailable.
-    Maps card source references (entry IDs or canonical URLs) back to the
-    entry IDs used by the keyword index. KnowledgeCard uses ``source_ids``;
-    older cards may still expose a singular ``source_id``.
+    The committed Entry index is authoritative.  Existing installations may
+    only have the older card index, so an unavailable Entry index temporarily
+    falls back to card provenance.  ``diagnostics`` makes that degraded path
+    visible instead of silently presenting it as native Entry retrieval.
     """
+    diagnostics = diagnostics if diagnostics is not None else {}
     try:
-        from sheaf_ai.embedding_bridge import EmbeddingBridge
+        result = EntryRetrievalService().semantic_scores(
+            query,
+            entries,
+            top_k=top_k,
+        )
+    except Exception as exc:
+        entry_reason = f"Entry index check failed: {exc}"
+        entry_reason_code = "entry_index_error"
+    else:
+        status = result.diagnostics
+        if status.status in {"ok", "degraded"}:
+            diagnostics.update({
+                "backend": status.backend,
+                "status": status.status,
+                "degraded": status.degraded,
+                "reason": status.reason,
+                "reason_code": status.reason_code,
+                "indexed_entries": status.indexed_entries,
+                "model": status.model,
+                "generation": status.generation,
+            })
+            return result.scores
+        entry_reason = status.reason or "Entry index is unavailable"
+        entry_reason_code = status.reason_code
 
-        entry_id_by_ref: dict[str, str] = {}
-        for entry in entries:
-            entry_id = str(entry.get("id", ""))
-            if not entry_id:
-                continue
-            entry_id_by_ref[entry_id] = entry_id
-            url = str(entry.get("url", ""))
-            if url:
-                entry_id_by_ref[url] = entry_id
-
-        bridge = EmbeddingBridge()
-        semantic_results = bridge.search(query, top_k=top_k)
-        scores: dict[str, float] = {}
-        for item in semantic_results:
-            card = item.get("card", {})
-            score = float(item.get("score", 0.0))
-            refs = card.get("source_ids", [])
-            if isinstance(refs, str):
-                refs = [refs]
-            legacy_ref = card.get("source_id", "")
-            if legacy_ref:
-                refs = [*refs, legacy_ref]
-            provenance = card.get("provenance", {})
-            if isinstance(provenance, dict) and provenance.get("entry_id"):
-                refs = [*refs, provenance["entry_id"]]
-
-            for ref in refs:
-                entry_id = entry_id_by_ref.get(str(ref))
-                if entry_id:
-                    scores[entry_id] = max(scores.get(entry_id, 0.0), score)
-        return scores
-    except Exception:
-        # Embedding engine unavailable — degrade gracefully
+    try:
+        scores = _fetch_legacy_card_semantic_scores(query, entries, top_k=top_k)
+    except Exception as exc:
+        diagnostics.update({
+            "backend": "keyword_only",
+            "status": "degraded",
+            "degraded": True,
+            "reason": f"{entry_reason}; legacy card index failed: {exc}",
+            "reason_code": entry_reason_code,
+            "indexed_entries": 0,
+            "model": "",
+            "generation": "",
+        })
         return {}
+
+    diagnostics.update({
+        "backend": "legacy_card_bridge" if scores else "keyword_only",
+        "status": "degraded",
+        "degraded": True,
+        "reason": f"{entry_reason}; using legacy card provenance fallback"
+        if scores
+        else f"{entry_reason}; no legacy semantic matches",
+        "reason_code": entry_reason_code,
+        "indexed_entries": 0,
+        "model": "",
+        "generation": "",
+    })
+    return scores
+
+
+def _publish_hybrid_diagnostics(
+    output: dict[str, object] | None,
+    semantic: dict[str, object],
+) -> None:
+    """Expose one stable diagnostic contract independently of result rows."""
+    if output is None:
+        return
+    output.update({
+        "semantic_backend": semantic.get("backend", "unknown"),
+        "degraded": bool(semantic.get("degraded", False)),
+        "reason": str(semantic.get("reason", "")),
+        "reason_code": str(semantic.get("reason_code", "unknown")),
+    })
+
+
+def _fetch_legacy_card_semantic_scores(
+    query: str,
+    entries: list[dict],
+    *,
+    top_k: int,
+) -> dict[str, float]:
+    """Map the pre-Entry-index card embeddings back to Entry IDs.
+
+    This compatibility path can be removed after normal collection and rebuild
+    flows populate the Entry index for existing installations.
+    """
+    from sheaf_ai.embedding_bridge import EmbeddingBridge
+
+    entry_id_by_ref: dict[str, str] = {}
+    for entry in entries:
+        entry_id = str(entry.get("id", ""))
+        if not entry_id:
+            continue
+        entry_id_by_ref[entry_id] = entry_id
+        url = str(entry.get("url", ""))
+        if url:
+            entry_id_by_ref[url] = entry_id
+
+    bridge = EmbeddingBridge()
+    semantic_results = bridge.search(query, top_k=top_k)
+    scores: dict[str, float] = {}
+    for item in semantic_results:
+        card = item.get("card", {})
+        score = float(item.get("score", 0.0))
+        if score <= 0.0:
+            continue
+        refs = card.get("source_ids", [])
+        if isinstance(refs, str):
+            refs = [refs]
+        legacy_ref = card.get("source_id", "")
+        if legacy_ref:
+            refs = [*refs, legacy_ref]
+        provenance = card.get("provenance", {})
+        if isinstance(provenance, dict) and provenance.get("entry_id"):
+            refs = [*refs, provenance["entry_id"]]
+
+        for ref in refs:
+            entry_id = entry_id_by_ref.get(str(ref))
+            if entry_id:
+                scores[entry_id] = max(scores.get(entry_id, 0.0), score)
+    return scores
 
 
 def search_hybrid(
@@ -523,6 +610,7 @@ def search_hybrid(
     include_raw: bool = True,
     tier: str = "",
     filters: dict | None = None,
+    diagnostics: dict[str, object] | None = None,
 ) -> list[dict]:
     """Hybrid search combining BM25 keyword matching with semantic similarity.
 
@@ -542,11 +630,29 @@ def search_hybrid(
         List of result dicts with 'entry', 'score', 'bm25_score',
         'semantic_score', 'match_locations' keys.
     """
+    if isinstance(alpha, bool) or not isinstance(alpha, Real):
+        raise ValueError("alpha must be a finite number between 0.0 and 1.0")
+    alpha = float(alpha)
+    if not math.isfinite(alpha) or not 0.0 <= alpha <= 1.0:
+        raise ValueError("alpha must be a finite number between 0.0 and 1.0")
+
     if not INDEX_FILE.exists():
+        _publish_hybrid_diagnostics(diagnostics, {
+            "backend": "not_run",
+            "degraded": True,
+            "reason": "Collection index is missing",
+            "reason_code": "missing_collection_index",
+        })
         return []
 
     query_lower = query.lower().strip()
     if not query_lower:
+        _publish_hybrid_diagnostics(diagnostics, {
+            "backend": "not_run",
+            "degraded": False,
+            "reason": "Search query is empty",
+            "reason_code": "empty_query",
+        })
         return []
 
     # Issue #67: Expand search terms for match detection
@@ -579,6 +685,12 @@ def search_hybrid(
             entries.append(entry)
 
     if not entries:
+        _publish_hybrid_diagnostics(diagnostics, {
+            "backend": "not_run",
+            "degraded": False,
+            "reason": "No entries are available for the requested search scope",
+            "reason_code": "empty_corpus",
+        })
         return []
 
     # Step 2: Build BM25 index and score
@@ -587,7 +699,30 @@ def search_hybrid(
     bm25_results = scorer.score(query, limit=min(limit * 3, 50))
 
     # Step 3: Fetch semantic scores (best-effort)
-    semantic_scores = _fetch_semantic_scores(query, entries, top_k=min(limit * 3, 50))
+    semantic_diagnostics: dict[str, object] = {
+        "backend": "unknown",
+        "status": "unknown",
+        "degraded": False,
+        "reason": "",
+        "reason_code": "unknown",
+    }
+    if alpha == 1.0:
+        semantic_diagnostics.update({
+            "backend": "disabled",
+            "status": "disabled",
+            "degraded": False,
+            "reason": "Semantic retrieval is disabled for keyword-only search",
+            "reason_code": "alpha_keyword_only",
+        })
+        semantic_scores: dict[str, float] = {}
+    else:
+        semantic_scores = _fetch_semantic_scores(
+            query,
+            entries,
+            top_k=min(limit * 3, 50),
+            diagnostics=semantic_diagnostics,
+        )
+    _publish_hybrid_diagnostics(diagnostics, semantic_diagnostics)
 
     # Step 4: Build unified result set
     # Collect all candidate IDs from both BM25 and semantic results
@@ -614,7 +749,7 @@ def search_hybrid(
         return []
 
     # Step 5: Normalize and combine scores
-    ids_list = list(candidate_ids)
+    ids_list = sorted(candidate_ids)
     bm25_scores_raw = [bm25_map.get(eid, 0.0) for eid in ids_list]
     sem_scores_raw = [semantic_scores.get(eid, 0.0) for eid in ids_list]
 
@@ -659,6 +794,9 @@ def search_hybrid(
             "match_locations": locations,
             "snippet": snippet,
             "expanded_terms": expanded_terms,
+            "semantic_backend": semantic_diagnostics.get("backend", "unknown"),
+            "semantic_degraded": bool(semantic_diagnostics.get("degraded", False)),
+            "semantic_reason": str(semantic_diagnostics.get("reason", "")),
         })
 
     # Issue #59: Apply structured filters (post-search)
@@ -673,7 +811,11 @@ def search_hybrid(
         except Exception:
             pass  # Best-effort: filters must not break search
 
-    results.sort(key=lambda x: (-x["score"], x["entry"].get("collected_at", "")))
+    results.sort(key=lambda x: (
+        -x["score"],
+        x["entry"].get("collected_at", ""),
+        x["entry"].get("id", ""),
+    ))
     return results[:limit]
 
 

@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime
 from typing import Mapping, Sequence
 from urllib.parse import urlparse
 
 from sheaf_ai._evidence_memory_models import (
     ALGORITHM_VERSION,
+    LEGACY_ALGORITHM_VERSION,
     TIER_WEIGHTS,
     VALID_RESOLUTION_BASES,
     VALID_TIERS,
@@ -20,6 +22,9 @@ from sheaf_ai._evidence_memory_models import (
     EvidenceValidationError,
     TransitionValidationError,
 )
+
+
+_SHA256_EVIDENCE_DIGEST = re.compile(r"sha256:([0-9a-fA-F]{64})\Z")
 
 
 def _canonical_hash(value: object) -> str:
@@ -71,6 +76,15 @@ def _content_hash(entry: Mapping[str, object]) -> str:
     if not value and isinstance(metadata, Mapping):
         value = metadata.get("content_hash", "")
     return str(value or "")
+
+
+def _evidence_digest(entry: Mapping[str, object]) -> str:
+    value = entry.get("evidence_digest", "")
+    metadata = entry.get("metadata")
+    if not value and isinstance(metadata, Mapping):
+        value = metadata.get("evidence_digest", "")
+    match = _SHA256_EVIDENCE_DIGEST.fullmatch(str(value or "").strip())
+    return f"sha256:{match.group(1).lower()}" if match else ""
 
 
 def _is_primary(entry: Mapping[str, object]) -> bool:
@@ -131,6 +145,7 @@ def allowlisted_evidence(
             source_tier=_source_tier(allowed[source_id]),
             source_key=_source_key(allowed[source_id]),
             content_hash=_content_hash(allowed[source_id]),
+            evidence_digest=_evidence_digest(allowed[source_id]),
             is_primary=_is_primary(allowed[source_id]),
         )
         for source_id in source_ids
@@ -141,11 +156,15 @@ def compute_evidence_strength(
     refs: Sequence[EvidenceRef],
     *,
     conflict: bool = False,
+    algorithm_version: str = ALGORITHM_VERSION,
 ) -> EvidenceStrength:
     """Compute an explainable ordinal evidence-strength score.
 
     Duplicate entry IDs are removed.  Corroboration is counted by independent
-    ``source_key`` and each source contributes only its best tier.  Formula::
+    source groups.  All versions collapse a shared ``source_key``.  Version 2
+    additionally collapses a shared, versioned full SHA-256 ``evidence_digest``;
+    legacy short ``content_hash`` values are audit metadata only.  Each group
+    contributes only its best tier.  Formula::
 
         score = 0.65 * mean(source tier weights)
                 + min(0.20, 0.10 * (independent sources - 1))
@@ -154,25 +173,70 @@ def compute_evidence_strength(
     The score is useful for ordering and guardrails only.  It is not trained or
     empirically calibrated and must not be described as a probability.
     """
+    if algorithm_version not in {LEGACY_ALGORITHM_VERSION, ALGORITHM_VERSION}:
+        raise TransitionValidationError(
+            f"Unsupported evidence-strength algorithm: {algorithm_version!r}"
+        )
     unique_refs = {ref.entry_id: ref for ref in refs}
-    best_by_source: dict[str, float] = {}
+    source_parents: dict[str, str] = {}
+
+    def find_source(source_key: str) -> str:
+        source_parents.setdefault(source_key, source_key)
+        root = source_key
+        while source_parents[root] != root:
+            root = source_parents[root]
+        while source_parents[source_key] != source_key:
+            parent = source_parents[source_key]
+            source_parents[source_key] = root
+            source_key = parent
+        return root
+
+    def union_sources(left: str, right: str) -> None:
+        left_root = find_source(left)
+        right_root = find_source(right)
+        if left_root != right_root:
+            source_parents[right_root] = left_root
+
+    first_source_by_digest: dict[str, str] = {}
+    for ref in unique_refs.values():
+        find_source(ref.source_key)
+        if algorithm_version == LEGACY_ALGORITHM_VERSION:
+            continue
+        evidence_digest = ref.evidence_digest.strip()
+        if not _SHA256_EVIDENCE_DIGEST.fullmatch(evidence_digest):
+            continue
+        first_source = first_source_by_digest.setdefault(evidence_digest, ref.source_key)
+        union_sources(ref.source_key, first_source)
+
+    best_by_source_group: dict[str, float] = {}
     tier_counts = {tier: 0 for tier in ("A", "B", "C", "D", "U")}
     for ref in unique_refs.values():
         tier = ref.source_tier if ref.source_tier in VALID_TIERS else "U"
         tier_counts[tier] += 1
         weight = TIER_WEIGHTS[tier]
-        best_by_source[ref.source_key] = max(best_by_source.get(ref.source_key, 0.0), weight)
+        source_group = find_source(ref.source_key)
+        best_by_source_group[source_group] = max(
+            best_by_source_group.get(source_group, 0.0),
+            weight,
+        )
 
-    source_count = len(best_by_source)
-    mean_weight = sum(best_by_source.values()) / source_count if source_count else 0.0
+    source_count = len(best_by_source_group)
+    mean_weight = (
+        sum(best_by_source_group.values()) / source_count if source_count else 0.0
+    )
     tier_component = 0.65 * mean_weight
     corroboration = min(0.20, 0.10 * max(0, source_count - 1))
     penalty = 0.20 if conflict else 0.0
     score = round(max(0.0, min(0.95, tier_component + corroboration - penalty)), 4)
     band = "strong" if score >= 0.65 else "moderate" if score >= 0.35 else "weak"
     counts_tuple = tuple((tier, count) for tier, count in tier_counts.items() if count)
+    independence_rule = (
+        "source-key deduplication"
+        if algorithm_version == LEGACY_ALGORITHM_VERSION
+        else "source-key and trusted SHA-256 evidence-digest deduplication"
+    )
     rationale = (
-        f"{source_count} independent source(s) after source-key deduplication",
+        f"{source_count} independent source(s) after {independence_rule}",
         f"tier component={tier_component:.4f} from source_tier weights",
         f"corroboration bonus={corroboration:.4f}",
         f"structured-conflict penalty={penalty:.4f}",
@@ -181,7 +245,7 @@ def compute_evidence_strength(
     return EvidenceStrength(
         score=score,
         band=band,
-        algorithm=ALGORITHM_VERSION,
+        algorithm=algorithm_version,
         independent_source_count=source_count,
         tier_counts=counts_tuple,
         conflict_penalty=penalty,
@@ -301,6 +365,7 @@ def validate_resolution_basis(
     resolved_fact_value: str,
     *,
     allow_unresolved: bool = False,
+    algorithm_version: str = ALGORITHM_VERSION,
 ) -> None:
     """Validate a conflict decision without treating source tier as truth.
 
@@ -330,12 +395,19 @@ def validate_resolution_basis(
         if not refs:
             raise ConflictResolutionRequired("stronger_evidence requires resolution evidence")
         _require_metadata(metadata, set(), basis)
-        candidate = compute_evidence_strength(refs)
+        candidate = compute_evidence_strength(refs, algorithm_version=algorithm_version)
         parent_scores = [
-            compute_evidence_strength(parent.evidence_refs).score for parent in parents
+            compute_evidence_strength(
+                parent.evidence_refs,
+                algorithm_version=algorithm_version,
+            ).score
+            for parent in parents
         ]
         parent_scores.extend(
-            compute_evidence_strength(parent.proposal.evidence_refs).score
+            compute_evidence_strength(
+                parent.proposal.evidence_refs,
+                algorithm_version=algorithm_version,
+            ).score
             for parent in parents
             if parent.proposal is not None
         )
@@ -426,9 +498,20 @@ def validate_resolution_basis(
 
 
 def merge_evidence_refs(*groups: Sequence[EvidenceRef]) -> tuple[EvidenceRef, ...]:
-    """Union immutable references by entry ID while preserving first provenance."""
+    """Union references by Entry ID, enriching unknown hashes without mutation."""
     merged: dict[str, EvidenceRef] = {}
     for group in groups:
         for ref in group:
-            merged.setdefault(ref.entry_id, ref)
+            previous = merged.get(ref.entry_id)
+            if previous is None:
+                merged[ref.entry_id] = ref
+                continue
+            merged[ref.entry_id] = EvidenceRef(
+                entry_id=previous.entry_id,
+                source_tier=previous.source_tier,
+                source_key=previous.source_key,
+                content_hash=previous.content_hash or ref.content_hash,
+                evidence_digest=previous.evidence_digest or ref.evidence_digest,
+                is_primary=previous.is_primary,
+            )
     return tuple(merged.values())

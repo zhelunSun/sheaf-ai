@@ -44,6 +44,20 @@ def content_hash(text: str) -> str:
     return hashlib.md5(normalized.encode('utf-8')).hexdigest()[:12]
 
 
+def evidence_digest(text: str) -> str:
+    """Return a versioned full-content digest suitable for evidence identity.
+
+    The legacy ``content_hash`` deliberately hashes only a prefix for cheap
+    collection deduplication. Evidence independence needs a stronger contract:
+    the entire normalized text is covered and the algorithm is explicit.
+    """
+    normalized = re.sub(r"\s+", " ", str(text or "").casefold().strip())
+    if not normalized:
+        return ""
+    digest = hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+    return f"sha256:{digest}"
+
+
 def detect_platform(url: str) -> str:
     """Detect source platform from URL pattern."""
     url_lower = url.lower()

@@ -288,6 +288,7 @@ def _parse_crystallized_response(
         topic=topic,
         model=model,
         engine="llm_v1",
+        citation_mode="legacy",
     )
     return result.cards
 

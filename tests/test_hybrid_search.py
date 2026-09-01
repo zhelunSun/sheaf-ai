@@ -2,6 +2,8 @@
 
 from unittest.mock import patch
 
+import pytest
+
 from sheaf_ai.search import (
     BM25Scorer,
     BM25Doc,
@@ -296,11 +298,33 @@ class TestSearchHybrid:
         store_article(e["url"], e["fetch_result"], e["classify_result"], e["summary_result"])
 
         # alpha=1.0 = pure BM25, alpha=0.0 = pure semantic (which will be 0 w/o embeddings)
-        results_bm25 = search_hybrid("alpha test", alpha=1.0)
+        diagnostics: dict[str, object] = {}
+        with patch("sheaf_ai.search._fetch_semantic_scores") as semantic_scores:
+            results_bm25 = search_hybrid(
+                "alpha test",
+                alpha=1.0,
+                diagnostics=diagnostics,
+            )
+        semantic_scores.assert_not_called()
         search_hybrid("alpha test", alpha=0.0)
 
         # Pure BM25 should find results, pure semantic (no embeddings) may not
         assert len(results_bm25) >= 1
+        assert results_bm25[0]["semantic_backend"] == "disabled"
+        assert diagnostics == {
+            "semantic_backend": "disabled",
+            "degraded": False,
+            "reason": "Semantic retrieval is disabled for keyword-only search",
+            "reason_code": "alpha_keyword_only",
+        }
+
+    @pytest.mark.parametrize(
+        "alpha",
+        [True, False, "0.5", None, float("nan"), float("inf"), -0.01, 1.01],
+    )
+    def test_hybrid_rejects_invalid_alpha(self, isolated_data_dir, alpha):
+        with pytest.raises(ValueError, match="alpha must be a finite number"):
+            search_hybrid("alpha test", alpha=alpha)
 
     def test_hybrid_degrades_gracefully_without_embeddings(self, isolated_data_dir):
         """When embedding engine is unavailable, hybrid should still return BM25 results."""

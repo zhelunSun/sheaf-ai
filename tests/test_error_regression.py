@@ -90,7 +90,7 @@ class TestEmptySearchSuggestions:
         """JSON search with no results should include 'suggestions' array."""
         captured = io.StringIO()
         with patch("sys.stdout", captured), \
-             patch("sheaf_ai.search.search_fulltext", return_value=[]):
+             patch("sheaf_ai.search.search_hybrid", return_value=[]):
             from sheaf_ai.cli import _search
             import argparse
             p = argparse.Namespace(query=["nonexistent_xyzzy"], json=True, limit=10)
@@ -112,7 +112,7 @@ class TestEmptySearchSuggestions:
         ]
         captured = io.StringIO()
         with patch("sys.stdout", captured), \
-             patch("sheaf_ai.search.search_fulltext", return_value=mock_results):
+             patch("sheaf_ai.search.search_hybrid", return_value=mock_results):
             from sheaf_ai.cli import _search
             import argparse
             p = argparse.Namespace(query=["test"], json=True, limit=10)

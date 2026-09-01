@@ -7,7 +7,7 @@ import json
 
 from sheaf_ai.config import INDEX_FILE, VERSION
 from sheaf_ai.query import tag_stats, topic_trends, get_collection_stats
-from sheaf_ai.search import search_fulltext
+from sheaf_ai.search import search_hybrid
 from sheaf_ai.term import bold, dim, gray, green, yellow
 
 
@@ -161,12 +161,32 @@ def show_stats() -> None:
 
 
 def show_search(query: str, limit: int = 10) -> None:
-    """Full-text search with relevance scoring and synonym expansion."""
-    results = search_fulltext(query, limit=limit, include_raw=True)
+    """Hybrid Entry search with relevance scoring and diagnostics."""
+    diagnostics: dict[str, object] = {}
+    results = search_hybrid(
+        query,
+        limit=limit,
+        include_raw=True,
+        diagnostics=diagnostics,
+    )
 
     if not results:
         print(f'No results for "{query}"')
         return
+
+    first = results[0]
+    degraded = bool(diagnostics.get("degraded", first.get("semantic_degraded", False)))
+    if degraded:
+        backend = diagnostics.get(
+            "semantic_backend",
+            diagnostics.get("backend", first.get("semantic_backend", "unknown")),
+        )
+        reason = diagnostics.get(
+            "reason",
+            first.get("semantic_reason", "Semantic retrieval unavailable"),
+        )
+        print(yellow(f"Semantic search degraded ({backend}): {reason}"))
+        print()
 
     # Issue #67: Show synonym expansion info
     expanded = results[0].get("expanded_terms", [])
@@ -181,7 +201,7 @@ def show_search(query: str, limit: int = 10) -> None:
     for i, r in enumerate(results, 1):
         entry = r["entry"]
         score = r["score"]
-        locations = ", ".join(r["match_locations"])
+        locations = ", ".join(r.get("match_locations", [])) or "semantic"
         title = entry.get("title", "?")[:70]
         date = entry.get("collected_at", "")[:10]
         entry_id = entry.get("id", "")

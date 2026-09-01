@@ -160,7 +160,7 @@ class TestCrystallizeTopic:
             {
                 "title": "RAG 需要精细的文档分块策略",
                 "claim": "有效的 RAG 系统需要合理的文档分块策略，包括固定大小、语义分块和递归分块等方法",
-                "evidence": "Source [1] 讨论了生产级 RAG 架构，[3] 专门研究分块策略，[5] 提出了混合检索方法",
+                "evidence": "[Source 0] 讨论了生产级 RAG 架构，[Source 2] 专门研究分块策略，[Source 4] 提出了混合检索方法",
                 "tags": ["rag", "chunking", "retrieval"],
                 "confidence": 0.88,
                 "source_indices": [0, 2, 4],
@@ -168,7 +168,7 @@ class TestCrystallizeTopic:
             {
                 "title": "向量数据库是 RAG 的基础设施",
                 "claim": "向量数据库选型直接影响 RAG 系统的检索质量和延迟",
-                "evidence": "[2] 比较了不同向量数据库在 RAG 管线中的表现",
+                "evidence": "[Source 1] 比较了不同向量数据库在 RAG 管线中的表现",
                 "tags": ["rag", "vector-db", "infrastructure"],
                 "confidence": 0.82,
                 "source_indices": [1],
@@ -271,7 +271,7 @@ class TestCrystallizeAndSave:
         cards_dir = _patch_cards_dir(monkeypatch, tmp_path)
 
         mock_response = json.dumps([
-            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0][1]",
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [Source 0][Source 1]",
              "tags": ["rag"], "confidence": 0.85, "source_indices": [0, 1]},
         ])
 
@@ -291,7 +291,7 @@ class TestCrystallizeAndSave:
         _patch_cards_dir(monkeypatch, tmp_path)
 
         mock_response = json.dumps([
-            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0]",
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [Source 0]",
              "tags": ["rag"], "confidence": 0.85, "source_indices": [0]},
         ])
 
@@ -430,7 +430,7 @@ class TestEmbeddingIntegration:
         _patch_cards_dir(monkeypatch, tmp_path)
 
         mock_response = json.dumps([
-            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0]",
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [Source 0]",
              "tags": ["rag"], "confidence": 0.85, "source_indices": [0]},
         ])
 
@@ -445,7 +445,7 @@ class TestEmbeddingIntegration:
         _patch_cards_dir(monkeypatch, tmp_path)
 
         mock_response = json.dumps([
-            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [0]",
+            {"title": "RAG Pattern", "claim": "Synthesis", "evidence": "From [Source 0]",
              "tags": ["rag"], "confidence": 0.85, "source_indices": [0]},
         ])
 

@@ -1,19 +1,63 @@
 """Immutable records and public exceptions for evidence-governed memory."""
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import Mapping
 
 
-SCHEMA_VERSION = 1
-ALGORITHM_VERSION = "evidence-rule-v1"
+SCHEMA_VERSION = 2
+LEGACY_ALGORITHM_VERSION = "evidence-rule-v1"
+ALGORITHM_VERSION = "evidence-rule-v2"
+VALID_ALGORITHM_VERSIONS = frozenset({LEGACY_ALGORITHM_VERSION, ALGORITHM_VERSION})
 VALID_ACTIONS = frozenset({"CREATE", "UPDATE", "MERGE", "RETIRE", "CONTEST"})
 VALID_TIERS = frozenset({"A", "B", "C", "D", "U"})
 VALID_RESOLUTION_BASES = frozenset(
     {"stronger_evidence", "official_correction", "version_change", "manual_adjudication"}
 )
 TIER_WEIGHTS = {"A": 0.90, "B": 0.70, "C": 0.45, "D": 0.20, "U": 0.10}
+
+
+def _identity_hash(value: object) -> str:
+    payload = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
+def _identity_text(value: object) -> str:
+    return " ".join(str(value or "").casefold().split())
+
+
+def claim_identity(
+    *,
+    topic: str,
+    claim: str,
+    fact_key: str = "",
+    fact_value: str = "",
+) -> str:
+    """Return a stable identity for one atomic claim within a topic."""
+    normalised_key = _identity_text(fact_key)
+    normalised_value = _identity_text(fact_value)
+    if normalised_key and normalised_value:
+        body = {
+            "topic": _identity_text(topic),
+            "kind": "structured_fact",
+            "fact_key": normalised_key,
+            "fact_value": normalised_value,
+        }
+    else:
+        body = {
+            "topic": _identity_text(topic),
+            "kind": "claim",
+            "claim": _identity_text(claim),
+        }
+    return f"claim_{_identity_hash(body)}"
+
+
+def evidence_use_identity(entry_id: str, atomic_claim_identity: str) -> str:
+    """Return the identity of using one Entry to support one atomic claim."""
+    return f"use_{_identity_hash([str(entry_id).strip(), atomic_claim_identity])}"
 
 
 class EvidenceMemoryError(RuntimeError):
@@ -48,6 +92,7 @@ class EvidenceRef:
     source_tier: str
     source_key: str
     content_hash: str = ""
+    evidence_digest: str = ""
     is_primary: bool = False
 
     @classmethod
@@ -57,6 +102,7 @@ class EvidenceRef:
             source_tier=str(data.get("source_tier", "U")),
             source_key=str(data.get("source_key", "unknown")),
             content_hash=str(data.get("content_hash", "")),
+            evidence_digest=str(data.get("evidence_digest", "")),
             is_primary=bool(data.get("is_primary", False)),
         )
 
@@ -81,7 +127,7 @@ class EvidenceStrength:
         return cls(
             score=float(data.get("score", 0.0)),
             band=str(data.get("band", "low")),
-            algorithm=str(data.get("algorithm", ALGORITHM_VERSION)),
+            algorithm=str(data.get("algorithm", LEGACY_ALGORITHM_VERSION)),
             independent_source_count=int(data.get("independent_source_count", 0)),
             tier_counts=counts,
             conflict_penalty=float(data.get("conflict_penalty", 0.0)),
@@ -188,6 +234,23 @@ class CardVersion:
         )
 
 
+def claim_identity_for_version(version: CardVersion, action: str) -> str:
+    """Derive the claim supported by evidence introduced by a transition."""
+    if action == "CONTEST" and version.proposal is not None:
+        return claim_identity(
+            topic=version.topic,
+            claim=version.proposal.claim,
+            fact_key=version.proposal.fact_key,
+            fact_value=version.proposal.fact_value,
+        )
+    return claim_identity(
+        topic=version.topic,
+        claim=version.claim,
+        fact_key=version.fact_key,
+        fact_value=version.fact_value,
+    )
+
+
 @dataclass(frozen=True)
 class TransitionEvent:
     """Immutable audit record describing a graph transition."""
@@ -201,6 +264,7 @@ class TransitionEvent:
     reason: str
     idempotency_key: str
     request_hash: str
+    algorithm_version: str
     resolution_basis: str
     resolution_metadata: tuple[tuple[str, str], ...]
     created_at: str
@@ -224,6 +288,9 @@ class TransitionEvent:
             reason=str(data.get("reason", "")),
             idempotency_key=str(data.get("idempotency_key", "")),
             request_hash=str(data.get("request_hash", "")),
+            algorithm_version=str(
+                data.get("algorithm_version", LEGACY_ALGORITHM_VERSION)
+            ),
             resolution_basis=str(data.get("resolution_basis", "")),
             resolution_metadata=tuple(
                 (str(item[0]), str(item[1]))

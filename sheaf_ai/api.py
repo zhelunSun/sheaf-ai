@@ -28,7 +28,7 @@ from pydantic import BaseModel, Field
 
 from sheaf_ai.config import VERSION, DATA_DIR, ENTRIES_DIR, fix_windows_encoding
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path, validate_entry_id
-from sheaf_ai.search import search_fulltext
+from sheaf_ai.search import search_hybrid
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.mcp_server import MCP_PROTOCOL_VERSION
@@ -67,6 +67,9 @@ class SearchResponse(BaseModel):
     query: str
     total: int
     results: list[dict]
+    semantic_backend: str = "unknown"
+    degraded: bool = False
+    reason: str = ""
 
 
 class CollectResponse(BaseModel):
@@ -242,9 +245,44 @@ def create_app(api_token: str | None = None) -> FastAPI:
         q: str = Query(..., description="Search query"),
         limit: int = Query(10, ge=1, le=100, description="Max results"),
     ):
-        """Full-text search across collection."""
-        results = search_fulltext(q, limit=limit)
-        return SearchResponse(query=q, total=len(results), results=results)
+        """Hybrid keyword + semantic search across the Entry collection."""
+        raw_diagnostics: dict[str, object] = {}
+        results = search_hybrid(
+            q,
+            limit=limit,
+            include_raw=True,
+            diagnostics=raw_diagnostics,
+        )
+        if raw_diagnostics:
+            diagnostics = {
+                "semantic_backend": str(
+                    raw_diagnostics.get(
+                        "semantic_backend",
+                        raw_diagnostics.get("backend", "unknown"),
+                    )
+                ),
+                "degraded": bool(raw_diagnostics.get("degraded", False)),
+                "reason": str(raw_diagnostics.get("reason", "")),
+            }
+        elif results:
+            first = results[0]
+            diagnostics = {
+                "semantic_backend": str(first.get("semantic_backend", "unknown")),
+                "degraded": bool(first.get("semantic_degraded", False)),
+                "reason": str(first.get("semantic_reason", "")),
+            }
+        else:
+            diagnostics = {
+                "semantic_backend": "unknown",
+                "degraded": True,
+                "reason": "No result-level semantic diagnostics are available",
+            }
+        return SearchResponse(
+            query=q,
+            total=len(results),
+            results=results,
+            **diagnostics,
+        )
 
     @app.get("/entries", tags=["collection"])
     def list_entries(

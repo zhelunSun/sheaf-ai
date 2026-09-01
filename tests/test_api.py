@@ -1,7 +1,7 @@
 """Tests for Sheaf HTTP API layer."""
 import json
 import pytest
-from unittest.mock import patch
+from unittest.mock import ANY, patch
 
 # fastapi is an optional [server] dependency — skip entire module if missing
 pytest.importorskip("fastapi", reason="fastapi not installed (optional [server] dep)")
@@ -67,11 +67,54 @@ class TestSearchEndpoint:
         resp = client.get("/search")
         assert resp.status_code == 422  # Validation error
 
-    @patch("sheaf_ai.api.search_fulltext", return_value=[])
+    @patch("sheaf_ai.api.search_hybrid", return_value=[])
     def test_search_passes_requested_limit_to_service(self, mock_search, client):
         resp = client.get("/search", params={"q": "AI", "limit": 37})
         assert resp.status_code == 200
-        mock_search.assert_called_once_with("AI", limit=37)
+        mock_search.assert_called_once_with(
+            "AI",
+            limit=37,
+            include_raw=True,
+            diagnostics=ANY,
+        )
+
+    @patch(
+        "sheaf_ai.api.search_hybrid",
+        return_value=[
+            {
+                "entry": {"id": "entry-1", "title": "Atlas"},
+                "score": 0.8,
+                "bm25_score": 0.6,
+                "semantic_score": 1.0,
+                "match_locations": ["title"],
+                "semantic_backend": "entry_index",
+                "semantic_degraded": False,
+                "semantic_reason": "",
+            }
+        ],
+    )
+    def test_search_exposes_hybrid_diagnostics(self, _mock_search, client):
+        data = client.get("/search", params={"q": "Atlas"}).json()
+
+        assert data["semantic_backend"] == "entry_index"
+        assert data["degraded"] is False
+        assert data["reason"] == ""
+        assert data["results"][0]["entry"]["id"] == "entry-1"
+
+    def test_empty_search_preserves_healthy_index_diagnostics(self, client):
+        def healthy_no_hits(*_args, diagnostics, **_kwargs):
+            diagnostics.update(
+                {"backend": "entry_index", "degraded": False, "reason": ""}
+            )
+            return []
+
+        with patch("sheaf_ai.api.search_hybrid", side_effect=healthy_no_hits):
+            data = client.get("/search", params={"q": "missing"}).json()
+
+        assert data["results"] == []
+        assert data["semantic_backend"] == "entry_index"
+        assert data["degraded"] is False
+        assert data["reason"] == ""
 
 
 class TestEntriesEndpoint:

@@ -14,13 +14,18 @@ from typing import Mapping
 from sheaf_ai._evidence_memory_models import (
     SCHEMA_VERSION,
     VALID_ACTIONS,
+    VALID_ALGORITHM_VERSIONS,
     VALID_TIERS,
     CardVersion,
     EvidenceMemoryError,
+    EvidenceRef,
+    EvidenceValidationError,
     LedgerCorruptionError,
     MemorySnapshot,
     TransitionEvent,
     TransitionValidationError,
+    claim_identity_for_version,
+    evidence_use_identity,
 )
 from sheaf_ai._evidence_memory_rules import (
     _normalise_text,
@@ -90,6 +95,58 @@ def _empty_ledger() -> dict:
     }
 
 
+def _advance_entry_identity(
+    identities: dict[str, EvidenceRef],
+    ref: EvidenceRef,
+    error_type: type[EvidenceMemoryError],
+) -> None:
+    previous = identities.get(ref.entry_id)
+    if previous is None:
+        identities[ref.entry_id] = ref
+        return
+    if previous.source_key != ref.source_key:
+        raise error_type(f"Entry {ref.entry_id} source identity changed")
+
+    def advance_hash(previous_value: str, current_value: str, label: str) -> str:
+        if previous_value and not current_value:
+            raise error_type(f"Entry {ref.entry_id} {label} cannot become unknown")
+        if previous_value and current_value != previous_value:
+            raise error_type(f"Entry {ref.entry_id} {label} changed")
+        return previous_value or current_value
+
+    identities[ref.entry_id] = EvidenceRef(
+        entry_id=previous.entry_id,
+        source_tier=previous.source_tier,
+        source_key=previous.source_key,
+        content_hash=advance_hash(previous.content_hash, ref.content_hash, "content hash"),
+        evidence_digest=advance_hash(
+            previous.evidence_digest,
+            ref.evidence_digest,
+            "evidence digest",
+        ),
+        is_primary=previous.is_primary,
+    )
+
+
+def _validate_new_entry_identities(
+    snapshot: MemorySnapshot,
+    refs: tuple[EvidenceRef, ...],
+) -> None:
+    identities: dict[str, EvidenceRef] = {}
+    for event in snapshot.events:
+        output = snapshot.versions_by_id[event.output_version_ids[0]]
+        claim_refs = (
+            output.proposal.evidence_refs
+            if event.action == "CONTEST" and output.proposal is not None
+            else output.evidence_refs
+        )
+        for prior_ref in claim_refs:
+            if prior_ref.entry_id in event.evidence_ids:
+                _advance_entry_identity(identities, prior_ref, LedgerCorruptionError)
+    for ref in refs:
+        _advance_entry_identity(identities, ref, EvidenceValidationError)
+
+
 class EvidenceLedger:
     """Atomic JSON event ledger with semantic corruption detection."""
 
@@ -143,9 +200,10 @@ class EvidenceLedger:
 
 
 def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
-    if raw.get("schema_version") != SCHEMA_VERSION:
+    schema_version = raw.get("schema_version")
+    if schema_version not in {1, SCHEMA_VERSION}:
         raise LedgerCorruptionError(
-            f"Unsupported evidence ledger schema: {raw.get('schema_version')!r}"
+            f"Unsupported evidence ledger schema: {schema_version!r}"
         )
     raw_events = raw.get("events")
     raw_versions = raw.get("versions")
@@ -170,10 +228,16 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
 
     active: dict[str, str] = {}
     seen_versions: set[str] = set()
-    seen_evidence: dict[str, str] = {}
+    seen_evidence_uses: dict[str, tuple[str, str, str, str]] = {}
+    seen_legacy_evidence: dict[str, tuple[str, str]] = {}
+    seen_entry_identities: dict[str, EvidenceRef] = {}
     for event in events:
         if event.action not in VALID_ACTIONS:
             raise LedgerCorruptionError(f"Unknown transition action: {event.action!r}")
+        if event.algorithm_version not in VALID_ALGORITHM_VERSIONS:
+            raise LedgerCorruptionError(
+                f"Unknown evidence-strength algorithm: {event.algorithm_version!r}"
+            )
         if not event.event_id or not event.idempotency_key or not event.request_hash:
             raise LedgerCorruptionError("Transition event is missing audit identity")
         if len(event.output_version_ids) != 1:
@@ -220,9 +284,8 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
             raise LedgerCorruptionError(f"Contested version {output_id} has no proposal")
         if output.state != "contested" and output.proposal is not None:
             raise LedgerCorruptionError(f"Non-contested version {output_id} carries a proposal")
-        all_refs = output.evidence_refs + (
-            output.proposal.evidence_refs if output.proposal is not None else ()
-        )
+        proposal_refs = output.proposal.evidence_refs if output.proposal is not None else ()
+        all_refs = output.evidence_refs + proposal_refs
         ref_ids = [ref.entry_id for ref in all_refs]
         if any(
             not ref.entry_id
@@ -231,13 +294,16 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
             for ref in all_refs
         ):
             raise LedgerCorruptionError(f"Version {output_id} has invalid evidence references")
-        if len(set(ref_ids)) != len(ref_ids):
-            raise LedgerCorruptionError(f"Version {output_id} repeats an evidence reference")
+        if len({ref.entry_id for ref in output.evidence_refs}) != len(output.evidence_refs):
+            raise LedgerCorruptionError(f"Version {output_id} repeats a supporting reference")
+        if len({ref.entry_id for ref in proposal_refs}) != len(proposal_refs):
+            raise LedgerCorruptionError(f"Version {output_id} repeats a proposal reference")
         if not set(event.evidence_ids).issubset(ref_ids):
             raise LedgerCorruptionError(f"Event {event.event_id} evidence is absent from its output")
         expected_strength = compute_evidence_strength(
             output.evidence_refs,
             conflict=event.conflict.state == "conflict",
+            algorithm_version=event.algorithm_version,
         )
         if output.strength != expected_strength:
             raise LedgerCorruptionError(f"Version {output_id} evidence strength is not reproducible")
@@ -245,13 +311,21 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
             expected_proposal_strength = compute_evidence_strength(
                 output.proposal.evidence_refs,
                 conflict=True,
+                algorithm_version=event.algorithm_version,
             )
             if output.proposal.strength != expected_proposal_strength:
                 raise LedgerCorruptionError(
                     f"Version {output_id} proposal strength is not reproducible"
                 )
 
-        new_refs = tuple(ref for ref in all_refs if ref.entry_id in event.evidence_ids)
+        event_claim_refs = proposal_refs if event.action == "CONTEST" else output.evidence_refs
+        new_refs = tuple(ref for ref in event_claim_refs if ref.entry_id in event.evidence_ids)
+        if {ref.entry_id for ref in new_refs} != set(event.evidence_ids):
+            raise LedgerCorruptionError(
+                f"Event {event.event_id} evidence is absent from its supported claim"
+            )
+        for ref in new_refs:
+            _advance_entry_identity(seen_entry_identities, ref, LedgerCorruptionError)
         resolution_refs = new_refs
         if event.action == "UPDATE" and len(parents) == 1 and parents[0].proposal is not None:
             proposal = parents[0].proposal
@@ -268,6 +342,7 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
                 event.resolution_metadata,
                 output.fact_value,
                 allow_unresolved=event.action == "CONTEST",
+                algorithm_version=event.algorithm_version,
             )
         except TransitionValidationError as exc:
             raise LedgerCorruptionError(
@@ -311,35 +386,102 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
         if output.state in {"active", "contested"}:
             active[output.card_id] = output.version_id
         seen_versions.add(output_id)
-        for evidence_id in event.evidence_ids:
-            if evidence_id in seen_evidence:
-                raise LedgerCorruptionError(f"Evidence {evidence_id} was processed more than once")
-            seen_evidence[evidence_id] = event.event_id
+        atomic_claim_identity = claim_identity_for_version(output, event.action)
+        for ref in new_refs:
+            use_id = evidence_use_identity(ref.entry_id, atomic_claim_identity)
+            if use_id in seen_evidence_uses:
+                raise LedgerCorruptionError(
+                    f"Evidence {ref.entry_id} supports the same atomic claim more than once"
+                )
+            seen_evidence_uses[use_id] = (
+                event.event_id,
+                ref.entry_id,
+                atomic_claim_identity,
+                ref.content_hash,
+            )
+            if schema_version == 1:
+                if ref.entry_id in seen_legacy_evidence:
+                    raise LedgerCorruptionError(
+                        f"Legacy evidence {ref.entry_id} was processed more than once"
+                    )
+                seen_legacy_evidence[ref.entry_id] = (event.event_id, ref.content_hash)
 
     if seen_versions != set(versions_by_id):
         raise LedgerCorruptionError("Ledger contains a version not emitted by any event")
-    processed_ids = set(raw_processed)
-    if processed_ids != set(seen_evidence):
-        raise LedgerCorruptionError("processed_evidence does not match transition evidence events")
-    for evidence_id, event_id in seen_evidence.items():
-        record = raw_processed.get(evidence_id)
-        if not isinstance(record, Mapping) or record.get("event_id") != event_id:
-            raise LedgerCorruptionError(f"Processed evidence record is invalid: {evidence_id}")
-        event = next(item for item in events if item.event_id == event_id)
-        output = versions_by_id[event.output_version_ids[0]]
-        output_refs = output.evidence_refs + (
-            output.proposal.evidence_refs if output.proposal is not None else ()
-        )
-        ref = next(item for item in output_refs if item.entry_id == evidence_id)
-        if str(record.get("content_hash", "")) != ref.content_hash:
-            raise LedgerCorruptionError(f"Processed evidence hash is invalid: {evidence_id}")
+    if schema_version == 1:
+        if set(raw_processed) != set(seen_legacy_evidence):
+            raise LedgerCorruptionError(
+                "Legacy processed_evidence does not match transition evidence events"
+            )
+        for evidence_id, (event_id, content_hash) in seen_legacy_evidence.items():
+            record = raw_processed.get(evidence_id)
+            if not isinstance(record, Mapping) or record.get("event_id") != event_id:
+                raise LedgerCorruptionError(
+                    f"Legacy processed evidence record is invalid: {evidence_id}"
+                )
+            if str(record.get("content_hash", "")) != content_hash:
+                raise LedgerCorruptionError(
+                    f"Legacy processed evidence hash is invalid: {evidence_id}"
+                )
+    else:
+        if set(raw_processed) != set(seen_evidence_uses):
+            raise LedgerCorruptionError(
+                "processed_evidence does not match transition evidence uses"
+            )
+        for use_id, expected in seen_evidence_uses.items():
+            event_id, entry_id, atomic_claim_identity, content_hash = expected
+            record = raw_processed.get(use_id)
+            if not isinstance(record, Mapping):
+                raise LedgerCorruptionError(f"Processed evidence use is invalid: {use_id}")
+            if (
+                record.get("event_id") != event_id
+                or record.get("entry_id") != entry_id
+                or record.get("claim_identity") != atomic_claim_identity
+            ):
+                raise LedgerCorruptionError(f"Processed evidence use is invalid: {use_id}")
+            if str(record.get("content_hash", "")) != content_hash:
+                raise LedgerCorruptionError(f"Processed evidence hash is invalid: {use_id}")
 
     return MemorySnapshot(
         versions=versions,
         events=events,
         active_heads=MappingProxyType(dict(active)),
         versions_by_id=MappingProxyType(versions_by_id),
-        processed_evidence=MappingProxyType(dict(seen_evidence)),
+        processed_evidence=MappingProxyType(
+            {use_id: values[0] for use_id, values in seen_evidence_uses.items()}
+        ),
     )
 
 
+def _upgrade_ledger_state(raw: dict) -> None:
+    """Migrate a validated v1 ledger to claim-scoped evidence-use records in place."""
+    if raw.get("schema_version") == SCHEMA_VERSION:
+        return
+    snapshot = _decode_and_replay(raw)
+    legacy_processed = raw["processed_evidence"]
+    migrated: dict[str, dict[str, str]] = {}
+    for event in snapshot.events:
+        output = snapshot.versions_by_id[event.output_version_ids[0]]
+        claim_refs = (
+            output.proposal.evidence_refs
+            if event.action == "CONTEST" and output.proposal is not None
+            else output.evidence_refs
+        )
+        atomic_claim_identity = claim_identity_for_version(output, event.action)
+        for ref in claim_refs:
+            if ref.entry_id not in event.evidence_ids:
+                continue
+            legacy_record = legacy_processed[ref.entry_id]
+            use_id = evidence_use_identity(ref.entry_id, atomic_claim_identity)
+            migrated[use_id] = {
+                "event_id": event.event_id,
+                "entry_id": ref.entry_id,
+                "claim_identity": atomic_claim_identity,
+                "content_hash": ref.content_hash,
+                "evidence_digest": ref.evidence_digest,
+                "source_key": ref.source_key,
+                "processed_at": str(legacy_record.get("processed_at", event.created_at)),
+            }
+    raw["schema_version"] = SCHEMA_VERSION
+    raw["processed_evidence"] = migrated
+    _decode_and_replay(raw)

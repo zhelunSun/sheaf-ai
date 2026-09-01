@@ -34,6 +34,8 @@ from sheaf_ai._evidence_memory_models import (
     TransitionEvent,
     TransitionResult,
     TransitionValidationError,
+    claim_identity_for_version,
+    evidence_use_identity,
 )
 from sheaf_ai._evidence_memory_rules import (
     _canonical_hash,
@@ -79,6 +81,8 @@ from sheaf_ai._evidence_memory_ledger import (
     _decode_and_replay,
     _exclusive_file_lock,
     _now_iso,
+    _upgrade_ledger_state,
+    _validate_new_entry_identities,
 )
 
 
@@ -171,13 +175,7 @@ class EvidenceGovernedMemory:
                         idempotency_key=key,
                     )
 
-                reused = [
-                    ref.entry_id for ref in refs if ref.entry_id in snapshot.processed_evidence
-                ]
-                if reused:
-                    raise EvidenceAlreadyProcessedError(
-                        "Evidence already belongs to another transition: " + ", ".join(reused)
-                    )
+                _validate_new_entry_identities(snapshot, refs)
                 parents = self._resolve_parents(snapshot, action, targets)
                 if any(parent.topic != topic for parent in parents):
                     raise TransitionValidationError(
@@ -263,6 +261,20 @@ class EvidenceGovernedMemory:
                     now=now,
                     conflict=conflict,
                 )
+                atomic_claim_identity = claim_identity_for_version(version, action)
+                evidence_uses = tuple(
+                    (ref, evidence_use_identity(ref.entry_id, atomic_claim_identity))
+                    for ref in refs
+                )
+                reused = [
+                    ref.entry_id
+                    for ref, use_id in evidence_uses
+                    if use_id in snapshot.processed_evidence
+                ]
+                if reused:
+                    raise EvidenceAlreadyProcessedError(
+                        "Evidence already supports this atomic claim: " + ", ".join(reused)
+                    )
                 event = TransitionEvent(
                     event_id=event_id,
                     action=action,
@@ -273,18 +285,24 @@ class EvidenceGovernedMemory:
                     reason=reason,
                     idempotency_key=key,
                     request_hash=request_hash,
+                    algorithm_version=ALGORITHM_VERSION,
                     resolution_basis=basis,
                     resolution_metadata=resolution,
                     created_at=now,
                     conflict=conflict,
                 )
+                _upgrade_ledger_state(raw)
                 raw["events"].append(asdict(event))  # type: ignore[union-attr]
                 raw["versions"].append(asdict(version))  # type: ignore[union-attr]
                 processed = raw["processed_evidence"]
-                for ref in refs:
-                    processed[ref.entry_id] = {  # type: ignore[index]
+                for ref, use_id in evidence_uses:
+                    processed[use_id] = {  # type: ignore[index]
                         "event_id": event_id,
+                        "entry_id": ref.entry_id,
+                        "claim_identity": atomic_claim_identity,
                         "content_hash": ref.content_hash,
+                        "evidence_digest": ref.evidence_digest,
+                        "source_key": ref.source_key,
                         "processed_at": now,
                     }
                 _decode_and_replay(raw)

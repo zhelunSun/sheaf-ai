@@ -61,7 +61,7 @@ def test_parse_markdown_wrapped_json():
     """Markdown code fences are stripped before parsing."""
     raw = (
         '```json\n'
-        '[{"title":"Card","claim":"Claim","evidence":"Evidence",'
+        '[{"title":"Card","claim":"Claim","evidence":"Evidence [Source 1]",'
         '"tags":["test"],"confidence":0.7,"source_indices":[1]}]\n'
         '```'
     )

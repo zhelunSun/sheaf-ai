@@ -119,7 +119,7 @@ def test_rejects_conflicting_duplicate_allowlist_entries(tmp_path):
         )
 
 
-def test_exact_retry_is_idempotent_and_different_reuse_is_rejected(tmp_path):
+def test_exact_retry_is_idempotent_and_evidence_reuse_is_claim_scoped(tmp_path):
     memory = EvidenceGovernedMemory(tmp_path / "ledger.json")
     kwargs = {
         "topic": "topic",
@@ -136,14 +136,25 @@ def test_exact_retry_is_idempotent_and_different_reuse_is_rejected(tmp_path):
     assert retry.event_id == first.event_id
     assert len(memory.snapshot().events) == 1
 
-    with pytest.raises(EvidenceAlreadyProcessedError):
+    distinct = memory.apply_transition(
+        "CREATE",
+        topic="topic",
+        entries=[_entry("e1")],
+        source_ids=["e1"],
+        card={"title": "Different", "claim": "Different"},
+        reason="same entry supports a different atomic claim",
+    )
+    assert distinct.applied is True
+
+    with pytest.raises(EvidenceAlreadyProcessedError, match="atomic claim"):
         memory.apply_transition(
             "CREATE",
             topic="topic",
             entries=[_entry("e1")],
             source_ids=["e1"],
-            card={"title": "Different", "claim": "Different"},
-            reason="try to consume evidence twice",
+            card={"title": "Same claim, new request", "claim": "C"},
+            reason="try to reuse evidence for the same claim",
+            idempotency_key="same-claim-new-request",
         )
 
 

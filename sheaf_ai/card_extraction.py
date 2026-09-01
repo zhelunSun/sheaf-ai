@@ -13,6 +13,7 @@ Anti-hallucination: UUID→Integer mapping (Issue #56).
 from __future__ import annotations
 
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from typing import Callable, Protocol
@@ -373,6 +374,7 @@ class LlmCardExtractionEngine:
             model=request.model,
             engine=self.name,
             uuid_mapper=mapper,
+            citation_mode="strict",
         )
         return CardExtractionResult(
             cards=result.cards[: request.max_cards],
@@ -425,6 +427,7 @@ def parse_card_extraction_response(
     engine: str = "llm_v1",
     *,
     uuid_mapper: UUIDMapper | None = None,
+    citation_mode: str = "strict",
 ) -> CardExtractionResult:
     """Parse an extraction response into KnowledgeCards plus warnings.
 
@@ -434,7 +437,11 @@ def parse_card_extraction_response(
     Args:
         uuid_mapper: If provided, ``source_ids`` extracted from the LLM
             response are decoded through this mapper (alias → real ID).
+        citation_mode: ``strict`` requires explicit citations to match declared
+            sources exactly. ``legacy`` is reserved for the old parser wrapper.
     """
+    if citation_mode not in {"strict", "legacy"}:
+        raise ValueError(f"Unsupported citation mode: {citation_mode}")
     warnings: list[str] = []
     parsed = _parse_json_payload(raw, warnings)
     if parsed is None:
@@ -458,11 +465,17 @@ def parse_card_extraction_response(
 
     # First pass: parse all cards and collect raw related_to indices
     cards: list[KnowledgeCard] = []
-    related_to_raw: list[list[int]] = []  # card index → list of related card indices
+    related_to_raw: list[tuple[int, list[int]]] = []
+    card_id_by_raw_index: dict[int, str] = {}
 
-    for item in parsed:
+    for raw_card_index, item in enumerate(parsed):
         if not isinstance(item, dict):
             warnings.append("Skipped non-object card item")
+            continue
+
+        raw_issues = _validate_raw_card_item(item)
+        if raw_issues:
+            warnings.extend(f"Skipped invalid card: {issue}" for issue in raw_issues)
             continue
 
         source_ids = _resolve_source_ids(
@@ -476,10 +489,17 @@ def parse_card_extraction_response(
             warnings.append("Skipped card without a resolvable source reference")
             continue
 
-        try:
-            confidence = float(item.get("confidence", 0.5))
-        except (TypeError, ValueError):
-            confidence = 0.5
+        citation_issue = _validate_explicit_citations(
+            item["evidence"],
+            sources,
+            source_ids,
+            require_explicit=citation_mode == "strict",
+        )
+        if citation_issue:
+            warnings.append(f"Skipped invalid card: {citation_issue}")
+            continue
+
+        confidence = float(item["confidence"])
 
         cards.append(
             KnowledgeCard(
@@ -499,10 +519,8 @@ def parse_card_extraction_response(
             )
         )
         # Collect related_to for second pass (indices → card IDs later)
-        raw_related = item.get("related_to", [])
-        related_to_raw.append(
-            [int(r) for r in raw_related if isinstance(r, (int, float))]
-        )
+        related_to_raw.append((raw_card_index, item.get("related_to", [])))
+        card_id_by_raw_index[raw_card_index] = cards[-1].card_id
 
         # Issue #53: Tag source tracking — crystallize tags are AI-generated
         card = cards[-1]
@@ -514,17 +532,111 @@ def parse_card_extraction_response(
         card.summarization_status = "completed"
 
     # Second pass: resolve related_to indices → card IDs
-    for i, card in enumerate(cards):
-        if i < len(related_to_raw):
-            related_indices = related_to_raw[i]
-            related_ids: list[str] = []
-            for idx in related_indices:
-                if 0 <= idx < len(cards) and idx != i:
-                    related_ids.append(cards[idx].card_id)
-            if related_ids:
-                card.associations = related_ids
+    for card, (raw_card_index, related_indices) in zip(cards, related_to_raw, strict=True):
+        related_ids = [
+            card_id_by_raw_index[index]
+            for index in related_indices
+            if index != raw_card_index and index in card_id_by_raw_index
+        ]
+        if related_ids:
+            card.associations = list(dict.fromkeys(related_ids))
 
     return CardExtractionResult(cards=cards, raw_response=raw, warnings=warnings, engine=engine)
+
+
+def _validate_raw_card_item(item: dict) -> list[str]:
+    """Validate untrusted model JSON before ``KnowledgeCard`` can coerce it.
+
+    ``KnowledgeCard`` deliberately normalises trusted programmatic inputs for
+    backwards compatibility. Model output is a different trust boundary: an
+    invalid value must not become valid merely because a dataclass clamps or
+    converts it.
+    """
+    issues: list[str] = []
+    for field_name in ("title", "claim", "evidence"):
+        value = item.get(field_name)
+        if not isinstance(value, str) or not value.strip():
+            issues.append(f"{field_name} must be a non-empty string")
+
+    tags = item.get("tags")
+    if not isinstance(tags, list) or any(
+        not isinstance(tag, str) or not tag.strip() for tag in tags
+    ):
+        issues.append("tags must be a list of non-empty strings")
+
+    confidence = item.get("confidence")
+    if isinstance(confidence, bool) or not isinstance(confidence, (int, float)):
+        issues.append("confidence must be a JSON number")
+    else:
+        try:
+            numeric_confidence = float(confidence)
+        except (OverflowError, ValueError):
+            issues.append("confidence must be a representable finite number")
+        else:
+            if not math.isfinite(numeric_confidence):
+                issues.append("confidence must be finite")
+            elif not 0.5 <= numeric_confidence <= 1.0:
+                issues.append("confidence must be between 0.5 and 1")
+
+    source_indices = item.get("source_indices", [])
+    if not isinstance(source_indices, list) or any(
+        isinstance(index, bool) or not isinstance(index, int)
+        for index in source_indices
+    ):
+        issues.append("source_indices must be a list of integers")
+
+    source_ids = item.get("source_ids", [])
+    if not isinstance(source_ids, list) or any(
+        not isinstance(source_id, str) or not source_id.strip()
+        for source_id in source_ids
+    ):
+        issues.append("source_ids must be a list of non-empty strings")
+
+    related_to = item.get("related_to", [])
+    if not isinstance(related_to, list) or any(
+        isinstance(index, bool) or not isinstance(index, int)
+        for index in related_to
+    ):
+        issues.append("related_to must be a list of integers")
+
+    return issues
+
+
+_EXPLICIT_SOURCE_CITATION = re.compile(r"\[\s*Source\s+(\d+)\s*\]", re.IGNORECASE)
+
+
+def _validate_explicit_citations(
+    evidence: str,
+    sources: list[CardSource],
+    resolved_source_ids: list[str],
+    *,
+    require_explicit: bool,
+) -> str:
+    """Ensure explicit ``[Source N]`` markers match declared provenance.
+
+    Bare legacy markers such as ``[1]`` remain accepted because older prompts
+    used inconsistent one-based labels. New explicit markers are unambiguous
+    and therefore fail closed when they point outside the bundle or outside the
+    card's declared sources.
+    """
+    citation_indices = {
+        int(match.group(1)) for match in _EXPLICIT_SOURCE_CITATION.finditer(evidence)
+    }
+    if not citation_indices:
+        return (
+            "evidence must contain at least one explicit [Source N] citation"
+            if require_explicit
+            else ""
+        )
+
+    outside = sorted(index for index in citation_indices if index >= len(sources))
+    if outside:
+        return "explicit citation references a source outside the supplied bundle"
+
+    cited_ids = {sources[index].entry_id for index in citation_indices}
+    if cited_ids != set(resolved_source_ids):
+        return "explicit citations must exactly match the card's declared sources"
+    return ""
 
 
 def _parse_json_payload(raw: str, warnings: list[str]):

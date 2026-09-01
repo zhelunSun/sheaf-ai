@@ -113,7 +113,7 @@ class TestSearchShowsId:
             "score": 9.5, "match_locations": ["title", "summary"],
             "snippet": "RAG is brittle", "expanded_terms": [],
         }]
-        with patch.object(display, "search_fulltext", return_value=fake_results):
+        with patch.object(display, "search_hybrid", return_value=fake_results):
             display.show_search("rag")
         out = capsys.readouterr().out
         assert "2026-06-01_abcd1234" in out      # the ID is surfaced

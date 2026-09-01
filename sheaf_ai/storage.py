@@ -12,7 +12,13 @@ from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,
     TAGS_REGISTRY_FILE, BJT, SCHEMA_VERSION,
 )
-from sheaf_ai.utils import content_hash, detect_platform, extract_timeliness, atomic_write
+from sheaf_ai.utils import (
+    atomic_write,
+    content_hash,
+    detect_platform,
+    evidence_digest,
+    extract_timeliness,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -179,6 +185,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     platform = detect_platform(url)
     timeliness = extract_timeliness(summary_result.get("structured", {}))
     content_h = content_hash(fetch_result.get("text", ""))
+    full_evidence_digest = evidence_digest(fetch_result.get("text", ""))
 
     topics = classify_result.get("topics", [])
     primary_topic = ""
@@ -217,6 +224,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "language": "zh",
             "schema_version": SCHEMA_VERSION,
             "content_hash": content_h,
+            "evidence_digest": full_evidence_digest,
             **({"conversation": extra_meta} if extra_meta else {}),
         },
         "status": "active",
@@ -242,6 +250,16 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
 
     # Append to index
     append_index(entry)
+
+    # Entry embeddings are opt-in to bootstrap because they may call a paid
+    # provider. Once the user has explicitly built the index, keep it current
+    # on collection without making indexing failures corrupt stored entries.
+    try:
+        from sheaf_ai.retrieval_service import update_entry_index_if_initialized
+
+        update_entry_index_if_initialized(entry, raw_text=fetch_result.get("text", ""))
+    except Exception as exc:
+        logger.warning("Entry semantic index update failed for %s: %s", entry_id, exc)
 
     return entry_id
 

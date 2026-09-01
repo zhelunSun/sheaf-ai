@@ -55,7 +55,18 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--debug", action="store_true", help="Show full traceback on errors.")
     sub = parser.add_subparsers(dest="command")
     p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file"); p.add_argument("--text", metavar="TEXT", help="Collect freeform text directly (skips URL fetch)")
-    p = sub.add_parser("search", help="Full-text search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
+    p = sub.add_parser("search", help="Hybrid keyword + semantic search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
+    p = sub.add_parser(
+        "search-index",
+        help="Manage the Entry semantic search index",
+    )
+    p.add_argument(
+        "--rebuild",
+        action="store_true",
+        required=True,
+        help="Explicitly rebuild embeddings (may call the configured provider)",
+    )
+    p.add_argument("--json", action="store_true", help="Output raw JSON")
     for name, help_text in [("stats", "Collection statistics"), ("weekly", "Weekly summary"),
                             ("tags", "Tag statistics"),
                             ("trends", "Topic trends"), ("urgent", "Upcoming deadlines"),
@@ -284,6 +295,7 @@ def _run() -> None:
         show_recent(); return
     _DISPATCH = {
         "collect": lambda: _collect(parsed, json_auto=auto_json), "search": lambda: _search(parsed),
+        "search-index": lambda: _search_index(parsed),
         "stats": show_stats, "weekly": show_weekly,
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
@@ -328,6 +340,7 @@ def _help(p: argparse.Namespace) -> None:
         ]),
         ("Read", [
             ("sheaf search <query>", "full-text + semantic search (shows entry id)"),
+            ("sheaf search-index --rebuild", "explicitly rebuild semantic embeddings"),
             ("sheaf list [--page N]", "browse entries, paginated"),
             ("sheaf get <id>", "full detail of one entry"),
             ("sheaf stats / tags / weekly", "overview of your collection"),
@@ -505,28 +518,38 @@ def _batch_collect_cli(
 
 
 def _search(p: argparse.Namespace) -> None:
-    """Search entries with optional JSON output (Issue #78)."""
+    """Search Entries through the production hybrid retrieval path."""
     query = " ".join(p.query)
     limit = getattr(p, "limit", 10)
     json_output = getattr(p, "json", False)
 
     if json_output:
-        from sheaf_ai.search import search_fulltext
-        results = search_fulltext(query, limit=limit, include_raw=True)
+        from sheaf_ai.search import search_hybrid
+        raw_diagnostics: dict[str, object] = {}
+        results = search_hybrid(
+            query,
+            limit=limit,
+            include_raw=True,
+            diagnostics=raw_diagnostics,
+        )
         formatted = []
         for r in results:
             item = r["entry"].copy()
             item["_score"] = r["score"]
-            item["_match_locations"] = r["match_locations"]
+            item["_bm25_score"] = r.get("bm25_score", 0.0)
+            item["_semantic_score"] = r.get("semantic_score", 0.0)
+            item["_match_locations"] = r.get("match_locations", [])
             if r.get("snippet"):
                 item["_snippet"] = r["snippet"]
             if r.get("expanded_terms"):
                 item["_expanded_terms"] = r["expanded_terms"]
             formatted.append(item)
+        diagnostics = _search_diagnostics(results, raw_diagnostics)
         output = {
             "query": query,
             "total": len(formatted),
             "results": formatted,
+            **diagnostics,
         }
         if not formatted:
             output["suggestions"] = [
@@ -537,6 +560,56 @@ def _search(p: argparse.Namespace) -> None:
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
         show_search(query, limit=limit)
+
+
+def _search_diagnostics(
+    results: list[dict],
+    diagnostics: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """Project result-level hybrid diagnostics onto an interface response."""
+    if diagnostics:
+        return {
+            "semantic_backend": str(
+                diagnostics.get(
+                    "semantic_backend",
+                    diagnostics.get("backend", "unknown"),
+                )
+            ),
+            "degraded": bool(diagnostics.get("degraded", False)),
+            "reason": str(diagnostics.get("reason", "")),
+        }
+    if not results:
+        return {
+            "semantic_backend": "unknown",
+            "degraded": True,
+            "reason": "No result-level semantic diagnostics are available",
+        }
+    first = results[0]
+    return {
+        "semantic_backend": str(first.get("semantic_backend", "unknown")),
+        "degraded": bool(first.get("semantic_degraded", False)),
+        "reason": str(first.get("semantic_reason", "")),
+    }
+
+
+def _search_index(p: argparse.Namespace) -> None:
+    """Explicitly rebuild the Entry semantic index."""
+    from dataclasses import asdict
+
+    from sheaf_ai.retrieval_service import rebuild_entry_index
+
+    if not getattr(p, "rebuild", False):
+        raise ValueError("search-index requires --rebuild")
+    report = rebuild_entry_index()
+    payload = asdict(report)
+    if getattr(p, "json", False):
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return
+
+    print(f"Search index rebuilt: {payload['indexed']} entries indexed")
+    print(f"  model: {payload['model']}")
+    print(f"  dimensions: {payload['dim']}")
+    print(f"  generation: {payload['generation']}")
 
 def _list(p: argparse.Namespace, json_auto: bool = False) -> None:
     """List collected entries with optional filtering (Issue #71)."""
