@@ -468,31 +468,48 @@ def _normalize_scores(scores: list[float]) -> list[float]:
 
 
 def _fetch_semantic_scores(
-    query: str, entry_ids: list[str], top_k: int = 50
+    query: str, entries: list[dict], top_k: int = 50
 ) -> dict[str, float]:
     """Fetch semantic similarity scores from the embedding engine.
 
     Best-effort: returns empty dict if embeddings unavailable.
-    Maps card IDs to entry IDs for score lookup.
+    Maps card source references (entry IDs or canonical URLs) back to the
+    entry IDs used by the keyword index. KnowledgeCard uses ``source_ids``;
+    older cards may still expose a singular ``source_id``.
     """
     try:
         from sheaf_ai.embedding_bridge import EmbeddingBridge
+
+        entry_id_by_ref: dict[str, str] = {}
+        for entry in entries:
+            entry_id = str(entry.get("id", ""))
+            if not entry_id:
+                continue
+            entry_id_by_ref[entry_id] = entry_id
+            url = str(entry.get("url", ""))
+            if url:
+                entry_id_by_ref[url] = entry_id
+
         bridge = EmbeddingBridge()
         semantic_results = bridge.search(query, top_k=top_k)
-        # Build card_id -> entry mapping via card store
         scores: dict[str, float] = {}
         for item in semantic_results:
             card = item.get("card", {})
-            source_id = card.get("source_id", "")
-            score = item.get("score", 0.0)
-            # Try to match by source_id (URL) or card_id prefix
-            if source_id and source_id in entry_ids:
-                scores[source_id] = score
-            # Also try to match entry_id from card metadata
-            metadata = card.get("metadata", {})
-            entry_id = metadata.get("entry_id", "")
-            if entry_id and entry_id in entry_ids:
-                scores[entry_id] = score
+            score = float(item.get("score", 0.0))
+            refs = card.get("source_ids", [])
+            if isinstance(refs, str):
+                refs = [refs]
+            legacy_ref = card.get("source_id", "")
+            if legacy_ref:
+                refs = [*refs, legacy_ref]
+            provenance = card.get("provenance", {})
+            if isinstance(provenance, dict) and provenance.get("entry_id"):
+                refs = [*refs, provenance["entry_id"]]
+
+            for ref in refs:
+                entry_id = entry_id_by_ref.get(str(ref))
+                if entry_id:
+                    scores[entry_id] = max(scores.get(entry_id, 0.0), score)
         return scores
     except Exception:
         # Embedding engine unavailable — degrade gracefully
@@ -569,12 +586,8 @@ def search_hybrid(
     scorer.index_entries(entries, raw_texts)
     bm25_results = scorer.score(query, limit=min(limit * 3, 50))
 
-    if not bm25_results:
-        return []
-
     # Step 3: Fetch semantic scores (best-effort)
-    entry_ids = [entry.get("id", "") for entry in entries]
-    semantic_scores = _fetch_semantic_scores(query, entry_ids, top_k=min(limit * 3, 50))
+    semantic_scores = _fetch_semantic_scores(query, entries, top_k=min(limit * 3, 50))
 
     # Step 4: Build unified result set
     # Collect all candidate IDs from both BM25 and semantic results
@@ -587,8 +600,9 @@ def search_hybrid(
         bm25_map[entry_id] = score
         entry_map[entry_id] = entry
 
+    available_entry_ids = {e.get("id", "") for e in entries}
     for entry_id in semantic_scores:
-        if entry_id in {e.get("id", "") for e in entries}:
+        if entry_id in available_entry_ids:
             candidate_ids.add(entry_id)
             if entry_id not in entry_map:
                 for e in entries:

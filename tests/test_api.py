@@ -14,7 +14,7 @@ def client():
     """Create a test client for the API."""
     from sheaf_ai.api import create_app
     app = create_app()
-    return TestClient(app)
+    return TestClient(app, base_url="http://localhost")
 
 
 @pytest.fixture
@@ -67,6 +67,12 @@ class TestSearchEndpoint:
         resp = client.get("/search")
         assert resp.status_code == 422  # Validation error
 
+    @patch("sheaf_ai.api.search_fulltext", return_value=[])
+    def test_search_passes_requested_limit_to_service(self, mock_search, client):
+        resp = client.get("/search", params={"q": "AI", "limit": 37})
+        assert resp.status_code == 200
+        mock_search.assert_called_once_with("AI", limit=37)
+
 
 class TestEntriesEndpoint:
     def test_list_entries(self, client, mock_index_file):
@@ -84,6 +90,40 @@ class TestEntriesEndpoint:
 
     def test_get_entry_not_found(self, client, mock_index_file, tmp_path):
         resp = client.get("/entries/nonexistent-id")
+        assert resp.status_code == 404
+
+    @pytest.mark.parametrize(
+        "encoded_id",
+        [
+            r"..%5C..%5Coutside",
+            r"C:%5Coutside",
+            "entry.json",
+        ],
+    )
+    def test_get_entry_rejects_unsafe_ids(self, client, encoded_id):
+        resp = client.get(f"/entries/{encoded_id}")
+        assert resp.status_code == 400
+        assert resp.json()["detail"] == "Invalid entry ID"
+
+    def test_posix_separator_cannot_reach_entry_handler(self, client):
+        resp = client.get("/entries/..%2Foutside")
+        assert resp.status_code == 404
+
+
+class TestFeedbackEndpoint:
+    def test_feedback_rejects_unsafe_entry_id(self, client, isolated_data_dir):
+        resp = client.post(
+            "/feedback",
+            json={"entry_id": r"..\..\outside", "corrections": {"summary": "changed"}},
+        )
+        assert resp.status_code == 400
+        assert not (isolated_data_dir / "feedback.jsonl").exists()
+
+    def test_feedback_reports_missing_safe_entry(self, client):
+        resp = client.post(
+            "/feedback",
+            json={"entry_id": "nonexistent", "corrections": {"summary": "changed"}},
+        )
         assert resp.status_code == 404
 
 
@@ -147,8 +187,9 @@ class TestCrystallizeEndpoint:
 
 
 class TestCardsEndpoint:
+    @patch("sheaf_ai.api.card_service.count_cards", return_value=1)
     @patch("sheaf_ai.api.card_service.list_cards")
-    def test_list_cards(self, mock_list, client):
+    def test_list_cards(self, mock_list, _mock_count, client):
         card = KnowledgeCard(card_id="card-1", title="Test Card", claim="Claim", evidence="Evidence")
         mock_list.return_value = [card]
 
@@ -156,6 +197,8 @@ class TestCardsEndpoint:
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
+        assert data["offset"] == 0
+        assert data["limit"] == 20
         assert data["cards"][0]["id"] == "card-1"
         assert data["cards"][0]["card_id"] == "card-1"
         assert data["cards"][0]["title"] == "Test Card"
@@ -178,6 +221,11 @@ class TestCardsEndpoint:
     def test_get_card_not_found(self, mock_get, client):
         mock_get.return_value = None
         resp = client.get("/cards/nonexistent")
+        assert resp.status_code == 404
+
+    @patch("sheaf_ai.api.card_service.delete_card_by_id", return_value=False)
+    def test_delete_card_not_found(self, _mock_delete, client):
+        resp = client.delete("/cards/nonexistent")
         assert resp.status_code == 404
 
     @patch("sheaf_ai.api.card_service.search_cards_semantic")
@@ -227,6 +275,91 @@ class TestServeCLI:
         parser = build_parser()
         args = parser.parse_args(["serve"])
         assert args.port == 8321
+
+
+class TestHTTPBoundary:
+    def test_local_app_rejects_remote_host_header(self):
+        from sheaf_ai.api import create_app
+
+        client = TestClient(create_app(), base_url="http://remote.example")
+        assert client.get("/health").status_code == 403
+
+    def test_local_app_rejects_remote_client_with_forged_loopback_host(self):
+        from sheaf_ai.api import create_app
+
+        client = TestClient(
+            create_app(),
+            base_url="http://localhost",
+            client=("203.0.113.10", 50000),
+        )
+        assert client.get("/health", headers={"host": "localhost"}).status_code == 403
+
+    def test_local_app_rejects_remote_origin_on_all_routes(self, client):
+        resp = client.get("/health", headers={"origin": "https://remote.example"})
+        assert resp.status_code == 403
+
+    def test_local_app_allows_chrome_extension_origin(self, client):
+        extension_id = "a" * 32
+        resp = client.get(
+            "/health",
+            headers={"origin": f"chrome-extension://{extension_id}"},
+        )
+        assert resp.status_code == 200
+
+    def test_token_app_requires_bearer_auth(self):
+        from sheaf_ai.api import create_app
+
+        token = "test-token-with-sufficient-entropy"
+        client = TestClient(create_app(api_token=token), base_url="http://remote.example")
+        assert client.get("/health").status_code == 401
+        assert client.get(
+            "/health", headers={"authorization": "Bearer wrong"}
+        ).status_code == 401
+        assert client.get(
+            "/health", headers={"authorization": f"Bearer {token}"}
+        ).status_code == 200
+
+    def test_token_allows_authenticated_remote_origin_for_mcp(self):
+        from sheaf_ai.api import create_app
+
+        token = "test-token-with-sufficient-entropy"
+        client = TestClient(create_app(api_token=token), base_url="http://remote.example")
+        resp = client.post(
+            "/mcp",
+            json={
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "initialize",
+                "params": {
+                    "protocolVersion": "2025-06-18",
+                    "capabilities": {},
+                    "clientInfo": {"name": "remote-test", "version": "1"},
+                },
+            },
+            headers={
+                "authorization": f"Bearer {token}",
+                "origin": "https://remote.example",
+            },
+        )
+        assert resp.status_code == 200
+
+    def test_non_loopback_server_requires_explicit_token(self, monkeypatch):
+        from sheaf_ai.api import run_server
+
+        monkeypatch.delenv("SHEAF_API_TOKEN", raising=False)
+        with patch("uvicorn.run") as mock_run, pytest.raises(RuntimeError):
+            run_server(host="0.0.0.0")
+        mock_run.assert_not_called()
+
+    def test_non_loopback_server_accepts_environment_token(self, monkeypatch):
+        from sheaf_ai.api import run_server
+
+        monkeypatch.setenv("SHEAF_API_TOKEN", "test-token-with-sufficient-entropy")
+        with patch("uvicorn.run") as mock_run:
+            run_server(host="0.0.0.0", port=9000)
+        mock_run.assert_called_once()
+        assert mock_run.call_args.kwargs["host"] == "0.0.0.0"
+        assert mock_run.call_args.kwargs["port"] == 9000
 
 
 class TestMCPTransport:

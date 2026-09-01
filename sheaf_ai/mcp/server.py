@@ -31,7 +31,7 @@ ALL_TOOLS = (
 )
 
 # Default MCP surface — the 4 high-frequency entry points (collect / search /
-# crystallize / get_card). The remaining 7 tools stay callable via tools/call
+# crystallize / get_card). The remaining 10 tools stay callable via tools/call
 # (handler_map is full) for backward compat; agents are guided to the `sheaf`
 # CLI for them by the deployed skill (sheaf-cli-extended). Set
 # SHEAF_MCP_TOOLS=all to re-expose the full set (migration / power users).

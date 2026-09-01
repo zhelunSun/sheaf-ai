@@ -7,17 +7,76 @@ Design: <200 lines, pure logic, no domain specialization.
 Classes:
     TagEntry       — tag with source tracking (ai|human) and timestamp
     KnowledgeCard  — core card data model (10 fields + extensible extra)
-    CardStore      — JSONL-based card persistence + retrieval
+    CardStore      — JSON-array card persistence + retrieval
     CardValidator  — schema + evidence validation (strict/lenient)
 """
 from __future__ import annotations
 
 import json
+import os
+import tempfile
+import threading
 import uuid
+from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
+
+
+class CardStoreError(RuntimeError):
+    """Raised when the card store cannot be read or durably replaced.
+
+    This is intentionally explicit: treating a corrupt store as an empty store
+    can turn the next successful save into silent data loss.
+    """
+
+
+_CARD_STORE_LOCKS: dict[str, threading.RLock] = {}
+_CARD_STORE_LOCKS_GUARD = threading.Lock()
+
+
+def _card_store_lock(path: Path) -> threading.RLock:
+    """Return the process-wide lock shared by every store for ``path``."""
+    key = os.path.normcase(str(path.resolve()))
+    with _CARD_STORE_LOCKS_GUARD:
+        return _CARD_STORE_LOCKS.setdefault(key, threading.RLock())
+
+
+@contextmanager
+def _exclusive_file_lock(path: Path):
+    """Hold an advisory writer lock that is released if the process exits."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    handle = open(path, "a+b")
+    locked = False
+    try:
+        handle.seek(0, os.SEEK_END)
+        if handle.tell() == 0:
+            handle.write(b"\0")
+            handle.flush()
+        handle.seek(0)
+        if os.name == "nt":
+            import msvcrt
+
+            msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+        else:
+            import fcntl
+
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        locked = True
+        yield
+    finally:
+        if locked:
+            handle.seek(0)
+            if os.name == "nt":
+                import msvcrt
+
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+            else:
+                import fcntl
+
+                fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        handle.close()
 
 
 # ============================================================
@@ -168,111 +227,159 @@ class KnowledgeCard:
 # ============================================================
 
 class CardStore:
-    """File-based card storage using JSONL.
+    """File-based card storage using a JSON array.
 
-    Thread-safe for single-writer usage (CLI / Agent).
-    Format: one JSON object per line, keyed by card_id.
+    The persisted shape is unchanged for backward compatibility: one JSON
+    array containing objects keyed by ``card_id``.  Read-modify-write
+    operations are serialized across ``CardStore`` instances and processes,
+    and writes use a same-directory temporary file followed by ``os.replace``.
+
+    Invalid or unreadable data raises :class:`CardStoreError`; it is never
+    interpreted as an empty store.
     """
 
     def __init__(self, store_path: Path):
         self.path = Path(store_path)
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        if not self.path.exists():
-            self.path.write_text("[]", encoding="utf-8")
+        self._lock = _card_store_lock(self.path)
+        self._lock_path = self.path.with_name(f".{self.path.name}.lock")
+        with self._lock:
+            with _exclusive_file_lock(self._lock_path):
+                if not self.path.exists():
+                    self._save_all([])
+                else:
+                    self._load_all()  # fail early; never defer or mask corruption
 
     def _load_all(self) -> list[dict]:
-        try:
-            raw = self.path.read_text(encoding="utf-8").strip()
-            if not raw:
-                return []
-            return json.loads(raw)
-        except (json.JSONDecodeError, Exception):
-            return []
+        with self._lock:
+            try:
+                raw = self.path.read_text(encoding="utf-8")
+                cards = json.loads(raw)
+            except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+                raise CardStoreError(f"Cannot read card store {self.path}: {exc}") from exc
+            if not isinstance(cards, list) or any(not isinstance(card, dict) for card in cards):
+                raise CardStoreError(
+                    f"Invalid card store {self.path}: expected a JSON array of objects"
+                )
+            return cards
 
     def _save_all(self, cards: list[dict]):
-        self.path.write_text(
-            json.dumps(cards, ensure_ascii=False, indent=2),
-            encoding="utf-8",
-        )
+        payload = json.dumps(cards, ensure_ascii=False, indent=2)
+        tmp_path = None
+        try:
+            fd, tmp_path = tempfile.mkstemp(
+                dir=str(self.path.parent),
+                prefix=f".{self.path.name}.",
+                suffix=".tmp",
+            )
+            with os.fdopen(fd, "w", encoding="utf-8") as handle:
+                handle.write(payload)
+                handle.flush()
+                os.fsync(handle.fileno())
+            os.replace(tmp_path, self.path)
+        except OSError as exc:
+            if tmp_path:
+                try:
+                    os.unlink(tmp_path)
+                except OSError:
+                    pass
+            raise CardStoreError(f"Cannot write card store {self.path}: {exc}") from exc
 
     def save(self, card: KnowledgeCard) -> str:
         """Insert or update a card. Returns card_id."""
-        card.updated_at = _now_iso()
-        cards = self._load_all()
-        # Update existing or append new
-        for i, existing in enumerate(cards):
-            if existing.get("card_id") == card.card_id:
-                cards[i] = card.to_dict()
+        with self._lock:
+            with _exclusive_file_lock(self._lock_path):
+                card.updated_at = _now_iso()
+                cards = self._load_all()
+                # Update existing or append new
+                for i, existing in enumerate(cards):
+                    if existing.get("card_id") == card.card_id:
+                        cards[i] = card.to_dict()
+                        self._save_all(cards)
+                        return card.card_id
+                cards.append(card.to_dict())
                 self._save_all(cards)
                 return card.card_id
-        cards.append(card.to_dict())
-        self._save_all(cards)
-        return card.card_id
 
     def load(self, card_id: str) -> Optional[KnowledgeCard]:
         """Load a single card by ID."""
-        for d in self._load_all():
-            if d.get("card_id") == card_id:
-                return KnowledgeCard.from_dict(d)
-        return None
+        with self._lock:
+            for d in self._load_all():
+                if d.get("card_id") == card_id:
+                    return KnowledgeCard.from_dict(d)
+            return None
 
     def list_all(self, limit: int = 100) -> list[KnowledgeCard]:
         """List cards (most recent first)."""
-        cards = self._load_all()
-        cards.sort(key=lambda c: c.get("updated_at", ""), reverse=True)
-        return [KnowledgeCard.from_dict(d) for d in cards[:limit]]
+        with self._lock:
+            cards = self._load_all()
+            cards.sort(key=lambda c: c.get("updated_at", ""), reverse=True)
+            return [KnowledgeCard.from_dict(d) for d in cards[:limit]]
 
     def search(self, query: str, limit: int = 10) -> list[KnowledgeCard]:
         """Simple text search across title, claim, tags, evidence."""
-        q = query.lower()
-        results = []
-        for d in self._load_all():
-            score = 0
-            title = d.get("title", "").lower()
-            claim = d.get("claim", "").lower()
-            evidence = d.get("evidence", "").lower()
-            tags_str = " ".join(d.get("tags", [])).lower()
+        with self._lock:
+            q = query.lower()
+            results = []
+            for d in self._load_all():
+                score = 0
+                title = d.get("title", "").lower()
+                claim = d.get("claim", "").lower()
+                evidence = d.get("evidence", "").lower()
+                tags_str = " ".join(d.get("tags", [])).lower()
 
-            if q in title:
-                score += 10
-            if q in claim:
-                score += 5
-            if q in tags_str:
-                score += 3
-            if q in evidence:
-                score += 2
-            # Count occurrences in combined text
-            combined = f"{title} {claim} {evidence} {tags_str}"
-            score += combined.count(q)
-            if score > 0:
-                results.append((score, d))
+                if q in title:
+                    score += 10
+                if q in claim:
+                    score += 5
+                if q in tags_str:
+                    score += 3
+                if q in evidence:
+                    score += 2
+                # Count occurrences in combined text
+                combined = f"{title} {claim} {evidence} {tags_str}"
+                score += combined.count(q)
+                if score > 0:
+                    results.append((score, d))
 
-        results.sort(key=lambda x: x[0], reverse=True)
-        return [KnowledgeCard.from_dict(d) for _, d in results[:limit]]
+            results.sort(key=lambda x: x[0], reverse=True)
+            return [KnowledgeCard.from_dict(d) for _, d in results[:limit]]
 
     def delete(self, card_id: str) -> bool:
         """Delete a card. Returns True if found and deleted."""
-        cards = self._load_all()
-        filtered = [c for c in cards if c.get("card_id") != card_id]
-        if len(filtered) < len(cards):
-            self._save_all(filtered)
-            return True
-        return False
+        with self._lock:
+            with _exclusive_file_lock(self._lock_path):
+                cards = self._load_all()
+                filtered = [c for c in cards if c.get("card_id") != card_id]
+                if len(filtered) < len(cards):
+                    self._save_all(filtered)
+                    return True
+                return False
 
     def link(self, card_a: str, card_b: str, _relation: str = "related") -> None:
         """Create bidirectional association between two cards."""
-        a = self.load(card_a)
-        b = self.load(card_b)
-        if a and b:
-            if card_b not in a.associations:
-                a.associations.append(card_b)
-            if card_a not in b.associations:
-                b.associations.append(card_a)
-            self.save(a)
-            self.save(b)
+        with self._lock:
+            with _exclusive_file_lock(self._lock_path):
+                cards = self._load_all()
+                positions = {item.get("card_id"): index for index, item in enumerate(cards)}
+                if card_a not in positions or card_b not in positions:
+                    return
+                a = KnowledgeCard.from_dict(cards[positions[card_a]])
+                b = KnowledgeCard.from_dict(cards[positions[card_b]])
+                if card_b not in a.associations:
+                    a.associations.append(card_b)
+                if card_a not in b.associations:
+                    b.associations.append(card_a)
+                now = _now_iso()
+                a.updated_at = now
+                b.updated_at = now
+                cards[positions[card_a]] = a.to_dict()
+                cards[positions[card_b]] = b.to_dict()
+                self._save_all(cards)
 
     def count(self) -> int:
-        return len(self._load_all())
+        with self._lock:
+            return len(self._load_all())
 
 
 # ============================================================

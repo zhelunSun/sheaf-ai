@@ -509,6 +509,29 @@ class TestHandlerRegistry:
         assert "Handler crashed" in result["error"]
         assert result["content_type"] == "github_repo"
 
+    def test_main_pipeline_routes_through_universal_collector(self, isolated_data_dir):
+        """The user-facing collect path must use specialised collector routing."""
+        from unittest.mock import patch
+        from sheaf_ai.pipeline import process_url
+
+        routed_failure = {
+            "success": False,
+            "error": "specialised collector failed",
+            "method": "github",
+            "content_type": "github_repo",
+        }
+        with patch("sheaf_ai.pipeline.check_duplicate", return_value=None), patch(
+            "sheaf_ai.collectors.route_fetch", return_value=routed_failure
+        ) as route:
+            result = process_url("https://github.com/example/project")
+
+        route.assert_called_once_with("https://github.com/example/project")
+        assert result == {
+            "success": False,
+            "error": "specialised collector failed",
+            "stage": "fetch",
+        }
+
     @patch("sheaf_ai.fetch_article.fetch_article")
     @patch("sheaf_ai.collectors.router.detect_from_headers", return_value=None)
     def test_route_fallback_to_web(self, mock_headers, mock_fetch):

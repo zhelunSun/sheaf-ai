@@ -9,6 +9,7 @@ import json
 from datetime import datetime
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
+from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path
 from sheaf_ai.utils import atomic_write
 
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
@@ -106,11 +107,10 @@ def get_feedback_stats() -> dict:
 
 
 def _load_entry(entry_id: str) -> dict | None:
-    date_prefix = entry_id[:7]
-    month_dir = ENTRIES_DIR / date_prefix
-    if not month_dir.exists():
+    try:
+        entry_path = resolve_entry_json_path(ENTRIES_DIR, entry_id)
+    except InvalidEntryId:
         return None
-    entry_path = month_dir / f"{entry_id}.json"
     if not entry_path.exists():
         return None
     with open(entry_path, "r", encoding="utf-8") as f:
@@ -130,9 +130,7 @@ def _apply_corrections(entry_id: str, entry: dict, corrections: dict) -> None:
     if "summary" in corrections:
         entry["summary"] = corrections["summary"]
 
-    date_prefix = entry_id[:7]
-    month_dir = ENTRIES_DIR / date_prefix
-    entry_path = month_dir / f"{entry_id}.json"
+    entry_path = resolve_entry_json_path(ENTRIES_DIR, entry_id)
     atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
     _update_index_entry(entry_id, entry)

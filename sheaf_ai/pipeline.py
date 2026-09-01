@@ -295,8 +295,6 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     Returns:
         dict with pipeline results
     """
-    from sheaf_ai.fetch_article import fetch_article
-
     # Ensure data directories exist before any writes
     ensure_data_dirs()
 
@@ -327,7 +325,11 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         }
     else:
         logger.info("Fetching: %s", url)
-        fetch_result = fetch_article(url)
+        # Route every URL through the Universal Collector so specialised
+        # GitHub, paper, PDF, and SPA handlers are part of the product path.
+        from sheaf_ai.collectors import route_fetch
+
+        fetch_result = route_fetch(url)
         if not fetch_result["success"]:
             err = fetch_result.get("error", "Fetch failed")
             fetch_err = fetch_result.get("fetch_error", {})

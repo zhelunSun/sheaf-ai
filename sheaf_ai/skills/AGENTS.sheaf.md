@@ -16,7 +16,7 @@ Sheaf is wired into Codex as an MCP server (`~/.codex/config.toml` →
 
 > **"收藏/保存/记下 X"**: X is a URL → `sheaf_collect(url=X)`; X is text/idea → `sheaf_collect(text=X)`.
 >
-> **🧠 Proactive capture (judge by information density)**: when the user states something dense & reusable — a **decision**, durable **fact/constraint**, **preference**, or **commitment** — capture it as `sheaf_collect(text=…)` without waiting for "save". Skip status/small-talk (low density). One self-contained sentence; AI titles it. This is the most frequent agent use of Sheaf.
+> **🧠 Conversational capture defaults to suggest**: when the user states a dense, reusable decision/fact/constraint/preference/commitment, propose one self-contained note and wait for approval. Write immediately only after an explicit save/collect/remember request. Skip status and transcript dumps.
 >
 > **🧠 Proactive recall**: before answering a *knowledge-shaped* question (about a topic/project you may have notes on), do ONE focused `sheaf_search`. Skip trivial/operational turns.
 >
@@ -32,12 +32,15 @@ sheaf crystallize --list                                         # list knowledg
 sheaf crystallize --show <card_id>                               # read one card
 sheaf collect <url1> <url2> <url3>                               # batch save
 sheaf matrix <url>                                               # cross-source matrix for a URL
+sheaf memory apply --request FILE                               # reviewed evidence transition
+sheaf memory snapshot --topic T                                 # active / contested state
+sheaf memory history --topic T                                  # immutable audit history
 sheaf urgent                                                     # entries with upcoming deadlines
 sheaf doctor                                                     # health check
 ```
 
 > `sheaf_correct` and `sheaf_crosscheck` are demoted MCP tools — call them via
-> MCP `tools/call` (or set `SHEAF_MCP_TOOLS=all` to re-expose the full 11-tool surface).
+> MCP `tools/call` (or set `SHEAF_MCP_TOOLS=all` to re-expose the full 14-tool surface).
 
 ## Browse the KB (MCP Resources, read-only)
 
@@ -52,4 +55,4 @@ sheaf doctor                                                     # health check
 - Install: `pip install sheaf-ai` → `sheaf init --auto`
 - Re-wire: `sheaf setup --target codex`
 - API key: `sheaf config setup`, or set `SILICONFLOW_API_KEY` / `OPENAI_API_KEY` / `DEEPSEEK_API_KEY`
-- Data lives locally in `~/.sheaf/data/` — no cloud, no accounts.
+- Stored data lives locally in `~/.sheaf/data/`; configured model inference may be remote.

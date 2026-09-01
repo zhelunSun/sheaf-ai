@@ -20,10 +20,10 @@ claude mcp add sheaf -- uvx --from sheaf-ai sheaf-mcp
 
 ## MCP Tools
 
-Default MCP surface = **4 core entry tools** (Issue #91). The remaining 7 stay
+Default MCP surface = **4 core entry tools** (Issue #91). The remaining 10 stay
 callable via `tools/call` for backward compat, but agents are guided to the
 `sheaf` CLI (`--json`) by the deployed skill. Set `SHEAF_MCP_TOOLS=all` to
-re-expose the full 11.
+re-expose the full 14.
 
 The server also exposes **MCP Resources** (read-only browse, Issue #89):
 `resources/list` + `resources/read` over `sheaf://entries/recent` /
@@ -39,7 +39,7 @@ advertises the `resources` capability. Handlers in `sheaf_ai/mcp/resources.py`.
 | `sheaf_crystallize` | Synthesize knowledge cards |
 | `sheaf_get_card` | Get card details |
 
-**Demoted (7, via CLI `--json` or `tools/call` / `SHEAF_MCP_TOOLS=all`):**
+**Demoted (10, via CLI `--json` or `tools/call` / `SHEAF_MCP_TOOLS=all`):**
 
 | Tool | CLI equivalent |
 |------|-------------|
@@ -50,6 +50,9 @@ advertises the `resources` capability. Handlers in `sheaf_ai/mcp/resources.py`.
 | `sheaf_collect_batch` | `sheaf collect URL1 URL2 ...` |
 | `sheaf_correct` | MCP `tools/call` only (complex nested params) |
 | `sheaf_crosscheck` | MCP `tools/call`; see also `sheaf matrix <url>` |
+| `sheaf_memory_apply` | `sheaf memory apply --request FILE|-` |
+| `sheaf_memory_snapshot` | `sheaf memory snapshot [--topic T]` |
+| `sheaf_memory_history` | `sheaf memory history [--topic T] [--card-id ID]` |
 
 **Deprecated (3, retained as fallback):**
 

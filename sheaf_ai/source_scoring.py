@@ -197,13 +197,20 @@ def _detect_prestige_override(text: str) -> bool:
     return False
 
 
-def _compute_freshness(content_type: str, published_date: str | None) -> int:
-    """Compute freshness bonus (0-10) — only relevant for news content."""
+def _compute_freshness(
+    content_type: str,
+    published_date: str | None,
+    as_of: datetime | None = None,
+) -> int:
+    """Compute freshness bonus (0-10) relative to an injectable clock."""
     if content_type != "news" or not published_date:
         return 5  # Default mid-level for non-news
     try:
         pub = datetime.fromisoformat(published_date.replace("Z", "+00:00"))
-        days = (datetime.now(pub.tzinfo) - pub).days
+        reference_time = as_of or datetime.now(pub.tzinfo)
+        if pub.tzinfo and reference_time.tzinfo is None:
+            reference_time = reference_time.replace(tzinfo=pub.tzinfo)
+        days = (reference_time - pub).days
         return max(0, min(10, 10 - days // 3))
     except Exception:
         return 5
@@ -252,6 +259,7 @@ def compute_source_score(
     content_type: str = "reference",
     published_date: str | None = None,
     registry: SourceRegistry | None = None,
+    as_of: datetime | None = None,
 ) -> dict:
     """Compute source credibility score (0-100).
 
@@ -263,6 +271,7 @@ def compute_source_score(
         content_type: Article content type (news, research, etc.).
         published_date: ISO date string.
         registry: SourceRegistry for user overrides. If None, no override applied.
+        as_of: Optional clock injection for deterministic freshness evaluation.
 
     Returns:
         Dict with score, tier, domain, and component breakdown.
@@ -304,7 +313,7 @@ def compute_source_score(
     user_score = user_override if user_override else 0
 
     # Step 5: Freshness (0-10)
-    freshness = _compute_freshness(content_type, published_date)
+    freshness = _compute_freshness(content_type, published_date, as_of=as_of)
 
     # Total
     total = min(100, max(0, rule_score + llm_score + user_score + freshness))
@@ -314,6 +323,7 @@ def compute_source_score(
         "score": total,
         "tier": tier,
         "domain": domain,
+        "domain_tier": domain_tier,
         "is_primary": is_primary,
         "rule_score": rule_score,
         "llm_score": llm_score,

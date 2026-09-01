@@ -1,5 +1,6 @@
 """Tests for sheaf_ai.search BM25 + Hybrid Search (Issue #57)."""
 
+from unittest.mock import patch
 
 from sheaf_ai.search import (
     BM25Scorer,
@@ -7,6 +8,7 @@ from sheaf_ai.search import (
     _tokenize,
     _normalize_scores,
     _sigmoid,
+    _fetch_semantic_scores,
     search_hybrid,
     search_fulltext,
 )
@@ -309,6 +311,36 @@ class TestSearchHybrid:
         assert len(results) >= 1
         # Without embeddings, bm25_score > 0, semantic_score = 0
         assert results[0]["bm25_score"] > 0
+
+    def test_maps_card_source_ids_and_urls_to_entries(self):
+        """Semantic card provenance must map back to canonical entry IDs."""
+        entries = [{"id": "2026-09-01_abcd1234", "url": "https://example.com/source"}]
+        semantic_result = {
+            "card": {"source_ids": ["https://example.com/source"]},
+            "score": 0.87,
+        }
+        with patch(
+            "sheaf_ai.embedding_bridge.EmbeddingBridge.search",
+            return_value=[semantic_result],
+        ):
+            scores = _fetch_semantic_scores("different wording", entries)
+
+        assert scores == {"2026-09-01_abcd1234": 0.87}
+
+    def test_semantic_only_candidate_is_not_dropped(self, isolated_data_dir):
+        """Hybrid search must support recall without a lexical BM25 hit."""
+        entry = _make_entry("https://example.com/semantic", "Opaque Source Title")
+        entry_id = store_article(
+            entry["url"], entry["fetch_result"], entry["classify_result"], entry["summary_result"]
+        )
+
+        with patch.object(BM25Scorer, "score", return_value=[]), patch(
+            "sheaf_ai.search._fetch_semantic_scores", return_value={entry_id: 0.91}
+        ):
+            results = search_hybrid("conceptually related", alpha=0.0)
+
+        assert [result["entry"]["id"] for result in results] == [entry_id]
+        assert results[0]["semantic_score"] == 1.0
 
     def test_hybrid_with_raw_text(self, isolated_data_dir):
         """Raw text should boost BM25 scoring."""

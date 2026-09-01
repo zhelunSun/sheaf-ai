@@ -1,14 +1,15 @@
 ---
 name: sheaf-guide
-description: Operate Sheaf — a local-first knowledge layer — to collect URLs into structured entries, search the knowledge base, and crystallize knowledge cards. Use this when the user wants to save/read/verify web content, search what they've collected, or distill cards from a topic. Covers the 4 MCP entry tools (sheaf_collect / sheaf_search / sheaf_crystallize / sheaf_get_card), the `sheaf` CLI for the rest (list, get, insights, cards, batch), and MCP `tools/call` for correct/crosscheck.
+description: Operate Sheaf — a local-first knowledge layer for deliberately curated sources — to collect URLs or approved notes, search the knowledge base, crystallize cards, and inspect evidence-governed memory. Covers the 4 default MCP entry tools, CLI operations, and the experimental evidence-memory executor.
 ---
 
 # Sheaf — Agent Operating Guide
 
 Sheaf is a local-first knowledge layer: paste a URL and Sheaf fetches,
 classifies, summarizes, and stores a **structured entry**. Agents then search,
-cite, and reason over everything collected. Data lives in `~/.sheaf/data/`
-(Markdown + JSON). No cloud, no accounts.
+cite, and reason over everything collected. The stored corpus lives locally in
+`~/.sheaf/data/` (Markdown + JSON). Collection and synthesis may send content to
+the user's configured model provider; local storage does not imply local inference.
 
 ## Tool surface — 4 MCP entry points + CLI for the rest
 
@@ -28,10 +29,12 @@ Everything else is done via the `sheaf` CLI with `--json` for structured output.
 | Discover cross-topic links | `sheaf insights --json` |
 | List / show knowledge cards | `sheaf crystallize --list` / `sheaf crystallize --show <card_id>` |
 | Batch collect | `sheaf collect <url1> <url2> <url3>` |
+| Apply a reviewed evidence transition | `sheaf memory apply --request FILE` |
+| Inspect current or historical memory | `sheaf memory snapshot --topic T` / `sheaf memory history --topic T` |
 | Health check after install | `sheaf doctor` |
 
-> Set env `SHEAF_MCP_TOOLS=all` to re-expose the full 11-tool MCP surface if a
-> workflow needs direct MCP access to list/get/crosscheck/etc.
+> Set env `SHEAF_MCP_TOOLS=all` to re-expose the full 14-tool MCP surface if a
+> workflow needs direct MCP access to list/get/crosscheck/evidence-memory/etc.
 
 ## MCP tool details
 
@@ -50,14 +53,11 @@ paste URLs into a terminal. Give **exactly one** of:
 Returns the structured entry (`id`, `title`, `one_liner`, `topics`, `tags`,
 `content_type`, `importance`). For >1 URL, use CLI: `sheaf collect a b c`.
 
-> **🧠 Proactive capture — judge by information density.** Capture as a note
-> *without* waiting for an explicit "save" when the user states something **dense
-> and reusable**: **decisions** ("we'll use Postgres") · **durable facts /
-> constraints** (deadlines, budgets, requirements) · **preferences** ·
-> **commitments** ("I'll send it Friday"). These survive the moment — that's the
-> signal they're worth keeping. **Skip** status updates, small talk, and ephemeral
-> chatter (low density). One self-contained sentence each (not a transcript dump);
-> the AI titles + summarizes it. Light ack: `📝 Noted: <title>`.
+> **🧠 Conversational capture defaults to suggest.** When the user states a dense,
+> reusable decision, fact, constraint, preference, or commitment, propose one
+> self-contained note and wait for approval before calling `sheaf_collect(text=…)`.
+> Write immediately only when the user explicitly says save/collect/remember.
+> Skip status updates, small talk, and transcript dumps.
 
 > **"收藏/保存/记下 X"** decision:
 > - X is a URL (`http…`) → `sheaf_collect(url=X)`
@@ -88,6 +88,15 @@ differentiator. Call it once a topic has ≥3 collected entries.
 Read one crystallized knowledge card in full — claim, evidence, confidence,
 tags, and links to the source entries that contributed. Use this to inspect or
 cite a card surfaced by search or crystallize.
+
+## Experimental evidence-governed memory
+
+`sheaf memory apply` accepts only a closed transition request and resolves
+`source_ids` against Entries already stored by Sheaf. Never invent a source ID,
+never treat “the user saved it” as proof that it is true, and do not bypass a
+contested state with an ordinary update. Use snapshot/history to show both sides
+and the resolution basis. The projected evidence strength is an ordinal,
+recomputable heuristic (`is_probability=false`), not calibrated confidence.
 
 ## When to choose MCP vs CLI
 

@@ -185,8 +185,8 @@ def test_collect_json_keeps_stdout_machine_readable(monkeypatch, capsys):
 def test_mcp_tools_defined():
     """MCP server exposes the 4 core tools by default (Issue #91).
 
-    The full 11-tool set is available via SHEAF_MCP_TOOLS=all; here we verify the
-    default surface. The 7 demoted tools' handlers stay registered for backward
+    The full 14-tool set is available via SHEAF_MCP_TOOLS=all; here we verify the
+    default surface. The 10 demoted tools' handlers stay registered for backward
     compat (tested via tools/call elsewhere).
     """
     from sheaf_ai.mcp_server import TOOLS
@@ -204,7 +204,7 @@ def test_mcp_tools_defined():
 
 
 def test_mcp_tools_full_surface_via_env(monkeypatch):
-    """SHEAF_MCP_TOOLS=all re-exposes all 11 tools for power users / migration."""
+    """SHEAF_MCP_TOOLS=all re-exposes all 14 tools for power users / migration."""
     import importlib
     monkeypatch.setenv("SHEAF_MCP_TOOLS", "all")
     # Force re-import so the module-level TOOLS picks up the env var.
@@ -217,8 +217,10 @@ def test_mcp_tools_full_surface_via_env(monkeypatch):
             "sheaf_correct", "sheaf_collect", "sheaf_collect_batch",
             "sheaf_crystallize", "sheaf_list_cards", "sheaf_get_card",
             "sheaf_insights", "sheaf_crosscheck",
+            "sheaf_memory_apply", "sheaf_memory_snapshot", "sheaf_memory_history",
         }
         assert full_expected <= set(tool_names), f"Missing tools in full surface: {full_expected - set(tool_names)}"
+        assert len(tool_names) == 14
     finally:
         # Restore default module state to avoid leaking into other tests.
         monkeypatch.delenv("SHEAF_MCP_TOOLS", raising=False)

@@ -200,6 +200,16 @@ class TestMcpResources:
                                "params": {"uri": "sheaf://entries/foo/bar"}})
         assert json.loads(resp)["error"]["code"] == -32602
 
+    @pytest.mark.parametrize("entry_id", [r"..\..\outside", r"C:\outside", "entry.json"])
+    def test_read_entry_rejects_cross_platform_path_syntax(self, isolated_data_dir, entry_id):
+        resp = handle_request({
+            "jsonrpc": "2.0",
+            "id": 10,
+            "method": "resources/read",
+            "params": {"uri": f"sheaf://entries/{entry_id}"},
+        })
+        assert json.loads(resp)["error"]["code"] == -32602
+
     def test_read_unknown_uri(self, isolated_data_dir):
         resp = handle_request({"jsonrpc": "2.0", "id": 11, "method": "resources/read",
                                "params": {"uri": "sheaf://bogus"}})
@@ -286,6 +296,32 @@ class TestMcpWithData:
         parsed = json.loads(resp)
         assert "error" in parsed
         assert "not found" in parsed["error"]["message"].lower()
+
+    @pytest.mark.parametrize("entry_id", ["../outside", r"..\outside", r"C:\outside"])
+    def test_get_rejects_cross_platform_path_syntax(self, isolated_data_dir, entry_id):
+        resp = handle_request({
+            "jsonrpc": "2.0",
+            "id": 12,
+            "method": "tools/call",
+            "params": {"name": "sheaf_get", "arguments": {"entry_id": entry_id}},
+        })
+        parsed = json.loads(resp)
+        assert parsed["error"]["code"] == -32602
+
+    @pytest.mark.parametrize("entry_id", ["../outside", r"..\outside", r"C:\outside"])
+    def test_correct_rejects_cross_platform_path_syntax(self, isolated_data_dir, entry_id):
+        resp = handle_request({
+            "jsonrpc": "2.0",
+            "id": 13,
+            "method": "tools/call",
+            "params": {
+                "name": "sheaf_correct",
+                "arguments": {"entry_id": entry_id, "corrections": {"summary": "changed"}},
+            },
+        })
+        parsed = json.loads(resp)
+        assert parsed["error"]["code"] == -32602
+        assert not (isolated_data_dir / "feedback.jsonl").exists()
 
     def test_search_after_store(self, isolated_data_dir):
         """Store an article via store_article, then search via MCP finds it."""

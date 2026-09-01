@@ -127,7 +127,7 @@ def run_functional_smoke(py: str, env: dict, failures: list, api_key: str) -> No
     platforms = detect_all_platforms() or ["claude", "codex"]
     for plat in platforms:
         try:
-            r1 = setup_target(plat, dry_run=False)
+            setup_target(plat, dry_run=False)
             r2 = setup_target(plat, dry_run=False)
             check(f"setup {plat} idempotent", r2.get("created") is False)
             if get_skill_path(plat) is not None:
@@ -238,7 +238,7 @@ def run_functional_smoke(py: str, env: dict, failures: list, api_key: str) -> No
     os.environ["SHEAF_MCP_TOOLS"] = "all"
     from sheaf_ai.mcp.server import _select_tools
     all_names = {t["name"] for t in _select_tools()}
-    check("SHEAF_MCP_TOOLS=all exposes >=11", len(all_names) >= 11,
+    check("SHEAF_MCP_TOOLS=all exposes 14", len(all_names) == 14,
           f"got {len(all_names)}")
     check("full set includes demoted tools",
           {"sheaf_list", "sheaf_correct", "sheaf_crosscheck"} <= all_names)
@@ -270,10 +270,6 @@ def run_risk_scan(failures: list) -> None:
         readme = ""
 
     if readme:
-        # Check test count consistency (both badge and body)
-        test_badge = re.search(r"tests-(\d+)(%20|%%)pass", readme)
-        test_body = re.search(r"(\d{2,4})\s+(?:tests\b|passed)", readme, re.IGNORECASE)
-
         # Run pytest --collect-only to get actual count
         rc, out, _ = _run([sys.executable, "-m", "pytest", "--collect-only", "-q",
                           "--basetemp", ".pytest-tmp-release-check"])
@@ -353,8 +349,14 @@ def run_risk_scan(failures: list) -> None:
             open_count = len(issues)
             # Only flag if there are critical bugs open
             bug_labels = {"bug", "P0", "critical", "blocker"}
-            critical_open = [i for i in issues
-                           if any(l["name"].lower() in bug_labels for l in i.get("labels", []))]
+            critical_open = [
+                issue
+                for issue in issues
+                if any(
+                    label["name"].lower() in bug_labels
+                    for label in issue.get("labels", [])
+                )
+            ]
             if critical_open:
                 check("no critical/P0 open issues",
                       len(critical_open) == 0,

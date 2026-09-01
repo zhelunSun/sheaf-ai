@@ -13,17 +13,17 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-1024%20pass-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/zhelunSun/sheaf-ai/actions/workflows/ci.yml"><img src="https://github.com/zhelunSun/sheaf-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
 </p>
 
 ---
 
-Sheaf turns the links you save every day into a **searchable knowledge base your AI agents can actually use**. Paste a link — it fetches, classifies, summarizes. Crystallize many into portable knowledge cards. Local-first, open-source, no cloud.
+Sheaf turns the technical sources you deliberately choose into a **searchable, inspectable knowledge base your AI agents can actually use**. Your selections carry your information taste into the agent's working context; source provenance keeps that taste from being mistaken for truth. Local-first and open-source.
 
 > A **sheaf** is a bundle of grain a farmer brings to market. Sheaf does the same for knowledge — gather, bundle, trade.
 
-> **Design note:** Sheaf is not meant to be just another bookmark manager. Saved links are the input; the goal is a local, source-backed knowledge layer that coding agents can search, quote, and check.
+> **Design note:** Sheaf is not meant to be another generic conversation-memory service. Deliberately curated sources are the input; the goal is a local, source-backed knowledge layer that coding and research agents can search, quote, challenge, and check.
 > Read the v0.7.0 discussion: [Sheaf v0.7.0: a local-first knowledge layer for coding agents](https://github.com/zhelunSun/sheaf-ai/discussions/94)
 
 
@@ -51,7 +51,7 @@ sheaf search "transformer architecture"          # search your collection
 sheaf crystallize AI                             # distill knowledge cards
 ```
 
-No accounts, no cloud. Your data lives locally — `./data/` inside a project, else `~/.sheaf/data` — as Markdown + JSON. Override with `SHEAF_DATA_DIR`.
+No Sheaf account or hosted storage is required. Your corpus lives locally — `./data/` inside a project, else `~/.sheaf/data` — as Markdown + JSON. Model inference is sent to the provider you configure. Override the data path with `SHEAF_DATA_DIR`.
 
 > **Even faster on Claude Code — no install at all:**
 > ```bash
@@ -72,11 +72,12 @@ Sheaf fixes this. Every link becomes a **structured entry**. Crystallize enough 
 | | What it does |
 |---|---|
 | 🌾 **Harvest** | Paste a link (or `--text` for a note). Sheaf fetches + classifies + summarizes — web articles, arXiv papers, WeChat / Zhihu, ChatGPT shares, pasted insights. |
-| ✨ **Crystallize** | Distill 3+ entries into knowledge cards with confidence scores and evidence tracing. |
+| ✨ **Crystallize** | Distill 3+ entries into knowledge cards with source tracing. |
+| 🧭 **Govern evolution** | Apply schema-constrained create, update, merge, contest, resolve, and retire transitions with immutable history. Evidence strength is an explainable ordinal heuristic, not a probability. |
 | 🤖 **Agent-ready** | Built-in MCP server — any agent searches, cites, and reasons over your knowledge base. |
 | 🔒 **Local-first** | No cloud, no telemetry, no accounts. Your data stays on your machine. |
 
-### Crystallize — your second brain
+### Crystallize — curated sources into reusable claims
 
 Sheaf's killer feature. Instead of letting bookmarks rot, `sheaf crystallize` synthesizes insights across entries:
 
@@ -89,7 +90,21 @@ $ sheaf crystallize AI
      CRAG introduces a retrieval evaluator, web search augmentation, and document decomposition.
 ```
 
-Each card carries a **confidence score**, **evidence tracing** (which sources contributed), **topic provenance**, and **tags**. Semantic-search across all of them with `sheaf crystallize --semantic "query"`.
+Each batch card carries **evidence tracing** (which sources contributed), **topic provenance**, and **tags**. Semantic-search across all of them with `sheaf crystallize --semantic "query"`.
+
+The experimental evidence-governed path is deliberately stricter. It validates source IDs against stored Entries, preserves contested claims and prior versions in an event ledger, and requires an explicit resolution basis before a conflict can be resolved. It does not claim that an LLM policy or confidence probability has already been calibrated:
+
+```bash
+sheaf memory apply --request transition.json
+sheaf memory snapshot --topic "Agent memory"
+sheaf memory history --topic "Agent memory"
+```
+
+See [the product and evaluation proposal](docs/EVIDENCE-GOVERNED-MEMORY-PROPOSAL.md) and the frozen [G0-G3 protocol](evals/evidence-governed-memory/PROTOCOL.md) for the implemented/proposed boundary.
+The deterministic executor scenario is independently replayable with
+`python evals/evidence-governed-memory/run_executor_acceptance.py`; it checks
+provenance, idempotency, contest preservation, official correction, and audit
+history without pretending to be an LLM-quality benchmark.
 
 ## Connect Your Agent
 
@@ -105,7 +120,7 @@ sheaf setup --target codex --dry-run # preview without writing
 
 > **MCP + skill are one install.** `sheaf setup` deploys the MCP server **and** the skill together — the skill is what tells your agent *when* to proactively capture a note or recall from the KB, so it's not optional decoration. Prefer it over the bare `uvx` one-liner (which wires MCP only). Do it all at once — key + MCP + skill + health check — with `sheaf init --auto`.
 
-The MCP server exposes **4 core tools** — `sheaf_collect`, `sheaf_search`, `sheaf_crystallize`, `sheaf_get_card` — covering ~90% of automated agent workflows and kept lean by design (~1.5k vs ~5k tokens). 7 more stay reachable via the `sheaf` CLI (`--json`) or MCP `tools/call`; re-expose all with `SHEAF_MCP_TOOLS=all`. Full tool matrix + rationale: [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91). Setup details: [docs/mcp-setup.md](docs/mcp-setup.md).
+The MCP server exposes **4 core tools** — `sheaf_collect`, `sheaf_search`, `sheaf_crystallize`, `sheaf_get_card` — and keeps the default prompt surface lean. 10 more, including the three evidence-memory tools, remain reachable via the CLI or explicit MCP `tools/call`; re-expose all 14 with `SHEAF_MCP_TOOLS=all`. Full tool matrix + rationale: [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91). Setup details: [docs/mcp-setup.md](docs/mcp-setup.md).
 
 Agents can also **browse** the knowledge base read-only via MCP Resources — `sheaf://entries/recent`, `sheaf://entries/{id}`, `sheaf://stats`, `sheaf://tags` (`resources/list` / `resources/read`). Spec: [docs/agent-query-spec.md](docs/agent-query-spec.md).
 
@@ -118,6 +133,9 @@ sheaf search <query>             # full-text search (results show the entry id)
 sheaf list [--page N]            # browse entries, paginated
 sheaf get <id>                   # full detail of one entry
 sheaf crystallize <topic>        # crystallize knowledge cards from a topic
+sheaf memory apply --request FILE # apply a validated evidence transition
+sheaf memory snapshot            # read active and contested memory state
+sheaf memory history             # inspect immutable transition history
 sheaf stats | tags | weekly | insights | urgent
 sheaf mcp                        # start the MCP server (stdio)
 ```
@@ -145,7 +163,7 @@ In `--json` mode, error payloads carry `exit_code`, `exit_code_name`, `error_typ
 
 ## Privacy & Local-First
 
-**Your data never leaves your machine unless you choose to.**
+**Your stored corpus stays on your machine; inference follows your provider choice.**
 
 - All content stored locally — `./data/` inside a project, otherwise `~/.sheaf/data` (override: `SHEAF_DATA_DIR`)
 - LLM calls go to **your** chosen API provider — nothing routed through Sheaf
@@ -211,7 +229,7 @@ URL → fetch → classify → summarize → store → query
 ```bash
 git clone https://github.com/zhelunSun/sheaf-ai.git && cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q          # 1024 passed, 19 skipped
+python -m pytest tests/ -q
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -219,7 +237,7 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 ## Status & Chrome Extension
 
-Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by **1024 passing tests**. We're validating with real users before beta.
+Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by CI. Evidence-governed evolution is an experimental, explicitly invoked path until its checked-in G0-G3 protocol has measured results. We're validating the reuse loop with real users before beta.
 
 **On the roadmap:** portable `.sheaf` bundle export (share your distilled knowledge), more source handlers (B站 / YouTube), bookmark import, and a Web Store extension.
 

@@ -1,9 +1,11 @@
-"""MCP card tools — sheaf_crystallize, sheaf_list_cards, sheaf_get_card."""
+"""MCP card and evidence-governed memory tools."""
 from __future__ import annotations
 
+import copy
 import json
 
 from sheaf_ai import card_service
+from sheaf_ai.evidence_memory import EvidenceMemoryError, TransitionValidationError
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 
 
@@ -74,6 +76,44 @@ TOOLS = [
             "required": ["card_id"],
         },
     },
+    {
+        "name": "sheaf_memory_apply",
+        "description": (
+            "Apply one explicit evidence-governed memory transition. "
+            "Source IDs are resolved only from stored Sheaf Entries; the request "
+            "is executed by the governed transition engine, not by an LLM."
+        ),
+        "inputSchema": copy.deepcopy(card_service.MEMORY_TRANSITION_REQUEST_SCHEMA),
+    },
+    {
+        "name": "sheaf_memory_snapshot",
+        "description": (
+            "Read the latest public KnowledgeCard projections grouped as active, "
+            "contested, retired, or superseded."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "topic": {"type": "string", "description": "Exact topic filter"},
+            },
+        },
+    },
+    {
+        "name": "sheaf_memory_history",
+        "description": (
+            "Read transition history and the replayable audit graph, including "
+            "conflict proposals and explicit resolution basis."
+        ),
+        "inputSchema": {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "topic": {"type": "string", "description": "Exact topic filter"},
+                "card_id": {"type": "string", "description": "Card ID filter"},
+            },
+        },
+    },
 ]
 
 
@@ -126,8 +166,56 @@ def _handle_get_card(req_id: int | str, arguments: dict) -> str:
     })
 
 
+def _memory_response(req_id: int | str, payload: dict) -> str:
+    return jsonrpc_response(req_id, {
+        "content": [{
+            "type": "text",
+            "text": json.dumps(payload, ensure_ascii=False, indent=2),
+        }]
+    })
+
+
+def _handle_memory_apply(req_id: int | str, arguments: dict) -> str:
+    try:
+        return _memory_response(req_id, card_service.apply_evidence_transition(arguments))
+    except (ValueError, TransitionValidationError) as exc:
+        return jsonrpc_error(req_id, -32602, str(exc))
+    except EvidenceMemoryError as exc:
+        return jsonrpc_error(req_id, -32603, f"Evidence memory failed: {exc}")
+
+
+def _handle_memory_snapshot(req_id: int | str, arguments: dict) -> str:
+    try:
+        return _memory_response(
+            req_id,
+            card_service.get_memory_snapshot(topic=arguments.get("topic", "")),
+        )
+    except ValueError as exc:
+        return jsonrpc_error(req_id, -32602, str(exc))
+    except EvidenceMemoryError as exc:
+        return jsonrpc_error(req_id, -32603, f"Evidence memory failed: {exc}")
+
+
+def _handle_memory_history(req_id: int | str, arguments: dict) -> str:
+    try:
+        return _memory_response(
+            req_id,
+            card_service.get_memory_history(
+                topic=arguments.get("topic", ""),
+                card_id=arguments.get("card_id", ""),
+            ),
+        )
+    except ValueError as exc:
+        return jsonrpc_error(req_id, -32602, str(exc))
+    except EvidenceMemoryError as exc:
+        return jsonrpc_error(req_id, -32603, f"Evidence memory failed: {exc}")
+
+
 HANDLERS = {
     "sheaf_crystallize": _handle_crystallize,
     "sheaf_list_cards": _handle_list_cards,
     "sheaf_get_card": _handle_get_card,
+    "sheaf_memory_apply": _handle_memory_apply,
+    "sheaf_memory_snapshot": _handle_memory_snapshot,
+    "sheaf_memory_history": _handle_memory_history,
 }

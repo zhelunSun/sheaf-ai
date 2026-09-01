@@ -2,7 +2,7 @@
 End-to-end MCP server test — spawns `sheaf mcp` as a real subprocess,
 sends JSON-RPC via stdin, reads responses from stdout.
 
-Tests the full MCP lifecycle: initialize → tools/list → tools/call (all 9 tools).
+Tests the MCP lifecycle: initialize → default tools/list → tools/call.
 This simulates what WorkBuddy would do when registered as a connector.
 """
 import json

@@ -119,6 +119,25 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--format", metavar="FMT", choices=["text", "json", "detailed"],
                    default="text", help="Output format: text (default), json, or detailed")
     p.add_argument("--fields", metavar="FIELDS", help="Comma-separated fields to include (overrides --format defaults)")
+    # Evidence-governed memory: explicit requests only; no implicit LLM writes.
+    p = sub.add_parser("memory", help="Apply and audit evidence-governed memory transitions")
+    memory_sub = p.add_subparsers(dest="memory_command", required=True)
+    apply_parser = memory_sub.add_parser("apply", help="Apply a schema-constrained transition request")
+    apply_parser.add_argument(
+        "--request",
+        required=True,
+        metavar="FILE|-",
+        help="JSON transition request file, or - to read stdin",
+    )
+    snapshot_parser = memory_sub.add_parser("snapshot", help="Show current memory state")
+    snapshot_parser.add_argument("--topic", default="", help="Filter by exact topic")
+    for command_name in ("history", "audit"):
+        history_parser = memory_sub.add_parser(
+            command_name,
+            help="Show transition history and audit graph",
+        )
+        history_parser.add_argument("--topic", default="", help="Filter by exact topic")
+        history_parser.add_argument("--card-id", default="", help="Filter by card ID")
     # Matrix: cross-source event verification (Issue #63)
     p = sub.add_parser("matrix", help="Cross-source event matrix for a URL")
     p.add_argument("url", help="URL to analyze")
@@ -269,6 +288,7 @@ def _run() -> None:
         "tags": show_tags, "trends": show_trends, "urgent": show_urgent,
         "reclassify": lambda: _reclassify(parsed), "mcp": _mcp, "init": _init,
         "crystallize": lambda: _crystallize(parsed), "serve": lambda: _serve(parsed),
+        "memory": lambda: _memory_command(parsed),
         "setup": lambda: _setup(parsed),
         "config": lambda: _config(parsed),
         "doctor": lambda: _doctor_cli(parsed),
@@ -1088,6 +1108,30 @@ def _crystallize(p: argparse.Namespace) -> None:
         print(renderer.render(c, format=fmt))
         print()
     print("Use 'sheaf crystallize --list' to see all cards.")
+
+
+def _memory_command(p: argparse.Namespace) -> None:
+    """CLI adapter for explicit evidence-memory requests and audit reads."""
+    from sheaf_ai.card_service import (
+        apply_evidence_transition,
+        get_memory_history,
+        get_memory_snapshot,
+    )
+
+    if p.memory_command == "apply":
+        if p.request == "-":
+            raw = sys.stdin.read()
+        else:
+            raw = Path(p.request).read_text(encoding="utf-8")
+        request = json.loads(raw)
+        if not isinstance(request, dict):
+            raise ValueError("Transition request must be a JSON object")
+        result = apply_evidence_transition(request)
+    elif p.memory_command == "snapshot":
+        result = get_memory_snapshot(topic=p.topic)
+    else:
+        result = get_memory_history(topic=p.topic, card_id=p.card_id)
+    print(json.dumps(result, ensure_ascii=False, indent=2))
 
 
 def _config(p: argparse.Namespace) -> None:

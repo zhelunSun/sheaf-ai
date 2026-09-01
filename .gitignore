@@ -31,8 +31,14 @@ Thumbs.db
 # Office temp files (lock files)
 ~$*
 
-# Legacy scripts (superseded by uc/ package)
-scripts/
+# Legacy/local scripts are ignored. Only reviewed release helpers are tracked.
+scripts/*
+!scripts/smoke-pre-release.py
+!scripts/release/
+!scripts/release/**
+# The release allowlist must not re-include generated Python caches.
+scripts/release/**/__pycache__/
+scripts/release/**/*.pyc
 
 # All internal docs — BP, plans, personas, archives, etc.
 internal/

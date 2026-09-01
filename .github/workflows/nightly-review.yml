@@ -32,6 +32,15 @@ jobs:
             exit 0
           fi
 
+          commit_epoch="$(git show -s --format='%ct' "$latest")"
+          now_epoch="$(date +%s)"
+          age_days="$(( (now_epoch - commit_epoch) / 86400 ))"
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$age_days" -gt 7 ]; then
+            echo "Latest nightly branch $latest is ${age_days} days old; scheduled review skipped." >> "$GITHUB_STEP_SUMMARY"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           main_head="$(git rev-parse origin/main)"
           merge_base="$(git merge-base origin/main "$latest")"
           if [ "$main_head" = "$merge_base" ]; then
@@ -67,14 +76,24 @@ jobs:
         working-directory: .nightly-review
         run: |
           python -m pytest tests -q --basetemp .pytest-tmp
-          python -m ruff check sheaf_ai sheaf_cards tests
+          python evals/evidence-governed-memory/run_executor_acceptance.py --compact
+          python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory
           python -m build
+          wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          python scripts/release/smoke_fresh_wheel.py --wheel "$wheel"
           python -m sheaf_ai.cli --help
           python -m sheaf_ai.cli --version
           git diff --check
-          tracked="$(git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env scripts requirements.txt)"
+          tracked="$(git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env requirements.txt)"
           if [ -n "$tracked" ]; then
             echo "$tracked"
+            exit 1
+          fi
+          unexpected_scripts="$(git ls-files scripts | grep -Ev '^(scripts/smoke-pre-release\.py|scripts/release/)' || true)"
+          if [ -n "$unexpected_scripts" ]; then
+            echo "Only reviewed release helpers may be tracked under scripts/:"
+            echo "$unexpected_scripts"
             exit 1
           fi
 

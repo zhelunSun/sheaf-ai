@@ -21,15 +21,16 @@ Before a nightly branch can merge to `main`, maintainers should run:
 
 ```bash
 python -m pytest tests -q --basetemp .pytest-tmp
-python -m ruff check sheaf_ai sheaf_cards tests
+python -m ruff check sheaf_ai sheaf_cards tests scripts/release
 python -m build
-python -m sheaf_ai.cli --help
-python -m sheaf_ai.cli --version
+wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
+python scripts/release/smoke_fresh_wheel.py --wheel "$wheel"
 git diff --check
-git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env scripts requirements.txt
+git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env requirements.txt
+git ls-files scripts
 ```
 
-The last command must print nothing. Local data, private planning docs, agent memory, build artifacts, and secrets must not be tracked.
+The first `git ls-files` command must print nothing. The second may only list the reviewed release helpers `scripts/smoke-pre-release.py` and files under `scripts/release/`. Local data, private planning docs, agent memory, build artifacts, secrets, and ad hoc scripts must not be tracked.
 
 For the full pre-release checklist, see [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 
@@ -47,4 +48,4 @@ The browser extension is currently experimental and versioned independently from
 
 ## Automation
 
-The scheduled nightly review workflow may test and report on nightly branches, but it must not merge, tag, publish, or push `main`.
+The scheduled nightly review workflow may test and report on nightly branches, but it must not merge, tag, publish, or push `main`. Scheduled runs skip the latest nightly branch when its head is more than seven days old; a manual dispatch may still review an older branch deliberately.

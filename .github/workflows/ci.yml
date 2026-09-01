@@ -29,8 +29,19 @@ jobs:
       - name: Run tests
         run: python -m pytest tests -q --ignore=tests/test_pdf_collector.py --ignore=tests/llm_depth_test.py
 
+      - name: Run evidence executor acceptance
+        run: python evals/evidence-governed-memory/run_executor_acceptance.py --compact
+
       - name: Lint
-        run: python -m ruff check sheaf_ai sheaf_cards tests
+        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory
 
       - name: Build check
         run: python -m build
+
+      - name: Fresh wheel smoke
+        if: matrix.python-version == '3.11'
+        shell: bash
+        run: |
+          wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
+          test -n "$wheel"
+          python scripts/release/smoke_fresh_wheel.py --wheel "$wheel"

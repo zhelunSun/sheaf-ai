@@ -168,18 +168,15 @@ def extract_fingerprint_llm(title: str, text: str, url: str = "") -> EventFinger
 
 def _extract_fingerprint_llm_inner(title: str, text: str, url: str) -> EventFingerprint:
     """Inner LLM call — may raise."""
-    from sheaf_ai.llm_client import get_client
+    from sheaf_ai.llm_client import chat
 
-    client = get_client()
     # Truncate text to keep prompt manageable
     snippet = text[:3000] if text else ""
     user_msg = f"Title: {title}\nURL: {url}\n\n{snippet}"
 
-    resp = client.chat(
-        messages=[
-            {"role": "system", "content": _FINGERPRINT_PROMPT},
-            {"role": "user", "content": user_msg},
-        ],
+    resp = chat(
+        prompt=user_msg,
+        system=_FINGERPRINT_PROMPT,
         temperature=0.1,
         max_tokens=512,
     )

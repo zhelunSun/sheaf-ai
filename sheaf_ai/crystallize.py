@@ -403,6 +403,11 @@ def delete_card(card_id: str) -> bool:
     return store.delete(card_id)
 
 
+def count_cards() -> int:
+    """Return the exact number of persisted cards."""
+    return _get_card_store().count()
+
+
 # ============================================================
 # Helpers
 # ============================================================

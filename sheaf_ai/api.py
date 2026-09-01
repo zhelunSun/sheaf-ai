@@ -9,13 +9,16 @@ Includes MCP Streamable HTTP transport endpoint (/mcp) for agent integration.
 Usage:
     sheaf serve                    # Start server on http://localhost:8321
     sheaf serve --port 9000        # Custom port
-    sheaf serve --host 0.0.0.0     # Allow external access
+    SHEAF_API_TOKEN=<token> sheaf serve --host 0.0.0.0  # Authenticated external access
 """
 from __future__ import annotations
 
 import json
+import os
+import re
 import secrets
 from datetime import datetime
+from ipaddress import ip_address
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
@@ -24,6 +27,7 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from sheaf_ai.config import VERSION, DATA_DIR, ENTRIES_DIR, fix_windows_encoding
+from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path, validate_entry_id
 from sheaf_ai.search import search_fulltext
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
@@ -105,8 +109,14 @@ class HealthResponse(BaseModel):
 _START_TIME: Optional[datetime] = None
 
 
-def create_app() -> FastAPI:
-    """Create and configure the FastAPI application."""
+def create_app(api_token: str | None = None) -> FastAPI:
+    """Create and configure the FastAPI application.
+
+    Without a token the app is intentionally localhost-only at the HTTP
+    boundary.  Supplying a token enables remote hosts and requires a Bearer
+    token on every request.  The default local CLI and extension workflow stays
+    unauthenticated.
+    """
     global _START_TIME
     _START_TIME = datetime.now()
 
@@ -131,6 +141,32 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    @app.middleware("http")
+    async def enforce_http_boundary(request: Request, call_next):
+        """Block DNS-rebinding origins/hosts locally or require remote auth."""
+        if api_token:
+            provided = request.headers.get("authorization", "")
+            expected = f"Bearer {api_token}"
+            if not secrets.compare_digest(
+                provided.encode("utf-8", errors="surrogatepass"),
+                expected.encode("utf-8", errors="surrogatepass"),
+            ):
+                return Response(
+                    status_code=401,
+                    content="Authentication required",
+                    headers={"WWW-Authenticate": "Bearer"},
+                )
+        else:
+            client_host = request.client.host if request.client else ""
+            if client_host != "testclient" and not _is_loopback_host(client_host):
+                return Response(status_code=403, content="Loopback client required")
+            if not _is_safe_host_header(request.headers.get("host", "")):
+                return Response(status_code=403, content="Forbidden host")
+            origin = request.headers.get("origin", "")
+            if origin and not _is_safe_origin(origin):
+                return Response(status_code=403, content="Forbidden origin")
+        return await call_next(request)
+
     # ============================================================
     # Routes
     # ============================================================
@@ -145,7 +181,7 @@ def create_app() -> FastAPI:
         return HealthResponse(status="ok", version=VERSION, uptime=uptime)
 
     @app.get("/stats", response_model=StatsResponse, tags=["collection"])
-    async def get_stats():
+    def get_stats():
         """Get collection statistics."""
         from sheaf_ai.config import INDEX_FILE as idx
         # Count entries from index
@@ -167,7 +203,7 @@ def create_app() -> FastAPI:
                         continue
 
         # Count cards
-        total_cards = len(card_service.list_cards())
+        total_cards = card_service.count_cards()
 
         return StatsResponse(
             total_entries=total_entries,
@@ -177,7 +213,7 @@ def create_app() -> FastAPI:
         )
 
     @app.post("/collect", response_model=CollectResponse, tags=["collection"])
-    async def collect_url(req: CollectRequest):
+    def collect_url(req: CollectRequest):
         """Collect a URL — fetch, classify, summarize, store."""
         try:
             result = process_url(
@@ -202,18 +238,16 @@ def create_app() -> FastAPI:
             return CollectResponse(success=False, error=str(e))
 
     @app.get("/search", response_model=SearchResponse, tags=["search"])
-    async def search(
+    def search(
         q: str = Query(..., description="Search query"),
         limit: int = Query(10, ge=1, le=100, description="Max results"),
     ):
         """Full-text search across collection."""
-        results = search_fulltext(q)
-        # Trim to limit and serialize
-        trimmed = results[:limit]
-        return SearchResponse(query=q, total=len(results), results=trimmed)
+        results = search_fulltext(q, limit=limit)
+        return SearchResponse(query=q, total=len(results), results=results)
 
     @app.get("/entries", tags=["collection"])
-    async def list_entries(
+    def list_entries(
         limit: int = Query(20, ge=1, le=100),
         offset: int = Query(0, ge=0),
     ):
@@ -236,17 +270,19 @@ def create_app() -> FastAPI:
         return {"total": len(entries), "offset": offset, "limit": limit, "entries": page}
 
     @app.get("/entries/{entry_id}", tags=["collection"])
-    async def get_entry(entry_id: str):
+    def get_entry(entry_id: str):
         """Get a specific entry by ID."""
-        date_prefix = entry_id[:7]
-        entry_path = ENTRIES_DIR / date_prefix / f"{entry_id}.json"
+        try:
+            entry_path = resolve_entry_json_path(ENTRIES_DIR, entry_id)
+        except InvalidEntryId:
+            raise HTTPException(status_code=400, detail="Invalid entry ID")
         if not entry_path.exists():
             raise HTTPException(status_code=404, detail=f"Entry {entry_id} not found")
         data = json.loads(entry_path.read_text(encoding="utf-8"))
         return data
 
     @app.post("/crystallize", tags=["knowledge"])
-    async def crystallize(req: CrystallizeRequest):
+    def crystallize(req: CrystallizeRequest):
         """Crystallize knowledge cards from a topic."""
         try:
             cards = card_service.crystallize_cards(req.topic)
@@ -262,16 +298,22 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/cards", tags=["knowledge"])
-    async def list_cards():
-        """List all crystallized knowledge cards."""
-        cards = card_service.list_cards()
+    def list_cards(
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+    ):
+        """List crystallized knowledge cards with explicit pagination."""
+        cards = card_service.list_cards(limit=offset + limit)
+        page = cards[offset : offset + limit]
         return {
-            "total": len(cards),
-            "cards": [card_service.card_to_public_dict(c) for c in cards],
+            "total": card_service.count_cards(),
+            "offset": offset,
+            "limit": limit,
+            "cards": [card_service.card_to_public_dict(c) for c in page],
         }
 
     @app.get("/cards/search/semantic", tags=["search"])
-    async def semantic_search_cards(
+    def semantic_search_cards(
         q: str = Query(..., description="Semantic search query"),
         limit: int = Query(5, ge=1, le=20),
     ):
@@ -283,7 +325,7 @@ def create_app() -> FastAPI:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.get("/cards/{card_id}", tags=["knowledge"])
-    async def get_card_detail(card_id: str):
+    def get_card_detail(card_id: str):
         """Get a specific knowledge card."""
         card = card_service.get_card_detail(card_id)
         if card is None:
@@ -291,16 +333,20 @@ def create_app() -> FastAPI:
         return card_service.card_to_public_dict(card)
 
     @app.delete("/cards/{card_id}", tags=["knowledge"])
-    async def remove_card(card_id: str):
+    def remove_card(card_id: str):
         """Delete a knowledge card."""
         try:
-            card_service.delete_card_by_id(card_id)
+            deleted = card_service.delete_card_by_id(card_id)
+            if not deleted:
+                raise HTTPException(status_code=404, detail=f"Card {card_id} not found")
             return {"success": True, "deleted": card_id}
+        except HTTPException:
+            raise
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
     @app.post("/feedback", tags=["feedback"])
-    async def submit_feedback_api(req: FeedbackRequest):
+    def submit_feedback_api(req: FeedbackRequest):
         """Submit feedback on an entry."""
         try:
             corrections = req.corrections or {}
@@ -308,7 +354,13 @@ def create_app() -> FastAPI:
                 corrections = {req.feedback_type: req.content}
             if not corrections:
                 raise HTTPException(status_code=422, detail="corrections is required")
-            submit_feedback(req.entry_id, corrections, req.user_note)
+            try:
+                validate_entry_id(req.entry_id)
+            except InvalidEntryId:
+                raise HTTPException(status_code=400, detail="Invalid entry ID")
+            result = submit_feedback(req.entry_id, corrections, req.user_note)
+            if not result.get("success"):
+                raise HTTPException(status_code=404, detail="Entry not found")
             return {"success": True}
         except HTTPException:
             raise
@@ -342,7 +394,7 @@ def create_app() -> FastAPI:
         """
         # Validate Origin for security (DNS rebinding prevention)
         origin = request.headers.get("origin", "")
-        if origin and not _is_safe_origin(origin):
+        if not api_token and origin and not _is_safe_origin(origin):
             return Response(status_code=403, content="Forbidden origin")
 
         session_id = request.headers.get("mcp-session-id")
@@ -437,34 +489,68 @@ def create_app() -> FastAPI:
 
 
 def _is_safe_origin(origin: str) -> bool:
-    """Check if origin is safe (localhost or same-host)."""
+    """Check if an Origin is a loopback web app or Chrome extension."""
     from urllib.parse import urlparse
     try:
         parsed = urlparse(origin)
         host = parsed.hostname or ""
-        return host in ("localhost", "127.0.0.1", "::1") or host.endswith(".localhost")
-    except Exception:
+        if parsed.scheme in ("http", "https"):
+            return _is_loopback_host(host)
+        return (
+            parsed.scheme == "chrome-extension"
+            and re.fullmatch(r"[a-z]{32}", host) is not None
+        )
+    except (TypeError, ValueError):
         return False
 
 
-# Module-level app instance (for uvicorn import)
-app = create_app()
+def _is_loopback_host(host: str) -> bool:
+    """Return whether a bind/origin host is unambiguously loopback."""
+    normalized = host.strip().lower().rstrip(".").strip("[]")
+    if normalized == "localhost" or normalized.endswith(".localhost"):
+        return True
+    try:
+        return ip_address(normalized).is_loopback
+    except ValueError:
+        return False
 
 
-def run_server(host: str = "127.0.0.1", port: int = 8321):
+def _is_safe_host_header(host_header: str) -> bool:
+    """Validate a Host header without trusting DNS resolution."""
+    from urllib.parse import urlsplit
+    try:
+        host = urlsplit(f"//{host_header}").hostname or ""
+    except ValueError:
+        return False
+    return _is_loopback_host(host)
+
+
+# Module-level app instance (for ASGI imports).  Explicit environment opt-in is
+# required to expose an authenticated API through a separate ASGI runner.
+app = create_app(api_token=os.environ.get("SHEAF_API_TOKEN") or None)
+
+
+def run_server(host: str = "127.0.0.1", port: int = 8321, api_token: str | None = None):
     """Run the HTTP API server."""
     import uvicorn
+
+    resolved_token = api_token if api_token is not None else os.environ.get("SHEAF_API_TOKEN")
+    resolved_token = resolved_token or None
+    if not _is_loopback_host(host) and not resolved_token:
+        raise RuntimeError(
+            "Refusing non-loopback bind without SHEAF_API_TOKEN or an explicit api_token"
+        )
 
     print(f"🚀 Sheaf API v{VERSION}")
     print(f"   http://{host}:{port}")
     print(f"   Docs: http://{host}:{port}/docs")
     print(f"   Data: {DATA_DIR}")
-    if host not in ("127.0.0.1", "localhost", "::1"):
-        print("   Warning: non-localhost bind exposes your local knowledge API on the network.")
+    if resolved_token:
+        print("   Authentication: Bearer token required")
     print()
 
     uvicorn.run(
-        "sheaf_ai.api:app",
+        create_app(api_token=resolved_token),
         host=host,
         port=port,
         log_level="info",

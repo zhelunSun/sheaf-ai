@@ -7,9 +7,9 @@ Sheaf MCP Server — Backward-compatible wrapper.
 
 Default MCP surface (4 core entry tools):
   sheaf_collect, sheaf_search, sheaf_crystallize, sheaf_get_card
-The remaining tools (list/get/correct/list_cards/insights/crosscheck/collect_batch)
-stay callable via tools/call for backward compat, but agents are guided to the
-`sheaf` CLI (with --json) for them. Set SHEAF_MCP_TOOLS=all to re-expose all 11.
+The remaining 10 tools stay callable via tools/call for backward compatibility,
+but agents are guided to the `sheaf` CLI (with --json) for them. Set
+SHEAF_MCP_TOOLS=all to re-expose all 14.
 
 3 deprecated tools (fallback only, not in tools/list):
   sheaf_urgent → use sheaf_list with filter="urgent"

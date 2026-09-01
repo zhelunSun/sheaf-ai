@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 
 from sheaf_ai.config import DATA_DIR
+from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_summary_path
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 from sheaf_ai.mcp.data import load_index, load_entry, compute_topics_summary
 from sheaf_ai.feedback import submit_feedback
@@ -43,7 +44,10 @@ def _get_entry(entry_id: str) -> dict | None:
     entry = load_entry(entry_id)
     if not entry:
         return None
-    summary_path = DATA_DIR / "summaries" / f"{entry_id}.md"
+    try:
+        summary_path = resolve_entry_summary_path(DATA_DIR / "summaries", entry_id)
+    except InvalidEntryId:
+        return None
     if summary_path.exists():
         entry["summary_markdown"] = summary_path.read_text(encoding="utf-8")
     return entry

@@ -12,6 +12,8 @@ Covers:
   - SourceRegistry persistence
   - score_to_tier mapping
 """
+from datetime import datetime, timezone
+
 from sheaf_ai.source_registry import (
     get_domain_score,
     SourceRegistry,
@@ -347,6 +349,7 @@ class TestFix97WeChatPrestige:
             text="清华AIR研究院发布了新研究。作者：王彦桥。arxiv.org/abs/2606.24899",
             content_type="news",
             published_date="2026-06-25T10:00:00+00:00",
+            as_of=datetime(2026, 6, 26, tzinfo=timezone.utc),
         )
         assert result["prestige_override"] is True
         assert result["score"] >= 45  # Should reach at least high-C / low-B
@@ -359,6 +362,7 @@ class TestFix97WeChatPrestige:
             text="机器之心报道。OpenAI 发布了新模型。",
             content_type="news",
             published_date="2026-06-25T10:00:00+00:00",
+            as_of=datetime(2026, 6, 26, tzinfo=timezone.utc),
         )
         assert result["prestige_override"] is True
         assert result["score"] >= 40
@@ -407,6 +411,7 @@ class TestFix97WeChatPrestige:
 论文地址：arxiv.org/abs/2606.24899""",
             content_type="news",
             published_date="2026-06-25T10:00:00+00:00",
+            as_of=datetime(2026, 6, 26, tzinfo=timezone.utc),
         )
         assert result["score"] >= 50, f"Expected >=50 (B tier), got {result['score']}"
         assert result["tier"] in ("B", "A")

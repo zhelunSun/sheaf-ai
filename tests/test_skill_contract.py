@@ -32,9 +32,9 @@ SKILL_FILES = ("sheaf-guide.md", "AGENTS.sheaf.md")
 # internals used widely in test suites.
 # ---------------------------------------------------------------------------
 
-def _subparser_choices() -> dict:
-    """Return ``{command: sub-ArgumentParser}`` from the sheaf CLI parser."""
-    parser = build_parser()
+def _subparser_choices(parser=None) -> dict:
+    """Return direct ``{command: sub-ArgumentParser}`` choices for *parser*."""
+    parser = parser or build_parser()
     for action in parser._actions:
         choices = getattr(action, "choices", None)
         if (isinstance(choices, dict) and choices
@@ -47,12 +47,25 @@ _SUBPARSERS = _subparser_choices()
 
 
 def _cmd_exists(cmd: str) -> bool:
-    return cmd in _SUBPARSERS
+    return _command_parser(cmd) is not None
+
+
+def _command_parser(cmd: str):
+    """Resolve a one- or two-level command path such as ``memory apply``."""
+    parts = cmd.split()
+    choices = _SUBPARSERS
+    parser = None
+    for part in parts:
+        parser = choices.get(part)
+        if parser is None:
+            return None
+        choices = _subparser_choices(parser)
+    return parser
 
 
 def _flag_accepted(cmd: str, flag: str) -> bool:
     """True iff the subcommand for *cmd* registers *flag* (e.g. ``--json``)."""
-    sub = _SUBPARSERS.get(cmd)
+    sub = _command_parser(cmd)
     if sub is None:
         return False
     return any(flag in getattr(act, "option_strings", ()) for act in sub._actions)
@@ -71,7 +84,7 @@ def _flag_value_accepted(cmd: str, flag: str, value: str) -> bool:
 # Token extraction.
 # ---------------------------------------------------------------------------
 
-_CMD_RE = re.compile(r"\bsheaf (\w+)")        # sheaf collect
+_CMD_TOKEN_RE = re.compile(r"\bsheaf[ \t]+([\w-]+)(?:[ \t]+([\w-]+))?")
 _TOOL_RE = re.compile(r"\bsheaf_(\w+)\b")     # sheaf_collect
 _FLAG_RE = re.compile(r"(?<![\w-])(--\w[\w-]*)")  # --json / --target
 
@@ -93,6 +106,15 @@ def _code_text(path: Path) -> str:
 def _code_spans_from_line(line: str) -> list[str]:
     """Inline code spans within a single markdown line."""
     return re.findall(r"`([^`\n]*)`", line)
+
+
+def _commands_from_text(text: str) -> list[str]:
+    """Extract real CLI paths, including a registered nested subcommand."""
+    commands: list[str] = []
+    for first, second in _CMD_TOKEN_RE.findall(text):
+        nested = f"{first} {second}" if second else ""
+        commands.append(nested if nested and _cmd_exists(nested) else first)
+    return commands
 
 
 @pytest.fixture(scope="module")
@@ -128,7 +150,7 @@ def test_cli_commands_referenced_are_real(code):
     """A: every `sheaf <cmd>` in the skill resolves to a real CLI command."""
     missing: dict[str, list[str]] = {}
     for name, text in code.items():
-        for cmd in sorted(set(_CMD_RE.findall(text))):
+        for cmd in sorted(set(_commands_from_text(text))):
             if not _cmd_exists(cmd):
                 missing.setdefault(name, []).append(cmd)
     assert not missing, f"skill references unknown CLI commands: {missing}"
@@ -160,7 +182,7 @@ def test_flags_referenced_are_accepted(raw_text):
             spans = _code_spans_from_line(line)
             cmds: list[str] = []
             for span in spans:
-                cmds.extend(_CMD_RE.findall(span))
+                cmds.extend(_commands_from_text(span))
             flags = _FLAG_RE.findall(line)
             if not cmds or not flags:
                 continue

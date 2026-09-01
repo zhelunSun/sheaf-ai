@@ -10,8 +10,12 @@ All four resources reuse existing data-access functions — no new data code.
 from __future__ import annotations
 
 import json
-import re
 
+from sheaf_ai.entry_paths import (
+    InvalidEntryId,
+    resolve_entry_raw_path,
+    validate_entry_id,
+)
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 
 # Static, always-present resources (returned by resources/list).
@@ -51,11 +55,6 @@ RESOURCE_TEMPLATES = [
         "mimeType": "text/plain",
     },
 ]
-
-# Entry ids are ``YYYY-MM-DD_<hex>``. Restrict to URL-safe alphanumerics so a
-# crafted id can't traverse out of the entries dir (load_entry builds a path
-# from entry_id[:7] + entry_id + ".json").
-_ENTRY_ID_RE = re.compile(r"^[A-Za-z0-9_-]+$")
 
 _ENTRIES_PREFIX = "sheaf://entries/"
 _RAW_SUFFIX = "/raw"
@@ -102,11 +101,16 @@ def read_resource(req_id, uri: str) -> str:
         if want_raw:
             rest = rest[: -len(_RAW_SUFFIX)]
         entry_id = rest
-        if not entry_id or not _ENTRY_ID_RE.fullmatch(entry_id):
+        try:
+            validate_entry_id(entry_id)
+        except InvalidEntryId:
             return jsonrpc_error(req_id, -32602, f"Invalid entry id in URI: {uri}")
         if want_raw:
             from sheaf_ai.config import RAW_DIR
-            raw_path = RAW_DIR / f"{entry_id}.txt"
+            try:
+                raw_path = resolve_entry_raw_path(RAW_DIR, entry_id)
+            except InvalidEntryId:
+                return jsonrpc_error(req_id, -32602, f"Invalid entry id in URI: {uri}")
             if not raw_path.exists():
                 return jsonrpc_error(req_id, -32602, f"Raw text not found for entry: {entry_id}")
             text = raw_path.read_text(encoding="utf-8", errors="replace")

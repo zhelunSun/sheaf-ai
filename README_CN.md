@@ -13,13 +13,13 @@
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-blue.svg" alt="License: Apache 2.0"></a>
-  <a href="tests/"><img src="https://img.shields.io/badge/tests-1024%20pass-brightgreen" alt="Tests"></a>
+  <a href="https://github.com/zhelunSun/sheaf-ai/actions/workflows/ci.yml"><img src="https://github.com/zhelunSun/sheaf-ai/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="https://pypi.org/project/sheaf-ai/"><img src="https://img.shields.io/pypi/v/sheaf-ai.svg" alt="PyPI"></a>
 </p>
 
 ---
 
-**Sheaf**（/ʃiːf/，麦穗束）把你每天收藏的链接，变成 **AI Agent 真正能用的知识库**。粘贴链接，自动抓取、分类、摘要；多条结晶为可携带的知识卡片。本地优先，开源免费。
+**Sheaf**（/ʃiːf/，麦穗束）把你主动选择的技术来源，变成 **AI Agent 真正能用、也能核验的知识库**。你的收藏选择把信息品味传给 Agent；来源溯源则防止系统把“你选择了它”偷换成“它必然正确”。本地优先，开源免费。
 
 > **Sheaf** 是一束收获的谷物 — 农人带到集市的基本单位。Sheaf 对知识做同样的事：收集、成束、流转。
 
@@ -47,7 +47,7 @@ sheaf search "transformer architecture"          # 搜索知识库
 sheaf crystallize AI                             # 结晶知识卡片
 ```
 
-无需注册，无需云端。数据本地存储 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`，格式 Markdown + JSON。可用 `SHEAF_DATA_DIR` 覆盖。
+无需 Sheaf 账号或托管存储。语料本地保存 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`，格式 Markdown + JSON；模型推理发送到你配置的提供商。可用 `SHEAF_DATA_DIR` 覆盖数据路径。
 
 > **Claude Code 上更快 —— 完全免安装：**
 > ```bash
@@ -68,11 +68,12 @@ Sheaf 解决这个问题。每条链接都变成一个**结构化条目**。积�
 | | 它做什么 |
 |---|---|
 | 🌾 **收藏（Harvest）** | 粘贴链接（或 `--text` 存笔记）。Sheaf 自动抓取 + 分类 + 摘要 —— 网页、arXiv 论文、微信 / 知乎、ChatGPT 分享、随手笔记。 |
-| ✨ **结晶（Crystallize）** | 把 3+ 条收藏蒸馏成带置信度与证据溯源的知识卡片。 |
+| ✨ **结晶（Crystallize）** | 把 3+ 条收藏蒸馏成带来源溯源的知识卡片。 |
+| 🧭 **治理演化** | 用受约束的 create/update/merge/contest/resolve/retire 转移维护知识，并保留不可变历史；证据强度是可解释的序数启发式，不是概率。 |
 | 🤖 **Agent 就绪** | 内置 MCP 服务器 —— 任何 agent 都能搜索、引用、推理你的知识库。 |
 | 🔒 **本地优先** | 无云端、无遥测、无账号。数据始终在你的机器上。 |
 
-### 结晶 —— 你的第二大脑
+### 结晶 —— 把精选来源变成可复用主张
 
 Sheaf 的杀手锏。不是把书签存着吃灰，`sheaf crystallize` 跨多条收藏合成洞察：
 
@@ -85,7 +86,20 @@ $ sheaf crystallize AI
      CRAG 引入检索评估器、网页搜索增强和文档分解。
 ```
 
-每张卡片含 **置信度评分**、**证据溯源**（哪些来源贡献了它）、**主题归属**、**标签**。用 `sheaf crystallize --semantic "查询"` 跨所有卡片做向量语义搜索。
+每张 batch 卡片含 **证据溯源**（哪些来源贡献了它）、**主题归属**、**标签**。用 `sheaf crystallize --semantic "查询"` 跨所有卡片做向量语义搜索。
+
+实验性的证据治理路径更严格：source ID 必须对应真实已收藏 Entry；冲突先进入 `contested` 状态；旧版本和决策原因写入事件账本；解决冲突必须提供明确的 resolution basis。它不宣称 LLM 决策策略或置信概率已经校准：
+
+```bash
+sheaf memory apply --request transition.json
+sheaf memory snapshot --topic "Agent memory"
+sheaf memory history --topic "Agent memory"
+```
+
+已实现能力与拟议能力的边界见[产品与评测提案](docs/EVIDENCE-GOVERNED-MEMORY-PROPOSAL.md)及冻结的 [G0-G3 协议](evals/evidence-governed-memory/PROTOCOL.md)。
+可用 `python evals/evidence-governed-memory/run_executor_acceptance.py` 独立复现
+确定性执行器验收；它验证来源约束、幂等、冲突保留、官方更正与审计历史，但不冒充
+LLM 策略质量 benchmark。
 
 ## 接入你的 Agent
 
@@ -101,7 +115,7 @@ sheaf setup --target codex --dry-run # 预览但不写入
 
 > **MCP 与 skill 一体安装。** `sheaf setup` 一次部署 MCP 服务器 **和** skill —— skill 告诉 agent *何时* 主动捕获笔记、何时从知识库召回,所以它不是可有可无的装饰。优先用它,而非裸 `uvx` 一行(那只接 MCP、不带 skill)。要一次全搞定(key + MCP + skill + 健康检查)用 `sheaf init --auto`。
 
-MCP 服务器默认暴露 **4 个核心工具** —— `sheaf_collect`、`sheaf_search`、`sheaf_crystallize`、`sheaf_get_card` —— 覆盖约 90% 的自动化 agent 工作流，刻意保持精简（~1.5k vs ~5k tokens）。其余 7 个仍可通过 `sheaf` CLI（`--json`）或 MCP `tools/call` 调用；设 `SHEAF_MCP_TOOLS=all` 恢复全部。完整工具矩阵与设计理由见 [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91)，接入细节见 [docs/mcp-setup.md](docs/mcp-setup.md)。
+MCP 服务器默认暴露 **4 个核心工具** —— `sheaf_collect`、`sheaf_search`、`sheaf_crystallize`、`sheaf_get_card` —— 刻意保持默认上下文精简。其余 10 个（含 3 个 evidence-memory 工具）仍可通过 CLI 或显式 MCP `tools/call` 调用；设 `SHEAF_MCP_TOOLS=all` 可暴露全部 14 个。完整工具矩阵与设计理由见 [Issue #91](https://github.com/zhelunSun/sheaf-ai/issues/91)，接入细节见 [docs/mcp-setup.md](docs/mcp-setup.md)。
 
 Agent 还可经 **MCP Resources** 只读**浏览**知识库 —— `sheaf://entries/recent`、`sheaf://entries/{id}`、`sheaf://stats`、`sheaf://tags`（`resources/list` / `resources/read`）。规范见 [docs/agent-query-spec.md](docs/agent-query-spec.md)。
 
@@ -114,6 +128,9 @@ sheaf search <query>             # 全文搜索（结果显示 entry id）
 sheaf list [--page N]            # 浏览条目，分页
 sheaf get <id>                   # 查看一条条目完整详情
 sheaf crystallize <topic>        # 从主题结晶知识卡片
+sheaf memory apply --request FILE # 应用经过校验的证据转移
+sheaf memory snapshot            # 查看 active / contested 状态
+sheaf memory history             # 审计不可变转移历史
 sheaf stats | tags | weekly | insights | urgent
 sheaf mcp                        # 启动 MCP 服务器（stdio）
 ```
@@ -141,7 +158,7 @@ Sheaf 返回带类型的退出码，让 Agent 可按错误类型编程式分支�
 
 ## 隐私 & 本地优先
 
-**你的数据不会离开你的机器，除非你主动选择。**
+**你的持久化语料留在本机；推理去向由你选择的模型提供商决定。**
 
 - 所有内容本地存储 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`（可用 `SHEAF_DATA_DIR` 覆盖）
 - LLM 调用发送到**你选择的** API 提供商 —— 不经 Sheaf 中转
@@ -207,7 +224,7 @@ export OPENAI_BASE_URL=https://api.openai.com/v1   # 可选 —— 非 OpenAI �
 ```bash
 git clone https://github.com/zhelunSun/sheaf-ai.git && cd sheaf-ai
 python -m pip install -e ".[dev]"
-python -m pytest tests/ -q          # 1024 passed, 19 skipped
+python -m pytest tests/ -q
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 
@@ -215,7 +232,7 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态 & 浏览器扩展
 
-Sheaf 处于早期 Alpha。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作，由 **1024 个测试** 覆盖。我们正用真实用户验证，准备进入 Beta。
+Sheaf 处于早期 Alpha。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作并由 CI 覆盖。证据治理演化仍是显式调用的实验路径，只有在仓库内 G0-G3 协议产生实测结果后才会升级相关效果宣称。我们正在用真实用户验证知识复用闭环。
 
 Chrome 扩展（`extension/`）提供任意网页的一键收藏与搜索：用 `sheaf serve` 启动本地 API，在 Chrome → 管理扩展 → 开发者模式中加载 `extension/`，然后 `Alt+Shift+S` 或右键任意页面 → "🌾 Collect with Sheaf"。
 

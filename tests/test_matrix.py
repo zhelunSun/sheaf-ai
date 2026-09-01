@@ -163,12 +163,10 @@ class TestFingerprintExtraction:
     def test_llm_strips_markdown_fences(self):
         """LLM response with ```json fences should be parsed correctly."""
         response_with_fences = "```json\n" + SAMPLE_FINGERPRINT_JSON + "\n```"
-        mock_client = MagicMock()
-        mock_client.chat.return_value = response_with_fences
-
-        with patch("sheaf_ai.llm_client.get_client", return_value=mock_client):
+        with patch("sheaf_ai.llm_client.chat", return_value=response_with_fences) as mock_chat:
             fp = extract_fingerprint_llm("Test", "Test text")
             assert fp.entities == ["NVIDIA", "GTC", "Taipei"]
+            mock_chat.assert_called_once()
 
 
 # ═══════════════════════════════════════════════════════════════
