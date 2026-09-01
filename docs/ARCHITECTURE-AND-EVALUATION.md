@@ -38,7 +38,7 @@ the three paths below.
 
 | Path | Product job | Implemented now | Still unproven |
 |---|---|---|---|
-| Retrieval | Recover the right saved evidence for a question | Keyword scoring and card-mediated semantic score fusion | Direct Entry semantic coverage, embedding quality, representative queries, and credible baselines |
+| Retrieval | Recover the right saved evidence for a question | BM25 plus a direct Entry vector index, atomic generations, stale diagnostics, and keyword fallback | Real embedding quality, representative qrels, fusion ablation, and long-document coverage |
 | Crystallization | Turn several sources into reusable claims | Model-assisted extraction, strict schema validation, and resolvable source links | Claim entailment, contradiction handling, redundancy, stability across models, and usefulness to people |
 | Incremental evolution | Change knowledge without erasing why it changed | Explicit create, update, contest, and merge transitions; immutable history; replayable versions | Automatic action selection, calibrated evidence weighting, and end-to-end quality under noisy inputs |
 
@@ -174,7 +174,7 @@ proves state invariants only—not that a model can choose the right transition.
 Current safe claim:
 
 > Sheaf implements and automatically tests a local, source-backed knowledge
-> loop with stable keyword retrieval, an experimental card-mediated hybrid
+> loop with stable keyword retrieval and a direct Entry-level hybrid
 > path, provenance-constrained crystallization, and replayable evidence-based
 > updates.
 

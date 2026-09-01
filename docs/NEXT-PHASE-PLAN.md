@@ -16,13 +16,34 @@
 如果先调融合权重、增加提示词或实现自动策略，得到的提升可能只是测试设计造成的。
 因此当前阶段的第一目标是让“被测系统”与“实际产品路径”成为同一个系统。
 
+### 2026-09-01 执行快照
+
+本轮已经把几项会直接污染实验的风险变成代码门禁：
+
+- Entry 已有独立语义索引、原子 manifest 和可诊断降级；快速离线评测现在走真实
+  Entry index 和 retrieval service，不再注入最终语义分数；
+- evidence use 已从“Entry 全局只能用一次”升级为 claim-scoped identity，ledger schema
+  v2 可重放 v1 事件，并按事件保存的算法版本复算；
+- 跨域内容等价只接受版本化的全文 `sha256` evidence digest，旧前缀 hash 不再冒充
+  独立性判据；
+- 结晶先校验原始 JSON，再构造卡片；非法 confidence、未解析引用、装饰性来源和
+  错位 `related_to` 会失败关闭；
+- G0-G3 的 model input 与 evaluator gold 已物理分离，case ID 改为不泄露动作的
+  不透明编号，loader 和 mutation tests 共同检查分组可见字段。
+
+这不是 M1-M4 已全部完成。仍然明确开放的硬问题包括：quote/span 级 evidence use、
+轻微改写转载识别、official correction 的 authority scope、SPLIT/NOOP decision trace、
+长文选段、Entry/卡片/向量索引之间的跨文件事务一致性，以及真实 embedding/LLM 的冻结数据实验。
+
 ## 2. 当前 P0 问题
 
-### P0-A：检索评测与生产语义路径不一致
+### P0-A：检索评测与生产语义路径不一致（第一阶段已实现）
 
-当前混合检索先搜索 KnowledgeCard 向量，再通过卡片 `source_ids` 映射回 Entry。
-采集流程没有为所有 Entry 建立直接语义索引；未被结晶或单独处理过的来源，实际上
-只能参加关键词检索。CLI、MCP 和 HTTP 的默认搜索路径也不一致。
+本轮之前，混合检索先搜索 KnowledgeCard 向量，再通过卡片 `source_ids` 映射回
+Entry，未结晶来源只能参加关键词检索，CLI、MCP 和 HTTP 的默认路径也不一致。
+现在三类接口已统一到 direct Entry hybrid path；向量索引需由
+`sheaf search-index --rebuild` 显式引导首次构建，随后收藏流程增量维护。失败更新会
+持久化 stale marker，旧索引仍可降级查询而不会伪装成完整覆盖。
 
 完成标准：
 
@@ -32,7 +53,7 @@
 - embedding 不可用、索引为空和确实无结果具有不同诊断；
 - 离线评测直接调用这条生产路径，不再注入最终语义分数冒充端到端结果。
 
-### P0-B：证据复用粒度过粗
+### P0-B：证据复用粒度过粗（claim identity 已实现，span identity 待做）
 
 当前 ledger 把一个 `entry_id` 视为全局只能消费一次的证据。这能阻止重复事件，
 但也导致一篇论文不能合法支持两个不同主张。
@@ -46,7 +67,7 @@
 多个不同主张；同一来源的同一段话不能因为重复提交而增加独立证据强度。精确请求
 重试仍由 idempotency key 和 request hash 负责。
 
-### P0-C：增量执行器与 G0-G3 协议不闭合
+### P0-C：增量执行器与 G0-G3 协议不闭合（仍开放）
 
 协议允许 `split` 和 `noop`，执行器目前只有 CREATE、UPDATE、MERGE、RETIRE、
 CONTEST，并且一次事件只能产生一个版本。
@@ -62,7 +83,7 @@ CONTEST，并且一次事件只能产生一个版本。
 如果原型证明原子批处理过于复杂，再单独评审多输出 event；不能让协议和实现各自
 假定不同语义。
 
-### P0-D：转载可能被误算为独立证据
+### P0-D：转载可能被误算为独立证据（精确全文镜像已修，近重复待做）
 
 当前证据强度主要按 domain `source_key` 去重。两个不同域名如果承载相同内容，仍会
 被计为两个独立来源；仓库虽然保存 `content_hash`，强度计算并没有使用它。这与

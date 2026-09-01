@@ -28,8 +28,8 @@ temperature, and token budget wherever the group permits.
 |---|---|---|
 | **G0** | Summarize each source independently, then concatenate the summaries | Minimal non-synthesis baseline |
 | **G1** | Run the current one-shot cross-source crystallization over all sources available at the final step | Tests batch synthesis without temporal state |
-| **G2** | Incrementally choose create/update/merge/retire using semantic context, but hide source tier, conflict labels, and audit requirements from the policy | Isolates incremental operations from evidence governance |
-| **G3** | Incremental operations with source IDs, evidence features, conflict preservation, structured confidence, and an append-only transition trace | Proposed system |
+| **G2** | Incrementally choose create/update/merge/retire using semantic context, but hide source kind, source tier, conflict labels, and audit requirements from the policy | Isolates incremental operations from evidence governance |
+| **G3** | Incremental operations with source IDs, evidence features, conflict preservation, ordinal evidence strength, and an append-only transition trace | Proposed system |
 
 G2 and G3 must share the same operation executor. Only the policy inputs and
 evidence-governance checks may differ. Otherwise an implementation difference
@@ -37,18 +37,24 @@ could be mistaken for a mechanism effect.
 
 ## 3. Fixture
 
-`cases.jsonl` contains four synthetic, copyright-free cases. Synthetic content
-keeps the gold states deterministic and avoids using a model's world knowledge
-as the answer key.
+`inputs.jsonl` contains four synthetic, copyright-free cases. Synthetic content
+avoids using a model's world knowledge as the answer key. Evaluator-only answers
+live separately in `gold.jsonl`; a policy runner must load model inputs through
+`load_group_inputs()` in `validate_fixtures.py`, never by joining the two files.
 
-Each line contains:
+Each input line contains:
 
 - `case_id` and `topic`;
 - a decision-shaped `user_question`;
-- ordered `observations` with source ID, source kind, publication time, and text;
-- `gold_by_step`, the acceptable claim state after each arrival;
-- `required_behaviors` and `forbidden_behaviors`; and
-- a `relevance_note` explaining why the case exists.
+- ordered `observations` with source ID, source kind, publication time, and text.
+
+Each matching gold line contains `gold_by_step` with `allowed_operations`,
+`required_behaviors`,
+`forbidden_behaviors`, and `relevance_note`. Gold may be loaded only by the
+scorer after the model output is immutable. The required loader removes source
+kind and source tier from G0-G2 payloads; G3 receives both governance features
+but never the gold fields. Case IDs are intentionally opaque so they do not
+tell the policy whether a fixture expects correction, splitting, or no-op.
 
 Source tier is an evaluation feature, not a truth oracle. Recency only matters
 when the source explicitly describes a version or policy change.
@@ -77,7 +83,8 @@ evals/evidence-governed-memory/runs/<UTC timestamp>/
   "run_id": "UTC timestamp or UUID",
   "git_commit": "full commit hash",
   "dirty_worktree": false,
-  "fixture_sha256": "...",
+  "input_fixture_sha256": "...",
+  "gold_fixture_sha256": "...",
   "model_provider": "...",
   "model": "exact model identifier",
   "temperature": 0,
@@ -107,13 +114,14 @@ Convert every group to the same scoring representation:
       "status": "active|contested|retired",
       "supporting_source_ids": ["..."],
       "contradicting_source_ids": ["..."],
-      "confidence": 0.0
+      "evidence_strength_ordinal": 0.0,
+      "claim_correctness_probability": null
     }
   ],
   "transitions": [
     {
       "step": 1,
-      "operation": "create|update|merge|split|retire|noop",
+      "operation": "create|update|merge|split|retire|contest|noop",
       "before_claim_ids": [],
       "after_claim_ids": ["..."],
       "reason": "...",
@@ -127,8 +135,11 @@ Convert every group to the same scoring representation:
 }
 ```
 
-Groups without state transitions use an empty `transitions` array. Missing
-fields remain missing or null; do not synthesize provenance after generation.
+Groups without state transitions use an empty `transitions` array. `split` and
+`noop` are policy-level operations: the current executor still needs the
+versioned UPDATE+CREATE decision transaction and non-version-producing decision
+trace described in the implementation roadmap. Missing fields remain missing
+or null; do not synthesize provenance after generation.
 
 ## 6. Human labeling
 
@@ -138,7 +149,8 @@ Two passes are required:
    the group name. Label atomic claim entailment, contradiction handling, and
    duplicates.
 2. **Audit pass:** the reviewer sees transitions and provenance. Label trace
-   completeness and operation acceptability against `gold_by_step`.
+   completeness and operation acceptability against `gold_by_step`. This is the
+   first point at which the gold fixture may be joined to a run.
 
 One reviewer is enough for an engineering smoke run. A report used to make a
 comparative quality claim requires two independent reviewers, disagreements
@@ -196,9 +208,12 @@ conditions, not merely when they share a topic.
 
 ### 7.7 Calibration
 
-When confidence is emitted, label atomic claims correct/incorrect and report
-Brier score. Also print a reliability table using coarse bins. With this small
-fixture, do not claim that ECE is stable or generalizable.
+Only a separately defined claim-correctness probability may be scored with
+Brier score. The executor's deterministic evidence strength is ordinal and
+must never be substituted for that probability. When an aligned probability is
+emitted, label atomic claims correct/incorrect, report Brier score, and print a
+coarse reliability table. With this small fixture, do not claim that ECE is
+stable or generalizable.
 
 Compare structured G3 confidence with the G1 model-reported baseline only when
 both are defined over the same labeled claims.
@@ -230,9 +245,11 @@ Any critical failure blocks the vNext acceptance demo.
 - Conflict preservation recall = 1.00.
 - Transition accuracy >= 0.85.
 - Redundancy ratio <= G2 and <= G1.
-- G3 Brier score <= G1 model-reported-confidence Brier score, when the
-  comparison has at least 10 aligned labeled claims; otherwise report both as
-  descriptive values and mark the calibration gate `insufficient_n`.
+- G3 Brier score <= G1 model-reported-confidence Brier score only when both
+  groups emit aligned claim-correctness probabilities for at least 10 labeled
+  claims. Mark the gate `not_applicable` while G3 exposes only ordinal evidence
+  strength, and `insufficient_n` when probabilities exist but the sample is too
+  small.
 - G3 median model calls <= 2.5x G1 median model calls.
 
 The fixture passes only if all critical gates and at least four of the first
@@ -246,7 +263,7 @@ performance. Change them only in a versioned protocol revision before a run.
 
 `REPORT.md` must contain:
 
-1. exact run manifest and fixture hash;
+1. exact run manifest and both fixture hashes;
 2. a G0-G3 table with raw counts and scores;
 3. one worked transition trace per case;
 4. every critical failure, retry, parse fallback, and reviewer disagreement;

@@ -26,30 +26,43 @@ from sheaf_ai.card_extraction import (  # noqa: E402
     parse_card_extraction_response,
 )
 from sheaf_cards.base import CardValidator  # noqa: E402
+from sheaf_ai.entry_embeddings import EntrySemanticIndex  # noqa: E402
+from sheaf_ai.retrieval_service import EntryRetrievalService  # noqa: E402
 
 
 RETRIEVAL_CASES = (
     {
         "query": "Atlas retry default",
         "relevant": {"atlas-v1", "atlas-v2"},
-        "semantic": {"atlas-v2": 0.96, "atlas-v1": 0.92},
     },
     {
         "query": "how many attempts happen automatically",
         "relevant": {"atlas-v1", "atlas-v2"},
-        "semantic": {"atlas-v2": 0.96, "atlas-v1": 0.92},
     },
     {
         "query": "long document retrieval",
         "relevant": {"orchid-long"},
-        "semantic": {"orchid-long": 0.97},
     },
     {
         "query": "does it work on lengthy inputs",
         "relevant": {"orchid-long"},
-        "semantic": {"orchid-long": 0.97},
     },
 )
+
+
+def _fixture_embedder(texts: list[str], model: str) -> list[list[float]]:
+    """Deterministic semantic fixture that still exercises the real Entry index."""
+    del model
+    vectors: list[list[float]] = []
+    for text in texts:
+        lowered = text.casefold()
+        vectors.append([
+            float(any(term in lowered for term in ("atlas", "retry", "attempt", "automatically"))),
+            float(any(term in lowered for term in ("orchid", "long-document", "long document", "lengthy input"))),
+            float(any(term in lowered for term in ("northstar", "deadline"))),
+            float(any(term in lowered for term in ("cedar", "cache", "revision-token"))),
+        ])
+    return vectors
 
 
 def _retrieval_corpus() -> list[dict[str, object]]:
@@ -118,7 +131,7 @@ def _ranking_metrics(rankings: list[list[str]]) -> dict[str, float]:
 
 
 def evaluate_retrieval() -> dict[str, object]:
-    """Evaluate keyword scoring and fusion with deterministic semantic scores."""
+    """Evaluate the production Entry index, service, BM25, and fusion path."""
     with tempfile.TemporaryDirectory(prefix="sheaf-retrieval-eval-") as tmp:
         root = Path(tmp)
         index_path = root / "index.jsonl"
@@ -134,6 +147,16 @@ def evaluate_retrieval() -> dict[str, object]:
                 str(entry["summary"]),
                 encoding="utf-8",
             )
+        semantic_index = EntrySemanticIndex(
+            root / "entry_embeddings",
+            model="offline-fixture-v1",
+            embedder=_fixture_embedder,
+        )
+        semantic_index.build(
+            corpus,
+            raw_texts={entry["id"]: str(entry["summary"]) for entry in corpus},
+        )
+        retrieval_service = EntryRetrievalService(index=semantic_index)
 
         keyword_rankings: list[list[str]] = []
         hybrid_rankings: list[list[str]] = []
@@ -141,12 +164,11 @@ def evaluate_retrieval() -> dict[str, object]:
         with (
             patch.object(search, "INDEX_FILE", index_path),
             patch.object(search, "RAW_DIR", raw_dir),
+            patch.object(search, "EntryRetrievalService", return_value=retrieval_service),
         ):
             for case in RETRIEVAL_CASES:
-                semantic = case["semantic"]
-                with patch.object(search, "_fetch_semantic_scores", return_value=semantic):
-                    keyword = search.search_hybrid(case["query"], limit=3, alpha=1.0)
-                    hybrid = search.search_hybrid(case["query"], limit=3, alpha=0.6)
+                keyword = search.search_hybrid(case["query"], limit=3, alpha=1.0)
+                hybrid = search.search_hybrid(case["query"], limit=3, alpha=0.6)
                 keyword_ids = [item["entry"]["id"] for item in keyword]
                 hybrid_ids = [item["entry"]["id"] for item in hybrid]
                 keyword_rankings.append(keyword_ids)
@@ -157,13 +179,19 @@ def evaluate_retrieval() -> dict[str, object]:
                         "relevant": sorted(case["relevant"]),
                         "keyword_top3": keyword_ids,
                         "hybrid_top3": hybrid_ids,
+                        "semantic_backend": (
+                            hybrid[0]["semantic_backend"] if hybrid else "no_results"
+                        ),
                     }
                 )
 
         keyword_metrics = _ranking_metrics(keyword_rankings)
         hybrid_metrics = _ranking_metrics(hybrid_rankings)
         return {
-            "scope": "BM25 plus fusion logic with fixed semantic scores; embedding model not tested",
+            "scope": (
+                "production Entry index, manifest, semantic service, BM25, and fusion "
+                "with a deterministic fixture embedder; live embedding model not tested"
+            ),
             "case_count": len(RETRIEVAL_CASES),
             "keyword": keyword_metrics,
             "hybrid": hybrid_metrics,
@@ -175,6 +203,9 @@ def evaluate_retrieval() -> dict[str, object]:
             "semantic_only_cases_recovered": all(
                 case["relevant"].intersection(ranked[:3])
                 for case, ranked in zip(RETRIEVAL_CASES[1::2], hybrid_rankings[1::2], strict=True)
+            ),
+            "production_entry_index_exercised": all(
+                item["semantic_backend"] == "entry_index" for item in per_query
             ),
             "queries": per_query,
         }
@@ -265,15 +296,31 @@ def evaluate_memory() -> dict[str, object]:
     return runner["run_acceptance"]()
 
 
+def evaluate_fixture_isolation() -> dict[str, object]:
+    """Prove that policy inputs and evaluator-only gold are physically separated."""
+    validator = runpy.run_path(
+        str(
+            REPOSITORY_ROOT
+            / "evals"
+            / "evidence-governed-memory"
+            / "validate_fixtures.py"
+        )
+    )
+    return validator["validate_fixtures"]()
+
+
 def run_suite() -> dict[str, object]:
     retrieval = evaluate_retrieval()
     crystallization = evaluate_crystallization()
     memory = evaluate_memory()
+    fixture_isolation = evaluate_fixture_isolation()
     passed = bool(
         retrieval["hybrid_not_worse"]
         and retrieval["semantic_only_cases_recovered"]
+        and retrieval["production_entry_index_exercised"]
         and crystallization["passed"]
         and memory["passed"]
+        and fixture_isolation["passed"]
     )
     return {
         "suite": "sheaf_core_algorithms_offline_v1",
@@ -285,6 +332,7 @@ def run_suite() -> dict[str, object]:
         "retrieval": retrieval,
         "crystallization": crystallization,
         "memory_evolution": memory,
+        "evaluation_fixture_isolation": fixture_isolation,
     }
 
 

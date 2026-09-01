@@ -47,7 +47,8 @@ sheaf setup            # auto-detects Claude Code / Codex / Cursor / Windsurf / 
 
 ```bash
 sheaf collect https://arxiv.org/abs/2401.00000   # save a link
-sheaf search "transformer architecture"          # search your collection
+sheaf search-index --rebuild                     # opt in to Entry embeddings (provider call)
+sheaf search "transformer architecture"          # hybrid search; diagnostic keyword fallback
 sheaf crystallize AI                             # distill knowledge cards
 ```
 
@@ -72,7 +73,7 @@ Sheaf fixes this. Every link becomes a **structured entry**. Crystallize enough 
 | | What it does |
 |---|---|
 | 🌾 **Collect — foundation** | Paste a link or note. Sheaf fetches, cleans, classifies, and preserves its source. |
-| 🔎 **Retrieve — core path** | Keyword retrieval is stable; the experimental hybrid path adds card-mediated semantic signals while the direct Entry index is being completed. |
+| 🔎 **Retrieve — core path** | Hybrid retrieval combines BM25 with a direct Entry vector index, exposes stale/unavailable diagnostics, and falls back to keyword search without hiding the degradation. |
 | ✨ **Crystallize — core path** | Distill multiple entries into knowledge cards with resolvable source links. |
 | 🧭 **Evolve — core path** | Apply schema-constrained create, update, merge, contest, resolve, and retire transitions with immutable history. Evidence strength is an explainable ordinal heuristic, not a probability. |
 | 🤖 **Agent-ready** | Built-in MCP server — any agent searches, cites, and reasons over your knowledge base. |
@@ -136,7 +137,8 @@ Agents can also **browse** the knowledge base read-only via MCP Resources — `s
 ```bash
 sheaf help                       # grouped command overview
 sheaf collect <url> | --text "…" # save a link, or a pasted note (tagged 'note')
-sheaf search <query>             # full-text search (results show the entry id)
+sheaf search <query>             # hybrid Entry search (results show id + diagnostics)
+sheaf search-index --rebuild     # explicitly build/rebuild Entry embeddings
 sheaf list [--page N]            # browse entries, paginated
 sheaf get <id>                   # full detail of one entry
 sheaf crystallize <topic>        # crystallize knowledge cards from a topic

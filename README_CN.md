@@ -67,7 +67,7 @@ Sheaf 解决这个问题。每条链接都变成一个**结构化条目**。积�
 | | 它做什么 |
 |---|---|
 | 🌾 **收藏——基础能力** | 粘贴链接或笔记，完成抓取、清洗、分类并保留来源。 |
-| 🔎 **检索——核心路径** | 关键词检索已经稳定；实验性混合路径加入卡片转接的语义信号，直接 Entry 索引仍在补齐。 |
+| 🔎 **检索——核心路径** | 混合检索把 BM25 与直接 Entry 向量索引结合；索引过期或不可用会显式诊断，并可降级到关键词检索。 |
 | ✨ **结晶——核心路径** | 把多条收藏变成来源可解析的知识卡片。 |
 | 🧭 **增量演化——核心路径** | 用受约束的 create/update/merge/contest/resolve/retire 转移维护知识，并保留不可变历史；证据强度是可解释的序数启发式，不是概率。 |
 | 🤖 **Agent 就绪** | 内置 MCP 服务器 —— 任何 agent 都能搜索、引用、推理你的知识库。 |
@@ -128,7 +128,8 @@ Agent 还可经 **MCP Resources** 只读**浏览**知识库 —— `sheaf://entr
 ```bash
 sheaf help                       # 分组命令总览
 sheaf collect <url> | --text "…" # 收藏链接，或保存笔记（标记为 note）
-sheaf search <query>             # 全文搜索（结果显示 entry id）
+sheaf search <query>             # Entry 混合搜索（显示 id 与降级诊断）
+sheaf search-index --rebuild     # 显式构建或重建 Entry 向量索引
 sheaf list [--page N]            # 浏览条目，分页
 sheaf get <id>                   # 查看一条条目完整详情
 sheaf crystallize <topic>        # 从主题结晶知识卡片
