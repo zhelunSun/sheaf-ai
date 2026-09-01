@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "benchmark_version": "passage-selection-diagnostic-v1",
+  "status": "frozen",
+  "synthetic_diagnostic": true,
+  "ranker_visible_files": [
+    "ranker_inputs.jsonl"
+  ],
+  "evaluator_only_files": [
+    "evaluator_gold.jsonl"
+  ],
+  "files": [
+    {
+      "path": "ranker_inputs.jsonl",
+      "role": "ranker_visible",
+      "sha256": "sha256:761493f80ad19e9d8f5a14a3629fa6ec8ece67981db445f62edb80fa053d4498",
+      "bytes": 5259
+    },
+    {
+      "path": "evaluator_gold.jsonl",
+      "role": "evaluator_only",
+      "sha256": "sha256:0bc3a89861720c9584b844dc335ede35821c479cbb5343784de03e0edac6b0a9",
+      "bytes": 1835
+    }
+  ],
+  "case_ids": [
+    "tail_fact",
+    "middle_fact",
+    "distributed_facts",
+    "no_lexical_signal"
+  ]
+}

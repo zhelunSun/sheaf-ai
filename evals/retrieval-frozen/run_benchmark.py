@@ -29,16 +29,20 @@ from sheaf_ai.entry_embeddings import EntrySemanticIndex  # noqa: E402
 from sheaf_ai.retrieval_service import EntryRetrievalService  # noqa: E402
 
 
-FIXTURE_DIR = Path(__file__).resolve().parent
+EVAL_ROOT = Path(__file__).resolve().parent
+LEGACY_FIXTURE_DIR = EVAL_ROOT
+FIXTURE_DIR = EVAL_ROOT / "revisions" / "2026-09-01.2"
 CORPUS_PATH = FIXTURE_DIR / "corpus.jsonl"
 QUERIES_PATH = FIXTURE_DIR / "queries.jsonl"
 QRELS_PATH = FIXTURE_DIR / "qrels.jsonl"
 MANIFEST_PATH = FIXTURE_DIR / "manifest.json"
-MANIFEST_SCHEMA_VERSION = 1
+MANIFEST_SCHEMA_VERSIONS = {1, 2}
 ALPHAS = (0.25, 0.5, 0.75)
 EVIDENCE_THRESHOLDS = (0.0, 0.1, 0.2, 0.3, 0.4, 0.5)
 TOP_K = 5
 RANKING_DEPTH = 10
+QUERY_GATE_V3_ALPHA = 0.25
+QUERY_GATE_V3_THRESHOLD = 0.4
 
 
 @dataclass(frozen=True)
@@ -149,7 +153,7 @@ def _load_manifest(fixture_dir: Path) -> dict[str, Any]:
         raise ValueError(f"Cannot read frozen fixture manifest: {exc}") from exc
     if not isinstance(manifest, dict):
         raise ValueError("Frozen fixture manifest must be an object")
-    if manifest.get("schema_version") != MANIFEST_SCHEMA_VERSION:
+    if manifest.get("schema_version") not in MANIFEST_SCHEMA_VERSIONS:
         raise ValueError("Unsupported frozen fixture manifest schema")
     if not isinstance(manifest.get("experiment"), str) or not manifest["experiment"]:
         raise ValueError("Frozen fixture manifest requires an experiment id")
@@ -224,7 +228,12 @@ def load_and_validate_ranker_inputs(
     if len(corpus_ids) != len(set(corpus_ids)):
         raise ValueError("Corpus entry IDs must be unique")
 
-    query_keys = {"query_id", "text", "category"}
+    schema_version = int(manifest["schema_version"])
+    query_keys = (
+        {"query_id", "text"}
+        if schema_version >= 2
+        else {"query_id", "text", "category"}
+    )
     query_ids: list[str] = []
     query_texts: list[str] = []
     for index, row in enumerate(queries, 1):
@@ -235,7 +244,9 @@ def load_and_validate_ranker_inputs(
             raise ValueError("Query IDs must be contiguous opaque identifiers")
         if not isinstance(row["text"], str) or not row["text"].strip():
             raise ValueError(f"Query {expected_id} text must be non-empty")
-        if not isinstance(row["category"], str) or not row["category"].strip():
+        if schema_version == 1 and (
+            not isinstance(row["category"], str) or not row["category"].strip()
+        ):
             raise ValueError(f"Query {expected_id} category must be non-empty")
         query_ids.append(expected_id)
         query_texts.append(" ".join(row["text"].casefold().split()))
@@ -264,7 +275,12 @@ def load_and_validate_qrels(
     )
     qrels = _load_jsonl(qrels_path)
 
-    qrel_keys = {"query_id", "split", "relevance"}
+    schema_version = int(manifest["schema_version"])
+    qrel_keys = (
+        {"query_id", "split", "category", "relevance"}
+        if schema_version >= 2
+        else {"query_id", "split", "relevance"}
+    )
     qrel_ids: list[str] = []
     splits: set[str] = set()
     corpus_id_set = set(corpus_ids)
@@ -279,6 +295,10 @@ def load_and_validate_qrels(
             raise ValueError("Qrel query_id/split is invalid")
         if not isinstance(relevance, dict):
             raise ValueError(f"Qrel {query_id} relevance must be an object")
+        if schema_version >= 2 and (
+            not isinstance(row["category"], str) or not row["category"].strip()
+        ):
+            raise ValueError(f"Qrel {query_id} category must be non-empty")
         for entry_id, grade in relevance.items():
             if entry_id not in corpus_id_set:
                 raise ValueError(f"Qrel {query_id} references unknown entry {entry_id}")
@@ -292,8 +312,10 @@ def load_and_validate_qrels(
         raise ValueError("Qrels must contain both dev and test splits")
     qrels_by_id = {row["query_id"]: row for row in qrels}
     for query in queries:
-        is_no_answer = query["category"] == "no_answer"
-        has_relevance = bool(qrels_by_id[query["query_id"]]["relevance"])
+        qrel = qrels_by_id[query["query_id"]]
+        category = qrel.get("category", query.get("category"))
+        is_no_answer = category == "no_answer"
+        has_relevance = bool(qrel["relevance"])
         if is_no_answer == has_relevance:
             raise ValueError("no_answer category must match an empty relevance set")
 
@@ -371,7 +393,7 @@ def generate_rankings(
     backend: str,
     model: str = "",
 ) -> dict[str, Any]:
-    """Rank without accepting or opening qrels, preventing label leakage."""
+    """Rank from strict ``query_id``/``text`` inputs without evaluator labels."""
     if backend not in {"local-lsa", "live"}:
         raise ValueError(f"Unsupported embedding backend: {backend}")
     embedder: Callable[[list[str], str], list[list[float]]] | None
@@ -412,6 +434,8 @@ def generate_rankings(
             method: {} for method in methods
         }
         diagnostics: dict[str, dict[str, Any]] = {}
+        gated_rankings: dict[str, list[dict[str, Any]]] = {}
+        gated_diagnostics: dict[str, dict[str, Any]] = {}
         corpus_depth = len(serialisable)
         with (
             patch.object(search, "INDEX_FILE", index_file),
@@ -419,6 +443,11 @@ def generate_rankings(
             patch.object(search, "EntryRetrievalService", return_value=service),
         ):
             for query in queries:
+                if set(query) != {"query_id", "text"}:
+                    raise ValueError(
+                        "Rank generation accepts only query_id and text; "
+                        "category, split, and relevance are evaluator-only"
+                    )
                 query_id = str(query["query_id"])
                 text = str(query["text"])
                 keyword_diag: dict[str, Any] = {}
@@ -440,6 +469,21 @@ def generate_rankings(
                 for alpha in ALPHAS:
                     result = search.search_hybrid(text, limit=RANKING_DEPTH, alpha=alpha)
                     rankings[f"linear-{alpha:g}"][query_id] = _compact_results(result)
+                    if alpha == QUERY_GATE_V3_ALPHA:
+                        gate_diag: dict[str, Any] = {}
+                        gated = search.search_hybrid(
+                            text,
+                            limit=RANKING_DEPTH,
+                            alpha=alpha,
+                            min_evidence_score=QUERY_GATE_V3_THRESHOLD,
+                            diagnostics=gate_diag,
+                        )
+                        gated_rankings[query_id] = _compact_results(gated)
+                        gated_diagnostics[query_id] = {
+                            key: value
+                            for key, value in gate_diag.items()
+                            if key.startswith("retrieval_gate_")
+                        }
                 rankings["rrf-60"][query_id] = _rrf(
                     rankings["keyword"][query_id],
                     rankings["semantic"][query_id],
@@ -461,6 +505,12 @@ def generate_rankings(
         },
         "methods": rankings,
         "diagnostics": diagnostics,
+        "query_gate_v3": {
+            "method": f"linear-{QUERY_GATE_V3_ALPHA:g}",
+            "min_evidence_score": QUERY_GATE_V3_THRESHOLD,
+            "rankings": gated_rankings,
+            "diagnostics": gated_diagnostics,
+        },
     }
 
 
@@ -514,7 +564,7 @@ def _aggregate(
             if float(item.get("retrieval_evidence_score", 0.0)) >= min_evidence_score
         ]
         ranked = _ranked_ids(eligible)
-        category = str(query_by_id[query_id]["category"])
+        category = str(qrel.get("category", query_by_id[query_id].get("category", "unknown")))
         if not relevance:
             no_answer_count += 1
             if ranked:
@@ -603,6 +653,8 @@ def evaluate_rankings(
         split="test",
         min_evidence_score=selected_threshold,
     )
+    gate_v3 = ranking_output["query_gate_v3"]
+    gate_v3_rankings = gate_v3["rankings"]
     return {
         "selection_rule": "max dev (nDCG@5 - 0.2 * no-answer FPR), then MRR, then Recall@5",
         "selected_method": selected_method,
@@ -614,6 +666,19 @@ def evaluate_rankings(
         "selected_not_worse_than_keyword": (
             selected_test["ndcg_at_5"] >= test["keyword"]["ndcg_at_5"]
         ),
+        "query_gate_v3_posthoc": {
+            "status": "known-fixture post-hoc regression; not held-out effectiveness evidence",
+            "method": gate_v3["method"],
+            "min_evidence_score": gate_v3["min_evidence_score"],
+            "known_dev": _aggregate(gate_v3_rankings, queries, qrels, split="dev"),
+            "known_test_posthoc": _aggregate(
+                gate_v3_rankings,
+                queries,
+                qrels,
+                split="test",
+            ),
+            "eligible_for_blind_effectiveness_claim": False,
+        },
     }
 
 
@@ -621,9 +686,13 @@ def run_benchmark(*, backend: str, model: str = "", fixture_dir: Path = FIXTURE_
     load_sequence = ["manifest", "ranker_inputs"]
     ranker_dataset = load_and_validate_ranker_inputs(fixture_dir)
     # At this point qrels.jsonl has not been opened, hashed, or parsed.
+    ranker_queries = tuple(
+        {"query_id": query["query_id"], "text": query["text"]}
+        for query in ranker_dataset.queries
+    )
     ranking_output = generate_rankings(
         ranker_dataset.corpus,
-        ranker_dataset.queries,
+        ranker_queries,
         backend=backend,
         model=model,
     )
@@ -662,6 +731,7 @@ def run_benchmark(*, backend: str, model: str = "", fixture_dir: Path = FIXTURE_
         "integrity": {
             "production_entry_index_exercised": semantic_healthy,
             "model_input_and_qrels_are_separate_files": True,
+            "ranker_query_schema_excludes_evaluator_labels": True,
             "load_sequence": load_sequence,
             "quality_result_is_not_a_release_pass_condition": True,
         },
@@ -672,13 +742,23 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--backend", choices=("local-lsa", "live"), default="local-lsa")
     parser.add_argument("--model", default="", help="embedding model for --backend live")
+    parser.add_argument(
+        "--fixture-dir",
+        type=Path,
+        default=FIXTURE_DIR,
+        help="frozen revision directory (defaults to 2026-09-01.2)",
+    )
     parser.add_argument("--output", type=Path, help="write a new immutable JSON report")
     parser.add_argument("--compact", action="store_true")
     args = parser.parse_args()
     if args.output and args.output.exists():
         parser.error(f"refusing to overwrite existing report: {args.output}")
     try:
-        result = run_benchmark(backend=args.backend, model=args.model)
+        result = run_benchmark(
+            backend=args.backend,
+            model=args.model,
+            fixture_dir=args.fixture_dir,
+        )
     except Exception as exc:
         print(json.dumps({"status": "failed", "error": str(exc)}, ensure_ascii=False))
         return 2

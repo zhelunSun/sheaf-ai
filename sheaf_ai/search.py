@@ -255,11 +255,40 @@ def _score_terms_against_fields(
 
 # Simple tokeniser: splits on non-alphanumeric + CJK character boundaries.
 _WORD_RE = re.compile(r"[a-zA-Z0-9]+|[\u4e00-\u9fff]")
+_CJK_RUN_RE = re.compile(r"[\u4e00-\u9fff]+")
+_IDENTITY_PART_RE = re.compile(r"[a-zA-Z0-9]+|[\u4e00-\u9fff]+")
+_IDENTITY_TOKEN_RE = re.compile(r"\b[A-Z][A-Za-z0-9]*(?:[-.][A-Za-z0-9]+)*\b")
+_QUERY_SUPPORT_VERSION = "query-support-v3"
+_HYBRID_CANDIDATE_LIMIT = 50
+_QUERY_STOPWORDS = frozenset({
+    "a", "an", "and", "are", "as", "at", "be", "been", "being", "but",
+    "by", "did", "do", "does", "for", "from", "how", "in", "is", "it",
+    "its", "of", "on", "or", "that", "the", "their", "these", "this",
+    "those", "to", "was", "were", "what", "when", "where", "which", "who",
+    "why", "with",
+})
+_GENERIC_IDENTITY_WORDS = frozenset({
+    "article", "documentation", "docs", "guide", "introduction", "manual",
+    "newsletter", "note", "overview", "paper", "reference", "release", "report",
+})
 
 
 def _tokenize(text: str) -> list[str]:
     """Tokenize text into words + CJK characters."""
     return _WORD_RE.findall(text.lower())
+
+
+def _support_tokens(text: str) -> list[str]:
+    """Return lexical support units without changing the BM25 token contract.
+
+    CJK unigrams preserve the historical scorer behaviour.  Adjacent CJK
+    bigrams add enough phrase information for answerability checks to tell an
+    unseen phrase from a recombination of individually common characters.
+    """
+    tokens = _tokenize(text)
+    for run in _CJK_RUN_RE.findall(text.casefold()):
+        tokens.extend(run[index:index + 2] for index in range(len(run) - 1))
+    return tokens
 
 
 @dataclass
@@ -268,6 +297,7 @@ class BM25Doc:
     entry_id: str
     entry: dict
     tokens: list[str] = field(default_factory=list)
+    support_tokens: list[str] = field(default_factory=list)
     tf: dict[str, int] = field(default_factory=dict)  # term frequency
     dl: int = 0  # document length (token count)
 
@@ -329,6 +359,7 @@ class BM25Scorer:
 
             # Build weighted document text
             parts: list[str] = []
+            support_parts: list[str] = []
             for fname, weight in self.field_weights.items():
                 if fname == "topics":
                     text = topic_names
@@ -341,6 +372,7 @@ class BM25Scorer:
                 # Repeat text proportional to field weight for BM25 boosting
                 repeat = max(1, round(weight))
                 parts.extend(_tokenize(text) * repeat)
+                support_parts.extend(_support_tokens(text))
 
             tokens = parts
             tf: dict[str, int] = {}
@@ -351,6 +383,7 @@ class BM25Scorer:
                 entry_id=entry_id,
                 entry=entry,
                 tokens=tokens,
+                support_tokens=list(dict.fromkeys(support_parts)),
                 tf=tf,
                 dl=len(tokens),
             )
@@ -512,6 +545,265 @@ def _retrieval_evidence_score(
     return 0.4 * coverage + 0.6 * semantic
 
 
+def _entry_metadata_strings(entry: dict) -> list[str]:
+    """Return only user-visible metadata suitable for identity discovery."""
+    values = [str(entry.get("title", ""))]
+    for topic in entry.get("topics", []):
+        values.append(str(topic.get("name", "")) if isinstance(topic, dict) else str(topic))
+    values.extend(str(tag) for tag in entry.get("tags", []))
+    for entity in entry.get("entities", []):
+        values.append(
+            str(entity.get("text", "")) if isinstance(entity, dict) else str(entity)
+        )
+    return values
+
+
+def _normalize_identity_phrase(text: str) -> str:
+    """Canonicalise an explicit identity without losing a CJK phrase."""
+    return " ".join(_IDENTITY_PART_RE.findall(text.casefold()))
+
+
+def _identity_phrase_present(text: str, phrase: str) -> bool:
+    normalized = _normalize_identity_phrase(text)
+    if not normalized or not phrase:
+        return False
+    return re.search(
+        rf"(?<![a-z0-9]){re.escape(phrase)}(?![a-z0-9])",
+        normalized,
+    ) is not None
+
+
+def _identity_lexicon(entries: Sequence[dict]) -> set[str]:
+    """Derive stable identity phrases from collection metadata, never qrels.
+
+    Requiring a capitalised token to occur in at least two Entries avoids
+    treating arbitrary sentence-initial words as products. Explicitly stored
+    Unicode entities remain complete phrases even when they occur once.
+    """
+    entry_ids_by_token: dict[str, set[str]] = {}
+    explicit: set[str] = set()
+    for index, entry in enumerate(entries):
+        entry_id = str(entry.get("id", "")) or f"@{index}"
+        seen: set[str] = set()
+        for value in _entry_metadata_strings(entry):
+            for match in _IDENTITY_TOKEN_RE.finditer(value):
+                token = match.group(0).lower()
+                if (
+                    len(token) > 1
+                    and token not in _QUERY_STOPWORDS
+                    and token not in _GENERIC_IDENTITY_WORDS
+                ):
+                    seen.add(token)
+        for entity in entry.get("entities", []):
+            text = str(entity.get("text", "")) if isinstance(entity, dict) else str(entity)
+            phrase = _normalize_identity_phrase(text)
+            if len(phrase) > 1 and phrase not in _QUERY_STOPWORDS:
+                explicit.add(phrase)
+        for token in seen:
+            entry_ids_by_token.setdefault(token, set()).add(entry_id)
+    return explicit | {
+        token for token, entry_ids in entry_ids_by_token.items()
+        if len(entry_ids) >= 2
+    }
+
+
+def _entry_identity_terms(entry: dict, lexicon: set[str]) -> set[str]:
+    return {
+        phrase
+        for value in _entry_metadata_strings(entry)
+        for phrase in lexicon
+        if _identity_phrase_present(value, phrase)
+    }
+
+
+def _query_identity_terms(query: str, lexicon: set[str]) -> set[str]:
+    return {
+        phrase
+        for phrase in lexicon
+        if _identity_phrase_present(query, phrase)
+    }
+
+
+def _token_script(token: str) -> str:
+    if any("\u4e00" <= char <= "\u9fff" for char in token):
+        return "cjk"
+    if any(char.isalpha() for char in token):
+        return "latin"
+    if any(char.isdigit() for char in token):
+        return "numeric"
+    return "other"
+
+
+def _query_support_features(
+    scorer: BM25Scorer,
+    query: str,
+    results: Sequence[dict],
+    entries: Sequence[dict],
+    *,
+    evidence_mode: str,
+    semantic_backend: str,
+    semantic_degraded: bool,
+) -> dict[str, object]:
+    """Compute inspectable support features for the returned candidate set."""
+    lexicon = _identity_lexicon(entries)
+    query_identities = _query_identity_terms(query, lexicon)
+    top = results[0]
+    top_entry = top["entry"]
+    top_identities = _entry_identity_terms(top_entry, lexicon)
+    result_identities = {
+        identity
+        for result in results
+        for identity in _entry_identity_terms(result["entry"], lexicon)
+    }
+    result_ids = {str(result["entry"].get("id", "")) for result in results}
+    documents = [doc for doc in scorer.docs if doc.entry_id in result_ids]
+    present = {
+        token
+        for document in documents
+        for token in (document.support_tokens or document.tokens)
+    }
+
+    unique_terms = list(dict.fromkeys(_support_tokens(query)))
+    identity_tokens = {
+        token
+        for identity in query_identities
+        for token in _support_tokens(identity)
+    }
+    modifiers = [
+        token for token in unique_terms
+        if token not in _QUERY_STOPWORDS
+        and token not in identity_tokens
+    ]
+    support_df: dict[str, int] = {}
+    for document in scorer.docs:
+        for term in set(document.support_tokens or document.tokens):
+            support_df[term] = support_df.get(term, 0) + 1
+    corpus_scripts = {_token_script(term) for term in support_df}
+    query_scripts = {_token_script(term) for term in modifiers}
+    weights = {
+        term: math.log(
+            (scorer.N - support_df.get(term, 0) + 0.5)
+            / (support_df.get(term, 0) + 0.5)
+            + 1.0
+        )
+        for term in modifiers
+    }
+    denominator = sum(weights.values())
+    modifier_coverage = (
+        sum(weight for term, weight in weights.items() if term in present) / denominator
+        if denominator > 0.0 else 0.0
+    )
+    unknown_modifier_mass = (
+        sum(weight for term, weight in weights.items() if support_df.get(term, 0) == 0)
+        / denominator
+        if denominator > 0.0 else 0.0
+    )
+
+    second = results[1] if len(results) > 1 else None
+    evidence_margin = float(top["retrieval_evidence_score"]) - (
+        float(second["retrieval_evidence_score"]) if second is not None else 0.0
+    )
+    semantic_margin = float(top["semantic_score_raw"]) - (
+        float(second["semantic_score_raw"]) if second is not None else 0.0
+    )
+    return {
+        "query_identities": sorted(query_identities),
+        "top_identities": sorted(top_identities),
+        "result_identities": sorted(result_identities),
+        "missing_identities": sorted(query_identities - result_identities),
+        "result_count": len(results),
+        "modifier_count": len(modifiers),
+        "supported_modifier_count": sum(term in present for term in modifiers),
+        "modifier_coverage": round(modifier_coverage, 6),
+        "unknown_modifier_mass": round(unknown_modifier_mass, 6),
+        "query_scripts": sorted(query_scripts),
+        "corpus_scripts": sorted(corpus_scripts),
+        "unseen_query_scripts": sorted(query_scripts - corpus_scripts),
+        "top_evidence_score": float(top["retrieval_evidence_score"]),
+        "top_semantic_score_raw": float(top["semantic_score_raw"]),
+        "evidence_margin": round(evidence_margin, 6),
+        "semantic_margin": round(semantic_margin, 6),
+        "effective_evidence_mode": evidence_mode,
+        "semantic_backend": semantic_backend,
+        "semantic_degraded": semantic_degraded,
+    }
+
+
+def _query_support_decision(
+    features: dict[str, object],
+    *,
+    min_evidence_score: float,
+) -> tuple[bool, str, str]:
+    """Apply the versioned query-level rejection policy."""
+    if min_evidence_score <= 0.0:
+        return True, "disabled", "Query-level retrieval gating is disabled"
+
+    query_identities = set(features["query_identities"])
+    top_identities = set(features["top_identities"])
+    result_identities = set(features["result_identities"])
+    if query_identities and not query_identities.intersection(top_identities):
+        return (
+            False,
+            "top_identity_mismatch",
+            "The strongest candidate does not match any query identity",
+        )
+    missing_identities = query_identities - result_identities
+    if missing_identities:
+        return (
+            False,
+            "incomplete_identity_coverage",
+            "The returned candidate set does not cover every query identity",
+        )
+
+    modifier_count = int(features["modifier_count"])
+    supported_modifier_count = int(features["supported_modifier_count"])
+    modifier_coverage = float(features["modifier_coverage"])
+    unknown_modifier_mass = float(features["unknown_modifier_mass"])
+    cross_language_anchor = (
+        bool(features["unseen_query_scripts"])
+        and bool(query_identities)
+        and supported_modifier_count > 0
+    )
+    if (
+        modifier_count >= 3
+        and modifier_coverage < 0.5
+        and unknown_modifier_mass >= 0.5
+        and not cross_language_anchor
+    ):
+        return (
+            False,
+            "unsupported_modifiers",
+            "Most query modifiers are unsupported by the candidate set or corpus",
+        )
+
+    if float(features["top_evidence_score"]) < min_evidence_score:
+        return (
+            False,
+            "absolute_support_below_threshold",
+            "The strongest candidate lacks sufficient absolute retrieval support",
+        )
+    return True, "accepted", "The returned candidate set has sufficient query support"
+
+
+def _publish_retrieval_gate_diagnostics(
+    output: dict[str, object] | None,
+    *,
+    accepted: bool,
+    reason_code: str,
+    reason: str,
+    features: dict[str, object],
+) -> None:
+    if output is None:
+        return
+    output.update({
+        "retrieval_gate_version": _QUERY_SUPPORT_VERSION,
+        "retrieval_gate_answerable": accepted,
+        "retrieval_gate_reason": reason,
+        "retrieval_gate_reason_code": reason_code,
+        "retrieval_gate_features": features,
+    })
+
+
 def _fetch_semantic_scores(
     query: str,
     entries: list[dict],
@@ -669,6 +961,11 @@ def search_hybrid(
             Default 0.6 favors keyword matches while keeping semantic signal.
         include_raw: Whether to load raw text for BM25 scoring.
         tier: Optional quality tier filter.
+        filters: Structured scope filters. Invalid filters fail closed before
+            candidate generation.
+        min_evidence_score: Query-level absolute-support threshold. A positive
+            value may reject the entire result set; it never removes otherwise
+            ranked secondary candidates one by one.
 
     Returns:
         List of result dicts with 'entry', 'score', 'bm25_score',
@@ -709,7 +1006,6 @@ def search_hybrid(
 
     # Step 1: Load all entries (with optional tier filter)
     entries: list[dict] = []
-    raw_texts: dict[str, str] = {}
     with open(INDEX_FILE, "r", encoding="utf-8") as f:
         for line in f:
             line = line.strip()
@@ -725,12 +1021,6 @@ def search_hybrid(
                 if entry_tier != tier:
                     continue
 
-            entry_id = entry.get("id", "")
-            if include_raw and entry_id:
-                raw_text = _load_raw_text(entry_id)
-                if raw_text:
-                    raw_texts[entry_id] = raw_text
-
             entries.append(entry)
 
     if not entries:
@@ -742,10 +1032,60 @@ def search_hybrid(
         })
         return []
 
+    collection_entry_count = len(entries)
+    if filters:
+        try:
+            from sheaf_ai.filters import parse_filter
+
+            parsed_filter = parse_filter(filters)
+            entries = [entry for entry in entries if parsed_filter.evaluate(entry)]
+        except Exception as exc:
+            reason = f"Invalid structured filter: {exc}"
+            _publish_hybrid_diagnostics(diagnostics, {
+                "backend": "not_run",
+                "degraded": False,
+                "reason": reason,
+                "reason_code": "invalid_filter",
+            })
+            if min_evidence_score > 0.0:
+                _publish_retrieval_gate_diagnostics(
+                    diagnostics,
+                    accepted=False,
+                    reason_code="invalid_filter",
+                    reason=reason,
+                    features={"effective_evidence_mode": "not_run"},
+                )
+            return []
+        if not entries:
+            reason = "No entries match the requested structured filter"
+            _publish_hybrid_diagnostics(diagnostics, {
+                "backend": "not_run",
+                "degraded": False,
+                "reason": reason,
+                "reason_code": "empty_filtered_scope",
+            })
+            if min_evidence_score > 0.0:
+                _publish_retrieval_gate_diagnostics(
+                    diagnostics,
+                    accepted=False,
+                    reason_code="empty_filtered_scope",
+                    reason=reason,
+                    features={"effective_evidence_mode": "not_run"},
+                )
+            return []
+
+    raw_texts: dict[str, str] = {}
+    if include_raw:
+        for entry in entries:
+            entry_id = entry.get("id", "")
+            if entry_id and (raw_text := _load_raw_text(entry_id)):
+                raw_texts[entry_id] = raw_text
+
     # Step 2: Build BM25 index and score
     scorer = BM25Scorer()
     scorer.index_entries(entries, raw_texts)
-    bm25_results = scorer.score(query, limit=min(limit * 3, 50))
+    candidate_limit = min(max(_HYBRID_CANDIDATE_LIMIT, limit), len(entries))
+    bm25_results = scorer.score(query, limit=candidate_limit)
     bm25_doc_by_id = {doc.entry_id: doc for doc in scorer.docs}
 
     # Step 3: Fetch semantic scores (best-effort)
@@ -769,15 +1109,20 @@ def search_hybrid(
         semantic_scores = _fetch_semantic_scores(
             query,
             entries,
-            top_k=min(limit * 3, 50),
+            # The Entry index is collection-wide and filters allowed IDs only
+            # after retrieval.  Searching at least the current collection size
+            # prevents an in-scope result from hiding below global top-k hits.
+            top_k=max(candidate_limit, collection_entry_count),
             diagnostics=semantic_diagnostics,
         )
     _publish_hybrid_diagnostics(diagnostics, semantic_diagnostics)
     semantic_gate_usable = (
         alpha != 1.0
         and semantic_diagnostics.get("backend") == "entry_index"
+        and semantic_diagnostics.get("status") == "ok"
         and not bool(semantic_diagnostics.get("degraded", False))
     )
+    evidence_mode = "coverage_semantic" if semantic_gate_usable else "keyword_coverage"
 
     # Step 4: Build unified result set
     # Collect all candidate IDs from both BM25 and semantic results
@@ -801,6 +1146,17 @@ def search_hybrid(
                         break
 
     if not candidate_ids:
+        if min_evidence_score > 0.0:
+            _publish_retrieval_gate_diagnostics(
+                diagnostics,
+                accepted=False,
+                reason_code="no_candidates_in_scope",
+                reason="No lexical or semantic candidates exist in the filtered search scope",
+                features={
+                    "effective_evidence_mode": evidence_mode,
+                    "semantic_backend": semantic_diagnostics.get("backend", "unknown"),
+                },
+            )
         return []
 
     # Step 5: Normalize and combine scores
@@ -832,8 +1188,6 @@ def search_hybrid(
             semantic_score=sem_scores_raw[i],
             semantic_enabled=semantic_gate_usable and eid in semantic_scores,
         )
-        if evidence_score < min_evidence_score:
-            continue
 
         # Issue #67: Use synonym-expanded match locations
         topics = entry.get("topics", [])
@@ -865,6 +1219,7 @@ def search_hybrid(
             "query_coverage": round(query_coverage, 6),
             "retrieval_evidence_score": round(evidence_score, 6),
             "retrieval_evidence_version": "coverage-semantic-v1",
+            "retrieval_evidence_mode": evidence_mode,
             "match_locations": locations,
             "snippet": snippet,
             "expanded_terms": expanded_terms,
@@ -873,24 +1228,65 @@ def search_hybrid(
             "semantic_reason": str(semantic_diagnostics.get("reason", "")),
         })
 
-    # Issue #59: Apply structured filters (post-search)
-    if filters:
-        try:
-            from sheaf_ai.filters import apply_filters
-            filtered_entries = apply_filters(
-                [r["entry"] for r in results], filters
-            )
-            filtered_ids = {e.get("id") for e in filtered_entries}
-            results = [r for r in results if r["entry"].get("id") in filtered_ids]
-        except Exception:
-            pass  # Best-effort: filters must not break search
-
     results.sort(key=lambda x: (
         -x["score"],
         x["entry"].get("collected_at", ""),
         x["entry"].get("id", ""),
     ))
-    return results[:limit]
+
+    if not results:
+        if min_evidence_score > 0.0:
+            _publish_retrieval_gate_diagnostics(
+                diagnostics,
+                accepted=False,
+                reason_code="no_ranked_candidates",
+                reason="Candidates exist in scope but none has a positive retrieval score",
+                features={
+                    "effective_evidence_mode": evidence_mode,
+                    "semantic_backend": semantic_diagnostics.get("backend", "unknown"),
+                },
+            )
+        return []
+
+    # Preserve the historical result contract and avoid gate work unless the
+    # caller explicitly opts into abstention with a positive threshold.
+    if min_evidence_score <= 0.0:
+        return results[:limit]
+
+    returned_results = results[:limit]
+    if not returned_results:
+        return []
+    support_features = _query_support_features(
+        scorer,
+        query,
+        returned_results,
+        entries,
+        evidence_mode=evidence_mode,
+        semantic_backend=str(semantic_diagnostics.get("backend", "unknown")),
+        semantic_degraded=bool(semantic_diagnostics.get("degraded", False)),
+    )
+    accepted, gate_reason_code, gate_reason = _query_support_decision(
+        support_features,
+        min_evidence_score=min_evidence_score,
+    )
+    _publish_retrieval_gate_diagnostics(
+        diagnostics,
+        accepted=accepted,
+        reason_code=gate_reason_code,
+        reason=gate_reason,
+        features=support_features,
+    )
+    if not accepted:
+        return []
+
+    for result in returned_results:
+        result.update({
+            "retrieval_gate_version": _QUERY_SUPPORT_VERSION,
+            "retrieval_gate_answerable": True,
+            "retrieval_gate_reason_code": gate_reason_code,
+            "retrieval_gate_reason": gate_reason,
+        })
+    return returned_results
 
 
 def search_fulltext(

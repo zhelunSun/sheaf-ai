@@ -159,7 +159,7 @@ def test_store_duplicate_detection_failure_is_persisted_but_collection_survives(
     assert len(index_lines) == 2
 
 
-def test_store_preserves_only_explicit_source_governance_and_provenance(
+def test_store_quarantines_unverified_source_governance_and_provenance(
     isolated_data_dir,
 ):
     from sheaf_ai.storage import store_article
@@ -185,14 +185,21 @@ def test_store_preserves_only_explicit_source_governance_and_provenance(
     )
 
     source = _read_entry(isolated_data_dir, entry_id)["source"]
-    assert source["authority_scope"]["fact_keys"] == ["recall"]
-    assert source["correction_relations"][0]["entry_id"] == "old"
-    assert source["independent_observation"] is True
-    assert source["method_provenance"] == {"protocol": "atlas-v2"}
-    assert source["observation_id"] == "obs-1"
-    assert source["experiment_id"] == "exp-1"
-    assert source["run_id"] == "run-1"
-    assert source["sample_id"] == "sample-1"
+    assert "authority_scope" not in source
+    assert "correction_relations" not in source
+    assert "independent_observation" not in source
+    assert source["untrusted_governance_claims"] == {
+        "authority_scope": {"topics": ["retrieval"], "fact_keys": ["recall"]},
+        "correction_relations": [{"relation": "corrects", "entry_id": "old"}],
+        "independent_observation": True,
+    }
+    assert source["claimed_provenance"] == {
+        "method_provenance": {"protocol": "atlas-v2"},
+        "observation_id": "obs-1",
+        "experiment_id": "exp-1",
+        "run_id": "run-1",
+        "sample_id": "sample-1",
+    }
 
 
 def test_v3_collapses_persisted_near_duplicate_across_domain_and_digest():

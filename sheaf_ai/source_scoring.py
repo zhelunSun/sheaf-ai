@@ -15,6 +15,7 @@ Where:
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping
 from datetime import datetime
 from urllib.parse import urlparse
 
@@ -231,17 +232,21 @@ def _compute_llm_bonus(assessment: dict | None) -> tuple[int, bool]:
     *extra*加分, not part of the base score — missing API key should not punish
     content quality. 15 = midpoint between 0 (no bonus) and 30 (full bonus).
     """
-    if not assessment:
+    if not isinstance(assessment, Mapping) or not assessment:
         return 15, False
 
     bonus = 0
-    is_primary = bool(assessment.get("is_primary_source", False))
+    # Model output is untrusted JSON. ``bool("false")`` is true in Python,
+    # so truthiness would promote a malformed string to a primary-source claim.
+    is_primary = assessment.get("is_primary_source") is True
 
     if is_primary:
         bonus += 10
-    if assessment.get("has_verifiable_claims"):
+    if assessment.get("has_verifiable_claims") is True:
         bonus += 10
     expertise = assessment.get("domain_expertise", "low")
+    if not isinstance(expertise, str):
+        expertise = "low"
     bonus += {"high": 10, "medium": 5, "low": 0}.get(expertise, 0)
 
     return bonus, is_primary
@@ -324,7 +329,10 @@ def compute_source_score(
         "tier": tier,
         "domain": domain,
         "domain_tier": domain_tier,
+        # Heuristic classifier output, not an evidence-governance credential.
+        # The provenance registry re-resolves effective primary status later.
         "is_primary": is_primary,
+        "is_primary_claim": is_primary,
         "rule_score": rule_score,
         "llm_score": llm_score,
         "user_override": user_override,

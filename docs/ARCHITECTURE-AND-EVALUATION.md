@@ -38,21 +38,22 @@ the three paths below.
 
 | Path | Product job | Implemented now | Still unproven |
 |---|---|---|---|
-| Retrieval | Recover the right saved evidence for a question | BM25 plus a direct Entry vector index, atomic generations, stale diagnostics, keyword fallback, and a frozen 22-Entry/36-query classical-baseline ablation | Live embedding quality, no-answer/entity ambiguity, and long-document passage coverage |
-| Crystallization | Turn several sources into reusable claims | Model-assisted extraction, strict schema validation, and resolvable source links | Claim entailment, contradiction handling, redundancy, stability across models, and usefulness to people |
-| Incremental evolution | Change knowledge without erasing why it changed | Explicit create/update/merge/retire/contest transitions; schema-3 quote/span evidence identity; scoped correction authority; replayable old ledgers; auditable SPLIT/NOOP previews | A production atomic SPLIT adapter, automatic action selection, trusted provenance registry, and end-to-end quality under noisy inputs |
+| Retrieval | Recover the right saved evidence for a question | BM25 plus a direct Entry vector index, query-level support gate, fail-closed scoped filters, Unicode/CJK entity handling, and a frozen classical-baseline ablation | Live embedding quality and a newly sealed no-answer/entity-ambiguity evaluation |
+| Crystallization | Turn several sources into reusable claims | Model-assisted extraction, strict schema validation, resolvable source links, and deterministic long-document passage selection with exact offsets | Claim entailment, contradiction handling, redundancy, stability across models, and usefulness to people |
+| Incremental evolution | Change knowledge without erasing why it changed | Explicit lifecycle transitions; schema-4 ledger and atomic SPLIT batches; content-bound provenance registry; replayable old ledgers; preview, receipt, CAS and execution-plan checks | Automatic action selection, calibrated independence rewards, cross-file recovery, and end-to-end quality under noisy inputs |
 
 The third path is the deepest deterministic subsystem today. Its
 `evidence-rule-v3` derives non-duplicate groups only through a shared
 `source_key`, a trusted versioned full SHA-256 evidence digest, or persisted
 `exact` / `near_duplicate` relations. Ordinary self-declared provenance is
 retained for audit but never overrides those duplicate edges. The groups are
-reported for inspection, not certified as independent corroboration: pending a
-trusted provenance registry, `independent_source_count` is conservatively `1`
-when evidence exists and the corroboration bonus is disabled. Historical v1/v2
-scores replay under their original algorithms. Official correction also
-requires a primary source whose declared authority scope covers the topic and
-fact key and whose persisted `corrects` relation names the corrected Entry.
+reported for inspection, not automatically certified as independent
+corroboration: `independent_source_count` is conservatively `1` and the bonus is
+disabled until a separately versioned scoring rule is evaluated. The new local
+registry does solve authorization and audit identity: active attestations bind
+the exact Entry, origin, and full digest; conflicting, revoked or missing grants
+fail closed. Its hash chain provides integrity checks, not authentication.
+Historical scores replay under their original algorithms.
 
 Retrieval is a working hybrid implementation, but the checked-in local-LSA
 result did not beat keyword retrieval. Crystallization is central to the product
@@ -94,17 +95,17 @@ not own the domain rules, source-backed cards have a checked boundary, and
 incremental changes preserve history. It is not yet equivalent to a mature
 memory platform in scale, ecosystem, migrations, or published benchmark
 evidence. Important remaining architecture work includes removing global path
-configuration, long-document passage selection, trusted provenance
-registration, cross-file transactions, and a production adapter that can commit
-a SPLIT's UPDATE + CREATE atomically.
+configuration, cross-file transactions, filtered ANN for large collections,
+and policy/LLM evaluations that measure decisions rather than mechanisms.
 
-The SPLIT/NOOP decision trace is deliberately conditional. It records the input
-snapshot and request hash, policy/algorithm versions, evidence IDs, target heads, reason,
-status, and the shared `decision_id` of a planned UPDATE + CREATE. Before apply,
-it checks that the target head has not changed. It will only call an external
-`execute_atomic(...)` protocol and otherwise fails closed. The repository has
-tests with an atomic fake, but no production evidence-memory batch executor;
-the trace must not be described as an end-to-end atomic SPLIT implementation.
+The SPLIT/NOOP decision trace records the input snapshot and request hash,
+policy/algorithm versions, evidence IDs, target heads, reason, status, and the
+shared `decision_id` of a planned UPDATE + CREATE. The production evidence
+adapter stages both events and its durable receipt under one evidence-ledger
+lock and file replacement. An execution-manifest hash prevents operation or
+evidence substitution. The separate decision ledger is reconciled from the
+domain receipt after failures, so the exact claim is “atomic inside the evidence
+ledger and recoverable across the two ledgers,” not “one cross-file transaction.”
 
 ## 4. How the product should be managed
 
@@ -130,7 +131,7 @@ and migration belongs to the platform stream, not to a miscellaneous backlog.
 | Foundation | A usable local collect-to-agent loop | Clean install, deterministic storage, CLI/MCP contracts, and release smoke pass |
 | Evidence loop | Source-backed cards and inspectable updates | Unknown sources fail closed; quote/span evidence, scoped authority, conflict, and old-ledger replay are checked |
 | Algorithm evidence (current) | Establish what each core path improves | Versioned datasets, baselines, metrics, ablations, and reproducible raw outputs |
-| Integrated policy | Choose and atomically execute memory transitions from incoming evidence | A production SPLIT adapter plus policy accuracy and safety that beat simple rules on a held-out labelled set |
+| Integrated policy | Choose and atomically execute memory transitions from incoming evidence | The SPLIT adapter is implemented; the remaining gate is policy accuracy and safety that beat simple rules on a held-out labelled set |
 | Product validation | Learn whether deliberate source curation creates repeat use | Design partners repeatedly retrieve or reuse knowledge and explain the value |
 | Scale and distribution | Broaden storage, integrations, and collaboration | Only after algorithm and product evidence reveal actual bottlenecks |
 
@@ -179,11 +180,13 @@ minimum evidence gate. On held-out queries it achieved Recall@5 `0.9375`, MRR
 keyword and did not solve abstention. A live embedding run was not produced
 because credentials were unavailable.
 
-The `coverage-semantic-v1` relevance gate is an experimental signal tied to the
-backend and version that produced it, not a calibrated probability or portable
-threshold. When semantic retrieval degrades, production search falls back to
-the keyword-coverage scale. Next retrieval experiments target no-answer/entity
-ambiguity, a real embedding provider, and long-document passage retrieval.
+The `coverage-semantic-v1` relevance signal and `query-support-v3` gate are tied
+to the backend and version that produced them, not calibrated probabilities or
+portable thresholds. When semantic retrieval degrades, production search falls
+back to keyword coverage. On already inspected labels, the v3 post-hoc
+regression reached Recall@5 `1.0`, nDCG@5 `0.9698`, and FPR `0.0`; that is a
+mechanism regression, not blind evidence. The next experiment needs a newly
+sealed set and a real embedding provider.
 
 ### Crystallization
 
@@ -194,6 +197,12 @@ single-source summary, unconstrained multi-source generation, and Sheaf's
 source-constrained pipeline. Frozen outputs currently prove fail-closed
 provenance behavior only—not synthesis quality.
 
+The deterministic passage selector has its own four-case synthetic diagnostic.
+Under the same character budget, relevance+MMR hit at least one labelled span in
+all four cases and recovered 4/7 spans; head truncation hit 2/4 cases and 3/7
+spans. This verifies long-document evidence recovery mechanics only. It does
+not show that an LLM will form a correct claim from the selected passages.
+
 ### Incremental evolution
 
 Create evidence sequences containing confirmation, conflict, correction,
@@ -202,12 +211,11 @@ conflict recall, invalid-resolution rate, audit completeness, replay
 correctness, and cost. Compare the frozen G0-G3 variants in
 `evals/evidence-governed-memory/PROTOCOL.md`.
 
-The current deterministic layer verifies schema-3 quote/character-span
-identity, v1/v2 replay and migration, `evidence-rule-v3` grouping, scoped
-official correction, and decision-trace integrity. The SPLIT/NOOP trace only
-enforces the precondition that a caller provide an atomic batch executor; it
-does not supply that production executor or prove that a model chooses the
-right transition.
+The current deterministic layer verifies quote/character-span identity,
+historical replay and migration, `evidence-rule-v3` grouping, content-bound
+registry grants, scoped official correction, decision-trace integrity, and one
+atomic UPDATE+CREATE evidence-ledger commit. It still does not prove that a
+model chooses the right transition.
 
 ## 8. Claim boundary
 
@@ -220,6 +228,6 @@ Current safe claim:
 
 The checked-in classical retrieval baseline is useful precisely because it is
 a negative result: hybrid did not beat keyword and no-answer FPR remained 1.0.
-Claims such as “retrieves better,” “solves abstention,” “creates more accurate
-knowledge,” “atomically executes SPLIT in production,” or “updates memory more
-intelligently than another project” remain unsupported.
+The later FPR `0.0` result is explicitly post-hoc. Claims such as “retrieves
+better,” “solves abstention in general,” “creates more accurate knowledge,” or
+“updates memory more intelligently than another project” remain unsupported.

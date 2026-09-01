@@ -160,15 +160,27 @@ def _build_source_field(summary_result: dict, platform: str, source_info: dict |
         base["domain"] = source_info.get("domain", "")
         base["score"] = source_info.get("score", 0)
         base["tier"] = source_info.get("tier", "C")
-        base["is_primary"] = source_info.get("is_primary", False)
+        # Collection-time classifiers and callers may describe provenance, but
+        # cannot issue evidence-governance credentials. Preserve those values
+        # as explicitly untrusted claims for audit/UI use.
+        base["is_primary_claim"] = source_info.get("is_primary") is True
         base["rule_score"] = source_info.get("rule_score", 0)
         base["llm_score"] = source_info.get("llm_score", 0)
         base["user_override"] = source_info.get("user_override")
         base["freshness"] = source_info.get("freshness", 5)
+        governance_claims = {}
         for field in (
             "authority_scope",
             "correction_relations",
             "independent_observation",
+        ):
+            if field in source_info:
+                governance_claims[field] = source_info[field]
+        if governance_claims:
+            base["untrusted_governance_claims"] = governance_claims
+
+        provenance_claims = {}
+        for field in (
             "method_provenance",
             "observation_id",
             "experiment_id",
@@ -177,7 +189,9 @@ def _build_source_field(summary_result: dict, platform: str, source_info: dict |
             "sample_id",
         ):
             if field in source_info:
-                base[field] = source_info[field]
+                provenance_claims[field] = source_info[field]
+        if provenance_claims:
+            base["claimed_provenance"] = provenance_claims
     return base
 
 

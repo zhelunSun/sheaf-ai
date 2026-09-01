@@ -32,6 +32,7 @@ from sheaf_ai.card_extraction import (
 )
 from sheaf_ai.exceptions import LLMError
 from sheaf_ai.llm_client import chat
+from sheaf_ai.passage_selection import select_passages
 
 from sheaf_cards.base import KnowledgeCard, CardStore, CardValidator
 
@@ -158,7 +159,7 @@ def _load_entry_full_text(entry_id: str) -> str:
     return ""
 
 
-def _build_card_sources(entries: list[dict]) -> list[CardSource]:
+def _build_card_sources(entries: list[dict], *, topic: str = "") -> list[CardSource]:
     """Build extraction sources from index entries and raw text files."""
     sources = []
     for entry in entries:
@@ -166,7 +167,15 @@ def _build_card_sources(entries: list[dict]) -> list[CardSource]:
         title = entry.get("title", "Untitled")
         summary = entry.get("summary", "")
         full_text = _load_entry_full_text(entry_id)
-        text = full_text[:3000] if full_text else summary
+        selection = select_passages(
+            full_text,
+            topic=topic,
+            entry=entry,
+        ) if full_text else None
+        text = selection.text if selection is not None else summary
+        metadata = {"entry": entry}
+        if selection is not None:
+            metadata["passage_selection"] = dict(selection.manifest)
         sources.append(
             CardSource(
                 entry_id=entry_id,
@@ -175,7 +184,7 @@ def _build_card_sources(entries: list[dict]) -> list[CardSource]:
                 text=text,
                 url=entry.get("url", ""),
                 collected_at=entry.get("collected_at", ""),
-                metadata={"entry": entry},
+                metadata=metadata,
             )
         )
     return sources
@@ -226,7 +235,7 @@ def crystallize_topic(
         return []
 
     # Step 2: Build extraction request and delegate to the default engine.
-    sources = _build_card_sources(entries)
+    sources = _build_card_sources(entries, topic=topic)
     model = model or DEFAULT_CRYSTALLIZE_MODEL
     engine = LlmCardExtractionEngine(
         system_prompt=_CRYSTALLIZE_SYSTEM,

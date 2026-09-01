@@ -24,6 +24,7 @@ from sheaf_ai._evidence_memory_models import (
     ConflictResolutionRequired,
     EvidenceLocator,
     EvidenceDuplicateRelation,
+    EvidenceProvenanceAttestation,
     EvidenceRef,
     EvidenceStrength,
     EvidenceValidationError,
@@ -134,6 +135,57 @@ def _authority_fields(entry: Mapping[str, object]) -> tuple[tuple[str, ...], ...
             if entry_id:
                 corrected.add(entry_id)
     return topics, fact_keys, tuple(sorted(corrected))
+
+
+def _provenance_snapshot(
+    entry: Mapping[str, object],
+) -> tuple[str, str, int, str, tuple[EvidenceProvenanceAttestation, ...]]:
+    """Read the exact registry state projected by the production loader."""
+    source = entry.get("source")
+    if not isinstance(source, Mapping):
+        return "", "", 0, "", ()
+    raw = source.get("provenance_registry")
+    if raw is None:
+        return "", "", 0, "", ()
+    if not isinstance(raw, Mapping):
+        raise EvidenceValidationError("provenance_registry snapshot must be an object")
+    status = str(raw.get("status", "")).strip()
+    registry_id = str(raw.get("registry_id", "")).strip()
+    revision = raw.get("registry_revision", 0)
+    integrity_model = str(raw.get("integrity_model", "")).strip()
+    attestations = raw.get("attestations", [])
+    if status not in {
+        "verified",
+        "unverified",
+        "revoked",
+        "superseded",
+        "missing_registry",
+        "corrupt_registry",
+        "unavailable_registry",
+        "conflicting_attestations",
+    }:
+        raise EvidenceValidationError("unsupported provenance registry status")
+    if isinstance(revision, bool) or not isinstance(revision, int) or revision < 0:
+        raise EvidenceValidationError(
+            "provenance registry revision must be a non-negative integer"
+        )
+    if integrity_model not in {"", "sha256-hash-chain-no-authentication"}:
+        raise EvidenceValidationError("unsupported provenance registry integrity model")
+    if (
+        not isinstance(attestations, Sequence)
+        or isinstance(attestations, (str, bytes, bytearray))
+        or not all(isinstance(item, Mapping) for item in attestations)
+    ):
+        raise EvidenceValidationError("provenance registry attestations must be a list")
+    try:
+        refs = tuple(
+            EvidenceProvenanceAttestation.from_dict(item) for item in attestations
+        )
+    except ValueError as exc:
+        raise EvidenceValidationError(
+            f"invalid provenance registry attestation snapshot: {exc}"
+        ) from exc
+    return status, registry_id, revision, integrity_model, refs
 
 
 def _duplicate_relation_fields(
@@ -330,6 +382,13 @@ def allowlisted_evidence(
         authority_topics, authority_fact_keys, corrects_entry_ids = _authority_fields(
             allowed[source_id]
         )
+        (
+            provenance_status,
+            provenance_registry_id,
+            provenance_revision,
+            provenance_integrity_model,
+            provenance_attestation_refs,
+        ) = _provenance_snapshot(allowed[source_id])
         duplicate_version, duplicate_relations, independence_identity = (
             _duplicate_relation_fields(allowed[source_id], source_id)
         )
@@ -348,6 +407,11 @@ def allowlisted_evidence(
             duplicate_detection_version=duplicate_version,
             duplicate_relations=duplicate_relations,
             independence_identity=independence_identity,
+            provenance_registry_status=provenance_status,
+            provenance_registry_id=provenance_registry_id,
+            provenance_registry_revision=provenance_revision,
+            provenance_integrity_model=provenance_integrity_model,
+            provenance_attestation_refs=provenance_attestation_refs,
         )
         )
     return tuple(refs)
@@ -838,6 +902,9 @@ def merge_evidence_refs(*groups: Sequence[EvidenceRef]) -> tuple[EvidenceRef, ..
             if previous is None:
                 merged[key] = ref
                 continue
+            provenance = (
+                previous if previous.provenance_registry_status else ref
+            )
             merged[key] = EvidenceRef(
                 entry_id=previous.entry_id,
                 source_tier=previous.source_tier,
@@ -861,5 +928,10 @@ def merge_evidence_refs(*groups: Sequence[EvidenceRef]) -> tuple[EvidenceRef, ..
                 independence_identity=(
                     previous.independence_identity or ref.independence_identity
                 ),
+                provenance_registry_status=provenance.provenance_registry_status,
+                provenance_registry_id=provenance.provenance_registry_id,
+                provenance_registry_revision=provenance.provenance_registry_revision,
+                provenance_integrity_model=provenance.provenance_integrity_model,
+                provenance_attestation_refs=provenance.provenance_attestation_refs,
             )
     return tuple(merged.values())

@@ -11,6 +11,10 @@ from sheaf_ai.search import (
     _normalize_scores,
     _sigmoid,
     _fetch_semantic_scores,
+    _identity_lexicon,
+    _query_identity_terms,
+    _query_support_decision,
+    _query_support_features,
     search_hybrid,
     search_fulltext,
 )
@@ -357,6 +361,269 @@ class TestSearchHybrid:
         assert ungated[0]["retrieval_evidence_score"] < 0.5
         assert gated == []
 
+    def test_evidence_gate_is_query_level_and_keeps_partial_secondary_result(
+        self,
+        isolated_data_dir,
+    ):
+        timeout = _make_entry(
+            "https://example.com/timeout",
+            "Client timeout configuration",
+            tags=["timeout", "configuration"],
+            text="Connection timeout and retry configuration are client settings.",
+        )
+        cache = _make_entry(
+            "https://example.com/cache",
+            "CDN cache policy",
+            tags=["cache", "ttl"],
+            text="Static assets use an edge cache time to live.",
+        )
+        timeout_id = store_article(
+            timeout["url"],
+            timeout["fetch_result"],
+            timeout["classify_result"],
+            timeout["summary_result"],
+        )
+        cache_id = store_article(
+            cache["url"],
+            cache["fetch_result"],
+            cache["classify_result"],
+            cache["summary_result"],
+        )
+        distractor = _make_entry(
+            "https://example.com/unrelated",
+            "Unrelated cooking note",
+            tags=["cooking"],
+        )
+        distractor_id = store_article(
+            distractor["url"],
+            distractor["fetch_result"],
+            distractor["classify_result"],
+            distractor["summary_result"],
+        )
+
+        def healthy_scores(_query, _entries, top_k=50, *, diagnostics=None):
+            del top_k
+            diagnostics.update({
+                "backend": "entry_index",
+                "status": "ok",
+                "degraded": False,
+                "reason": "",
+                "reason_code": "ok",
+            })
+            return {timeout_id: 0.92, cache_id: 0.18, distractor_id: 0.01}
+
+        diagnostics: dict[str, object] = {}
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=healthy_scores):
+            results = search_hybrid(
+                "cache timeout configuration",
+                limit=5,
+                alpha=0.25,
+                min_evidence_score=0.4,
+                diagnostics=diagnostics,
+            )
+
+        assert [item["entry"]["id"] for item in results] == [timeout_id, cache_id]
+        assert results[1]["retrieval_evidence_score"] < 0.4
+        assert diagnostics["retrieval_gate_reason_code"] == "accepted"
+        assert diagnostics["retrieval_gate_features"]["modifier_count"] == 3
+
+    @pytest.mark.parametrize(
+        ("family", "candidate_title", "candidate_text", "query"),
+        [
+            (
+                "Atlas",
+                "Atlas retry policy",
+                "Atlas clients retry a failed request according to this policy.",
+                "Atlas mountain railway retry policy for delayed passenger tickets",
+            ),
+            (
+                "Orchid",
+                "Independent Orchid long document replication",
+                "Orchid retrieval was measured on a long document benchmark.",
+                "Orchid greenhouse long-document shipping record",
+            ),
+        ],
+    )
+    def test_query_gate_diagnostic_regression_rejects_unsupported_modifiers(
+        self,
+        isolated_data_dir,
+        family,
+        candidate_title,
+        candidate_text,
+        query,
+    ):
+        candidate = _make_entry(
+            f"https://example.com/{family.lower()}/candidate",
+            candidate_title,
+            tags=[family, "retrieval"],
+            text=candidate_text,
+        )
+        sibling = _make_entry(
+            f"https://example.com/{family.lower()}/sibling",
+            f"{family} release note",
+            tags=[family, "release"],
+            text=f"A separate {family} release note.",
+        )
+        candidate_id = store_article(
+            candidate["url"],
+            candidate["fetch_result"],
+            candidate["classify_result"],
+            candidate["summary_result"],
+        )
+        sibling_id = store_article(
+            sibling["url"],
+            sibling["fetch_result"],
+            sibling["classify_result"],
+            sibling["summary_result"],
+        )
+
+        def healthy_scores(_query, _entries, top_k=50, *, diagnostics=None):
+            del top_k
+            diagnostics.update({
+                "backend": "entry_index",
+                "status": "ok",
+                "degraded": False,
+                "reason": "",
+                "reason_code": "ok",
+            })
+            return {candidate_id: 0.98, sibling_id: 0.80}
+
+        diagnostics: dict[str, object] = {}
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=healthy_scores):
+            results = search_hybrid(
+                query,
+                min_evidence_score=0.4,
+                diagnostics=diagnostics,
+            )
+
+        assert results == []
+        assert diagnostics["retrieval_gate_reason_code"] == "unsupported_modifiers"
+        features = diagnostics["retrieval_gate_features"]
+        assert family.lower() in features["query_identities"]
+        assert features["unknown_modifier_mass"] >= 0.5
+
+    def test_query_gate_rejects_top_candidate_from_wrong_identity(
+        self,
+        isolated_data_dir,
+    ):
+        atlas_ids = []
+        cedar_ids = []
+        for family, target in (("Atlas", atlas_ids), ("Cedar", cedar_ids)):
+            for suffix in ("guide", "reference"):
+                entry = _make_entry(
+                    f"https://example.com/{family.lower()}/{suffix}",
+                    f"{family} {suffix}",
+                    tags=[family, suffix],
+                    text=f"{family} {suffix} information.",
+                )
+                target.append(store_article(
+                    entry["url"],
+                    entry["fetch_result"],
+                    entry["classify_result"],
+                    entry["summary_result"],
+                ))
+
+        def healthy_scores(_query, _entries, top_k=50, *, diagnostics=None):
+            del top_k
+            diagnostics.update({
+                "backend": "entry_index",
+                "status": "ok",
+                "degraded": False,
+                "reason": "",
+                "reason_code": "ok",
+            })
+            return {
+                cedar_ids[0]: 0.99,
+                cedar_ids[1]: 0.90,
+                atlas_ids[0]: 0.40,
+                atlas_ids[1]: 0.35,
+            }
+
+        diagnostics: dict[str, object] = {}
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=healthy_scores):
+            results = search_hybrid(
+                "Atlas guide",
+                alpha=0.0,
+                min_evidence_score=0.1,
+                diagnostics=diagnostics,
+            )
+
+        assert results == []
+        assert diagnostics["retrieval_gate_reason_code"] == "top_identity_mismatch"
+        assert diagnostics["retrieval_gate_features"]["query_identities"] == ["atlas"]
+
+    def test_filter_scope_is_applied_before_candidate_limit(
+        self,
+        isolated_data_dir,
+    ):
+        for index in range(3):
+            entry = _make_entry(
+                f"https://example.com/hot-{index}",
+                "alpha beta gamma",
+                tags=["drop"],
+                text="alpha beta gamma",
+            )
+            store_article(
+                entry["url"], entry["fetch_result"], entry["classify_result"],
+                entry["summary_result"],
+            )
+        target = _make_entry(
+            "https://example.com/in-scope",
+            "alpha beta",
+            tags=["keep"],
+            text="alpha beta gamma",
+        )
+        target_id = store_article(
+            target["url"], target["fetch_result"], target["classify_result"],
+            target["summary_result"],
+        )
+        for index in range(2):
+            entry = _make_entry(
+                f"https://example.com/low-{index}",
+                "alpha",
+                tags=["drop"],
+                text="alpha",
+            )
+            store_article(
+                entry["url"], entry["fetch_result"], entry["classify_result"],
+                entry["summary_result"],
+            )
+
+        diagnostics: dict[str, object] = {}
+        results = search_hybrid(
+            "alpha beta gamma",
+            limit=1,
+            alpha=1.0,
+            filters={"tags": ["keep"]},
+            min_evidence_score=0.1,
+            diagnostics=diagnostics,
+        )
+
+        assert [item["entry"]["id"] for item in results] == [target_id]
+        assert diagnostics["retrieval_gate_reason_code"] == "accepted"
+
+    def test_invalid_filter_fails_closed_with_diagnostic(
+        self,
+        isolated_data_dir,
+    ):
+        entry = _make_entry("https://example.com/private", "Private note")
+        store_article(
+            entry["url"], entry["fetch_result"], entry["classify_result"],
+            entry["summary_result"],
+        )
+        diagnostics: dict[str, object] = {}
+
+        results = search_hybrid(
+            "private",
+            filters={"field": "tags", "op": "bogus", "value": "keep"},
+            min_evidence_score=0.1,
+            diagnostics=diagnostics,
+        )
+
+        assert results == []
+        assert diagnostics["reason_code"] == "invalid_filter"
+        assert diagnostics["retrieval_gate_reason_code"] == "invalid_filter"
+
     def test_degraded_semantic_backend_uses_keyword_gate_scale(
         self,
         isolated_data_dir,
@@ -380,15 +647,21 @@ class TestSearchHybrid:
             })
             return {}
 
+        diagnostics: dict[str, object] = {}
         with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=degraded):
             results = search_hybrid(
                 "alpha test",
                 min_evidence_score=0.9,
+                diagnostics=diagnostics,
             )
 
         assert results
         assert results[0]["retrieval_evidence_score"] == 1.0
         assert results[0]["semantic_degraded"] is True
+        assert results[0]["retrieval_evidence_mode"] == "keyword_coverage"
+        assert diagnostics["retrieval_gate_features"]["effective_evidence_mode"] == (
+            "keyword_coverage"
+        )
 
     def test_hybrid_degrades_gracefully_without_embeddings(self, isolated_data_dir):
         """When embedding engine is unavailable, hybrid should still return BM25 results."""
@@ -456,6 +729,110 @@ class TestSearchHybrid:
 # ============================================================
 # BM25Scorer edge cases
 # ============================================================
+
+class TestQuerySupportGenerality:
+    @staticmethod
+    def _features(entries, query, result_ids):
+        scorer = BM25Scorer()
+        scorer.index_entries(entries)
+        results = []
+        for index, entry_id in enumerate(result_ids):
+            entry = next(item for item in entries if item["id"] == entry_id)
+            results.append({
+                "entry": entry,
+                "retrieval_evidence_score": 0.9 if index == 0 else 0.5,
+                "semantic_score_raw": 0.9 if index == 0 else 0.5,
+            })
+        return _query_support_features(
+            scorer,
+            query,
+            results,
+            entries,
+            evidence_mode="coverage_semantic",
+            semantic_backend="entry_index",
+            semantic_degraded=False,
+        )
+
+    def test_explicit_cjk_entity_is_preserved_as_phrase(self):
+        entries = [
+            {"id": "x", "title": "星图重试", "entities": ["星图"]},
+            {"id": "y", "title": "雪松缓存", "entities": [{"text": "雪松"}]},
+        ]
+
+        lexicon = _identity_lexicon(entries)
+
+        assert "星图" in lexicon
+        assert _query_identity_terms("星图的缓存策略", lexicon) == {"星图"}
+
+    def test_unknown_script_modifiers_are_not_discarded(self):
+        entries = [
+            {"id": "atlas", "title": "Atlas retry", "entities": ["Atlas"]},
+            {"id": "cedar", "title": "Cedar cache", "entities": ["Cedar"]},
+        ]
+        features = self._features(
+            entries,
+            "Atlas 火星温室票务",
+            ["atlas", "cedar"],
+        )
+
+        accepted, reason_code, _ = _query_support_decision(
+            features,
+            min_evidence_score=0.4,
+        )
+
+        assert accepted is False
+        assert reason_code == "unsupported_modifiers"
+        assert features["unknown_modifier_mass"] == 1.0
+
+    def test_cjk_bigrams_detect_unseen_phrase_recombination(self):
+        entries = [{"id": "x", "title": "星 温 图 室 铁 路 票 务"}]
+        features = self._features(entries, "星图温室铁路票务", ["x"])
+
+        accepted, reason_code, _ = _query_support_decision(
+            features,
+            min_evidence_score=0.4,
+        )
+
+        assert accepted is False
+        assert reason_code == "unsupported_modifiers"
+        assert features["unknown_modifier_mass"] > 0.5
+
+    def test_multiple_identities_must_be_covered_by_returned_set(self):
+        entries = [
+            {"id": "atlas", "title": "Atlas", "entities": ["Atlas"]},
+            {"id": "cedar", "title": "Cedar", "entities": ["Cedar"]},
+            {"id": "orchid", "title": "Orchid", "entities": ["Orchid"]},
+        ]
+        covered = self._features(
+            entries,
+            "Atlas Cedar comparison",
+            ["atlas", "cedar"],
+        )
+        missing = self._features(
+            entries,
+            "Atlas Cedar comparison",
+            ["atlas", "orchid"],
+        )
+
+        assert _query_support_decision(
+            covered,
+            min_evidence_score=0.4,
+        )[0] is True
+        assert _query_support_decision(
+            missing,
+            min_evidence_score=0.4,
+        )[:2] == (False, "incomplete_identity_coverage")
+        assert missing["missing_identities"] == ["cedar"]
+
+    def test_generic_repeated_heading_is_not_an_identity(self):
+        entries = [
+            {"id": "g1", "title": "Guide Foo"},
+            {"id": "g2", "title": "Guide Bar"},
+            {"id": "k", "title": "Kubernetes Timeout"},
+        ]
+
+        assert "guide" not in _identity_lexicon(entries)
+
 
 class TestBM25DocDataclass:
     def test_defaults(self):

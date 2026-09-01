@@ -120,7 +120,8 @@ def test_apply_verifies_stored_quote_and_projects_locator(isolated_data_dir):
         "end": len("Evidence text for located."),
         "quote": "Evidence text for located.",
     }
-    assert ref["source_tier"] == "B"
+    # Collection-time quality scoring is not an evidence-governance grant.
+    assert ref["source_tier"] == "U"
     assert ref["source_key"] == "domain:located.example"
     assert ref["authority_topics"] == []
     assert ref["authority_fact_keys"] == []

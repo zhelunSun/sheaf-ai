@@ -58,6 +58,18 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
 
+def _fsync_parent_directory(path: Path) -> None:
+    """Persist the rename itself where directory fsync is supported."""
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(str(Path(path).parent), flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def _canonical_json(value: object) -> str:
     try:
         return json.dumps(
@@ -246,14 +258,11 @@ class AtomicDecisionBatchExecutor(Protocol):
     normally means the complete batch committed.
     """
 
-    def execute_atomic(
-        self,
-        operations: tuple[PlannedOperation, ...],
-        *,
-        decision_id: str,
-        idempotency_key: str,
-    ) -> object:
+    def execute_atomic(self, trace: DecisionTrace) -> object:
         """Atomically execute the complete decision batch."""
+
+    def lookup_commit(self, decision_id: str, request_hash: str) -> object | None:
+        """Return a durable domain receipt, or ``None`` if nothing committed."""
 
 
 def _request_document(trace: DecisionTrace) -> dict[str, object]:
@@ -267,6 +276,64 @@ def _request_document(trace: DecisionTrace) -> dict[str, object]:
         "target_heads": [head.to_dict() for head in trace.target_heads],
         "operations": [operation.request_identity() for operation in trace.operations],
     }
+
+
+def execution_manifest_hash(trace: DecisionTrace) -> str:
+    """Bind the exact executor-visible plan independently of its domain result."""
+    _validate_trace(trace)
+    return _canonical_hash({
+        "decision_id": trace.decision_id,
+        "request_hash": trace.request_hash,
+        "idempotency_key": trace.idempotency_key,
+        "policy_version": trace.policy_version,
+        "algorithm_version": trace.algorithm_version,
+        "evidence_ids": list(trace.evidence_ids),
+        "target_heads": [head.to_dict() for head in trace.target_heads],
+        "operations": [operation.to_dict() for operation in trace.operations],
+    })
+
+
+def validate_decision_trace(trace: DecisionTrace) -> None:
+    """Public validation boundary for production executors."""
+    _validate_trace(trace)
+
+
+def _receipt_value(receipt: object, field_name: str) -> object:
+    if isinstance(receipt, Mapping):
+        return receipt.get(field_name)
+    return getattr(receipt, field_name, None)
+
+
+def _validate_domain_receipt(
+    receipt: object,
+    trace: DecisionTrace,
+    manifest_hash: str,
+) -> None:
+    expected_heads = {head.card_id: head.version_id for head in trace.target_heads}
+    expected = {
+        "decision_id": trace.decision_id,
+        "request_hash": trace.request_hash,
+        "idempotency_key": trace.idempotency_key,
+        "expected_heads": expected_heads,
+        "policy_version": trace.policy_version,
+        "algorithm_version": trace.algorithm_version,
+        "execution_manifest_hash": manifest_hash,
+        "operation_actions": ("UPDATE", "CREATE"),
+    }
+    mismatches = []
+    for field_name, expected_value in expected.items():
+        actual = _receipt_value(receipt, field_name)
+        if field_name == "expected_heads" and isinstance(actual, Mapping):
+            actual = dict(actual)
+        if field_name == "operation_actions" and isinstance(actual, list):
+            actual = tuple(actual)
+        if actual != expected_value:
+            mismatches.append(field_name)
+    if mismatches:
+        raise DecisionExecutionError(
+            "Domain receipt does not match the preview execution manifest: "
+            + ", ".join(mismatches)
+        )
 
 
 def _immutable_trace_identity(trace: DecisionTrace) -> dict[str, object]:
@@ -420,6 +487,7 @@ class DecisionTraceLedger:
                 handle.flush()
                 os.fsync(handle.fileno())
             os.replace(tmp_path, self.path)
+            _fsync_parent_directory(self.path)
         except OSError as exc:
             if tmp_path:
                 try:
@@ -760,48 +828,66 @@ class EvidenceDecisionPolicy:
         current_heads: Mapping[object, object],
         executor: AtomicDecisionBatchExecutor | None = None,
     ) -> DecisionTrace:
-        """Apply a preview or return its terminal trace on an idempotent retry."""
+        """Apply a preview or reconcile it from the domain commit receipt.
+
+        ``current_heads`` remains accepted for API compatibility and caller
+        diagnostics, but it is not authoritative.  The atomic domain executor
+        performs the real compare-and-swap while holding the ledger lock.
+        """
+        _ = current_heads
         trace = self.ledger.get(str(decision_id).strip())
         if trace.status in {"NOOP", "APPLIED"}:
             return trace
         if trace.suggested_operation == "NOOP":
             return self.ledger.record_status(trace.decision_id, "NOOP")
 
-        actual_heads = {
-            str(card_id).strip(): str(version_id).strip()
-            for card_id, version_id in current_heads.items()
-        }
-        stale = [
-            head
-            for head in trace.target_heads
-            if actual_heads.get(head.card_id) != head.version_id
-        ]
-        if stale:
-            detail = "; ".join(
-                f"{head.card_id}: expected {head.version_id}, "
-                f"found {actual_heads.get(head.card_id, '<missing>')}"
-                for head in stale
-            )
-            self.ledger.record_status(
-                trace.decision_id,
-                "FAILED",
-                failure_reason=f"Target head changed before apply ({detail})",
-            )
-            raise StaleDecisionError(f"Target head changed before apply ({detail})")
-
         execute_atomic = getattr(executor, "execute_atomic", None)
-        if executor is None or not callable(execute_atomic):
+        lookup_commit = getattr(executor, "lookup_commit", None)
+        if (
+            executor is None
+            or not callable(execute_atomic)
+            or not callable(lookup_commit)
+        ):
             raise AtomicBatchRequiredError(
-                "SPLIT requires an atomic batch executor; sequential transition calls "
-                "are not permitted"
+                "SPLIT requires an atomic batch executor with durable receipt lookup; "
+                "sequential transition calls are not permitted"
             )
+
+        # A prior call may have committed the domain ledger and crashed before
+        # the decision trace was advanced. Receipt-first reconciliation makes
+        # PREVIEWED/FAILED -> APPLIED safe without guessing from exceptions.
+        manifest_hash = execution_manifest_hash(trace)
         try:
-            execute_atomic(
-                trace.operations,
-                decision_id=trace.decision_id,
-                idempotency_key=trace.decision_id,
-            )
+            receipt = lookup_commit(trace.decision_id, trace.request_hash)
         except Exception as exc:
+            raise DecisionExecutionError(
+                "Atomic SPLIT commit outcome is unknown because the domain receipt "
+                f"cannot be read: {type(exc).__name__}: {exc}"
+            ) from exc
+        if receipt is not None:
+            _validate_domain_receipt(receipt, trace, manifest_hash)
+            return self.ledger.record_status(trace.decision_id, "APPLIED")
+
+        try:
+            execute_atomic(trace)
+        except Exception as exc:
+            try:
+                receipt = lookup_commit(trace.decision_id, trace.request_hash)
+            except Exception as lookup_exc:
+                raise DecisionExecutionError(
+                    "Atomic SPLIT commit outcome is unknown after executor failure; "
+                    f"receipt lookup failed: {type(lookup_exc).__name__}: {lookup_exc}"
+                ) from exc
+            if receipt is not None:
+                _validate_domain_receipt(receipt, trace, manifest_hash)
+                return self.ledger.record_status(trace.decision_id, "APPLIED")
+            if isinstance(exc, StaleDecisionError):
+                self.ledger.record_status(
+                    trace.decision_id,
+                    "FAILED",
+                    failure_reason=str(exc),
+                )
+                raise
             failure = f"Atomic SPLIT failed: {type(exc).__name__}: {exc}"
             self.ledger.record_status(
                 trace.decision_id,
@@ -809,6 +895,20 @@ class EvidenceDecisionPolicy:
                 failure_reason=failure,
             )
             raise DecisionExecutionError(failure) from exc
+
+        try:
+            receipt = lookup_commit(trace.decision_id, trace.request_hash)
+        except Exception as exc:
+            raise DecisionExecutionError(
+                "Atomic SPLIT returned but its durable receipt cannot be read; "
+                f"commit outcome is unknown: {type(exc).__name__}: {exc}"
+            ) from exc
+        if receipt is None:
+            raise DecisionExecutionError(
+                "Atomic SPLIT returned without a durable matching domain receipt; "
+                "commit outcome is unknown"
+            )
+        _validate_domain_receipt(receipt, trace, manifest_hash)
         return self.ledger.record_status(trace.decision_id, "APPLIED")
 
 
@@ -830,7 +930,9 @@ __all__ = [
     "EvidenceDecisionPolicy",
     "EvidencePolicy",
     "EvidencePolicyError",
+    "execution_manifest_hash",
     "PlannedOperation",
     "StaleDecisionError",
     "TargetHead",
+    "validate_decision_trace",
 ]

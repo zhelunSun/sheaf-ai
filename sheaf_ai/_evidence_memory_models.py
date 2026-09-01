@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
+SPAN_IDENTITY_SCHEMA_VERSION = 3
 LEGACY_ALGORITHM_VERSION = "evidence-rule-v1"
 DIGEST_ALGORITHM_VERSION = "evidence-rule-v2"
 ALGORITHM_VERSION = "evidence-rule-v3"
@@ -28,6 +30,22 @@ VALID_RESOLUTION_BASES = frozenset(
     {"stronger_evidence", "official_correction", "version_change", "manual_adjudication"}
 )
 TIER_WEIGHTS = {"A": 0.90, "B": 0.70, "C": 0.45, "D": 0.20, "U": 0.10}
+_VERSIONED_SHA256 = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_PROVENANCE_REGISTRY_STATUSES = frozenset({
+    "",
+    "verified",
+    "unverified",
+    "revoked",
+    "superseded",
+    "missing_registry",
+    "corrupt_registry",
+    "unavailable_registry",
+    "conflicting_attestations",
+})
+_PROVENANCE_INTEGRITY_MODELS = frozenset({
+    "",
+    "sha256-hash-chain-no-authentication",
+})
 
 
 def _identity_hash(value: object) -> str:
@@ -122,6 +140,12 @@ def evidence_use_identity(
     return f"use_{_identity_hash([str(entry_id).strip(), atomic_claim_identity, locator_identity])}"
 
 
+def atomic_batch_event_key(decision_id: str, operation_index: int) -> str:
+    """Return the reserved per-operation identity inside one atomic batch."""
+    batch_identity = _identity_hash(str(decision_id).strip())
+    return f"atomic-split:{batch_identity}:{operation_index}"
+
+
 class EvidenceMemoryError(RuntimeError):
     """Base class for trustworthy-memory failures."""
 
@@ -144,6 +168,14 @@ class EvidenceAlreadyProcessedError(TransitionValidationError):
 
 class ConflictResolutionRequired(TransitionValidationError):
     """A structured contradiction needs an explicit resolution basis."""
+
+
+class AtomicBatchConflictError(TransitionValidationError):
+    """An atomic batch identity was reused for different work."""
+
+
+class StaleHeadError(TransitionValidationError):
+    """An atomic batch target no longer matches its previewed head."""
 
 
 @dataclass(frozen=True)
@@ -203,6 +235,37 @@ class EvidenceDuplicateRelation:
 
 
 @dataclass(frozen=True)
+class EvidenceProvenanceAttestation:
+    """Minimal immutable reference to one registry event used at commit time."""
+
+    attestation_id: str
+    attestation_version: int
+    event_hash: str
+
+    def __post_init__(self) -> None:
+        if not self.attestation_id.strip():
+            raise ValueError("attestation_id must be non-empty")
+        if self.attestation_version <= 0:
+            raise ValueError("attestation_version must be a positive integer")
+        if not _VERSIONED_SHA256.fullmatch(self.event_hash):
+            raise ValueError("event_hash must be a versioned SHA-256 digest")
+
+    @classmethod
+    def from_dict(
+        cls,
+        data: Mapping[str, object],
+    ) -> "EvidenceProvenanceAttestation":
+        version = _strict_int(data, "attestation_version", 0)
+        if version <= 0:
+            raise ValueError("attestation_version must be a positive integer")
+        return cls(
+            attestation_id=_strict_string(data, "attestation_id"),
+            attestation_version=version,
+            event_hash=_strict_string(data, "event_hash"),
+        )
+
+
+@dataclass(frozen=True)
 class EvidenceRef:
     """Immutable reference to an allowlisted collected entry."""
 
@@ -219,6 +282,11 @@ class EvidenceRef:
     duplicate_detection_version: str = ""
     duplicate_relations: tuple[EvidenceDuplicateRelation, ...] = ()
     independence_identity: str = ""
+    provenance_registry_status: str = ""
+    provenance_registry_id: str = ""
+    provenance_registry_revision: int = 0
+    provenance_integrity_model: str = ""
+    provenance_attestation_refs: tuple[EvidenceProvenanceAttestation, ...] = ()
 
     @classmethod
     def from_dict(cls, data: Mapping[str, object]) -> "EvidenceRef":
@@ -229,6 +297,22 @@ class EvidenceRef:
             or not all(isinstance(item, Mapping) for item in raw_relations)
         ):
             raise ValueError("duplicate_relations must be an array of objects")
+        raw_attestations = data.get("provenance_attestation_refs", [])
+        if (
+            not isinstance(raw_attestations, Sequence)
+            or isinstance(raw_attestations, (str, bytes, bytearray))
+            or not all(isinstance(item, Mapping) for item in raw_attestations)
+        ):
+            raise ValueError("provenance_attestation_refs must be an array of objects")
+        registry_revision = _strict_int(data, "provenance_registry_revision", 0)
+        if registry_revision < 0:
+            raise ValueError("provenance_registry_revision must be non-negative")
+        registry_status = _strict_string(data, "provenance_registry_status")
+        if registry_status not in _PROVENANCE_REGISTRY_STATUSES:
+            raise ValueError("provenance_registry_status is unsupported")
+        integrity_model = _strict_string(data, "provenance_integrity_model")
+        if integrity_model not in _PROVENANCE_INTEGRITY_MODELS:
+            raise ValueError("provenance_integrity_model is unsupported")
         return cls(
             entry_id=str(data.get("entry_id", "")),
             source_tier=str(data.get("source_tier", "U")),
@@ -248,6 +332,14 @@ class EvidenceRef:
                 for item in raw_relations
             ),
             independence_identity=str(data.get("independence_identity", "")),
+            provenance_registry_status=registry_status,
+            provenance_registry_id=_strict_string(data, "provenance_registry_id"),
+            provenance_registry_revision=registry_revision,
+            provenance_integrity_model=integrity_model,
+            provenance_attestation_refs=tuple(
+                EvidenceProvenanceAttestation.from_dict(item)
+                for item in raw_attestations
+            ),
         )
 
 
@@ -519,3 +611,88 @@ class TransitionResult:
     action: str
     version_ids: tuple[str, ...]
     idempotency_key: str
+
+
+@dataclass(frozen=True)
+class AtomicSplitOperation:
+    """One fully specified domain transition staged inside an atomic SPLIT."""
+
+    action: str
+    topic: str
+    entries: Mapping[str, Mapping[str, object]]
+    reason: str
+    source_ids: tuple[str, ...] = ()
+    evidence_locators: Mapping[str, Mapping[str, object]] = field(default_factory=dict)
+    card: Mapping[str, object] = field(default_factory=dict)
+    target_card_ids: tuple[str, ...] = ()
+    resolution_basis: str = ""
+    resolution_metadata: Mapping[str, object] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class AtomicBatchReceipt:
+    """Durable identity and outputs of one domain-ledger atomic batch."""
+
+    applied: bool
+    decision_id: str
+    request_hash: str
+    idempotency_key: str
+    expected_heads: Mapping[str, str]
+    operation_actions: tuple[str, ...]
+    operation_request_hashes: tuple[str, ...]
+    event_ids: tuple[str, ...]
+    version_ids: tuple[str, ...]
+    policy_version: str
+    algorithm_version: str
+    execution_manifest_hash: str
+    committed_at: str
+
+    def to_record(self) -> dict[str, object]:
+        """Return the persisted shape; ``applied`` is a call result, not history."""
+        return {
+            "decision_id": self.decision_id,
+            "request_hash": self.request_hash,
+            "idempotency_key": self.idempotency_key,
+            "expected_heads": dict(self.expected_heads),
+            "operation_actions": list(self.operation_actions),
+            "operation_request_hashes": list(self.operation_request_hashes),
+            "event_ids": list(self.event_ids),
+            "version_ids": list(self.version_ids),
+            "policy_version": self.policy_version,
+            "algorithm_version": self.algorithm_version,
+            "execution_manifest_hash": self.execution_manifest_hash,
+            "committed_at": self.committed_at,
+        }
+
+    @classmethod
+    def from_record(
+        cls,
+        data: Mapping[str, object],
+        *,
+        applied: bool = False,
+    ) -> "AtomicBatchReceipt":
+        raw_heads = data.get("expected_heads", {})
+        if not isinstance(raw_heads, Mapping):
+            raise ValueError("expected_heads must be an object")
+        expected_heads: dict[str, str] = {}
+        for card_id, version_id in raw_heads.items():
+            if not isinstance(card_id, str) or not isinstance(version_id, str):
+                raise ValueError("expected_heads must map strings to strings")
+            expected_heads[card_id] = version_id
+        return cls(
+            applied=applied,
+            decision_id=_strict_string(data, "decision_id"),
+            request_hash=_strict_string(data, "request_hash"),
+            idempotency_key=_strict_string(data, "idempotency_key"),
+            expected_heads=expected_heads,
+            operation_actions=_string_tuple(data, "operation_actions"),
+            operation_request_hashes=_string_tuple(data, "operation_request_hashes"),
+            event_ids=_string_tuple(data, "event_ids"),
+            version_ids=_string_tuple(data, "version_ids"),
+            policy_version=_strict_string(data, "policy_version"),
+            algorithm_version=_strict_string(data, "algorithm_version"),
+            execution_manifest_hash=_strict_string(
+                data, "execution_manifest_hash"
+            ),
+            committed_at=_strict_string(data, "committed_at"),
+        )

@@ -15,7 +15,7 @@ from sheaf_ai.evidence_policy import (
     DecisionValidationError,
     EvidenceDecisionPolicy,
     PlannedOperation,
-    StaleDecisionError,
+    execution_manifest_hash,
 )
 
 
@@ -39,17 +39,44 @@ def _split(policy, *, key="split-1"):
 
 
 class AtomicFake:
-    def __init__(self, *, fail=False):
+    def __init__(self, *, fail=False, fail_after_commit=False, lookup_fail=False):
         self.fail = fail
+        self.fail_after_commit = fail_after_commit
+        self.lookup_fail = lookup_fail
         self.calls = []
         self.committed: list[PlannedOperation] = []
+        self.receipts = {}
 
-    def execute_atomic(self, operations, *, decision_id, idempotency_key):
-        self.calls.append((operations, decision_id, idempotency_key))
-        staged = list(operations)
+    def lookup_commit(self, decision_id, request_hash):
+        if self.lookup_fail:
+            raise OSError("receipt ledger unavailable")
+        receipt = self.receipts.get(decision_id)
+        if receipt is not None and receipt["request_hash"] != request_hash:
+            raise RuntimeError("receipt hash conflict")
+        return receipt
+
+    def execute_atomic(self, trace):
+        self.calls.append(trace)
+        staged = list(trace.operations)
         if self.fail:
             raise RuntimeError("simulated transaction rollback")
         self.committed.extend(staged)
+        self.receipts[trace.decision_id] = {
+            "decision_id": trace.decision_id,
+            "request_hash": trace.request_hash,
+            "idempotency_key": trace.idempotency_key,
+            "expected_heads": {
+                head.card_id: head.version_id for head in trace.target_heads
+            },
+            "policy_version": trace.policy_version,
+            "algorithm_version": trace.algorithm_version,
+            "execution_manifest_hash": execution_manifest_hash(trace),
+            "operation_actions": tuple(
+                operation.operation for operation in trace.operations
+            ),
+        }
+        if self.fail_after_commit:
+            raise RuntimeError("simulated crash after domain commit")
 
 
 def test_split_preview_is_versioned_hashed_and_expands_shared_decision_id(tmp_path):
@@ -95,22 +122,21 @@ def test_noop_is_persisted_and_never_calls_executor(tmp_path):
     assert reopened.get(trace.decision_id).status == "NOOP"
 
 
-def test_split_validates_head_immediately_before_executor(tmp_path):
+def test_caller_head_snapshot_is_not_the_authoritative_cas(tmp_path):
     policy = _policy(tmp_path)
     trace = _split(policy)
     executor = AtomicFake()
 
-    with pytest.raises(StaleDecisionError, match="expected version-3, found version-4"):
-        policy.apply_decision(
-            trace.decision_id,
-            current_heads={"card-1": "version-4"},
-            executor=executor,
-        )
+    applied = policy.apply_decision(
+        trace.decision_id,
+        current_heads={"card-1": "version-4"},
+        executor=executor,
+    )
 
-    assert executor.calls == []
-    failed = policy.ledger.get(trace.decision_id)
-    assert failed.status == "FAILED"
-    assert "Target head changed" in failed.failure_reason
+    assert applied.status == "APPLIED"
+    assert {
+        head.card_id: head.version_id for head in executor.calls[0].target_heads
+    } == {"card-1": "version-3"}
 
 
 def test_split_fails_closed_without_atomic_batch_protocol(tmp_path):
@@ -126,6 +152,37 @@ def test_split_fails_closed_without_atomic_batch_protocol(tmp_path):
             trace.decision_id,
             current_heads={"card-1": "version-3"},
             executor=LegacySingleTransitionExecutor(),  # type: ignore[arg-type]
+        )
+
+    assert policy.ledger.get(trace.decision_id).status == "PREVIEWED"
+
+
+def test_receipt_lookup_failure_leaves_preview_state_unchanged(tmp_path):
+    policy = _policy(tmp_path)
+    trace = _split(policy)
+
+    with pytest.raises(DecisionExecutionError, match="outcome is unknown"):
+        policy.apply_decision(
+            trace.decision_id,
+            current_heads={},
+            executor=AtomicFake(lookup_fail=True),
+        )
+
+    assert policy.ledger.get(trace.decision_id).status == "PREVIEWED"
+
+
+def test_mismatched_domain_receipt_cannot_advance_preview(tmp_path):
+    policy = _policy(tmp_path)
+    trace = _split(policy)
+    executor = AtomicFake()
+    executor.execute_atomic(trace)
+    executor.receipts[trace.decision_id]["execution_manifest_hash"] = "c" * 64
+
+    with pytest.raises(DecisionExecutionError, match="execution manifest"):
+        policy.apply_decision(
+            trace.decision_id,
+            current_heads={},
+            executor=executor,
         )
 
     assert policy.ledger.get(trace.decision_id).status == "PREVIEWED"
@@ -169,10 +226,31 @@ def test_successful_split_is_one_batch_and_apply_retry_is_idempotent(tmp_path):
     assert applied.status == "APPLIED"
     assert retry == applied
     assert len(executor.calls) == 1
-    operations, decision_id, idempotency_key = executor.calls[0]
+    call = executor.calls[0]
+    operations = call.operations
     assert [operation.operation for operation in operations] == ["UPDATE", "CREATE"]
-    assert decision_id == trace.decision_id
-    assert idempotency_key == trace.decision_id
+    assert call.decision_id == trace.decision_id
+    assert call.idempotency_key == trace.idempotency_key
+    assert call.request_hash == trace.request_hash
+    assert call.policy_version == trace.policy_version
+    assert call.algorithm_version == trace.algorithm_version
+    assert call.evidence_ids == trace.evidence_ids
+    assert len(executor.committed) == 2
+
+
+def test_crash_after_domain_commit_is_reconciled_to_applied(tmp_path):
+    policy = _policy(tmp_path)
+    trace = _split(policy)
+    executor = AtomicFake(fail_after_commit=True)
+
+    applied = policy.apply_decision(
+        trace.decision_id,
+        current_heads={},
+        executor=executor,
+    )
+
+    assert applied.status == "APPLIED"
+    assert len(executor.calls) == 1
     assert len(executor.committed) == 2
 
 

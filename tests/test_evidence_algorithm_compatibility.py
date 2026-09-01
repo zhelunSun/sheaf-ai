@@ -7,6 +7,7 @@ from dataclasses import asdict
 from sheaf_ai._evidence_memory_models import (
     ALGORITHM_VERSION,
     LEGACY_ALGORITHM_VERSION,
+    SCHEMA_VERSION,
     EvidenceRef,
 )
 from sheaf_ai._evidence_memory_rules import compute_evidence_strength
@@ -87,8 +88,10 @@ def test_legacy_v1_mirror_ledger_replays_and_migrates(tmp_path):
     )
 
     migrated = json.loads(ledger_path.read_text(encoding="utf-8"))
-    assert migrated["schema_version"] == 3
-    assert "algorithm_version" not in migrated["events"][0]
+    assert migrated["schema_version"] == SCHEMA_VERSION
+    assert migrated["events"][0]["algorithm_version"] == LEGACY_ALGORITHM_VERSION
+    assert migrated["events"][0]["governance_version"] == "evidence-governance-v2"
+    assert len(migrated["events"][0]["evidence_use_ids"]) == 2
     assert migrated["events"][1]["algorithm_version"] == ALGORITHM_VERSION
     final = reopened.snapshot()
     assert [event.algorithm_version for event in final.events] == [
@@ -196,4 +199,7 @@ def test_legacy_update_and_contest_history_replays_before_v2_resolution(tmp_path
     final = reopened.snapshot()
     assert len(final.events) == 4
     assert final.events[-1].algorithm_version == ALGORITHM_VERSION
-    assert json.loads(ledger_path.read_text(encoding="utf-8"))["schema_version"] == 3
+    assert (
+        json.loads(ledger_path.read_text(encoding="utf-8"))["schema_version"]
+        == SCHEMA_VERSION
+    )

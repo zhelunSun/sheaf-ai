@@ -6,6 +6,7 @@ import json
 import pytest
 
 from sheaf_ai._evidence_memory_models import (
+    SCHEMA_VERSION,
     claim_identity_for_version,
     legacy_evidence_use_identity,
 )
@@ -237,7 +238,7 @@ def test_schema2_without_locator_replays_as_whole_entry_and_migrates(tmp_path):
         reason="force schema migration",
     )
     migrated = json.loads(ledger_path.read_text(encoding="utf-8"))
-    assert migrated["schema_version"] == 3
+    assert migrated["schema_version"] == SCHEMA_VERSION
     assert all(record["locator_identity"] for record in migrated["processed_evidence"].values())
 
 

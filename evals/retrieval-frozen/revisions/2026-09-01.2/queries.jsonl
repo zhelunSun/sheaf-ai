@@ -1,0 +1,36 @@
+{"query_id":"q-001","text":"Atlas SDK 1.4 默认会重试几次？"}
+{"query_id":"q-002","text":"how many attempts happen automatically in Atlas 2.0"}
+{"query_id":"q-003","text":"Atlas client connection timeout default"}
+{"query_id":"q-004","text":"do clients pinned to Atlas 1.x keep the old retry default"}
+{"query_id":"q-005","text":"Orchid OQ-Short Recall@10 with reranking"}
+{"query_id":"q-006","text":"does Orchid improve retrieval on long documents"}
+{"query_id":"q-007","text":"which result reports OQ-Long 0.48 versus 0.51"}
+{"query_id":"q-008","text":"source of the broad claim that Orchid improves short and long retrieval"}
+{"query_id":"q-009","text":"Northstar deadline UTC correction"}
+{"query_id":"q-010","text":"which Northstar notice displayed 17:00 China Standard Time"}
+{"query_id":"q-011","text":"when is the Northstar 2026 proposal actually due"}
+{"query_id":"q-012","text":"Cedar revision token cache invalidation"}
+{"query_id":"q-013","text":"was Cedar cache behavior independently reproduced"}
+{"query_id":"q-014","text":"which Cedar article is only a rewritten repost"}
+{"query_id":"q-015","text":"Cedar CDN static asset TTL"}
+{"query_id":"q-016","text":"为什么 Route B 严格 500 米抽样可能达不到 8000？"}
+{"query_id":"q-017","text":"Route B cold start 是否保留 301 个手工校准样本"}
+{"query_id":"q-018","text":"Sentinel-2 seasonal17 phenology features"}
+{"query_id":"q-019","text":"长文档检索里 Orchid 和 baseline 谁更好"}
+{"query_id":"q-020","text":"Python without the global interpreter lock extension compatibility"}
+{"query_id":"q-021","text":"where are isolated build requirements declared for Python packaging"}
+{"query_id":"q-022","text":"which Kubernetes probe restarts a stuck container"}
+{"query_id":"q-023","text":"protect a slow starting Kubernetes app from premature liveness restart"}
+{"query_id":"q-024","text":"user deliberately chooses trusted sources to teach an agent their taste"}
+{"query_id":"q-025","text":"automatic extraction of user facts from conversation history"}
+{"query_id":"q-026","text":"revision token 修改以后 Cedar cache 会发生什么"}
+{"query_id":"q-027","text":"ocean salinity sensor calibration protocol"}
+{"query_id":"q-028","text":"best vegetarian restaurant near the railway station"}
+{"query_id":"q-029","text":"cache timeout configuration"}
+{"query_id":"q-030","text":"three retries applies to 1.x but not Atlas 2.0"}
+{"query_id":"q-031","text":"official source was wrong and later corrected the time zone"}
+{"query_id":"q-032","text":"independent evidence versus repost for Cedar cache behavior"}
+{"query_id":"q-033","text":"Sentinel satellite calibration samples for ocean salinity sensors"}
+{"query_id":"q-034","text":"Cedar tree irrigation cache near the railway station"}
+{"query_id":"q-035","text":"Atlas mountain railway retry policy for delayed passenger tickets"}
+{"query_id":"q-036","text":"Orchid greenhouse long-document shipping record"}

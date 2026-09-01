@@ -20,6 +20,7 @@
 |------|------|----------|
 | [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 当前产品定位、三条核心算法路径和管理方式 | 产品、工程、面试评审 |
 | [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) | 系统分层、测试阶梯、实验和声明边界 | 工程、研究、贡献者 |
+| [ENGINEERING-WORK-MODE.md](ENGINEERING-WORK-MODE.md) | 核心路径的审查、并行、交叉攻击和证据收口方式 | 研发执行、代码审核 |
 | [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | 历史探索：多来源事件理解，不是当前路线 | 历史参考 |
 
 ### 🌐 暂停的远期探索

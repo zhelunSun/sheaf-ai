@@ -11,20 +11,44 @@ import math
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Mapping, Optional, Sequence
+from urllib.parse import urlsplit
 
 from sheaf_ai import config, crystallize
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path
 from sheaf_ai.evidence_memory import (
     VALID_ACTIONS,
     VALID_RESOLUTION_BASES,
+    AtomicSplitOperation,
     CardVersion,
     EvidenceGovernedMemory,
     EvidenceValidationError,
+    StaleHeadError,
 )
+from sheaf_ai.evidence_policy import (
+    DecisionTrace,
+    PlannedOperation,
+    StaleDecisionError,
+    execution_manifest_hash,
+    validate_decision_trace,
+)
+from sheaf_ai.provenance_registry import (
+    EvidenceSubject,
+    ProvenanceResolution,
+    RegistryValidationError,
+    canonicalize_origin,
+    provenance_registry_lock,
+    resolve_provenance,
+)
+from sheaf_ai.source_independence import (
+    SOURCE_INDEPENDENCE_VERSION,
+    assess_source_pair,
+)
+from sheaf_ai.utils import content_hash, evidence_digest
 from sheaf_cards.base import KnowledgeCard
 
 
 EVIDENCE_MEMORY_LEDGER_NAME = "evidence_memory_ledger.json"
+PROVENANCE_REGISTRY_NAME = "provenance_registry.json"
 _TRANSITION_FIELDS = frozenset(
     {
         "action",
@@ -312,31 +336,226 @@ def _memory(ledger_path: Path | None = None) -> EvidenceGovernedMemory:
     return EvidenceGovernedMemory(path)
 
 
-def _load_real_entries(source_ids: Sequence[str]) -> dict[str, Mapping[str, object]]:
-    """Load the requested evidence from Sheaf storage, never caller payloads."""
+def _read_stored_entry(entry_id: str) -> dict[str, object]:
+    """Read one Entry and recompute evidence identity from its current raw body."""
+    try:
+        path = resolve_entry_json_path(config.ENTRIES_DIR, entry_id)
+    except InvalidEntryId as exc:
+        raise EvidenceValidationError("Evidence source ID is invalid") from exc
+    if not path.is_file():
+        raise EvidenceValidationError(f"Evidence source is not a stored Entry: {entry_id}")
+    try:
+        entry = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise EvidenceValidationError(f"Stored Entry is unreadable: {entry_id}") from exc
+    if not isinstance(entry, Mapping) or str(entry.get("id", "")) != entry_id:
+        raise EvidenceValidationError(f"Stored Entry identity does not match: {entry_id}")
+
+    trusted_entry = dict(entry)
+    raw_path = config.RAW_DIR / f"{entry_id}.txt"
+    raw_text = ""
+    if raw_path.is_file():
+        try:
+            raw_text = raw_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            raise EvidenceValidationError(
+                f"Stored Entry body is unreadable: {entry_id}"
+            ) from exc
+        trusted_entry["raw_text"] = raw_text
+
+    # Entry JSON is a projection, not a trust root. Recompute both identities
+    # from the body used by the transition so hand-edited metadata cannot bind
+    # a different document to an existing attestation.
+    trusted_entry["content_hash"] = content_hash(raw_text) if raw_text else ""
+    digest = evidence_digest(raw_text)
+    trusted_entry["evidence_digest"] = digest
+    metadata = dict(entry.get("metadata", {})) if isinstance(entry.get("metadata"), Mapping) else {}
+    metadata["content_hash"] = trusted_entry["content_hash"]
+    metadata["evidence_digest"] = digest
+    trusted_entry["metadata"] = metadata
+    return trusted_entry
+
+
+def _provenance_registry_path(path: Path | None) -> Path:
+    return Path(path) if path else config.DATA_DIR / PROVENANCE_REGISTRY_NAME
+
+
+def _entry_subject(entry: Mapping[str, object]) -> EvidenceSubject | None:
+    """Build the exact registry subject, or ``None`` for unbindable Entries."""
+    entry_id = str(entry.get("id", "")).strip()
+    digest = str(entry.get("evidence_digest", "")).strip()
+    try:
+        parsed = urlsplit(str(entry.get("url", "")).strip())
+        origin = canonicalize_origin(f"{parsed.scheme}://{parsed.netloc}")
+        return EvidenceSubject(
+            entry_id=entry_id,
+            canonical_origin=origin,
+            evidence_digest=digest,
+        )
+    except (RegistryValidationError, ValueError):
+        return None
+
+
+def _verified_duplicate_relations(entry: Mapping[str, object]) -> list[dict[str, object]]:
+    """Recompute persisted duplicate edges before they influence evidence groups."""
+    metadata = entry.get("metadata", {})
+    if not isinstance(metadata, Mapping):
+        return []
+    raw_relations = metadata.get("duplicate_relations", [])
+    if isinstance(raw_relations, (str, bytes)) or not isinstance(raw_relations, Sequence):
+        return []
+    verified: list[dict[str, object]] = []
+    for relation in raw_relations:
+        if not isinstance(relation, Mapping):
+            continue
+        related_id = str(relation.get("related_entry_id", "")).strip()
+        if not related_id or related_id == str(entry.get("id", "")):
+            continue
+        try:
+            related = _read_stored_entry(related_id)
+            decision = assess_source_pair(entry, related)
+        except (EvidenceValidationError, TypeError, ValueError):
+            continue
+        if decision.classification not in {"exact", "near_duplicate"}:
+            continue
+        expected = {
+            "related_entry_id": related_id,
+            "classification": decision.classification,
+            "similarity": decision.similarity,
+            "rule": decision.rule,
+            "reason": decision.reason,
+            "algorithm_version": SOURCE_INDEPENDENCE_VERSION,
+        }
+        if all(relation.get(key) == value for key, value in expected.items()):
+            verified.append(expected)
+    return verified
+
+
+def _load_real_entries(
+    source_ids: Sequence[str],
+    *,
+    transition: EvidenceTransitionRequest | None = None,
+    provenance_registry_path: Path | None = None,
+) -> dict[str, Mapping[str, object]]:
+    """Load real Entries and project only registry-verified governance fields."""
+    registry_path = _provenance_registry_path(provenance_registry_path)
+    loaded = {entry_id: _read_stored_entry(entry_id) for entry_id in source_ids}
+
+    corrected_subject: EvidenceSubject | None = None
+    authority_source_id = ""
+    topic = ""
+    fact_key = ""
+    corrected_entry_id = ""
+    if transition is not None and transition.resolution_basis == "official_correction":
+        authority_source_id = str(
+            transition.resolution_metadata.get("authority_source_id", "")
+        ).strip()
+        corrected_entry_id = str(
+            transition.resolution_metadata.get("corrects_entry_id", "")
+        ).strip()
+        topic = transition.topic
+        fact_key = str(transition.card.get("fact_key", "")).strip()
+        if corrected_entry_id:
+            corrected_subject = _entry_subject(_read_stored_entry(corrected_entry_id))
+
     entries: dict[str, Mapping[str, object]] = {}
-    for entry_id in source_ids:
-        try:
-            path = resolve_entry_json_path(config.ENTRIES_DIR, entry_id)
-        except InvalidEntryId as exc:
-            raise EvidenceValidationError("Evidence source ID is invalid") from exc
-        if not path.is_file():
-            raise EvidenceValidationError(f"Evidence source is not a stored Entry: {entry_id}")
-        try:
-            entry = json.loads(path.read_text(encoding="utf-8"))
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-            raise EvidenceValidationError(f"Stored Entry is unreadable: {entry_id}") from exc
-        if not isinstance(entry, Mapping) or str(entry.get("id", "")) != entry_id:
-            raise EvidenceValidationError(f"Stored Entry identity does not match: {entry_id}")
-        trusted_entry = dict(entry)
-        raw_path = config.RAW_DIR / f"{entry_id}.txt"
-        if raw_path.is_file():
-            try:
-                trusted_entry["raw_text"] = raw_path.read_text(encoding="utf-8")
-            except (OSError, UnicodeError) as exc:
-                raise EvidenceValidationError(
-                    f"Stored Entry body is unreadable: {entry_id}"
-                ) from exc
+    for entry_id, trusted_entry in loaded.items():
+        subject = _entry_subject(trusted_entry)
+        resolution = (
+            resolve_provenance(registry_path, subject=subject)
+            if subject is not None
+            else ProvenanceResolution(status="unverified")
+        )
+        source = (
+            dict(trusted_entry.get("source", {}))
+            if isinstance(trusted_entry.get("source"), Mapping)
+            else {}
+        )
+        for field in (
+            "tier",
+            "is_primary",
+            "authority_scope",
+            "correction_relations",
+            "independent_observation",
+            "method_provenance",
+            "observation_id",
+            "experiment_id",
+            "measurement_id",
+            "run_id",
+            "sample_id",
+            "provenance",
+        ):
+            source.pop(field, None)
+        trusted_entry.pop("source_tier", None)
+        trusted_entry.pop("source_is_primary", None)
+        trusted_entry.pop("is_primary", None)
+        for field in (
+            "independent_observation",
+            "method_provenance",
+            "observation_id",
+            "experiment_id",
+            "measurement_id",
+            "run_id",
+            "sample_id",
+            "provenance",
+        ):
+            trusted_entry.pop(field, None)
+
+        source["tier"] = resolution.evidence_tier
+        source["is_primary"] = resolution.is_primary
+        source["independent_observation"] = resolution.independent_observation
+        source["provenance_registry"] = {
+            "status": resolution.status,
+            "registry_id": resolution.registry_id,
+            "registry_revision": resolution.registry_revision,
+            "attestations": [asdict(ref) for ref in resolution.attestation_refs],
+            "integrity_model": "sha256-hash-chain-no-authentication",
+        }
+
+        # Authority pairs are deliberately projected only for the exact
+        # official-correction request being executed. This avoids turning two
+        # independent (topic, fact_key) grants into an accidental cross product
+        # in the legacy EvidenceRef representation.
+        if (
+            entry_id == authority_source_id
+            and subject is not None
+            and corrected_subject is not None
+            and resolution.authorizes_official_correction(
+                topic=topic,
+                fact_key=fact_key,
+                corrected_subject=corrected_subject,
+            )
+        ):
+            source["authority_scope"] = {
+                "topics": [topic],
+                "fact_keys": [fact_key],
+            }
+            source["correction_relations"] = [
+                {"relation": "corrects", "entry_id": corrected_entry_id}
+            ]
+
+        metadata = dict(trusted_entry.get("metadata", {}))
+        for field in (
+            "independent_observation",
+            "method_provenance",
+            "observation_id",
+            "experiment_id",
+            "measurement_id",
+            "run_id",
+            "sample_id",
+            "provenance",
+        ):
+            metadata.pop(field, None)
+        # Recompute duplicate relations from the same governance-sanitised
+        # projection that the evidence rules will consume.
+        trusted_entry["source"] = source
+        trusted_entry["metadata"] = metadata
+        metadata["duplicate_relations"] = _verified_duplicate_relations(trusted_entry)
+        metadata["duplicate_detection"] = {
+            "status": "verified_at_use",
+            "algorithm_version": SOURCE_INDEPENDENCE_VERSION,
+        }
+        trusted_entry["metadata"] = metadata
         entries[entry_id] = trusted_entry
     return entries
 
@@ -362,6 +581,16 @@ def _evidence_ref_projection(ref) -> dict[str, object]:
             asdict(relation) for relation in ref.duplicate_relations
         ],
         "independence_identity": ref.independence_identity,
+        "provenance_registry_snapshot": {
+            "status": ref.provenance_registry_status,
+            "registry_id": ref.provenance_registry_id,
+            "registry_revision": ref.provenance_registry_revision,
+            "integrity_model": ref.provenance_integrity_model,
+            "attestations": [
+                asdict(attestation)
+                for attestation in ref.provenance_attestation_refs
+            ],
+        },
     }
 
 
@@ -463,27 +692,37 @@ def apply_evidence_transition(
     request: Mapping[str, object],
     *,
     ledger_path: Path | None = None,
+    provenance_registry_path: Path | None = None,
 ) -> dict:
     """Validate an explicit request, load real Entries, then call the executor."""
     transition = EvidenceTransitionRequest.from_mapping(request)
-    entries = _load_real_entries(transition.source_ids)
-    memory = _memory(ledger_path)
-    result = memory.apply_transition(
-        transition.action,
-        topic=transition.topic,
-        entries=entries,
-        source_ids=transition.source_ids,
-        evidence_locators=transition.evidence_locators,
-        card=transition.card,
-        target_card_ids=transition.target_card_ids,
-        reason=transition.reason,
-        resolution_basis=transition.resolution_basis,
-        resolution_metadata=transition.resolution_metadata,
-        idempotency_key=transition.idempotency_key,
-    )
-    snapshot = memory.snapshot()
-    version = snapshot.versions_by_id[result.version_ids[0]]
-    event = next(item for item in snapshot.events if item.event_id == result.event_id)
+    registry_path = _provenance_registry_path(provenance_registry_path)
+    # Global lock order: provenance registry, then evidence-memory ledger.
+    # Admin revoke/supersede operations use the same registry lock, so the
+    # resolved grants cannot change before their domain commit is durable.
+    with provenance_registry_lock(registry_path):
+        entries = _load_real_entries(
+            transition.source_ids,
+            transition=transition,
+            provenance_registry_path=registry_path,
+        )
+        memory = _memory(ledger_path)
+        result = memory.apply_transition(
+            transition.action,
+            topic=transition.topic,
+            entries=entries,
+            source_ids=transition.source_ids,
+            evidence_locators=transition.evidence_locators,
+            card=transition.card,
+            target_card_ids=transition.target_card_ids,
+            reason=transition.reason,
+            resolution_basis=transition.resolution_basis,
+            resolution_metadata=transition.resolution_metadata,
+            idempotency_key=transition.idempotency_key,
+        )
+        snapshot = memory.snapshot()
+        version = snapshot.versions_by_id[result.version_ids[0]]
+        event = next(item for item in snapshot.events if item.event_id == result.event_id)
     return {
         "applied": result.applied,
         "action": result.action,
@@ -493,6 +732,134 @@ def apply_evidence_transition(
         "card": project_memory_version(version),
         "event": _event_projection(event, snapshot),
     }
+
+
+class EvidenceMemoryAtomicBatchExecutor:
+    """Production adapter from previewed policy operations to schema-v4 ledger writes."""
+
+    def __init__(
+        self,
+        *,
+        ledger_path: Path | None = None,
+        provenance_registry_path: Path | None = None,
+    ) -> None:
+        self.memory = _memory(ledger_path)
+        self.provenance_registry_path = provenance_registry_path
+
+    def lookup_commit(self, decision_id: str, request_hash: str):
+        return self.memory.lookup_atomic_batch(decision_id, request_hash)
+
+    @staticmethod
+    def _transition_for_operation(
+        operation: PlannedOperation,
+        *,
+        expected_heads: Mapping[str, str],
+    ) -> EvidenceTransitionRequest:
+        request = dict(operation.request)
+        forbidden = {"action", "target_card_ids", "idempotency_key"}.intersection(request)
+        if forbidden:
+            raise ValueError(
+                "SPLIT operation requests cannot override executor fields: "
+                + ", ".join(sorted(forbidden))
+            )
+        if operation.operation not in {"UPDATE", "CREATE"}:
+            raise ValueError(f"Unsupported SPLIT operation: {operation.operation!r}")
+        request["action"] = operation.operation
+        request["target_card_ids"] = list(operation.target_card_ids)
+
+        if operation.operation == "UPDATE":
+            if len(operation.target_heads) != 1:
+                raise ValueError("SPLIT UPDATE must bind exactly one target head")
+            head = operation.target_heads[0]
+            if expected_heads != {head.card_id: head.version_id}:
+                raise ValueError("SPLIT UPDATE target head differs from the decision receipt")
+            if operation.target_card_ids != (head.card_id,):
+                raise ValueError("SPLIT UPDATE target card differs from its target head")
+        elif operation.target_heads or operation.target_card_ids:
+            raise ValueError("SPLIT CREATE cannot target an existing card")
+        return EvidenceTransitionRequest.from_mapping(request)
+
+    def execute_atomic(self, trace: DecisionTrace):
+        validate_decision_trace(trace)
+        if trace.suggested_operation != "SPLIT":
+            raise ValueError("Atomic evidence adapter only accepts SPLIT traces")
+        operations = trace.operations
+        decision_id = trace.decision_id
+        idempotency_key = trace.idempotency_key
+        request_hash = trace.request_hash
+        expected_heads = {
+            head.card_id: head.version_id for head in trace.target_heads
+        }
+        policy_version = trace.policy_version
+        algorithm_version = trace.algorithm_version
+        evidence_ids = trace.evidence_ids
+        manifest_hash = execution_manifest_hash(trace)
+        if tuple(operation.operation for operation in operations) != ("UPDATE", "CREATE"):
+            raise ValueError("SPLIT must contain exactly UPDATE followed by CREATE")
+        if any(operation.decision_id != decision_id for operation in operations):
+            raise ValueError("SPLIT operations do not share the decision identity")
+
+        update = self._transition_for_operation(
+            operations[0], expected_heads=expected_heads
+        )
+        create = self._transition_for_operation(
+            operations[1], expected_heads=expected_heads
+        )
+        if update.topic != create.topic:
+            raise ValueError("SPLIT UPDATE and CREATE must share one topic")
+        operation_evidence = tuple(sorted(set(update.source_ids) | set(create.source_ids)))
+        if operation_evidence != tuple(sorted(set(evidence_ids))):
+            raise ValueError("SPLIT operation evidence differs from the preview trace")
+
+        registry_path = _provenance_registry_path(self.provenance_registry_path)
+        # Keep the same registry -> evidence-ledger order as single transitions.
+        with provenance_registry_lock(registry_path):
+            update_entries = _load_real_entries(
+                update.source_ids,
+                transition=update,
+                provenance_registry_path=registry_path,
+            )
+            create_entries = _load_real_entries(
+                create.source_ids,
+                transition=create,
+                provenance_registry_path=registry_path,
+            )
+            try:
+                return self.memory.apply_atomic_split(
+                    update=AtomicSplitOperation(
+                        action="UPDATE",
+                        topic=update.topic,
+                        entries=update_entries,
+                        source_ids=update.source_ids,
+                        evidence_locators=update.evidence_locators,
+                        card=update.card,
+                        target_card_ids=update.target_card_ids,
+                        reason=update.reason,
+                        resolution_basis=update.resolution_basis,
+                        resolution_metadata=update.resolution_metadata,
+                    ),
+                    create=AtomicSplitOperation(
+                        action="CREATE",
+                        topic=create.topic,
+                        entries=create_entries,
+                        source_ids=create.source_ids,
+                        evidence_locators=create.evidence_locators,
+                        card=create.card,
+                        target_card_ids=create.target_card_ids,
+                        reason=create.reason,
+                        resolution_basis=create.resolution_basis,
+                        resolution_metadata=create.resolution_metadata,
+                    ),
+                    decision_id=decision_id,
+                    request_hash=request_hash,
+                    expected_heads=expected_heads,
+                    idempotency_key=idempotency_key,
+                    policy_version=policy_version,
+                    algorithm_version=algorithm_version,
+                    execution_manifest_hash=manifest_hash,
+                )
+            except StaleHeadError as exc:
+                raise StaleDecisionError(str(exc)) from exc
 
 
 def get_memory_snapshot(

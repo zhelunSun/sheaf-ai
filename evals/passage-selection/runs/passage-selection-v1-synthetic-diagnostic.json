@@ -1,0 +1,380 @@
+{
+  "benchmark_version": "passage-selection-diagnostic-v1",
+  "generated_at": "2026-09-01T10:41:48.784885Z",
+  "input_hashes": {
+    "evaluator_gold.jsonl": "sha256:0bc3a89861720c9584b844dc335ede35821c479cbb5343784de03e0edac6b0a9",
+    "ranker_inputs.jsonl": "sha256:761493f80ad19e9d8f5a14a3629fa6ec8ece67981db445f62edb80fa053d4498"
+  },
+  "isolation": {
+    "evaluator_phase_files": [
+      "evaluator_gold.jsonl"
+    ],
+    "gold_loaded_after_ranking": true,
+    "ranker_phase_files": [
+      "ranker_inputs.jsonl"
+    ]
+  },
+  "limitations": [
+    "Small hand-authored synthetic diagnostic; not a user-effect evaluation.",
+    "Lexical evidence recovery does not measure factual synthesis or LLM answer quality.",
+    "No production traffic, human preference labels, or confidence intervals are claimed."
+  ],
+  "manifest_hash": "sha256:465786b7001d1e7a1233ffc654defbf8152255b36aef4a0f5c43c4ef39a53118",
+  "passage_selection_version": "passage-selection-v1",
+  "results": [
+    {
+      "aggregate": {
+        "budget_compliance_rate": 1.0,
+        "case_count": 4,
+        "determinism_rate": 1.0,
+        "evidence_hit_rate": 0.5,
+        "mean_budget_utilisation": 1.0,
+        "mean_selected_chars": 380.0,
+        "required_fact_recall": 0.42857142857142855,
+        "span_recall": 0.42857142857142855
+      },
+      "cases": [
+        {
+          "budget_compliant": true,
+          "case_id": "tail_fact",
+          "evidence_hit": false,
+          "observed_strategy": "head_truncation",
+          "passages": [
+            {
+              "end": 380,
+              "start": 0
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [],
+          "required_fact_recall": 0.0,
+          "selected_chars": 380,
+          "selection_hash": "sha256:bc08dadfcf2555e25ea3b707961feba33f54fd49ffd512ef2f54bf10828ce20c",
+          "span_recall": 0.0,
+          "strategy": "head_truncation"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "middle_fact",
+          "evidence_hit": false,
+          "observed_strategy": "head_truncation",
+          "passages": [
+            {
+              "end": 380,
+              "start": 0
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [],
+          "required_fact_recall": 0.0,
+          "selected_chars": 380,
+          "selection_hash": "sha256:2b7b5279c90d7f26a290e99fce653be30cb7c462fa7338be74eb87ee88b7f92c",
+          "span_recall": 0.0,
+          "strategy": "head_truncation"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "distributed_facts",
+          "evidence_hit": true,
+          "observed_strategy": "head_truncation",
+          "passages": [
+            {
+              "end": 380,
+              "start": 0
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "atlas-retry"
+          ],
+          "required_fact_recall": 0.5,
+          "selected_chars": 380,
+          "selection_hash": "sha256:c5bba3baf40aa0778c9659ff43ea60c33da84170069e92b17b5829e9f1dba20b",
+          "span_recall": 0.5,
+          "strategy": "head_truncation"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "no_lexical_signal",
+          "evidence_hit": true,
+          "observed_strategy": "head_truncation",
+          "passages": [
+            {
+              "end": 380,
+              "start": 0
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "coverage-opening",
+            "coverage-middle"
+          ],
+          "required_fact_recall": 0.6666666666666666,
+          "selected_chars": 380,
+          "selection_hash": "sha256:cfd5610f8b19f4ac299f09829e464dd7d103e1a07a1a7595b06ea4df7e34ea92",
+          "span_recall": 0.6666666666666666,
+          "strategy": "head_truncation"
+        }
+      ],
+      "strategy": "head_truncation"
+    },
+    {
+      "aggregate": {
+        "budget_compliance_rate": 1.0,
+        "case_count": 4,
+        "determinism_rate": 1.0,
+        "evidence_hit_rate": 0.25,
+        "mean_budget_utilisation": 0.9078947368421052,
+        "mean_selected_chars": 345.0,
+        "required_fact_recall": 0.14285714285714285,
+        "span_recall": 0.14285714285714285
+      },
+      "cases": [
+        {
+          "budget_compliant": true,
+          "case_id": "tail_fact",
+          "evidence_hit": false,
+          "observed_strategy": "stratified_fallback",
+          "passages": [
+            {
+              "end": 79,
+              "start": 0
+            },
+            {
+              "end": 586,
+              "start": 442
+            },
+            {
+              "end": 1071,
+              "start": 931
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [],
+          "required_fact_recall": 0.0,
+          "selected_chars": 367,
+          "selection_hash": "sha256:c387cf6b2f963216be82be467b9499588f8b9d20ac4929a925c979f87c52987a",
+          "span_recall": 0.0,
+          "strategy": "stratified_fallback"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "middle_fact",
+          "evidence_hit": false,
+          "observed_strategy": "stratified_fallback",
+          "passages": [
+            {
+              "end": 76,
+              "start": 0
+            },
+            {
+              "end": 566,
+              "start": 431
+            },
+            {
+              "end": 1006,
+              "start": 860
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [],
+          "required_fact_recall": 0.0,
+          "selected_chars": 361,
+          "selection_hash": "sha256:732893b82bc9b7f04b4fe248d88cdfa806ed5e82d9a84c43463b1d53e17dd424",
+          "span_recall": 0.0,
+          "strategy": "stratified_fallback"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "distributed_facts",
+          "evidence_hit": false,
+          "observed_strategy": "stratified_fallback",
+          "passages": [
+            {
+              "end": 150,
+              "start": 0
+            },
+            {
+              "end": 516,
+              "start": 415
+            },
+            {
+              "end": 958,
+              "start": 853
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [],
+          "required_fact_recall": 0.0,
+          "selected_chars": 360,
+          "selection_hash": "sha256:4295f8733b2f586d662d4087ad0cbd9e2b9756002c62cd6e26e10c80ef539b1f",
+          "span_recall": 0.0,
+          "strategy": "stratified_fallback"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "no_lexical_signal",
+          "evidence_hit": true,
+          "observed_strategy": "stratified_fallback",
+          "passages": [
+            {
+              "end": 92,
+              "start": 0
+            },
+            {
+              "end": 469,
+              "start": 356
+            },
+            {
+              "end": 859,
+              "start": 776
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "coverage-opening"
+          ],
+          "required_fact_recall": 0.3333333333333333,
+          "selected_chars": 292,
+          "selection_hash": "sha256:77b4694215eabc133707ef278098b42525d3dc4b6126a7ea41eae6a86ebd427b",
+          "span_recall": 0.3333333333333333,
+          "strategy": "stratified_fallback"
+        }
+      ],
+      "strategy": "stratified_fallback"
+    },
+    {
+      "aggregate": {
+        "budget_compliance_rate": 1.0,
+        "case_count": 4,
+        "determinism_rate": 1.0,
+        "evidence_hit_rate": 1.0,
+        "mean_budget_utilisation": 0.8763157894736842,
+        "mean_selected_chars": 333.0,
+        "required_fact_recall": 0.5714285714285714,
+        "span_recall": 0.5714285714285714
+      },
+      "cases": [
+        {
+          "budget_compliant": true,
+          "case_id": "tail_fact",
+          "evidence_hit": true,
+          "observed_strategy": "relevance_mmr",
+          "passages": [
+            {
+              "end": 79,
+              "start": 0
+            },
+            {
+              "end": 787,
+              "start": 655
+            },
+            {
+              "end": 882,
+              "start": 767
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "tail-interval"
+          ],
+          "required_fact_recall": 1.0,
+          "selected_chars": 330,
+          "selection_hash": "sha256:8a7fd473ea8dfe4b9c12e82433cb23bbad719574cb52e9e0f1c31c92034a4ab1",
+          "span_recall": 1.0,
+          "strategy": "current_relevance_mmr"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "middle_fact",
+          "evidence_hit": true,
+          "observed_strategy": "relevance_mmr",
+          "passages": [
+            {
+              "end": 76,
+              "start": 0
+            },
+            {
+              "end": 650,
+              "start": 546
+            },
+            {
+              "end": 1006,
+              "start": 860
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "middle-invalidation"
+          ],
+          "required_fact_recall": 1.0,
+          "selected_chars": 330,
+          "selection_hash": "sha256:937a92ede2058b5f4d360840dc225cdd9b97c3f502e04b645de41a3270fb177c",
+          "span_recall": 1.0,
+          "strategy": "current_relevance_mmr"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "distributed_facts",
+          "evidence_hit": true,
+          "observed_strategy": "relevance_mmr",
+          "passages": [
+            {
+              "end": 150,
+              "start": 0
+            },
+            {
+              "end": 274,
+              "start": 130
+            },
+            {
+              "end": 689,
+              "start": 607
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "atlas-retry"
+          ],
+          "required_fact_recall": 0.5,
+          "selected_chars": 380,
+          "selection_hash": "sha256:b66f9947abfd9df0a46f8aef728765dde7e3aa9f9215cfa3bcf33052a4699e88",
+          "span_recall": 0.5,
+          "strategy": "current_relevance_mmr"
+        },
+        {
+          "budget_compliant": true,
+          "case_id": "no_lexical_signal",
+          "evidence_hit": true,
+          "observed_strategy": "stratified_fallback",
+          "passages": [
+            {
+              "end": 92,
+              "start": 0
+            },
+            {
+              "end": 469,
+              "start": 356
+            },
+            {
+              "end": 859,
+              "start": 776
+            }
+          ],
+          "prompt_budget": 380,
+          "recovered_span_ids": [
+            "coverage-opening"
+          ],
+          "required_fact_recall": 0.3333333333333333,
+          "selected_chars": 292,
+          "selection_hash": "sha256:f7e6824966c1cfab7453eb341532508dd664bd4969b99788a7648787d5d07e78",
+          "span_recall": 0.3333333333333333,
+          "strategy": "current_relevance_mmr"
+        }
+      ],
+      "strategy": "current_relevance_mmr"
+    }
+  ],
+  "schema_version": "1.0",
+  "status": "synthetic_diagnostic"
+}

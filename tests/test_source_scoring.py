@@ -14,6 +14,8 @@ Covers:
 """
 from datetime import datetime, timezone
 
+import pytest
+
 from sheaf_ai.source_registry import (
     get_domain_score,
     SourceRegistry,
@@ -219,6 +221,20 @@ class TestLlmBonus:
             "domain_expertise": "low",
         }
         bonus, is_primary = _compute_llm_bonus(assessment)
+        assert bonus == 0
+        assert is_primary is False
+
+    @pytest.mark.parametrize(
+        "assessment",
+        [
+            {"is_primary_source": "false", "has_verifiable_claims": "false"},
+            {"is_primary_source": 1, "has_verifiable_claims": 1},
+            {"domain_expertise": True},
+        ],
+    )
+    def test_malformed_model_scalars_do_not_become_governance_truths(self, assessment):
+        bonus, is_primary = _compute_llm_bonus(assessment)
+
         assert bonus == 0
         assert is_primary is False
 

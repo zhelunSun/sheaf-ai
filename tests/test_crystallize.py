@@ -24,6 +24,7 @@ from sheaf_ai.crystallize import (
     _parse_crystallized_response,
     _get_card_store,
     _embed_cards,
+    _build_card_sources,
     semantic_search,
 )
 from sheaf_cards.base import KnowledgeCard
@@ -196,6 +197,27 @@ class TestCrystallizeTopic:
             from sheaf_ai.exceptions import LLMError
             with pytest.raises(LLMError):
                 crystallize_topic("RAG")
+
+    def test_card_sources_select_relevant_long_document_passages(
+        self, sample_entries, monkeypatch
+    ):
+        from sheaf_ai import crystallize
+
+        entry = dict(sample_entries[0])
+        body = (
+            "Generic introduction. " * 220
+            + "RAG tail finding: the evaluation window is exactly 37 days. "
+        )
+        raw_path = crystallize.RAW_DIR / f"{entry['id']}.txt"
+        raw_path.write_text(body, encoding="utf-8")
+
+        source = _build_card_sources([entry], topic="RAG evaluation window")[0]
+
+        assert "exactly 37 days" in source.text
+        assert len(source.text) <= 1900
+        manifest = source.metadata["passage_selection"]
+        assert manifest["algorithm_version"] == "passage-selection-v1"
+        assert any(item["start"] > 3000 for item in manifest["passages"])
 
 
 # ============================================================

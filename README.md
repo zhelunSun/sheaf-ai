@@ -101,13 +101,15 @@ schema 3 verifies quote or character-span evidence identity and replays older
 ledgers. `evidence-rule-v3` derives non-duplicate groups only from a shared
 `source_key`, a trusted full SHA-256 evidence digest, or a persisted
 `exact`/`near_duplicate` relation; ordinary self-declared provenance never
-overrides deduplication. Those groups are not yet treated as verified independent
-corroboration: while a trusted provenance registry is absent,
-`independent_source_count` remains conservatively `1` when evidence exists and
-the corroboration bonus is disabled. Historical v1/v2 scores replay unchanged.
-Official correction requires primary status, explicit
-topic/fact-key authority scope, and a persisted `corrects` relation. It does not
-claim that an LLM policy or confidence probability has already been calibrated:
+overrides deduplication. Those groups are not automatically treated as
+independent corroboration: `independent_source_count` remains conservatively
+`1` and the corroboration bonus is disabled. A local append-only provenance
+registry now binds admin attestations to the exact Entry, origin, and full
+evidence digest. Missing, conflicting, corrupt, or revoked records fail closed
+to tier `U`; active records can grant source tier, primary/authority scope and
+correction relations. Its SHA-256 chain is integrity evidence, not identity
+authentication. Historical v1/v2 scores replay unchanged. This does not claim
+that an LLM policy or confidence probability has already been calibrated:
 
 ```bash
 sheaf memory apply --request transition.json
@@ -121,12 +123,13 @@ The deterministic executor scenario is independently replayable with
 provenance, idempotency, contest preservation, official correction, and audit
 history without pretending to be an LLM-quality benchmark.
 
-SPLIT and NOOP have an auditable preview-first decision-trace protocol. A SPLIT
-is planned as UPDATE + CREATE with one `decision_id`, checks that its target head
-has not moved, and refuses to run without an external atomic batch executor.
-There is no production atomic SPLIT adapter in this repository yet; tests use an
-atomic fake, so this is a fail-closed integration contract rather than a shipped
-end-to-end executor.
+SPLIT and NOOP have an auditable preview-first decision-trace protocol. The
+production evidence-ledger adapter commits a SPLIT's UPDATE + CREATE, receipt,
+and head compare-and-swap through one file replacement. Its execution-manifest
+hash binds the exact operations, evidence, target head, policy versions, and
+idempotency identity, so a retry cannot substitute a different plan. The
+decision and evidence ledgers remain separate files: receipt-first
+reconciliation makes that boundary recoverable, not a cross-file transaction.
 
 The broader [architecture and evaluation contract](docs/ARCHITECTURE-AND-EVALUATION.md)
 defines the three core algorithm paths, their current maturity, the no-user
@@ -140,8 +143,10 @@ produced before qrels are loaded. The checked-in local-LSA run is a classical
 TF-IDF/SVD baseline—not a neural embedding result. Development selection chose
 `linear-0.25 @ 0.4`; held-out Recall@5 is `0.9375`, MRR `1.0`, nDCG@5 `0.9498`,
 and no-answer FPR `1.0`. It did not outperform keyword retrieval and did not
-solve abstention. A live embedding run was not produced because credentials
-were unavailable. See the [frozen retrieval report](evals/retrieval-frozen/README.md).
+solve abstention. A later query-support-v3 post-hoc regression on the already
+inspected labels reached Recall@5 `1.0`, nDCG@5 `0.9698`, and FPR `0.0`; this is
+not a blind effectiveness result. A live embedding run was not produced because
+credentials were unavailable. See the [frozen retrieval report](evals/retrieval-frozen/README.md).
 
 The current relevance gate is a backend/version-specific experimental signal,
 not a probability or portable threshold. If semantic retrieval degrades,
@@ -285,11 +290,12 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 Sheaf is early alpha. The local collect-to-agent loop works and is covered by
 CI. The current development stage is [**core algorithm evidence**](docs/NEXT-PHASE-PLAN.md).
-The production retrieval path and first frozen classical baseline are now in
-place; its negative result redirects the next iteration toward no-answer/entity
-ambiguity, a real embedding run, and long-document passages. The other priority
-gaps are a trusted provenance registry, a real atomic SPLIT adapter, and
-cross-file transactions. Comparative quality claims remain hypotheses.
+The production retrieval path, content-bound provenance registry, atomic
+evidence-ledger SPLIT adapter, and deterministic long-document passage selector
+are now in place. The next evidence milestone is a newly sealed retrieval set,
+a real embedding run, claim-entailment/conflict evaluation, automatic action
+selection, and cross-file recovery. Comparative quality and user-value claims
+remain hypotheses.
 
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 

@@ -16,10 +16,12 @@ from typing import Mapping
 from sheaf_ai._evidence_memory_models import (
     LEGACY_GOVERNANCE_VERSION,
     SCHEMA_VERSION,
+    SPAN_IDENTITY_SCHEMA_VERSION,
     VALID_ACTIONS,
     VALID_ALGORITHM_VERSIONS,
     VALID_GOVERNANCE_VERSIONS,
     VALID_TIERS,
+    AtomicBatchReceipt,
     CardVersion,
     EvidenceMemoryError,
     EvidenceRef,
@@ -28,6 +30,7 @@ from sheaf_ai._evidence_memory_models import (
     MemorySnapshot,
     TransitionEvent,
     TransitionValidationError,
+    atomic_batch_event_key,
     claim_identity_for_version,
     evidence_use_identity,
     legacy_evidence_use_identity,
@@ -93,12 +96,25 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="microseconds")
 
 
+def _fsync_parent_directory(path: Path) -> None:
+    """Persist the rename itself where directory fsync is supported."""
+    if os.name == "nt":
+        return
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0)
+    descriptor = os.open(str(Path(path).parent), flags)
+    try:
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def _empty_ledger() -> dict:
     return {
         "schema_version": SCHEMA_VERSION,
         "events": [],
         "versions": [],
         "processed_evidence": {},
+        "atomic_batches": [],
     }
 
 
@@ -269,6 +285,7 @@ class EvidenceLedger:
                 handle.flush()
                 os.fsync(handle.fileno())
             os.replace(tmp_path, self.path)
+            _fsync_parent_directory(self.path)
         except OSError as exc:
             if tmp_path:
                 try:
@@ -282,9 +299,127 @@ class EvidenceLedger:
             return _decode_and_replay(self._read_unlocked())
 
 
+def _atomic_batch_receipts(raw: Mapping[str, object]) -> tuple[AtomicBatchReceipt, ...]:
+    """Decode already-validated schema-v4 atomic batch records."""
+    records = raw.get("atomic_batches", [])
+    if not isinstance(records, list):
+        raise LedgerCorruptionError("Ledger atomic_batches must be an array")
+    try:
+        return tuple(
+            AtomicBatchReceipt.from_record(record)
+            for record in records
+            if isinstance(record, Mapping)
+        )
+    except (TypeError, ValueError) as exc:
+        raise LedgerCorruptionError(f"Malformed atomic batch receipt: {exc}") from exc
+
+
+def _validate_atomic_batches(
+    raw: Mapping[str, object],
+    schema_version: object,
+    events: tuple[TransitionEvent, ...],
+    versions_by_id: Mapping[str, CardVersion],
+) -> None:
+    raw_batches = raw.get("atomic_batches")
+    if schema_version != SCHEMA_VERSION:
+        if raw_batches not in (None, []):
+            raise LedgerCorruptionError(
+                "Legacy evidence ledger cannot contain atomic batch receipts"
+            )
+        return
+    if not isinstance(raw_batches, list):
+        raise LedgerCorruptionError("Schema 4 atomic_batches must be an array")
+    if any(not isinstance(record, Mapping) for record in raw_batches):
+        raise LedgerCorruptionError("Malformed atomic batch receipt")
+    receipts = _atomic_batch_receipts(raw)
+    event_positions = {event.event_id: index for index, event in enumerate(events)}
+    events_by_id = {event.event_id: event for event in events}
+    seen_decisions: set[str] = set()
+    seen_keys: set[str] = set()
+    claimed_events: set[str] = set()
+    claimed_versions: set[str] = set()
+    last_event_position = -1
+    for receipt in receipts:
+        if (
+            not receipt.decision_id
+            or not re.fullmatch(r"[0-9a-f]{64}", receipt.request_hash)
+            or not receipt.idempotency_key
+            or not receipt.policy_version
+            or not receipt.algorithm_version
+            or not re.fullmatch(r"[0-9a-f]{64}", receipt.execution_manifest_hash)
+            or not receipt.committed_at
+        ):
+            raise LedgerCorruptionError("Atomic batch receipt is missing audit identity")
+        if receipt.decision_id in seen_decisions:
+            raise LedgerCorruptionError("Duplicate atomic batch decision_id")
+        if receipt.idempotency_key in seen_keys:
+            raise LedgerCorruptionError("Duplicate atomic batch idempotency_key")
+        if len(receipt.expected_heads) != 1 or any(
+            not card_id or not version_id
+            for card_id, version_id in receipt.expected_heads.items()
+        ):
+            raise LedgerCorruptionError("Atomic SPLIT must bind exactly one target head")
+        if receipt.operation_actions != ("UPDATE", "CREATE"):
+            raise LedgerCorruptionError("Atomic SPLIT operation order is invalid")
+        if len(receipt.operation_request_hashes) != 2 or any(
+            not re.fullmatch(r"[0-9a-f]{64}", request_hash)
+            for request_hash in receipt.operation_request_hashes
+        ):
+            raise LedgerCorruptionError("Atomic SPLIT operation request hashes are invalid")
+        if len(receipt.event_ids) != 2 or len(set(receipt.event_ids)) != 2:
+            raise LedgerCorruptionError("Atomic SPLIT must reference two unique events")
+        if len(receipt.version_ids) != 2 or len(set(receipt.version_ids)) != 2:
+            raise LedgerCorruptionError("Atomic SPLIT must reference two unique versions")
+        if claimed_events.intersection(receipt.event_ids):
+            raise LedgerCorruptionError("An event belongs to more than one atomic batch")
+        if claimed_versions.intersection(receipt.version_ids):
+            raise LedgerCorruptionError("A version belongs to more than one atomic batch")
+        if any(event_id not in events_by_id for event_id in receipt.event_ids):
+            raise LedgerCorruptionError("Atomic batch references an unknown event")
+        if any(version_id not in versions_by_id for version_id in receipt.version_ids):
+            raise LedgerCorruptionError("Atomic batch references an unknown version")
+
+        positions = tuple(event_positions[event_id] for event_id in receipt.event_ids)
+        if positions[1] != positions[0] + 1 or positions[0] <= last_event_position:
+            raise LedgerCorruptionError("Atomic batch event order is invalid")
+        batch_events = tuple(events_by_id[event_id] for event_id in receipt.event_ids)
+        if tuple(event.action for event in batch_events) != receipt.operation_actions:
+            raise LedgerCorruptionError("Atomic batch actions disagree with its events")
+        if (
+            tuple(event.request_hash for event in batch_events)
+            != receipt.operation_request_hashes
+        ):
+            raise LedgerCorruptionError("Atomic batch request hashes disagree with its events")
+        if tuple(event.output_version_ids[0] for event in batch_events) != receipt.version_ids:
+            raise LedgerCorruptionError("Atomic batch versions disagree with its events")
+        if any(
+            event.idempotency_key
+            != atomic_batch_event_key(receipt.decision_id, operation_index)
+            for operation_index, event in enumerate(batch_events)
+        ):
+            raise LedgerCorruptionError("Atomic batch event idempotency is invalid")
+
+        target_card_id, target_version_id = next(iter(receipt.expected_heads.items()))
+        update_event, create_event = batch_events
+        update_version = versions_by_id[receipt.version_ids[0]]
+        create_version = versions_by_id[receipt.version_ids[1]]
+        if update_event.parent_version_ids != (target_version_id,):
+            raise LedgerCorruptionError("Atomic batch UPDATE does not bind its expected head")
+        if update_version.card_id != target_card_id:
+            raise LedgerCorruptionError("Atomic batch UPDATE changes the target card identity")
+        if create_event.parent_version_ids or create_version.card_id == target_card_id:
+            raise LedgerCorruptionError("Atomic batch CREATE is not independent of its target")
+
+        seen_decisions.add(receipt.decision_id)
+        seen_keys.add(receipt.idempotency_key)
+        claimed_events.update(receipt.event_ids)
+        claimed_versions.update(receipt.version_ids)
+        last_event_position = positions[1]
+
+
 def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
     schema_version = raw.get("schema_version")
-    if schema_version not in {1, 2, SCHEMA_VERSION}:
+    if schema_version not in {1, 2, SPAN_IDENTITY_SCHEMA_VERSION, SCHEMA_VERSION}:
         raise LedgerCorruptionError(
             f"Unsupported evidence ledger schema: {schema_version!r}"
         )
@@ -295,6 +430,20 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
         raise LedgerCorruptionError("Ledger events and versions must be arrays")
     if not isinstance(raw_processed, dict):
         raise LedgerCorruptionError("Ledger processed_evidence must be an object")
+    if schema_version == SCHEMA_VERSION:
+        required_event_fields = (
+            "algorithm_version",
+            "governance_version",
+            "evidence_use_ids",
+        )
+        for index, raw_event in enumerate(raw_events):
+            if not isinstance(raw_event, Mapping):
+                raise LedgerCorruptionError(f"Malformed ledger event at index {index}")
+            for field_name in required_event_fields:
+                if field_name not in raw_event:
+                    raise LedgerCorruptionError(
+                        f"Schema 4 event at index {index} is missing {field_name}"
+                    )
     try:
         events = tuple(TransitionEvent.from_dict(item) for item in raw_events)
         versions = tuple(CardVersion.from_dict(item) for item in raw_versions)
@@ -308,6 +457,7 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
     versions_by_id = {version.version_id: version for version in versions}
     if len(versions_by_id) != len(versions):
         raise LedgerCorruptionError("Duplicate version_id in evidence ledger")
+    _validate_atomic_batches(raw, schema_version, events, versions_by_id)
 
     active: dict[str, str] = {}
     seen_versions: set[str] = set()
@@ -674,11 +824,33 @@ def _decode_and_replay(raw: Mapping[str, object]) -> MemorySnapshot:
 
 
 def _upgrade_ledger_state(raw: dict) -> None:
-    """Migrate a validated v1/v2 ledger to span-scoped evidence-use records."""
+    """Migrate a validated v1-v3 ledger to the atomic-batch schema."""
     if raw.get("schema_version") == SCHEMA_VERSION:
         return
     snapshot = _decode_and_replay(raw)
     old_schema = raw.get("schema_version")
+    materialised_events: list[dict[str, object]] = []
+    for raw_event, event in zip(raw["events"], snapshot.events, strict=True):
+        output = snapshot.versions_by_id[event.output_version_ids[0]]
+        atomic_claim_identity = claim_identity_for_version(output, event.action)
+        materialised = dict(raw_event)
+        materialised["algorithm_version"] = event.algorithm_version
+        materialised["governance_version"] = event.governance_version
+        materialised["evidence_use_ids"] = [
+            evidence_use_identity(
+                ref.entry_id,
+                atomic_claim_identity,
+                locator_identity(ref.locator),
+            )
+            for ref in _event_new_refs(event, output)
+        ]
+        materialised_events.append(materialised)
+    raw["events"] = materialised_events
+    if old_schema == SPAN_IDENTITY_SCHEMA_VERSION:
+        raw["schema_version"] = SCHEMA_VERSION
+        raw["atomic_batches"] = []
+        _decode_and_replay(raw)
+        return
     legacy_processed = raw["processed_evidence"]
     migrated: dict[str, dict[str, str]] = {}
     for event in snapshot.events:
@@ -709,4 +881,5 @@ def _upgrade_ledger_state(raw: dict) -> None:
             }
     raw["schema_version"] = SCHEMA_VERSION
     raw["processed_evidence"] = migrated
+    raw["atomic_batches"] = []
     _decode_and_replay(raw)
