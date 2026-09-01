@@ -117,6 +117,23 @@ def test_source_indices_map_to_source_ids():
     assert result.cards[0].source_ids == ["entry_0", "entry_2"]
 
 
+def test_card_without_resolvable_sources_is_rejected():
+    """The parser must never decorate an ungrounded card with arbitrary inputs."""
+    raw = json.dumps([{
+        "title": "Ungrounded",
+        "claim": "A claim without a real source must not survive.",
+        "evidence": "No resolvable citation.",
+        "tags": ["test"],
+        "confidence": 0.9,
+        "source_indices": [99],
+    }])
+
+    result = parse_card_extraction_response(raw, _sources(), "Test", "gpt-4o")
+
+    assert result.cards == []
+    assert any("resolvable source" in warning for warning in result.warnings)
+
+
 def test_llm_engine_extracts_cards_with_provenance():
     """The default engine calls chat and records extraction provenance."""
     raw = json.dumps([

@@ -253,7 +253,10 @@ def crystallize_topic(
     validator = CardValidator()
     valid_cards = []
     for card in cards[:max_cards]:
-        issues = validator.validate_schema(card, strict=False)
+        # Batch crystallization promises source-backed cards. Missing evidence,
+        # unresolvable source IDs, or sub-threshold confidence must fail closed
+        # rather than becoming decorative provenance in the public card store.
+        issues = validator.validate_schema(card, strict=True)
         if not issues:
             valid_cards.append(card)
 

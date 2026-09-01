@@ -185,8 +185,8 @@ class TestParseWithMapper:
         )
         assert result.cards[0].source_ids == [sources[1].entry_id]
 
-    def test_hallucinated_source_id_is_kept_as_is(self):
-        """If LLM returns a source_id not in the mapper, it passes through."""
+    def test_hallucinated_source_id_is_dropped(self):
+        """An LLM-returned ID outside the source bundle cannot enter provenance."""
         sources = _make_sources(2)
         m = UUIDMapper()
         m.build_from_sources(sources)
@@ -205,9 +205,9 @@ class TestParseWithMapper:
             raw, sources, "Test", "gpt-4o", uuid_mapper=m,
         )
         card = result.cards[0]
-        # "0" decodes to real ID, "FAKE_999" passes through
-        assert sources[0].entry_id in card.source_ids
-        assert "FAKE_999" in card.source_ids
+        assert card.source_ids == [sources[0].entry_id]
+        assert "FAKE_999" not in card.source_ids
+        assert any("Dropped unresolvable" in warning for warning in result.warnings)
 
     def test_empty_source_ids_with_mapper_falls_back(self):
         sources = _make_sources(3)

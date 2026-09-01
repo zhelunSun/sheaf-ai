@@ -216,7 +216,7 @@ class TestParseCrystallizedResponse:
 
     def test_parse_markdown_wrapped(self):
         """Should handle markdown code block wrapping."""
-        raw = '```json\n[{"title": "Card", "claim": "c", "evidence": "e", "tags": [], "confidence": 0.7, "source_indices": []}]\n```'
+        raw = '```json\n[{"title": "Card", "claim": "c", "evidence": "Supported by [Source 0]", "tags": [], "confidence": 0.7, "source_indices": [0]}]\n```'
         entries = [{"id": "test_123", "title": "Test"}]
         cards = _parse_crystallized_response(raw, entries, "test", "gpt-4o")
         assert len(cards) == 1

@@ -470,9 +470,11 @@ def parse_card_extraction_response(
             item.get("source_ids", []),
             sources,
             uuid_mapper=uuid_mapper,
+            warnings=warnings,
         )
         if not source_ids:
-            source_ids = [s.entry_id for s in sources[:5] if s.entry_id]
+            warnings.append("Skipped card without a resolvable source reference")
+            continue
 
         try:
             confidence = float(item.get("confidence", 0.5))
@@ -575,6 +577,7 @@ def _resolve_source_ids(
     sources: list[CardSource],
     *,
     uuid_mapper: UUIDMapper | None = None,
+    warnings: list[str] | None = None,
 ) -> list[str]:
     """Resolve LLM-returned source references to real entry IDs.
 
@@ -588,18 +591,23 @@ def _resolve_source_ids(
       3. Return empty list if nothing resolves
     """
     resolved: list[str] = []
+    allowed_ids = {source.entry_id for source in sources if source.entry_id}
 
     # Try source_ids (string aliases) with mapper first
     if uuid_mapper and isinstance(source_ids_raw, list):
         for sid in source_ids_raw:
             if isinstance(sid, str) and sid.strip():
                 real = uuid_mapper.decode(sid.strip())
-                resolved.append(real)
-        if resolved:
-            return resolved
-
-    # Fall back to integer indices
-    return _source_ids_from_indices(source_indices, sources)
+                if real in allowed_ids and real not in resolved:
+                    resolved.append(real)
+                elif warnings is not None:
+                    warnings.append(f"Dropped unresolvable source reference: {sid.strip()}")
+    # Integer indices are bounded by the supplied source bundle, so a model
+    # cannot introduce an arbitrary Entry ID through this path. Union them with
+    # valid aliases because some providers emit only one of the two fields or
+    # partially truncate one list.
+    indexed = _source_ids_from_indices(source_indices, sources)
+    return list(dict.fromkeys([*resolved, *indexed]))
 
 
 def _default_chat_func() -> ChatFunc:
