@@ -101,6 +101,9 @@ sheaf memory history --topic "Agent memory"
 确定性执行器验收；它验证来源约束、幂等、冲突保留、官方更正与审计历史，但不冒充
 LLM 策略质量 benchmark。
 
+[架构与评测约定](docs/ARCHITECTURE-AND-EVALUATION.md)进一步明确了三条核心算法路径、
+当前成熟度、无需真实用户的测试阶梯，以及比较性结论仍需完成的实验。
+
 ## 接入你的 Agent
 
 `sheaf setup` 为每个工具写入正确格式的 MCP 配置，并部署内置 skill / 说明书，让 agent 知道如何使用 Sheaf：
@@ -213,6 +216,9 @@ export OPENAI_BASE_URL=https://api.openai.com/v1   # 可选 —— 非 OpenAI �
 | `prompts/` | LLM 提示模板（分类、摘要、结晶） |
 | `data/` | 本地知识库（JSONL + Markdown，已 gitignore） |
 
+应用层、领域层、基础设施边界和分阶段开发计划见
+[架构与评测约定](docs/ARCHITECTURE-AND-EVALUATION.md)。
+
 ## 系统要求
 
 - **Python 3.10+**
@@ -225,6 +231,7 @@ export OPENAI_BASE_URL=https://api.openai.com/v1   # 可选 —— 非 OpenAI �
 git clone https://github.com/zhelunSun/sheaf-ai.git && cd sheaf-ai
 python -m pip install -e ".[dev]"
 python -m pytest tests/ -q
+python evals/core-algorithms/run_offline_eval.py --compact
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 

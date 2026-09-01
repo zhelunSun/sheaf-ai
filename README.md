@@ -106,6 +106,10 @@ The deterministic executor scenario is independently replayable with
 provenance, idempotency, contest preservation, official correction, and audit
 history without pretending to be an LLM-quality benchmark.
 
+The broader [architecture and evaluation contract](docs/ARCHITECTURE-AND-EVALUATION.md)
+defines the three core algorithm paths, their current maturity, the no-user
+test ladder, and the experiments still required for comparative claims.
+
 ## Connect Your Agent
 
 `sheaf setup` writes the right MCP config for each tool and deploys a bundled skill / agents-note so the agent knows how to use Sheaf:
@@ -218,6 +222,9 @@ URL → fetch → classify → summarize → store → query
 | `prompts/` | LLM prompt templates (classify, summarize, crystallize) |
 | `data/` | Local knowledge base (JSONL + Markdown, gitignored) |
 
+See [Architecture and Evaluation](docs/ARCHITECTURE-AND-EVALUATION.md) for the
+application/domain/infrastructure boundaries and staged development plan.
+
 ## Requirements
 
 - **Python 3.10+**
@@ -230,6 +237,7 @@ URL → fetch → classify → summarize → store → query
 git clone https://github.com/zhelunSun/sheaf-ai.git && cd sheaf-ai
 python -m pip install -e ".[dev]"
 python -m pytest tests/ -q
+python evals/core-algorithms/run_offline_eval.py --compact
 python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ```
 

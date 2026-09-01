@@ -54,11 +54,11 @@ jobs:
       - name: Run tests
         run: python -m pytest tests -q --basetemp .pytest-tmp-publish
 
-      - name: Run evidence executor acceptance
-        run: python evals/evidence-governed-memory/run_executor_acceptance.py --compact
+      - name: Run core algorithm offline acceptance
+        run: python evals/core-algorithms/run_offline_eval.py --compact
 
       - name: Run lint
-        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory
+        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory evals/core-algorithms
 
       - name: Build package
         run: python -m build
