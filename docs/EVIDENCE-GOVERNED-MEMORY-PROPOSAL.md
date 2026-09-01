@@ -326,10 +326,13 @@ dropout, and raw denominators alongside any percentage.
 
 1. Freeze the ICP and consent contract before expanding ingestion channels.
 2. Keep the executor acceptance scenario and attack-oriented tests green.
-3. Implement the smallest automatic G2/G3 policy path against the checked-in
-   fixture, then run G0-G3 with frozen inputs and publish raw outputs plus the
-   score sheet.
-4. Record the five-minute acceptance demo from a passing G3 run.
-5. Recruit design partners and measure WEBR locally.
-6. Revisit hosted sync, team features, or monetization only after reuse is
+3. Close the evidence-use identity, source-independence, split, and noop
+   contract gaps described in [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md), including
+   migration and replay of the current ledger schema.
+4. Freeze the no-user fixtures and current baseline before tuning a policy.
+5. Implement the smallest preview-only G2/G3 policy path, then run G0-G3 with
+   frozen inputs and publish raw outputs plus the score sheet.
+6. Record the five-minute acceptance demo from a passing G3 run.
+7. Recruit design partners and measure WEBR locally.
+8. Revisit hosted sync, team features, or monetization only after reuse is
    demonstrated.

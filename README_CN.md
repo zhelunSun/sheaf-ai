@@ -8,7 +8,7 @@
 
 <h1 align="center">Sheaf</h1>
 
-<p align="center"><b>拾穗成束，聚沙成塔 — 面向 Agent 时代的知识基础设施</b></p>
+<p align="center"><b>选择好来源，把它们变成 Agent 可以核验的知识</b></p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
@@ -21,7 +21,7 @@
 
 **Sheaf**（/ʃiːf/，麦穗束）把你主动选择的技术来源，变成 **AI Agent 真正能用、也能核验的知识库**。你的收藏选择把信息品味传给 Agent；来源溯源则防止系统把“你选择了它”偷换成“它必然正确”。本地优先，开源免费。
 
-> **Sheaf** 是一束收获的谷物 — 农人带到集市的基本单位。Sheaf 对知识做同样的事：收集、成束、流转。
+> **Sheaf** 是一束收获的谷物。Sheaf 把用户主动选择的来源聚成知识，同时保留知识与证据的联系。
 
 ## 快速开始
 
@@ -57,9 +57,8 @@ sheaf crystallize AI                             # 结晶知识卡片
 
 ## 为什么需要 Sheaf？
 
-你每天都在收藏 — 文章、论文、仓库、教程。**90% 的收藏再也不会被打开。**
-
-不是因为你懒。书签服务于**人类阅读**，不服务于 **Agent 工作流**。当你问编程助手「上周我读过的 MCP 相关内容是什么？」，它完全不知道。
+收藏的文章、论文、仓库和教程很难直接进入 Agent 工作流。书签能告诉你网页在哪里，
+却不能告诉 Agent 哪个来源支持某个结论，也不能解释这个结论后来为什么改变。
 
 Sheaf 解决这个问题。每条链接都变成一个**结构化条目**。积累足够多后，结晶为**知识卡片** — 可携带、可搜索、Agent 可消费。
 
@@ -67,15 +66,17 @@ Sheaf 解决这个问题。每条链接都变成一个**结构化条目**。积�
 
 | | 它做什么 |
 |---|---|
-| 🌾 **收藏（Harvest）** | 粘贴链接（或 `--text` 存笔记）。Sheaf 自动抓取 + 分类 + 摘要 —— 网页、arXiv 论文、微信 / 知乎、ChatGPT 分享、随手笔记。 |
-| ✨ **结晶（Crystallize）** | 把 3+ 条收藏蒸馏成带来源溯源的知识卡片。 |
-| 🧭 **治理演化** | 用受约束的 create/update/merge/contest/resolve/retire 转移维护知识，并保留不可变历史；证据强度是可解释的序数启发式，不是概率。 |
+| 🌾 **收藏——基础能力** | 粘贴链接或笔记，完成抓取、清洗、分类并保留来源。 |
+| 🔎 **检索——核心路径** | 关键词检索已经稳定；实验性混合路径加入卡片转接的语义信号，直接 Entry 索引仍在补齐。 |
+| ✨ **结晶——核心路径** | 把多条收藏变成来源可解析的知识卡片。 |
+| 🧭 **增量演化——核心路径** | 用受约束的 create/update/merge/contest/resolve/retire 转移维护知识，并保留不可变历史；证据强度是可解释的序数启发式，不是概率。 |
 | 🤖 **Agent 就绪** | 内置 MCP 服务器 —— 任何 agent 都能搜索、引用、推理你的知识库。 |
-| 🔒 **本地优先** | 无云端、无遥测、无账号。数据始终在你的机器上。 |
+| 🔒 **本地优先** | 知识文件保存在本地，无 Sheaf 账号和遥测；模型处理步骤使用你配置的提供商。 |
 
 ### 结晶 —— 把精选来源变成可复用主张
 
-Sheaf 的杀手锏。不是把书签存着吃灰，`sheaf crystallize` 跨多条收藏合成洞察：
+结晶是 Sheaf 三条核心算法路径之一。`sheaf crystallize` 不把来源留作彼此孤立的
+书签，而是形成可以复用、仍与来源相连的结论：
 
 ```
 $ sheaf crystallize AI
@@ -202,11 +203,11 @@ export OPENAI_BASE_URL=https://api.openai.com/v1   # 可选 —— 非 OpenAI �
 ## 架构
 
 ```
-链接 → 抓取 → 分类 → 摘要 → 存储 → 查询
-       (3策略降级)  (LLM标签  (摘要+    (JSONL + MD
-                     +主题)    截止期)   索引)
-                     ↓
-              crystallize → KnowledgeCard → EmbeddingEngine → 语义搜索
+来源 → 收藏与规范化 → Entry → 检索 → Agent
+                         ↓
+                  来源集合 → 结晶 → KnowledgeCard
+                         ↓
+新证据 → 受约束状态转移 → 事件账本 → 当前卡片版本
 ```
 
 | 模块 | 职责 |
@@ -239,7 +240,10 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态 & 浏览器扩展
 
-Sheaf 处于早期 Alpha。核心 收藏 → 搜索 → 结晶 → MCP 管道已可工作并由 CI 覆盖。证据治理演化仍是显式调用的实验路径，只有在仓库内 G0-G3 协议产生实测结果后才会升级相关效果宣称。我们正在用真实用户验证知识复用闭环。
+Sheaf 处于早期 Alpha，本地收藏到 Agent 的闭环已经可用并由 CI 覆盖。当前研发阶段是
+[**核心算法证据**](docs/NEXT-PHASE-PLAN.md)：让真实检索路径与评测一致，建设有标注的离线数据，验证结晶的
+证据支持，并运行冻结的 G0-G3 增量演化实验。在结果进入仓库以前，比较性效果仍是
+假设而不是产品结论。
 
 Chrome 扩展（`extension/`）提供任意网页的一键收藏与搜索：用 `sheaf serve` 启动本地 API，在 Chrome → 管理扩展 → 开发者模式中加载 `extension/`，然后 `Alt+Shift+S` 或右键任意页面 → "🌾 Collect with Sheaf"。
 
@@ -256,5 +260,5 @@ Chrome 扩展（`extension/`）提供任意网页的一键收藏与搜索：用 
 <p align="center">
   <b>Sheaf</b> — 一束收获的麦穗，农人带到集市的基本单位。<br>
   数学中，<a href="https://en.wikipedia.org/wiki/Sheaf_(mathematics)">Sheaf</a> 将局部数据粘合为全局图景。<br>
-  Sheaf 这个工具做的是同样的事：把散落的知识聚拢成束，让你的 Agent 随时取用，也让你与他人分享。
+  Sheaf 这个工具做的是同样的事：把精选来源聚拢成束，让你的 Agent 能够找回、核验和复用。
 </p>

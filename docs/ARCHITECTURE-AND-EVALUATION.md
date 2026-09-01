@@ -29,9 +29,16 @@ willingness to pay.
 "Three core paths" is a useful product and engineering description, provided
 their maturity is not presented as equal.
 
+Multi-source collection is the input capability, not a fourth core algorithm.
+Adding a website handler is mainly integration and reliability work. Source
+quality scoring, duplicate or event detection, cross-source disagreement, and
+long-document structure can still contain meaningful algorithms; they belong
+to the ingestion and source-quality capability stream and improve the inputs to
+the three paths below.
+
 | Path | Product job | Implemented now | Still unproven |
 |---|---|---|---|
-| Retrieval | Recover the right saved evidence for a question | Keyword scoring, semantic retrieval, and score fusion | Embedding quality, tuning on representative queries, and comparison with credible baselines |
+| Retrieval | Recover the right saved evidence for a question | Keyword scoring and card-mediated semantic score fusion | Direct Entry semantic coverage, embedding quality, representative queries, and credible baselines |
 | Crystallization | Turn several sources into reusable claims | Model-assisted extraction, strict schema validation, and resolvable source links | Claim entailment, contradiction handling, redundancy, stability across models, and usefulness to people |
 | Incremental evolution | Change knowledge without erasing why it changed | Explicit create, update, contest, and merge transitions; immutable history; replayable versions | Automatic action selection, calibrated evidence weighting, and end-to-end quality under noisy inputs |
 
@@ -167,8 +174,9 @@ proves state invariants only—not that a model can choose the right transition.
 Current safe claim:
 
 > Sheaf implements and automatically tests a local, source-backed knowledge
-> loop with hybrid retrieval, provenance-constrained crystallization, and
-> replayable evidence-based updates.
+> loop with stable keyword retrieval, an experimental card-mediated hybrid
+> path, provenance-constrained crystallization, and replayable evidence-based
+> updates.
 
 Claims such as “retrieves better,” “creates more accurate knowledge,” or
 “updates memory more intelligently than another project” remain hypotheses

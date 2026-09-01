@@ -1,20 +1,21 @@
 # Sheaf Agent-Native 设计原则升级建议
 
-> Date: 2026-06-01 | Author: Jarvis | Status: Draft v0.2 — 已更新三层架构 (2026-06-08)
+> Date: 2026-06-01 | Author: Jarvis | Status: historical interface principles
 > Context: Sir 提出"既然面向Agent，是否需要更激进大胆的设计"
+>
+> 本文保留 Agent-first 接口原则。Phase 编号和“通用 Agent 记忆层”叙事已被当前的
+> [产品与工程共识](PRODUCT-DESIGN-INDEX.md)替代。
 
 ---
 
-## 0. 三层架构定位（Phase 5 更新）
+## 0. 当前适用的产品边界
 
-**Sheaf 不是 Agent，是 Agent 的记忆层。**
+Sheaf 的直接用户是主动筛选资料的知识工作者；Agent 是主要调用者之一。Sheaf 不
+被动收集所有对话，而是把用户主动选择的来源变成可检索、可结晶、可随证据演化的
+知识层。
 
-```
-内容层（用户阅读的）→ 记忆层（Sheaf）→ 终端层（Agent 干活）
-网页/微信/arXiv/PDF  →  ~/.sheaf/  →  Claude Code / Kimi Work / WorkBuddy
-```
-
-当前所有 Agent 终端（Claude Code, Kimi Work, WorkBuddy）的共同短板：**没有跨会话持久化记忆**。Sheaf 填补这个空白——不是又一个 Agent，而是让所有 Agent 共享同一个知识底座。
+CLI、MCP 和 HTTP 是平行接口。MCP 是 Agent 集成的主要入口，但不独占产品界面；
+业务规则应留在共同的应用和领域层，而不是分散到每个接口。
 
 ---
 
@@ -22,7 +23,7 @@
 
 **当前状态**: Sheaf 按 CLI（人类用户）的规则设计——单条操作、交互式提示、视觉反馈（emoji/color/进度条）。
 
-**矛盾**: 主要用户是 Agent，不是人类。Agent 需要：
+**矛盾**: Agent 会频繁调用这些能力，但许多接口最初只考虑了人类终端。Agent 需要：
 - 批量操作，不要一条条来
 - 结构化 JSON 输出，不要彩色文字
 - 幂等接口，不要"你确定吗"的交互提示
@@ -44,7 +45,7 @@
 | **幂等性** | 有去重但不保证 | `--idempotent` flag + 确定性ID | 🟡 P1 |
 | **配置发现** | 交互式 `config setup` | 环境变量优先 + 自动检测 + 零配置启动 | 🔴 P0 |
 | **数据路径** | CWD/data/ | `~/.sheaf/data/` 全局默认 + 项目级覆盖 | 🟡 P1 |
-| **MCP Resources** | 无 | MCP protocol resources 支持数据浏览 | 🟡 P1 |
+| **MCP Resources** | 已实现只读浏览 | 继续保持资源与写入工具边界 | ✅ |
 | **Webhook/回调** | 无 | `--on-complete <url>` 异步通知 | 🔵 P2 |
 
 ---
@@ -163,9 +164,9 @@ EFFECTIVE_KEY = os.environ.get("SHEAF_API_KEY") or FREE_TIER_KEY
 
 ---
 
-### 🟡 F. MCP Resources + Sampling（P1）
+### 🟡 F. MCP Resources + Sampling（历史提案）
 
-**现状**: MCP 只有 tools，没有 resources 和 sampling。
+**当前状态**: MCP Resources 已实现；Sampling 仍是提案，不能写成现有能力。
 
 **建议**:
 ```json
@@ -189,29 +190,16 @@ EFFECTIVE_KEY = os.environ.get("SHEAF_API_KEY") or FREE_TIER_KEY
 
 ---
 
-## 3. 实施路线
+## 3. 当前实施路线
 
-### Phase 1: Quick Wins（1-2 天）
-- [ ] A. JSON-First: 自动 TTY 检测
-- [ ] C. 结构化错误: 退出码语义 + JSON 错误体
-- [ ] D. 零配置: 环境变量优先 + 降级模式
-
-### Phase 2: 批量 + 全局（3-5 天）
-- [ ] B. 批量操作: `--batch` + `sheaf_collect_batch` MCP tool
-- [ ] E. 全局数据目录: 三层查找 + `~/.sheaf/`
-
-### Phase 3: MCP 增强（1 周）
-- [ ] F. MCP Resources: `sheaf://` URI scheme
-- [ ] MCP Sampling: 借用宿主 Agent LLM
-- [ ] `sheaf doctor`: 配置诊断命令
+本文不再维护单独的 Phase 计划。接口工作按“Agent 接口”能力流管理，并服从
+[NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md)的当前优先级和退出条件。
 
 ---
 
 ## 4. Agent-Native 设计哲学总结
 
-> **"CLI 是 Sheaf 的调试界面，MCP 才是主界面。"**
->
-> **"Sheaf 不是 Agent，是 Agent 的记忆层。"**
+> **CLI、MCP 和 HTTP 共享同一套产品能力；MCP 是 Agent 接入的主要接口。**
 
 | 原则 | 含义 |
 |------|------|
@@ -222,7 +210,7 @@ EFFECTIVE_KEY = os.environ.get("SHEAF_API_KEY") or FREE_TIER_KEY
 | **Idempotent** | 同一输入，同一输出，可安全重试 |
 | **Graceful degradation** | 缺 LLM key 就降级，不要拒绝服务 |
 | **Stateless MCP** | 每个 MCP 调用自包含，不依赖 session state |
-| **Memory-first MCP** | Sheaf 通过 MCP 成为任何 Agent 的持久化记忆层 |
+| **Evidence-first knowledge** | 检索、结晶和演化都保留可解析来源与状态边界 |
 
 ---
 

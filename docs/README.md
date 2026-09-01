@@ -1,7 +1,8 @@
 # Sheaf — 公开文档索引
 
-> **你是谁？** 用户、投资人、贡献者、合作伙伴 — 从这里开始了解 Sheaf。
-> **Agent/开发者？** 技术参考 → [agent-query-spec.md](agent-query-spec.md) | 内部工作档案 → `internal/README.md`
+> 当前共识以 [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) 和
+> [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) 为准。
+> 其他产品文档可能记录历史探索，不等同于当前路线或已实现承诺。
 
 ---
 
@@ -17,14 +18,15 @@
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 产品设计总索引 — 心智模型演化、设计原则、决策日志 | 投资人、产品经理 |
-| [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | Matrix 功能设计 — 知识管理矩阵的产品化叙事 | 投资人、用户 |
+| [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 当前产品定位、三条核心算法路径和管理方式 | 产品、工程、面试评审 |
+| [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) | 系统分层、测试阶梯、实验和声明边界 | 工程、研究、贡献者 |
+| [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | 历史探索：多来源事件理解，不是当前路线 | 历史参考 |
 
-### 🌐 产品愿景
+### 🌐 暂停的远期探索
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [KNOWLEDGE-MARKETPLACE-VISION.md](KNOWLEDGE-MARKETPLACE-VISION.md) | 知识市场远景 — Sheaf Bundle 可交易知识包的经济模型 | 投资人、合作伙伴 |
+| [KNOWLEDGE-MARKETPLACE-VISION.md](KNOWLEDGE-MARKETPLACE-VISION.md) | 历史探索：知识市场，不是当前产品承诺 | 历史参考 |
 
 ### 🔧 技术文档
 
@@ -36,13 +38,14 @@
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
+| [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md) | 当前 P0、六个里程碑、评测资产和并行开发安排 | 产品、工程、研究 |
 | [RELEASE-LIFECYCLE.md](RELEASE-LIFECYCLE.md) | 发布生命周期 — 版本策略、合并门槛、公共契约 | 贡献者、用户 |
 
 ### 🎨 其他
 
 | 文件 | 说明 |
 |------|------|
-| `architecture.svg` | 系统架构图（L1~L4 四层） |
+| `architecture.svg` | 当前系统边界图（接口、能力、领域、基础设施、质量治理） |
 
 ---
 
@@ -52,15 +55,12 @@
 我要...                              → 看这里
 ──────────────────────────────────────────────────
 了解 Sheaf 是什么 / 为什么存在        → PRODUCT-DESIGN-INDEX.md
-看功能设计 / 产品形态                 → MATRIX-PRODUCT-DESIGN.md
-看商业模型 / 知识市场                 → KNOWLEDGE-MARKETPLACE-VISION.md
+看技术架构 / 评测边界                 → ARCHITECTURE-AND-EVALUATION.md
+看下一阶段开发                        → NEXT-PHASE-PLAN.md
+看过去的 Matrix / 知识市场探索         → 对应历史文档
 把 Sheaf 接入我的 AI 助手             → mcp-setup.md
-了解技术架构 / 安全边界               → internal/tech-audit.md
 开发 Agent 集成 / MCP 调用           → agent-query-spec.md
 了解版本策略 / 发布流程               → RELEASE-LIFECYCLE.md
-研究安装体验优化                      → internal/research/one-click-install-research.md
-研究 Obsidian 联动方案                → internal/research/obsidian-integration-research.md
-```
 ```
 
 ---
@@ -74,5 +74,4 @@
 
 ---
 
-> 🔗 **内部工作档案** → [internal/README.md](../internal/README.md)
 > 📦 **GitHub** → [zhelunSun/sheaf-ai](https://github.com/zhelunSun/sheaf-ai)

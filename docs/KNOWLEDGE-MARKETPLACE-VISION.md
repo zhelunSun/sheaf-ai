@@ -1,7 +1,11 @@
-# Sheaf Knowledge Marketplace — 中远期战略调研
+# Sheaf Knowledge Marketplace — 历史战略探索
 
-> Created: 2026-05-23 | Status: Draft v0.1
+> Created: 2026-05-23 | Status: Paused historical exploration
 > Issue: https://github.com/zhelunSun/sheaf-ai/issues/22
+>
+> 本文不代表当前产品定位、路线或交付承诺。当前优先级是主动精选来源上的检索、
+> 结晶和增量知识演化，以及这些能力的可重复实验。知识交易只有在核心价值和付费
+> 意愿得到验证后才可能重新评估。
 
 ---
 
@@ -171,7 +175,7 @@ quality:
 
 ---
 
-## 6. 在产品路线图中的定位
+## 6. 历史设想中的路线位置
 
 ```
 Alpha (当前)          Beta              v1.0              v2.0
@@ -214,7 +218,7 @@ Alpha (当前)          Beta              v1.0              v2.0
 
 ### 7.1 战略定位
 
-知识市场是 Sheaf 的**「终局愿景」**，但不应该是当前阶段的焦点。它的正确位置是：
+知识市场曾是 Sheaf 的**终局设想**，当前已经暂停。它在当时设想中的位置是：
 
 ```
 Sheaf 产品三层蛋糕：

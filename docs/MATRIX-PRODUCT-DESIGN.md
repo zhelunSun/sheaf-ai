@@ -1,6 +1,10 @@
 # Sheaf Matrix — Product Design Brief
 
-> v0.1 | 2026-06-01 | complementary to Issue #63
+> v0.1 | 2026-06-01 | Status: historical product exploration
+>
+> Matrix is not on the current delivery roadmap. Its useful questions—source
+> agreement, disagreement, event identity, and source quality—are retained in
+> the ingestion/source-quality and crystallization capability streams.
 
 ---
 
@@ -20,13 +24,13 @@
 
 ## 2. Sheaf's Mental Model Evolution
 
-### Current Model (v0.4)
+### Historical v0.4 baseline
 ```
 collect → [crystallize ← search]
 ```
 User mental model: "Sheaf saves articles and helps me find them later."
 
-### With Matrix (v0.5)
+### Historical v0.5 proposal
 ```
                     ┌─ collect ──┐
                     │            │
@@ -75,7 +79,7 @@ User doesn't need to learn anything new. They already `collect` and `search`. Ma
 
 ## 4. Discovery & Low-Friction Path
 
-### Phase 1: Passive (no new UI)
+### Proposed rollout step 1: Passive (no new UI)
 ```
 $ sheaf collect https://mp.weixin.qq.com/s/xxx
 ✓ Collected: NVIDIA GTC Taipei 2026
@@ -87,7 +91,7 @@ $ sheaf collect https://mp.weixin.qq.com/s/xxx
 ```
 **Why this works**: The user was already going to read the result. The matrix prompt is one extra line, not a new screen.
 
-### Phase 2: Contextual (in crystallize)
+### Proposed rollout step 2: Contextual (in crystallize)
 ```
 $ sheaf crystallize
 Found 3 articles about NVIDIA GTC Taipei 2026 from Chinese tech media, US tech press, and investor analysis.
@@ -97,7 +101,7 @@ Crystallizing into event knowledge card...
 ```
 **Why this works**: The user expects crystallization to aggregate. They discover the matrix *through* crystallization.
 
-### Phase 3: Active (user discovers command)
+### Proposed rollout step 3: Active (user discovers command)
 ```
 $ sheaf matrix --help
 $ sheaf matrix https://mp.weixin.qq.com/s/xxx

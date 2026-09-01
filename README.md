@@ -8,7 +8,7 @@
 
 <h1 align="center">Sheaf</h1>
 
-<p align="center"><b>Harvest your knowledge. Bundle it. Share it (soon).</b></p>
+<p align="center"><b>Choose good sources. Turn them into knowledge your agents can verify.</b></p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
@@ -21,7 +21,7 @@
 
 Sheaf turns the technical sources you deliberately choose into a **searchable, inspectable knowledge base your AI agents can actually use**. Your selections carry your information taste into the agent's working context; source provenance keeps that taste from being mistaken for truth. Local-first and open-source.
 
-> A **sheaf** is a bundle of grain a farmer brings to market. Sheaf does the same for knowledge — gather, bundle, trade.
+> A **sheaf** is a bundle of harvested grain. Sheaf gathers deliberately chosen sources into knowledge that remains tied to its evidence.
 
 > **Design note:** Sheaf is not meant to be another generic conversation-memory service. Deliberately curated sources are the input; the goal is a local, source-backed knowledge layer that coding and research agents can search, quote, challenge, and check.
 > Read the v0.7.0 discussion: [Sheaf v0.7.0: a local-first knowledge layer for coding agents](https://github.com/zhelunSun/sheaf-ai/discussions/94)
@@ -61,9 +61,9 @@ No Sheaf account or hosted storage is required. Your corpus lives locally — `.
 
 ## Why
 
-You save links every day — articles, papers, repos, tutorials. **90% never get opened again.**
-
-Not because you're lazy. Bookmarks serve *human reading*, not *agent workflows*. Ask your coding agent "what did I read about MCP last week?" — it has no idea.
+Saved articles, papers, repositories, and tutorials are difficult to reuse in an
+agent workflow. A bookmark can tell you where a page was; it cannot tell an
+agent which source supports a claim or how that claim changed.
 
 Sheaf fixes this. Every link becomes a **structured entry**. Crystallize enough of them and you get **knowledge cards** — portable, searchable, agent-ready.
 
@@ -71,15 +71,18 @@ Sheaf fixes this. Every link becomes a **structured entry**. Crystallize enough 
 
 | | What it does |
 |---|---|
-| 🌾 **Harvest** | Paste a link (or `--text` for a note). Sheaf fetches + classifies + summarizes — web articles, arXiv papers, WeChat / Zhihu, ChatGPT shares, pasted insights. |
-| ✨ **Crystallize** | Distill 3+ entries into knowledge cards with source tracing. |
-| 🧭 **Govern evolution** | Apply schema-constrained create, update, merge, contest, resolve, and retire transitions with immutable history. Evidence strength is an explainable ordinal heuristic, not a probability. |
+| 🌾 **Collect — foundation** | Paste a link or note. Sheaf fetches, cleans, classifies, and preserves its source. |
+| 🔎 **Retrieve — core path** | Keyword retrieval is stable; the experimental hybrid path adds card-mediated semantic signals while the direct Entry index is being completed. |
+| ✨ **Crystallize — core path** | Distill multiple entries into knowledge cards with resolvable source links. |
+| 🧭 **Evolve — core path** | Apply schema-constrained create, update, merge, contest, resolve, and retire transitions with immutable history. Evidence strength is an explainable ordinal heuristic, not a probability. |
 | 🤖 **Agent-ready** | Built-in MCP server — any agent searches, cites, and reasons over your knowledge base. |
-| 🔒 **Local-first** | No cloud, no telemetry, no accounts. Your data stays on your machine. |
+| 🔒 **Local-first** | Knowledge files stay local; no Sheaf account or telemetry. Model-backed steps use the provider you configure. |
 
 ### Crystallize — curated sources into reusable claims
 
-Sheaf's killer feature. Instead of letting bookmarks rot, `sheaf crystallize` synthesizes insights across entries:
+Crystallization is one of Sheaf's three core algorithm paths. Instead of leaving
+sources as disconnected bookmarks, `sheaf crystallize` produces reusable,
+source-linked claims:
 
 ```
 $ sheaf crystallize AI
@@ -208,11 +211,11 @@ export OPENAI_BASE_URL=https://api.openai.com/v1   # optional — for non-OpenAI
 ## Architecture
 
 ```
-URL → fetch → classify → summarize → store → query
-       (3-strategy   (LLM tags   (summary    (JSONL + MD
-        fallback)     + topics)   + deadline)  index)
-                     ↓
-              crystallize → KnowledgeCard → EmbeddingEngine → semantic search
+source → collect and normalize → Entry → retrieve → agent
+                                  ↓
+                     source bundle → crystallize → KnowledgeCard
+                                  ↓
+new evidence → validated transition → event ledger → current card version
 ```
 
 | Module | Purpose |
@@ -245,9 +248,12 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 ## Status & Chrome Extension
 
-Sheaf is early alpha. The collect → search → crystallize → MCP pipeline works and is covered by CI. Evidence-governed evolution is an experimental, explicitly invoked path until its checked-in G0-G3 protocol has measured results. We're validating the reuse loop with real users before beta.
-
-**On the roadmap:** portable `.sheaf` bundle export (share your distilled knowledge), more source handlers (B站 / YouTube), bookmark import, and a Web Store extension.
+Sheaf is early alpha. The local collect-to-agent loop works and is covered by
+CI. The current development stage is [**core algorithm evidence**](docs/NEXT-PHASE-PLAN.md): align the
+production retrieval path with its evaluation, build realistic offline
+datasets, evaluate crystallization support, and run the frozen G0-G3 memory
+experiment. Comparative quality claims remain hypotheses until those results
+are checked in.
 
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 
@@ -261,4 +267,4 @@ A Chrome extension (`extension/`) adds one-click collect + search from any page:
 
 ---
 
-*A **sheaf** is a bundle of harvested grain — the unit a farmer brings to market. In mathematics, a [sheaf](https://en.wikipedia.org/wiki/Sheaf_(mathematics)) attaches local data to open sets and glues them into a global picture. Sheaf the tool does both: gather scattered knowledge into coherent bundles, ready for your agents to consume (and, soon, to share as a portable bundle).*
+*A **sheaf** is a bundle of harvested grain. In mathematics, a [sheaf](https://en.wikipedia.org/wiki/Sheaf_(mathematics)) attaches local data to open sets and glues them into a global picture. Sheaf the tool does both: gather selected sources into coherent bundles, ready for agents to retrieve, inspect, and reuse.*

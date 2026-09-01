@@ -1,270 +1,120 @@
-# Sheaf 产品设计文档总索引
+# Sheaf 产品与工程共识
 
-> **最后更新**: 2026-06-16 | **维护者**: Jarvis
-> **目的**: 让产品设计思路可追溯、有逻辑、能沉淀为经验
+> 当前版本：2026-09-01
+>
+> 本文是产品定位、能力边界和研发管理的当前入口。旧的 Matrix、知识市场和
+> “通用 Agent 记忆层”文档只保留为探索历史，不再决定当前路线。
 
----
+## 1. 产品定位
 
-## 1. 心智模型演化 = 产品定位的思路演化
+Sheaf 把用户主动选择的高质量来源，变成 Agent 可以检索、核验、形成结论并随
+新证据更新的本地知识层。
 
-**是的，"心智模型扩展"就是"思路演化"。** 准确地说：
+用户收藏什么，本身表达了判断、关注方向和信息品味。Sheaf 的任务不是把这种
+选择直接当成事实，而是保留来源，让 Agent 能区分“用户选择了它”和“证据支持
+它”。这也是 Sheaf 与被动收集全部对话的通用记忆服务之间最重要的错位。
 
-| 术语 | 含义 | 通俗理解 |
-|------|------|---------|
-| **Mental Model**（心智模型） | 用户脑子里"这个产品是干什么的"认知 | 用户觉得 Sheaf 是什么 |
-| **Mental Model Evolution**（心智模型演化） | 产品价值主张的阶段性升级 | Sheaf 从"保存工具"→"理解工具"→"知识基础设施" |
-| **Positioning Pivot**（定位转折） | 重新定义产品解决什么问题 | 从"AI知识助手"→"低摩擦收藏+Agent上下文" |
+当前需要验证的产品假设是：经过主动筛选的小型来源库，能否比杂乱的书签或自动
+积累的对话记忆带来更可靠、更个人化的 Agent 上下文。架构和测试能够证明机制，
+不能代替真实复用和付费意愿验证。
 
-**每一次心智模型扩展，都是一次产品定位的重新校准。** 不是推翻旧定位，而是在旧定位基础上叠加新价值层。
+## 2. 多来源收藏为什么不是第四条核心算法路径
 
----
+收藏是整个系统的数据入口和必要基础，但“支持更多网站”主要是抓取适配、容错、
+格式统一和运维工作。因此，多来源收藏不单列为核心算法创新。
 
-## 2. 产品定位演化时间线
+收藏环节仍然可能包含有技术深度的子问题：
 
-### Phase 0: Universal Collector（05-10 ~ 05-13）
-- **心智模型**: "更好的收藏工具"
-- **核心叙事**: 丢链接 → AI 分类摘要 → 本地知识库
-- **文档**: `internal/archive/docs/product-overview.md`
+- 来源质量判断；
+- 同一内容、同一事件和转载关系识别；
+- 多来源之间的一致、冲突和时效关系判断；
+- 长文切分、结构恢复和噪声清理。
 
-### Phase 1: Agent-Native 定位精炼（05-14 ~ 05-20）
-- **心智模型**: "不只是给人看的，是给 Agent 用的"
-- **核心叙事**: Agent-Oriented vs Human-Oriented 的五维设计决策
-- **转折触发**: 竞品深度调研后发现 Karakeep/Mem0 都在做 Human-First
-- **关键文档**:
-  - `internal/archive/positioning-v1.md` — Agent-Native 五维定义
-  - `internal/archive/research/whitespace-analysis.md` — 2×2 定位图（收藏摩擦 × Agent 集成度）
-  - `internal/archive/research/competitor-deep-dive.md` — 8 款竞品交叉分析
-  - `internal/archive/ecosystem-vision.md` — 工具→基础设施→生态平台的三阶段路径
-  - `internal/archive/research/business-model-v1.md` — Open-Core 商业模式评估
+这些能力应放在“采集与来源质量”能力流中。它们为检索、结晶和增量演化提供更好
+的输入，不应为了凑数量被包装成独立的第四驾马车。
 
-### Phase 2: BP 定位重新校准（05-25）
-- **心智模型**: "低摩擦收藏工具 + Agent 上下文基础设施"
-- **核心叙事**: 三层价值梯度 — 收藏(入口) → Agent Context(护城河) → 去中心化市场(终局)
-- **转折触发**: Sir 准备 BP 展示，调研国内竞品（ima.copilot 最接近）
-- **关键决策**: Sheaf 不是知识库、不是笔记软件，收藏是入口、Agent Context 是护城河
-- **关键文档**:
-  - `internal/commercialization/PRODUCT-EVOLUTION.md` — 产品演化日志（含竞品 ABC 分类框架）
-  - `internal/commercialization/bp-presentation-prep.md` — BP 准备
-  - `internal/archive/research/agent-trend-alignment.md` — Agent 趋势对齐分析
+## 3. 三条核心算法路径
 
-### Phase 3: 安装体验升级（06-01 上午）
-- **心智模型**: "像装 Chrome 插件一样装 Sheaf"
-- **核心叙事**: 一行命令，装完就能用。所有成功工具 ≤2 步
-- **转折触发**: 意识到 pip install 后还有 3 步摩擦（setup → API key → MCP 注册）
-- **关键文档**:
-  - `internal/research/one-click-install-research.md` — 竞品安装体验拆解 + 三条路径（Chrome/skill/CLI）
-  - `docs/smoke-test-2026-06-01.md` — 空白环境 10/11 冒烟测试
-  - GitHub Issue #62 — `sheaf init --auto`
+| 路径 | 回答的问题 | 当前实现 | 主要缺口 |
+|---|---|---|---|
+| 检索 | 用户问问题时，应该取回哪些已收藏证据？ | BM25、卡片转接的语义候选和分数融合 | 全量 Entry 语义索引、真实查询标注集、融合消融和稳定性 |
+| 结晶 | 多份来源共同支持什么可复用结论？ | 模型抽取、严格 schema、可解析来源约束 | 支持关系校验、冲突识别、重复控制、真实模型评测 |
+| 增量知识演化 | 新证据到来后，旧知识应该怎样改变？ | 显式状态转移、冲突保留、不可变历史和重放 | 自动转移策略、G0-G3 实验、噪声与错误恢复 |
 
-### Phase 4: Matrix — 从收藏到理解（06-01 下午）
-- **心智模型**: "帮我看清事件全貌，不只是收藏"
-- **核心叙事**: **"Read one source, understand the whole story."**
-- **转折触发**: 收藏一篇 NVIDIA 新闻 → 意识到同一事件有 9 个来源 5 种视角 → Sheaf 应该自动发现这些
-- **核心差异**: 所有竞品都是"新闻阅读器"（读完就走），Sheaf 是"知识管道"（读完进 KB）
-- **关键文档**:
-  - `docs/MATRIX-PRODUCT-DESIGN.md` — 完整产品设计 Brief
-  - GitHub Issue #63 — sheaf matrix 技术路线（4 Phase）
+这三条路径共同构成产品核心，但当前成熟度并不相同：增量演化的确定性执行器最
+扎实；检索已有可用框架但真实语义链路仍需补齐；结晶最接近用户价值，也最依赖
+模型质量。
 
-### Phase 5: Agent 终端记忆层 — Sheaf 不是 Agent，是 Agent 的记忆（06-08）⭐ 当前
-- **心智模型**: "Sheaf 不是 Agent，是 Agent 的记忆层"
-- **核心叙事**: **三层架构 — 内容层(收藏) → 记忆层(Sheaf) → 终端层(Claude Code/Kimi Work/WorkBuddy)**
-- **转折触发**: Kimi Work + WorkBuddy 企业版发布 → Agent 终端大爆发 → 每个终端都缺持久化个人记忆
-- **关键洞察**:
-  - Claude Code/Kimi Work/WorkBuddy 都在做"帮用户做事"，但都缺"记住用户读过什么"
-  - 8 大 Agent 记忆系统 (Mem0/Hindsight/Letta 等) 全部面向开发者，无个人知识产品
-  - 国内市场空白：GPT 插件生态已死，大陆无同类竞品
-- **核心定位**: Sheaf = `~/.sheaf/` 作为个人知识 home directory，任何 Agent 终端通过 MCP 接入
-- **投资人叙事**: "Agent 终端层正在爆发(Kimi Work/WorkBuddy/Claude Code)，但所有终端都缺一个共同的记忆层。Sheaf 就是那个层——本地优先、跨平台、开源。"
-- **关键文档**:
-  - 本文档 §7 三层架构详述
-  - 本对话 (2026-06-08) 完整讨论
+幂等键、请求哈希、文件锁、原子写入和历史重放属于可靠性机制。它们不单独构成
+算法创新，但让三条路径可以安全重试、审计和解释。
 
-### Phase 5.5: Source Intelligence — 消息源信任基础设施（06-12）✅ 已实现 (feat/mcp-v2)
-- **心智模型**: "不只是收藏，还要知道谁说的、靠不靠谱"
-- **核心叙事**: **给每条收藏打上"谁说的"和"还有谁也说了"两个标签**
-- **转折触发**: Sir 收藏两篇文章后追问消息源评分机制 → 发现现有 quality gate 只评内容质量不评来源可信度
-- **两大功能**:
-  - **消息源评分 (source_score)**: 规则(0-40) + LLM(0-30) + 用户修正 + 新鲜度 → 总分 0-100, tier A/B/C/D
-  - **交叉验证 (sheaf_crosscheck)**: 库内多源事实对比，✅确认/⚠️有差异/❌仅本源/❓未提及
-- **与 Matrix 的关系**: crosscheck = matrix 的 MVP, source_score = matrix 的信任层
-- **技术特点**: LLM 评分在现有 classify 调用中一并完成，不增加 API 成本
-- **实现状态**: ✅ 已合并入 main（feat/mcp-v2 全量吸收）;source scoring 在 pipeline Step 3.5 生效,`sheaf_crosscheck` 经 CLI / `tools/call` 可用。#67 联网验证为独立项,不阻塞已发布版本。
-- **关键文档**:
-  - `docs/SOURCE-INTELLIGENCE-DESIGN.md` — 完整设计文档(Beta 草案)
-  - `internal/design/MCP-V2-PLAN.md` — MCP v2 架构计划
+## 4. 系统边界
 
-### Phase 5.6: MemTensor 调研后的定位再确认（06-16）
-- **调研结论**: MemOS 给 AI 装记忆，Sheaf 给人装外脑 — **互补而非竞争**
-- **3 条建议**: 🔴 Extension 升级为知识注入助手 / 🟡 Card schema 对齐 MemOS / 🟢 agent-legion 借鉴 MemScheduler
-- **不影响 Phase 5 三层架构叙事**
-
----
-
-## 3. 心智模型扩展图
-
-```
-Phase 0          Phase 1             Phase 2              Phase 3           Phase 4           Phase 5           Phase 5.5
-收藏工具    →   Agent-Native     →  低摩擦+Agent Context → 一键安装     →  事件理解      →  Agent 记忆层   →  消息源信任
-"保存文章"     "给Agent用的"        "收藏是入口"          "装完就能用"      "看清全貌"        "所有Agent的记忆"  "谁说的+还有谁说了"
-
-  collect     →  collect + MCP   →   collect +         →  sheaf init    →  sheaf matrix  →  ~/.sheaf/      →  source_score
-                   + crystallize      crystallize +       --auto             (同事件          三层架构：          + crosscheck
-                                      Agent Context                          多源聚合)         内容→记忆→终端
+```text
+产品入口：收藏、导入、Agent 调用
+        ↓
+三条核心路径：检索、结晶、增量知识演化
+        ↓
+领域记录：Entry、KnowledgeCard、EvidenceEvent、CardVersion
+        ↓
+基础设施：抓取器、本地存储、模型与 embedding 适配器
+        ↓
+质量治理：契约测试、模拟用户、离线评测、构建与安装门禁
 ```
 
-**每一次扩展都不是推翻，而是叠加新价值层：**
-- Phase 0→1: 从 Human-First 到 Agent-First（数据格式 + 元数据结构化）
-- Phase 1→2: 从技术定位到产品叙事（三层价值梯度）
-- Phase 2→3: 从功能完整到体验流畅（降低安装摩擦）
-- Phase 3→4: 从"保存"到"理解"（同事件跨源聚合 + 知识矩阵）
-- Phase 4→5: 从独立产品到生态基础设施（Agent 终端的记忆层）
-- Phase 5→5.5: 从"记住什么"到"判断谁靠谱"（消息源信任基础设施）
+CLI、MCP 和 HTTP 是同一组能力的接口，不应各自复制业务规则。来源解析、状态转移
+和版本历史属于领域边界；本地文件、模型提供商和网页适配属于可替换基础设施。
 
----
+更完整的技术边界见
+[ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md)。
 
-## 4. 文档分类索引
+## 5. 研发管理方式
 
-### 📍 活跃文档（正在使用，需维护）
+Sheaf 不只按 feature 管理，也不只按代码目录管理。每项工作同时使用三种视角：
 
-| 文档 | 路径 | 用途 |
-|------|------|------|
-| 产品演化日志 | `internal/commercialization/PRODUCT-EVOLUTION.md` | 记录每次定位转折的触发事件、决策、理由 |
-| 项目计划 | `internal/PLAN.md` | 当前版本、Wave 进度、仓库结构 |
-| Matrix 产品设计 | `docs/MATRIX-PRODUCT-DESIGN.md` | Phase 4 的完整产品设计 Brief |
-| 一键安装调研 | `internal/research/one-click-install-research.md` | Phase 3 的竞品安装体验分析 |
-| 冒烟测试报告 | `docs/smoke-test-2026-06-01.md` | v0.4.0a0 空白环境验证 |
-| 商业化路线 | `internal/commercialization/commercialization-roadmap.md` | 变现路径 |
-| 资金机会 | `internal/commercialization/funding-opportunities.md` | 孵化器/基金申请追踪 |
+1. **产品旅程**：用户为什么需要它，例如找回论文、形成可引用结论、更新过期事实。
+2. **能力流**：哪种长期能力负责结果和指标。
+3. **代码模块**：由哪些实现边界承载，谁负责维护。
 
-### 📍 归档文档（历史参考，不再更新）
+当前能力流分为：
 
-| 文档 | 路径 | 历史价值 |
-|------|------|---------|
-| 产品概览 v1 | `internal/archive/docs/product-overview.md` | Phase 0 的原始定位 |
-| Agent-Native 定义 | `internal/archive/positioning-v1.md` | Phase 1 五维度定义（仍适用） |
-| 竞品深度分析 | `internal/archive/research/competitor-deep-dive.md` | 8 款竞品（Karakeep/Mem0 等） |
-| 空白地带分析 | `internal/archive/research/whitespace-analysis.md` | 2×2 定位图（仍适用） |
-| 商业模式 v1 | `internal/archive/research/business-model-v1.md` | Open-Core 评估（仍适用） |
-| 生态愿景 | `internal/archive/ecosystem-vision.md` | 三阶段路径（工具→基础设施→生态） |
-| 知识市场愿景 | `docs/KNOWLEDGE-MARKETPLACE-VISION.md` | 中远期 Web3 知识交易（Phase 5+） |
-| Obsidian 集成调研 | `internal/research/obsidian-integration-research.md` | 未来集成方向 |
+| 能力流 | 负责范围 | 主要结果 |
+|---|---|---|
+| 采集与来源质量 | 抓取、清洗、去重、来源评分、交叉核验 | 可用且可判断的输入 |
+| 检索 | 候选生成、排序、过滤和解释 | 找到相关证据 |
+| 结晶 | 多来源抽取、支持约束、冲突和去重 | 可复用知识卡片 |
+| 知识演化 | 新证据判断、状态转移、版本和审计 | 不抹掉历史的更新 |
+| Agent 接口 | CLI、MCP、HTTP 和技能说明 | 稳定、低上下文成本的调用 |
+| 平台与评测 | 存储、迁移、并发、隐私、测试和发布 | 可重复、可恢复、可发布 |
 
-### 📍 GitHub Issues（产品功能追踪）
+任何能力都需要明确成功指标、测试数据、失败方式和退出条件。横跨多条能力流的工作
+不能放进“杂项”，应由平台与评测能力流管理。
 
-| Issue | 标题 | Milestone | 状态 |
-|-------|------|-----------|------|
-| #40 | uvx 一键部署 | v0.5.0 | ✅ Closed |
-| #62 | sheaf init --auto (一键安装) | v0.5.0 | Open (P1) |
-| #63 | sheaf matrix (跨源事件验证) | v0.5.0 | Open (P1) |
-| #22 | Knowledge Marketplace | Backlog | Open |
+## 6. 当前阶段
 
----
+| 阶段 | 状态 | 退出条件 |
+|---|---|---|
+| 本地基础闭环 | 基本完成 | 收藏、查询、Agent 接入、安装和发布验收稳定 |
+| 来源可信与可审计更新 | 基本完成 | 伪造来源失败关闭；冲突和历史可重放 |
+| 核心算法证据 | **当前重点** | 真实路径数据集、基线、指标、消融和原始结果齐全 |
+| 自动演化策略 | 待开始 | 在留出集上优于简单规则，并满足安全门槛 |
+| 产品验证 | 待开始 | 目标用户反复复用知识，并能说明价值和信任原因 |
+| 规模与分发 | 暂缓 | 只在算法和产品证据暴露真实瓶颈后启动 |
 
-## 5. 产品设计经验沉淀
+当前优先级和可执行里程碑见 [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md)。在核心算法证据建立以前，知识
+市场、复杂协作和大规模渠道扩张不进入主路线。
 
-> 以下是从 4 次 Phase 演化中提炼的可复用经验
+## 7. 文档状态
 
-### EXP-001: 定位转折的触发信号
-- **信号 1**: 竞品调研发现"别人已经在做了" → 需要重新差异化
-- **信号 2**: 用户（自己）真实使用中发现"缺了什么" → 需要扩展功能
-- **信号 3**: 安装/使用时出现摩擦 → 需要降低门槛
-- **信号 4**: 某次使用中突然发现新价值场景 → 需要产品化
+| 文档 | 当前用途 |
+|---|---|
+| 本文 | 当前产品与管理共识 |
+| `ARCHITECTURE-AND-EVALUATION.md` | 当前技术架构、测试阶梯和声明边界 |
+| `EVIDENCE-GOVERNED-MEMORY-PROPOSAL.md` | 增量知识演化设计和 G0-G3 边界 |
+| `SOURCE-INTELLIGENCE-DESIGN.md` | 来源质量的历史设计及未完成想法 |
+| `MATRIX-PRODUCT-DESIGN.md` | 多来源事件理解的历史产品探索 |
+| `KNOWLEDGE-MARKETPLACE-VISION.md` | 已暂停的中远期探索，不是当前承诺 |
+| `AGENT-NATIVE-DESIGN-PRINCIPLES.md` | 仍可参考的接口原则，旧阶段叙事不再适用 |
 
-### EXP-002: 心智模型扩展三原则
-1. **叠加不推翻**: 每次扩展在旧定位上叠加，不是重新来过
-2. **用户行为驱动**: 新价值层必须从真实用户行为中发现，不能凭空想象
-3. **故事一句话**: 每个新心智模型必须能在一句话内说清楚
-
-### EXP-003: 产品设计文档分层
-```
-顶层: PRODUCT-EVOLUTION.md（演化日志，append-only）
-  ↑ 更新
-中层: 各 Phase 的详细设计文档（MATRIX-PRODUCT-DESIGN, ONE-CLICK-INSTALL 等）
-  ↑ 引用
-底层: 竞品调研、技术调研（archive/research/）
-```
-
-### EXP-004: 竞品分析框架
-- **2×2 定位图**: 找到"无人占据的空白地带"（参见 whitespace-analysis.md）
-- **ABC 分类**: A(大厂/强竞品) / B(中等/部分重叠) / C(弱/可借鉴)
-- **安装体验计数**: 每个竞品从 0 到可用需要几步
-
----
-
-## 6. 下一步: Phase 4 (Matrix) 的产品设计待办
-
-| # | 待办 | 优先级 |
-|---|------|--------|
-| 1 | Matrix 的 Golden Path 用户旅程图（3 步即可） | P1 |
-| 2 | 矩阵视角分类标准（官方/技术/金融/竞争/国际）的精确定义 | P1 |
-| 3 | "Read one source, understand the whole story" 的英文 Landing Page 文案 | P2 |
-| 4 | matrix → crystallize 的自动触发门槛（同事件≥3 篇？） | P1 |
-| 5 | Matrix 的 Ground News 对位宣传素材 | P2 |
-
----
-
-## 7. 三层架构：投资人叙事（Phase 5 核心）
-
-### 一句话 pitch
-
-> **Agent 终端层正在爆发，但所有终端都缺一个共同的记忆层。Sheaf 就是那个层——本地优先、跨平台、开源。**
-
-### 三层模型
-
-```
-┌──────────────────────────────────────────────────────┐
-│  终端层：帮用户"做事"的 Agent                          │
-│  Claude Code │ Kimi Work │ WorkBuddy │ Codex │ 更多   │
-│  "写代码"     "办公"      "企业协作"   "编程"          │
-│                                                      │
-│  ⚠️ 共同短板：没有跨会话持久化记忆                     │
-│  Claude Code /clear = 清空对话 → 之前的推理全丢        │
-│  Kimi Work 技能包 = 任务模板，不是个人知识              │
-│  WorkBuddy 团队上下文 = 组织级，非个人级                 │
-├──────────────────────────────────────────────────────┤
-│  记忆层：Sheaf — 个人知识基础设施                       │
-│  收藏 ▸ 索引 ▸ 结晶 ▸ 检索 ▸ 关联                      │
-│  ~/.sheaf/ = 个人知识 home directory                  │
-│                                                      │
-│  ✅ 任何 Agent 终端通过 MCP 接入                        │
-│  ✅ 本地优先，隐私可控                                  │
-│  ✅ 跨平台（Linux/Mac/Windows）                         │
-│  ✅ 知识卡片自动结晶                                    │
-├──────────────────────────────────────────────────────┤
-│  内容层：用户阅读的一切                                 │
-│  网页 │ 微信 │ arXiv │ PDF │ 笔记 │ GitHub │ 更多      │
-│  Chrome 插件一键收藏                                    │
-└──────────────────────────────────────────────────────┘
-```
-
-### 为什么安全：竞品空白
-
-| 层次 | 竞品 | 为何不冲突 |
-|------|------|-----------|
-| **Agent 记忆系统** | Mem0, Hindsight, Letta, Zep 等 8 个 | 全部面向**开发者**（SDK/API），非个人终端用户 |
-| **个人知识产品** | Cubox, Readwise, MyMemo 等 | 停留在**内容存储**阶段，无知识结晶/Agent 集成 |
-| **GPT 生态** | ChatGPT Memory (Dreaming V3) | **对话记忆**，非阅读收藏的知识图谱；GPT Plugins 已死 |
-| **大厂 Agent 终端** | Kimi Work, WorkBuddy | 做 Agent 终端，不做 Agent 的记忆层 |
-
-**关键数据点**：
-- 8 大 Agent 记忆系统全部是面向开发者 SDK，无一面向个人用户
-- ChatGPT Plugins 已于 2024 年停止运营，GPTs 替代品无个人知识管理品类
-- 国内市场：大陆尚无同类本地优先 + 跨平台 + Agent 可接入的个人知识层产品
-
-### 投资人三板斧
-
-1. **市场时机**: Agent 终端大爆发（Kimi Work/WorkBuddy/Claude Code），每个用户需要一个跨终端的记忆 → Sheaf 正好填这个缺
-2. **护城河**: 本地优先 + 跨平台 + 开源 → 大厂不会做（太小太底层），小厂做不了（需要 Agent 生态理解）
-3. **增长飞轮**: 每多一个 Agent 终端接入 MCP → Sheaf 的价值翻倍 → 更多终端接入
-
-### 竞争者可能出现的信号
-- 有公司做"ChatGPT 个人记忆插件"（但国内没人做）
-- Mem0 推出面向终端用户的产品（目前仅 SDK）
-- 某个 Agent 终端内置了自己的记忆系统（但用户会被锁定在一个终端）
-
-Sheaf 的先发窗口：在这些信号出现前，完成**三层架构的产品化 + 社区认知建立**。
-
----
-
-*本文档是 Sheaf 产品设计的"北极星索引"——每次产品定位演化后更新此文件。*
-*Phase 5 新增 (2026-06-08): 三层架构 + 投资人叙事*
+Git 历史保留了此前完整的产品定位演化。当前文档不再把每次探索都叠加为产品承诺，
+而是以可验证的用户问题、算法能力和退出条件决定是否进入主路线。

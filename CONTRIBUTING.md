@@ -98,20 +98,31 @@ Every open issue must have **at least one type label** and optionally a priority
 | `P1` | Important — should have soon |
 | `P2` | Nice to have — backlog |
 
-**Domain labels (optional):**
+**Scope taxonomy:** record these fields in the issue body. A repository label may
+mirror a value only after that label is actually configured.
 
-`ux`, `dev`, `uc` (Universal Collector), `extension`, `vision`, `crystallize`
+- `journey/*`: `recover-evidence`, `build-brief`, `revise-knowledge`, `agent-reuse`
+- `capability/*`: `ingestion-source`, `retrieval`, `crystallization`,
+  `knowledge-evolution`, `agent-interface`, `platform-evaluation`
+- `module/*`: add only when code ownership needs to be explicit
 
 ### Milestones
 
-Every open issue **must** have a milestone:
+Every open issue **must** use a milestone that already exists in the repository.
+Current planning is organized around these outcomes; do not invent a release
+number or assume an unconfigured milestone solely to classify work:
 
-| Milestone | Purpose |
+| Planning outcome | Purpose |
 |-----------|---------|
-| `v0.6.0` | Current release — error classification, OutputGuard, regression tests |
-| `v0.7.0` | Next iteration — growth engine, knowledge bundle |
-| `v1.0.0` | Long-term vision / roadmap |
+| `algorithm-evidence` | Current — align production paths and establish reproducible evidence |
+| `integrated-policy` | Automatic evidence-transition policy after offline gates pass |
+| `product-validation` | Repeated user reuse, trust, and value validation |
+| `scale-distribution` | Storage, collaboration, and distribution after bottlenecks are proven |
 | `backlog` | Unscheduled — grooming queue |
+
+If the matching outcome milestone has not been created, use the existing
+`backlog` milestone and record the planning outcome in the issue body. Release
+versions are attached only after an outcome has a confirmed scope.
 
 ### Issue Template
 
