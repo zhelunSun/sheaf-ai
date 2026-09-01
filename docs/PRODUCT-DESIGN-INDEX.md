@@ -37,13 +37,25 @@ Sheaf 把用户主动选择的高质量来源，变成 Agent 可以检索、核�
 
 | 路径 | 回答的问题 | 当前实现 | 主要缺口 |
 |---|---|---|---|
-| 检索 | 用户问问题时，应该取回哪些已收藏证据？ | BM25、直接 Entry 语义索引、原子代次、可诊断降级和分数融合 | 真实查询标注集、embedding 质量、融合消融和长文覆盖 |
+| 检索 | 用户问问题时，应该取回哪些已收藏证据？ | BM25、直接 Entry 语义索引、原子代次、可诊断降级，以及 22 Entry / 36 query 冻结消融 | 真实 embedding、无答案与实体歧义、长文 passage 覆盖 |
 | 结晶 | 多份来源共同支持什么可复用结论？ | 模型抽取、严格 schema、可解析来源约束 | 支持关系校验、冲突识别、重复控制、真实模型评测 |
-| 增量知识演化 | 新证据到来后，旧知识应该怎样改变？ | 显式状态转移、冲突保留、不可变历史和重放 | 自动转移策略、G0-G3 实验、噪声与错误恢复 |
+| 增量知识演化 | 新证据到来后，旧知识应该怎样改变？ | 显式状态转移、schema 3 引文/字符区间身份、旧账本重放、作用域纠错权限和可审计 SPLIT/NOOP 预览 | 真实原子 SPLIT adapter、自动转移策略、可信 provenance registry、跨文件事务 |
 
-这三条路径共同构成产品核心，但当前成熟度并不相同：增量演化的确定性执行器最
-扎实；检索的真实 Entry 语义链路已经接通，但真实查询与模型消融仍需补齐；结晶最接近用户价值，也最依赖
-模型质量。
+这三条路径共同构成产品核心，但当前成熟度并不相同：增量演化的单动作确定性
+执行器最扎实；检索的真实 Entry 语义链路和冻结评测已经接通，但本轮 local-LSA
+混合方案没有胜过关键词；结晶最接近用户价值，也最依赖模型质量。
+
+增量演化当前使用 `evidence-rule-v3`。non-duplicate group 只按同一 `source_key`、可信
+的版本化全文 SHA-256 digest、或已持久化的 `exact` / `near_duplicate` 关系形成；普通
+自声明 provenance 只用于审计，绝不能推翻这些去重关系。group 不等于已经验证的独立
+确认：可信 provenance registry 建立前，有证据时 `independent_source_count` 保守为
+`1`，corroboration bonus 关闭；v1/v2 历史评分按原算法重放。官方纠错还必须同时满足
+primary、topic/fact-key authority scope，以及指向被纠错 Entry 的 `corrects` 关系。
+
+SPLIT/NOOP decision trace 也是边界而不是完成宣言：它能记录预览、请求 hash、证据、
+target head 和共享 `decision_id`，并要求调用方提供原子 UPDATE + CREATE executor。
+仓内只有协议和 atomic fake 测试，没有 production adapter；缺少原子 executor 时必须
+失败关闭。
 
 幂等键、请求哈希、文件锁、原子写入和历史重放属于可靠性机制。它们不单独构成
 算法创新，但让三条路径可以安全重试、审计和解释。
@@ -95,14 +107,23 @@ Sheaf 不只按 feature 管理，也不只按代码目录管理。每项工作�
 | 阶段 | 状态 | 退出条件 |
 |---|---|---|
 | 本地基础闭环 | 基本完成 | 收藏、查询、Agent 接入、安装和发布验收稳定 |
-| 来源可信与可审计更新 | 基本完成 | 伪造来源失败关闭；冲突和历史可重放 |
-| 核心算法证据 | **当前重点** | 真实路径数据集、基线、指标、消融和原始结果齐全 |
-| 自动演化策略 | 待开始 | 在留出集上优于简单规则，并满足安全门槛 |
+| 来源可信与可审计更新 | 基本完成 | schema 3 span 身份、作用域权限、来源折叠与旧 ledger 重放有门禁；production SPLIT adapter 仍开放 |
+| 核心算法证据 | **当前重点** | 真实模型、无答案/歧义和长文 failure slice，以及结晶与演化的留出实验齐全 |
+| 自动演化策略 | trace 协议已起步，选择策略待开始 | production atomic adapter 落地，并在留出集上优于简单规则且满足安全门槛 |
 | 产品验证 | 待开始 | 目标用户反复复用知识，并能说明价值和信任原因 |
 | 规模与分发 | 暂缓 | 只在算法和产品证据暴露真实瓶颈后启动 |
 
-当前优先级和可执行里程碑见 [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md)。在核心算法证据建立以前，知识
-市场、复杂协作和大规模渠道扩张不进入主路线。
+第一份检索资产已经冻结为 22 条 Entry、36 个 query，manifest 锁定三份 fixture 的
+hash，并在产生 ranking 后才加载 qrels。经典 local-LSA 基线经 dev 选择
+`linear-0.25 @ 0.4`，留出集为 Recall@5 `0.9375`、MRR `1.0`、nDCG@5 `0.9498`、
+no-answer FPR `1.0`；它没有优于 keyword，也没有解决 abstention。真实 embedding 因
+缺少凭据尚未运行。相关度 gate 是 backend/version-specific 实验信号，语义降级时按
+keyword coverage 标尺计算，不能解释为概率或通用阈值。
+
+下一阶段优先处理无答案与实体歧义、真实 embedding、长文 passage、可信 provenance
+registry、实际 atomic split adapter 和跨文件事务。完整可执行计划见
+[NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md)。在核心算法证据建立以前，知识市场、复杂
+协作和大规模渠道扩张不进入主路线。
 
 ## 7. 文档状态
 

@@ -1,0 +1,3 @@
+/evals/retrieval-frozen/*.jsonl text eol=lf
+/evals/retrieval-frozen/manifest.json text eol=lf
+/evals/retrieval-frozen/runs/*.json text eol=lf

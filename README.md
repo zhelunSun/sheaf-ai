@@ -96,7 +96,18 @@ $ sheaf crystallize AI
 
 Each batch card carries **evidence tracing** (which sources contributed), **topic provenance**, and **tags**. Semantic-search across all of them with `sheaf crystallize --semantic "query"`.
 
-The experimental evidence-governed path is deliberately stricter. It validates source IDs against stored Entries, preserves contested claims and prior versions in an event ledger, and requires an explicit resolution basis before a conflict can be resolved. It does not claim that an LLM policy or confidence probability has already been calibrated:
+The experimental evidence-governed path is deliberately stricter. Ledger
+schema 3 verifies quote or character-span evidence identity and replays older
+ledgers. `evidence-rule-v3` derives non-duplicate groups only from a shared
+`source_key`, a trusted full SHA-256 evidence digest, or a persisted
+`exact`/`near_duplicate` relation; ordinary self-declared provenance never
+overrides deduplication. Those groups are not yet treated as verified independent
+corroboration: while a trusted provenance registry is absent,
+`independent_source_count` remains conservatively `1` when evidence exists and
+the corroboration bonus is disabled. Historical v1/v2 scores replay unchanged.
+Official correction requires primary status, explicit
+topic/fact-key authority scope, and a persisted `corrects` relation. It does not
+claim that an LLM policy or confidence probability has already been calibrated:
 
 ```bash
 sheaf memory apply --request transition.json
@@ -110,9 +121,31 @@ The deterministic executor scenario is independently replayable with
 provenance, idempotency, contest preservation, official correction, and audit
 history without pretending to be an LLM-quality benchmark.
 
+SPLIT and NOOP have an auditable preview-first decision-trace protocol. A SPLIT
+is planned as UPDATE + CREATE with one `decision_id`, checks that its target head
+has not moved, and refuses to run without an external atomic batch executor.
+There is no production atomic SPLIT adapter in this repository yet; tests use an
+atomic fake, so this is a fail-closed integration contract rather than a shipped
+end-to-end executor.
+
 The broader [architecture and evaluation contract](docs/ARCHITECTURE-AND-EVALUATION.md)
 defines the three core algorithm paths, their current maturity, the no-user
 test ladder, and the experiments still required for comparative claims.
+
+### Retrieval evidence snapshot
+
+The first frozen retrieval experiment contains 22 Entries and 36 queries. Its
+manifest locks corpus, query, and evaluator-only qrels hashes, and rankings are
+produced before qrels are loaded. The checked-in local-LSA run is a classical
+TF-IDF/SVD baseline—not a neural embedding result. Development selection chose
+`linear-0.25 @ 0.4`; held-out Recall@5 is `0.9375`, MRR `1.0`, nDCG@5 `0.9498`,
+and no-answer FPR `1.0`. It did not outperform keyword retrieval and did not
+solve abstention. A live embedding run was not produced because credentials
+were unavailable. See the [frozen retrieval report](evals/retrieval-frozen/README.md).
+
+The current relevance gate is a backend/version-specific experimental signal,
+not a probability or portable threshold. If semantic retrieval degrades,
+production search returns to the keyword-coverage scale.
 
 ## Connect Your Agent
 
@@ -251,11 +284,12 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 ## Status & Chrome Extension
 
 Sheaf is early alpha. The local collect-to-agent loop works and is covered by
-CI. The current development stage is [**core algorithm evidence**](docs/NEXT-PHASE-PLAN.md): align the
-production retrieval path with its evaluation, build realistic offline
-datasets, evaluate crystallization support, and run the frozen G0-G3 memory
-experiment. Comparative quality claims remain hypotheses until those results
-are checked in.
+CI. The current development stage is [**core algorithm evidence**](docs/NEXT-PHASE-PLAN.md).
+The production retrieval path and first frozen classical baseline are now in
+place; its negative result redirects the next iteration toward no-answer/entity
+ambiguity, a real embedding run, and long-document passages. The other priority
+gaps are a trusted provenance registry, a real atomic SPLIT adapter, and
+cross-file transactions. Comparative quality claims remain hypotheses.
 
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 

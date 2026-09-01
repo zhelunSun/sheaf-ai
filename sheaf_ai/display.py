@@ -160,15 +160,22 @@ def show_stats() -> None:
         pass
 
 
-def show_search(query: str, limit: int = 10) -> None:
+def show_search(
+    query: str,
+    limit: int = 10,
+    *,
+    min_evidence_score: float = 0.0,
+) -> None:
     """Hybrid Entry search with relevance scoring and diagnostics."""
     diagnostics: dict[str, object] = {}
-    results = search_hybrid(
-        query,
-        limit=limit,
-        include_raw=True,
-        diagnostics=diagnostics,
-    )
+    search_kwargs: dict[str, object] = {
+        "limit": limit,
+        "include_raw": True,
+        "diagnostics": diagnostics,
+    }
+    if min_evidence_score:
+        search_kwargs["min_evidence_score"] = min_evidence_score
+    results = search_hybrid(query, **search_kwargs)
 
     if not results:
         print(f'No results for "{query}"')

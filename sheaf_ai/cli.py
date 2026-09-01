@@ -56,6 +56,15 @@ def build_parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command")
     p = sub.add_parser("collect", help="Collect URL(s)"); p.add_argument("url", nargs="*", help="URL(s) to collect"); p.add_argument("--force", action="store_true"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--batch", metavar="FILE", help="Read URLs from file (one per line)"); p.add_argument("--concurrency", type=int, default=1, help="Parallel workers (default: 1)"); p.add_argument("--on-error", choices=["continue", "stop"], default="continue", help="On error behavior (default: continue)"); p.add_argument("--output", metavar="FILE", help="Write JSONL results to file"); p.add_argument("--text", metavar="TEXT", help="Collect freeform text directly (skips URL fetch)")
     p = sub.add_parser("search", help="Hybrid keyword + semantic search"); p.add_argument("query", nargs="+"); p.add_argument("--json", action="store_true", help="Output raw JSON"); p.add_argument("--limit", "-n", type=int, default=10, help="Max results (default: 10)")
+    p.add_argument(
+        "--min-evidence-score",
+        type=float,
+        default=0.0,
+        help=(
+            "Optional experimental relevance gate in [0,1]; 0 disables abstention "
+            "(default: 0)"
+        ),
+    )
     p = sub.add_parser(
         "search-index",
         help="Manage the Entry semantic search index",
@@ -521,23 +530,32 @@ def _search(p: argparse.Namespace) -> None:
     """Search Entries through the production hybrid retrieval path."""
     query = " ".join(p.query)
     limit = getattr(p, "limit", 10)
+    min_evidence_score = getattr(p, "min_evidence_score", 0.0)
     json_output = getattr(p, "json", False)
 
     if json_output:
         from sheaf_ai.search import search_hybrid
         raw_diagnostics: dict[str, object] = {}
-        results = search_hybrid(
-            query,
-            limit=limit,
-            include_raw=True,
-            diagnostics=raw_diagnostics,
-        )
+        search_kwargs: dict[str, object] = {
+            "limit": limit,
+            "include_raw": True,
+            "diagnostics": raw_diagnostics,
+        }
+        if min_evidence_score:
+            search_kwargs["min_evidence_score"] = min_evidence_score
+        results = search_hybrid(query, **search_kwargs)
         formatted = []
         for r in results:
             item = r["entry"].copy()
             item["_score"] = r["score"]
             item["_bm25_score"] = r.get("bm25_score", 0.0)
             item["_semantic_score"] = r.get("semantic_score", 0.0)
+            item["_retrieval_evidence_score"] = r.get(
+                "retrieval_evidence_score", 0.0
+            )
+            item["_retrieval_evidence_version"] = r.get(
+                "retrieval_evidence_version", "coverage-semantic-v1"
+            )
             item["_match_locations"] = r.get("match_locations", [])
             if r.get("snippet"):
                 item["_snippet"] = r["snippet"]
@@ -559,7 +577,10 @@ def _search(p: argparse.Namespace) -> None:
             ]
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
-        show_search(query, limit=limit)
+        if min_evidence_score:
+            show_search(query, limit=limit, min_evidence_score=min_evidence_score)
+        else:
+            show_search(query, limit=limit)
 
 
 def _search_diagnostics(

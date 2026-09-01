@@ -38,13 +38,25 @@ the three paths below.
 
 | Path | Product job | Implemented now | Still unproven |
 |---|---|---|---|
-| Retrieval | Recover the right saved evidence for a question | BM25 plus a direct Entry vector index, atomic generations, stale diagnostics, and keyword fallback | Real embedding quality, representative qrels, fusion ablation, and long-document coverage |
+| Retrieval | Recover the right saved evidence for a question | BM25 plus a direct Entry vector index, atomic generations, stale diagnostics, keyword fallback, and a frozen 22-Entry/36-query classical-baseline ablation | Live embedding quality, no-answer/entity ambiguity, and long-document passage coverage |
 | Crystallization | Turn several sources into reusable claims | Model-assisted extraction, strict schema validation, and resolvable source links | Claim entailment, contradiction handling, redundancy, stability across models, and usefulness to people |
-| Incremental evolution | Change knowledge without erasing why it changed | Explicit create, update, contest, and merge transitions; immutable history; replayable versions | Automatic action selection, calibrated evidence weighting, and end-to-end quality under noisy inputs |
+| Incremental evolution | Change knowledge without erasing why it changed | Explicit create/update/merge/retire/contest transitions; schema-3 quote/span evidence identity; scoped correction authority; replayable old ledgers; auditable SPLIT/NOOP previews | A production atomic SPLIT adapter, automatic action selection, trusted provenance registry, and end-to-end quality under noisy inputs |
 
-The third path is the deepest deterministic subsystem today. Retrieval is a
-working hybrid implementation. Crystallization is central to the product but
-still depends most heavily on model behavior.
+The third path is the deepest deterministic subsystem today. Its
+`evidence-rule-v3` derives non-duplicate groups only through a shared
+`source_key`, a trusted versioned full SHA-256 evidence digest, or persisted
+`exact` / `near_duplicate` relations. Ordinary self-declared provenance is
+retained for audit but never overrides those duplicate edges. The groups are
+reported for inspection, not certified as independent corroboration: pending a
+trusted provenance registry, `independent_source_count` is conservatively `1`
+when evidence exists and the corroboration bonus is disabled. Historical v1/v2
+scores replay under their original algorithms. Official correction also
+requires a primary source whose declared authority scope covers the topic and
+fact key and whose persisted `corrects` relation names the corrected Entry.
+
+Retrieval is a working hybrid implementation, but the checked-in local-LSA
+result did not beat keyword retrieval. Crystallization is central to the product
+and still depends most heavily on model behavior.
 
 Idempotency keys, request hashes, file locks, atomic writes, and replay checks
 are not a fourth algorithm. They are reliability mechanisms that make all three
@@ -58,7 +70,7 @@ than as a collection of scripts:
 ```text
 CLI / MCP / HTTP
         |
-application services: collect, search, crystallize, apply evidence transition
+application services: collect, search, crystallize, preview/apply evidence transition
         |
 domain records: Entry, KnowledgeCard, EvidenceEvent, CardVersion
         |
@@ -74,7 +86,7 @@ source -> collector -> Entry -----------------------> retrieval -> agent
                        |                                  |
                        +-> source bundle -> crystallization -> KnowledgeCard
                        |
-new evidence -> validated transition -> event ledger -> current card projection
+new evidence -> decision preview -> validated transition -> event ledger -> current card projection
 ```
 
 This is enough to explain and defend the design in an interview: interfaces do
@@ -82,8 +94,17 @@ not own the domain rules, source-backed cards have a checked boundary, and
 incremental changes preserve history. It is not yet equivalent to a mature
 memory platform in scale, ecosystem, migrations, or published benchmark
 evidence. Important remaining architecture work includes removing global path
-configuration, planning storage beyond JSON files, automating the evidence
-policy, and defining stable data migrations.
+configuration, long-document passage selection, trusted provenance
+registration, cross-file transactions, and a production adapter that can commit
+a SPLIT's UPDATE + CREATE atomically.
+
+The SPLIT/NOOP decision trace is deliberately conditional. It records the input
+snapshot and request hash, policy/algorithm versions, evidence IDs, target heads, reason,
+status, and the shared `decision_id` of a planned UPDATE + CREATE. Before apply,
+it checks that the target head has not changed. It will only call an external
+`execute_atomic(...)` protocol and otherwise fails closed. The repository has
+tests with an atomic fake, but no production evidence-memory batch executor;
+the trace must not be described as an end-to-end atomic SPLIT implementation.
 
 ## 4. How the product should be managed
 
@@ -107,9 +128,9 @@ and migration belongs to the platform stream, not to a miscellaneous backlog.
 | Stage | Goal | Exit criterion |
 |---|---|---|
 | Foundation | A usable local collect-to-agent loop | Clean install, deterministic storage, CLI/MCP contracts, and release smoke pass |
-| Evidence loop | Source-backed cards and inspectable updates | Unknown sources fail closed; conflict and history are replayable |
+| Evidence loop | Source-backed cards and inspectable updates | Unknown sources fail closed; quote/span evidence, scoped authority, conflict, and old-ledger replay are checked |
 | Algorithm evidence (current) | Establish what each core path improves | Versioned datasets, baselines, metrics, ablations, and reproducible raw outputs |
-| Integrated policy | Choose memory transitions from incoming evidence | Policy accuracy and safety beat simple rules on a held-out labelled set |
+| Integrated policy | Choose and atomically execute memory transitions from incoming evidence | A production SPLIT adapter plus policy accuracy and safety that beat simple rules on a held-out labelled set |
 | Product validation | Learn whether deliberate source curation creates repeat use | Design partners repeatedly retrieve or reuse knowledge and explain the value |
 | Scale and distribution | Broaden storage, integrations, and collaboration | Only after algorithm and product evidence reveal actual bottlenecks |
 
@@ -120,9 +141,9 @@ model experiments and later user research.
 
 | Gate | Runs | Purpose |
 |---|---|---|
-| Unit and contract tests | Every change | Schema, edge cases, retries, storage, and interface compatibility |
+| Unit and contract tests | Every change | Schema-3 span identity, source grouping, scoped authority, decision traces, edge cases, retries, storage, and interface compatibility |
 | Synthetic profile journeys | Every CI run | Researcher, developer, and creator workflows over isolated local data |
-| Offline core evaluation | Every CI run | Retrieval fusion, crystallization provenance, and evidence-ledger invariants |
+| Offline core evaluation | Every CI run | Production retrieval plumbing with a fixture embedder, crystallization provenance, and the checked-in evidence-memory scenario |
 | Fixed-dataset model experiment | Nightly or manual | Real embeddings and LLM outputs with pinned model settings and preserved raw responses |
 | Exploratory live-site sampling | Manual | Collector drift, JavaScript sites, rate limits, and provider changes |
 | Design-partner study | Later | Usefulness, trust, repeat behavior, and willingness to pay |
@@ -145,11 +166,24 @@ model and embedding versions, sampling settings, raw output, and human labels.
 
 ### Retrieval
 
-Build a small query-to-source relevance set from realistic personal knowledge
-tasks. Compare keyword-only, semantic-only, and hybrid retrieval. Report
-Recall@k, reciprocal rank, latency, and failure slices such as paraphrases,
-versioned facts, and long documents. The current offline suite fixes semantic
-scores, so it tests fusion logic only—not embedding quality.
+The first frozen set now contains 22 synthetic-but-realistic Entries and 36
+queries. The manifest locks corpus, query, and qrels hashes, and the runner
+creates rankings before it loads evaluator-only qrels. It compares keyword,
+semantic, linear hybrid, and RRF variants through the production Entry index.
+
+The checked-in `local-lsa-v1` run is a classical TF-IDF/SVD baseline, not a
+neural embedding result. Development selection chose `linear-0.25` with a `0.4`
+minimum evidence gate. On held-out queries it achieved Recall@5 `0.9375`, MRR
+`1.0`, nDCG@5 `0.9498`, and no-answer FPR `1.0`; keyword achieved `0.9688`,
+`1.0`, `0.9560`, and `1.0`. The selected method therefore did not outperform
+keyword and did not solve abstention. A live embedding run was not produced
+because credentials were unavailable.
+
+The `coverage-semantic-v1` relevance gate is an experimental signal tied to the
+backend and version that produced it, not a calibrated probability or portable
+threshold. When semantic retrieval degrades, production search falls back to
+the keyword-coverage scale. Next retrieval experiments target no-answer/entity
+ambiguity, a real embedding provider, and long-document passage retrieval.
 
 ### Crystallization
 
@@ -166,18 +200,26 @@ Create evidence sequences containing confirmation, conflict, correction,
 version changes, and irrelevant noise. Measure transition-action accuracy,
 conflict recall, invalid-resolution rate, audit completeness, replay
 correctness, and cost. Compare the frozen G0-G3 variants in
-`evals/evidence-governed-memory/PROTOCOL.md`. The current executor acceptance
-proves state invariants only—not that a model can choose the right transition.
+`evals/evidence-governed-memory/PROTOCOL.md`.
+
+The current deterministic layer verifies schema-3 quote/character-span
+identity, v1/v2 replay and migration, `evidence-rule-v3` grouping, scoped
+official correction, and decision-trace integrity. The SPLIT/NOOP trace only
+enforces the precondition that a caller provide an atomic batch executor; it
+does not supply that production executor or prove that a model chooses the
+right transition.
 
 ## 8. Claim boundary
 
 Current safe claim:
 
 > Sheaf implements and automatically tests a local, source-backed knowledge
-> loop with stable keyword retrieval and a direct Entry-level hybrid
-> path, provenance-constrained crystallization, and replayable evidence-based
-> updates.
+> loop with stable keyword retrieval, a direct and diagnostically degradable
+> Entry-level hybrid path, provenance-constrained crystallization, and
+> replayable evidence updates with verified quote/span identity.
 
-Claims such as “retrieves better,” “creates more accurate knowledge,” or
-“updates memory more intelligently than another project” remain hypotheses
-until the experiments above produce checked-in results.
+The checked-in classical retrieval baseline is useful precisely because it is
+a negative result: hybrid did not beat keyword and no-answer FPR remained 1.0.
+Claims such as “retrieves better,” “solves abstention,” “creates more accurate
+knowledge,” “atomically executes SPLIT in production,” or “updates memory more
+intelligently than another project” remain unsupported.

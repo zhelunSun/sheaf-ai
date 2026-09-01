@@ -326,6 +326,70 @@ class TestSearchHybrid:
         with pytest.raises(ValueError, match="alpha must be a finite number"):
             search_hybrid("alpha test", alpha=alpha)
 
+    @pytest.mark.parametrize(
+        "threshold",
+        [True, False, "0.5", None, float("nan"), float("inf"), -0.01, 1.01],
+    )
+    def test_hybrid_rejects_invalid_evidence_threshold(
+        self,
+        isolated_data_dir,
+        threshold,
+    ):
+        with pytest.raises(ValueError, match="min_evidence_score must be a finite number"):
+            search_hybrid("alpha test", min_evidence_score=threshold)
+
+    def test_hybrid_can_abstain_using_absolute_evidence_gate(self, isolated_data_dir):
+        e = _make_entry("https://example.com/gate", "Alpha Test", tags=["test"])
+        entry_id = store_article(
+            e["url"],
+            e["fetch_result"],
+            e["classify_result"],
+            e["summary_result"],
+        )
+        with patch(
+            "sheaf_ai.search._fetch_semantic_scores",
+            return_value={entry_id: 0.1},
+        ):
+            ungated = search_hybrid("alpha ocean sensor", min_evidence_score=0.0)
+            gated = search_hybrid("alpha ocean sensor", min_evidence_score=0.5)
+
+        assert ungated
+        assert ungated[0]["retrieval_evidence_score"] < 0.5
+        assert gated == []
+
+    def test_degraded_semantic_backend_uses_keyword_gate_scale(
+        self,
+        isolated_data_dir,
+    ):
+        e = _make_entry("https://example.com/fallback", "Alpha Test", tags=["alpha", "test"])
+        store_article(
+            e["url"],
+            e["fetch_result"],
+            e["classify_result"],
+            e["summary_result"],
+        )
+
+        def degraded(_query, _entries, top_k=50, *, diagnostics=None):
+            del top_k
+            diagnostics.update({
+                "backend": "keyword_only",
+                "status": "degraded",
+                "degraded": True,
+                "reason": "test semantic outage",
+                "reason_code": "test_outage",
+            })
+            return {}
+
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=degraded):
+            results = search_hybrid(
+                "alpha test",
+                min_evidence_score=0.9,
+            )
+
+        assert results
+        assert results[0]["retrieval_evidence_score"] == 1.0
+        assert results[0]["semantic_degraded"] is True
+
     def test_hybrid_degrades_gracefully_without_embeddings(self, isolated_data_dir):
         """When embedding engine is unavailable, hybrid should still return BM25 results."""
         e = _make_entry("https://example.com/graceful", "Graceful Degradation Test", tags=["test"])

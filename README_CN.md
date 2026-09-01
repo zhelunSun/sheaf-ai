@@ -43,7 +43,8 @@ sheaf setup            # 自动识别 Claude Code / Codex / Cursor / Windsurf / 
 
 ```bash
 sheaf collect https://arxiv.org/abs/2401.00000   # 收藏链接
-sheaf search "transformer architecture"          # 搜索知识库
+sheaf search-index --rebuild                     # 显式选择构建 Entry embedding
+sheaf search "transformer architecture"          # 混合搜索；降级时给出诊断
 sheaf crystallize AI                             # 结晶知识卡片
 ```
 
@@ -89,7 +90,14 @@ $ sheaf crystallize AI
 
 每张 batch 卡片含 **证据溯源**（哪些来源贡献了它）、**主题归属**、**标签**。用 `sheaf crystallize --semantic "查询"` 跨所有卡片做向量语义搜索。
 
-实验性的证据治理路径更严格：source ID 必须对应真实已收藏 Entry；冲突先进入 `contested` 状态；旧版本和决策原因写入事件账本；解决冲突必须提供明确的 resolution basis。它不宣称 LLM 决策策略或置信概率已经校准：
+实验性的证据治理路径更严格。ledger schema 3 会验证 `quote` 或字符区间证据身份，
+并可重放旧 ledger。`evidence-rule-v3` 只按相同 `source_key`、可信的完整 SHA-256
+evidence digest、或已持久化的 `exact` / `near_duplicate` 关系形成 non-duplicate
+group；普通自声明 provenance 绝不能覆盖去重。这些 group 还不等于可信的独立确认：
+在 trusted provenance registry 缺位时，只要有证据，`independent_source_count` 就保守
+记为 `1`，corroboration bonus 关闭；v1/v2 历史评分按原算法重放。官方纠错还要求
+primary、覆盖当前 topic/fact key 的 authority scope，以及持久化的 `corrects` 关系。
+它不宣称 LLM 决策策略或置信概率已经校准：
 
 ```bash
 sheaf memory apply --request transition.json
@@ -102,8 +110,25 @@ sheaf memory history --topic "Agent memory"
 确定性执行器验收；它验证来源约束、幂等、冲突保留、官方更正与审计历史，但不冒充
 LLM 策略质量 benchmark。
 
+SPLIT 和 NOOP 已有 preview-first 的可审计 decision trace。SPLIT 会规划共享一个
+`decision_id` 的 UPDATE + CREATE，并在 apply 前检查 target head；没有外部 atomic
+batch executor 就失败关闭。仓内尚无 production atomic SPLIT adapter，测试使用的是
+atomic fake，因此这只是集成协议，不是已经交付的端到端原子执行器。
+
 [架构与评测约定](docs/ARCHITECTURE-AND-EVALUATION.md)进一步明确了三条核心算法路径、
 当前成熟度、无需真实用户的测试阶梯，以及比较性结论仍需完成的实验。
+
+### 检索证据快照
+
+首份冻结检索实验包含 22 条 Entry 和 36 个 query。manifest 锁定 corpus、query 与
+evaluator-only qrels 的 hash，并在加载 qrels 前产生 ranking。已入库的 local-LSA 是
+经典 TF-IDF/SVD 基线，不是神经 embedding 结果。dev 选中
+`linear-0.25 @ 0.4`；held-out Recall@5 为 `0.9375`、MRR `1.0`、nDCG@5 `0.9498`、
+no-answer FPR `1.0`。它没有优于 keyword，也没有解决 abstention。真实 embedding 因
+缺少凭据尚未运行。详见[冻结检索报告](evals/retrieval-frozen/README.md)。
+
+当前 relevance gate 是 backend/version-specific 实验信号，不是概率或通用阈值；
+语义检索降级时，生产路径回到 keyword coverage 标尺。
 
 ## 接入你的 Agent
 
@@ -242,9 +267,10 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 ## 当前状态 & 浏览器扩展
 
 Sheaf 处于早期 Alpha，本地收藏到 Agent 的闭环已经可用并由 CI 覆盖。当前研发阶段是
-[**核心算法证据**](docs/NEXT-PHASE-PLAN.md)：让真实检索路径与评测一致，建设有标注的离线数据，验证结晶的
-证据支持，并运行冻结的 G0-G3 增量演化实验。在结果进入仓库以前，比较性效果仍是
-假设而不是产品结论。
+[**核心算法证据**](docs/NEXT-PHASE-PLAN.md)。生产检索路径与首份经典冻结基线已经
+打通；负结果把下一轮重点指向无答案/实体歧义、真实 embedding 和长文 passage。
+其余关键缺口是可信 provenance registry、真实 atomic SPLIT adapter 与跨文件事务。
+比较性效果仍是假设而不是产品结论。
 
 Chrome 扩展（`extension/`）提供任意网页的一键收藏与搜索：用 `sheaf serve` 启动本地 API，在 Chrome → 管理扩展 → 开发者模式中加载 `extension/`，然后 `Alt+Shift+S` 或右键任意页面 → "🌾 Collect with Sheaf"。
 

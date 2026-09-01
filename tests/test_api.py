@@ -76,7 +76,23 @@ class TestSearchEndpoint:
             limit=37,
             include_raw=True,
             diagnostics=ANY,
+            min_evidence_score=0.0,
         )
+
+    @patch("sheaf_ai.api.search_hybrid", return_value=[])
+    def test_search_passes_optional_relevance_gate(self, mock_search, client):
+        resp = client.get(
+            "/search",
+            params={"q": "AI", "min_evidence_score": 0.4},
+        )
+        assert resp.status_code == 200
+        assert mock_search.call_args.kwargs["min_evidence_score"] == 0.4
+
+    def test_search_rejects_invalid_relevance_gate(self, client):
+        assert client.get(
+            "/search",
+            params={"q": "AI", "min_evidence_score": 1.1},
+        ).status_code == 422
 
     @patch(
         "sheaf_ai.api.search_hybrid",

@@ -19,6 +19,7 @@ import math
 import re
 from dataclasses import dataclass, field
 from numbers import Real
+from typing import Sequence
 from sheaf_ai.config import INDEX_FILE, RAW_DIR
 from sheaf_ai.retrieval_service import EntryRetrievalService
 
@@ -469,6 +470,48 @@ def _normalize_scores(scores: list[float]) -> list[float]:
     return [(s - min_s) / rng for s in scores]
 
 
+def _weighted_query_coverage(
+    scorer: BM25Scorer,
+    query: str,
+    document_tokens: Sequence[str],
+) -> float:
+    """Measure how much of the original query is supported by one document.
+
+    Per-query min/max ranking scores cannot support abstention because every
+    non-empty result set gets a strongest item.  This absolute feature instead
+    asks which query terms occur in the candidate and weights rare terms more
+    heavily.  It intentionally excludes synonym expansion: a synonym can help
+    recall, but must not manufacture direct lexical coverage.
+    """
+    terms = set(_tokenize(query))
+    if not terms or scorer.N <= 0:
+        return 0.0
+    present = set(document_tokens)
+    weights = {
+        term: math.log((scorer.N - scorer.df.get(term, 0) + 0.5)
+                       / (scorer.df.get(term, 0) + 0.5) + 1.0)
+        for term in terms
+    }
+    denominator = sum(weights.values())
+    if denominator <= 0.0:
+        return 0.0
+    return sum(weight for term, weight in weights.items() if term in present) / denominator
+
+
+def _retrieval_evidence_score(
+    *,
+    lexical_coverage: float,
+    semantic_score: float,
+    semantic_enabled: bool,
+) -> float:
+    """Return an inspectable relevance gate feature, not a probability."""
+    coverage = max(0.0, min(1.0, lexical_coverage))
+    if not semantic_enabled:
+        return coverage
+    semantic = max(0.0, min(1.0, semantic_score))
+    return 0.4 * coverage + 0.6 * semantic
+
+
 def _fetch_semantic_scores(
     query: str,
     entries: list[dict],
@@ -611,6 +654,7 @@ def search_hybrid(
     tier: str = "",
     filters: dict | None = None,
     diagnostics: dict[str, object] | None = None,
+    min_evidence_score: float = 0.0,
 ) -> list[dict]:
     """Hybrid search combining BM25 keyword matching with semantic similarity.
 
@@ -635,6 +679,11 @@ def search_hybrid(
     alpha = float(alpha)
     if not math.isfinite(alpha) or not 0.0 <= alpha <= 1.0:
         raise ValueError("alpha must be a finite number between 0.0 and 1.0")
+    if isinstance(min_evidence_score, bool) or not isinstance(min_evidence_score, Real):
+        raise ValueError("min_evidence_score must be a finite number between 0.0 and 1.0")
+    min_evidence_score = float(min_evidence_score)
+    if not math.isfinite(min_evidence_score) or not 0.0 <= min_evidence_score <= 1.0:
+        raise ValueError("min_evidence_score must be a finite number between 0.0 and 1.0")
 
     if not INDEX_FILE.exists():
         _publish_hybrid_diagnostics(diagnostics, {
@@ -697,6 +746,7 @@ def search_hybrid(
     scorer = BM25Scorer()
     scorer.index_entries(entries, raw_texts)
     bm25_results = scorer.score(query, limit=min(limit * 3, 50))
+    bm25_doc_by_id = {doc.entry_id: doc for doc in scorer.docs}
 
     # Step 3: Fetch semantic scores (best-effort)
     semantic_diagnostics: dict[str, object] = {
@@ -723,6 +773,11 @@ def search_hybrid(
             diagnostics=semantic_diagnostics,
         )
     _publish_hybrid_diagnostics(diagnostics, semantic_diagnostics)
+    semantic_gate_usable = (
+        alpha != 1.0
+        and semantic_diagnostics.get("backend") == "entry_index"
+        and not bool(semantic_diagnostics.get("degraded", False))
+    )
 
     # Step 4: Build unified result set
     # Collect all candidate IDs from both BM25 and semantic results
@@ -766,6 +821,20 @@ def search_hybrid(
         if combined <= 0:
             continue
 
+        document = bm25_doc_by_id.get(eid)
+        query_coverage = (
+            _weighted_query_coverage(scorer, query, document.tokens)
+            if document is not None
+            else 0.0
+        )
+        evidence_score = _retrieval_evidence_score(
+            lexical_coverage=query_coverage,
+            semantic_score=sem_scores_raw[i],
+            semantic_enabled=semantic_gate_usable and eid in semantic_scores,
+        )
+        if evidence_score < min_evidence_score:
+            continue
+
         # Issue #67: Use synonym-expanded match locations
         topics = entry.get("topics", [])
         topic_names = " ".join(
@@ -791,6 +860,11 @@ def search_hybrid(
             "score": round(combined, 4),
             "bm25_score": round(bm25_norm[i], 4),
             "semantic_score": round(sem_norm[i], 4),
+            "bm25_score_raw": round(bm25_scores_raw[i], 6),
+            "semantic_score_raw": round(sem_scores_raw[i], 6),
+            "query_coverage": round(query_coverage, 6),
+            "retrieval_evidence_score": round(evidence_score, 6),
+            "retrieval_evidence_version": "coverage-semantic-v1",
             "match_locations": locations,
             "snippet": snippet,
             "expanded_terms": expanded_terms,

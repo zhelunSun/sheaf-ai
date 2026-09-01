@@ -49,6 +49,20 @@ def test_cli_json_search_defaults_to_hybrid_and_exposes_diagnostics(capsys):
     assert payload["results"][0]["_semantic_score"] == 0.94
 
 
+def test_cli_json_search_passes_explicit_relevance_gate():
+    parsed = argparse.Namespace(
+        query=["Atlas"],
+        limit=7,
+        json=True,
+        min_evidence_score=0.4,
+    )
+
+    with patch("sheaf_ai.search.search_hybrid", return_value=[]) as search:
+        cli._search(parsed)
+
+    assert search.call_args.kwargs["min_evidence_score"] == 0.4
+
+
 def test_cli_text_search_defaults_to_hybrid(capsys):
     with patch.object(display, "search_hybrid", return_value=_hybrid_results()) as search:
         display.show_search("Atlas", limit=3)
@@ -61,6 +75,13 @@ def test_cli_text_search_defaults_to_hybrid(capsys):
     )
     output = capsys.readouterr().out
     assert "Atlas retry policy" in output
+
+
+def test_text_search_passes_explicit_relevance_gate():
+    with patch.object(display, "search_hybrid", return_value=[]) as search:
+        display.show_search("Atlas", min_evidence_score=0.4)
+
+    assert search.call_args.kwargs["min_evidence_score"] == 0.4
 
 
 def _mcp_payload(response: str) -> dict:
@@ -77,6 +98,7 @@ def test_mcp_default_mode_is_hybrid_and_preserves_list_content():
         alpha=0.6,
         include_raw=True,
         diagnostics=ANY,
+        min_evidence_score=0.0,
     )
     content_results = json.loads(result["content"][0]["text"])
     assert isinstance(content_results, list)
@@ -144,6 +166,22 @@ def test_mcp_tool_schema_declares_hybrid_as_default():
     assert mode["default"] == "hybrid"
     assert "hybrid" in tool["description"].lower()
     assert "default" in mode["description"].lower()
+    gate = tool["inputSchema"]["properties"]["min_evidence_score"]
+    assert gate["default"] == 0.0
+    assert gate["minimum"] == 0.0
+    assert gate["maximum"] == 1.0
+
+
+def test_mcp_passes_explicit_relevance_gate():
+    with patch.object(mcp_search, "search_hybrid", return_value=[]) as search:
+        _mcp_payload(
+            mcp_search._handle_search(
+                5,
+                {"query": "Atlas", "min_evidence_score": 0.4},
+            )
+        )
+
+    assert search.call_args.kwargs["min_evidence_score"] == 0.4
 
 
 @dataclass(frozen=True)

@@ -60,6 +60,16 @@ TOOLS = [
                     "description": "BM25 vs semantic weight for hybrid mode (0.0-1.0, default: 0.6). Higher = more keyword-biased.",
                     "default": 0.6,
                 },
+                "min_evidence_score": {
+                    "type": "number",
+                    "minimum": 0.0,
+                    "maximum": 1.0,
+                    "description": (
+                        "Optional experimental relevance gate. Zero disables "
+                        "abstention; thresholds are backend/version specific."
+                    ),
+                    "default": 0.0,
+                },
             },
             "required": ["query"],
         },
@@ -76,6 +86,7 @@ def _handle_search(req_id: int | str, arguments: dict) -> str:
 
     if mode == "hybrid":
         alpha = arguments.get("alpha", 0.6)
+        min_evidence_score = arguments.get("min_evidence_score", 0.0)
         raw_diagnostics: dict[str, object] = {}
         results = search_hybrid(
             query_str,
@@ -83,6 +94,7 @@ def _handle_search(req_id: int | str, arguments: dict) -> str:
             alpha=alpha,
             include_raw=True,
             diagnostics=raw_diagnostics,
+            min_evidence_score=min_evidence_score,
         )
         formatted = _format_ranked_results(results, hybrid=True)
         diagnostics = _semantic_diagnostics(results, raw_diagnostics)
@@ -135,6 +147,12 @@ def _format_ranked_results(results: list[dict], *, hybrid: bool) -> list[dict]:
         if hybrid:
             item["_bm25_score"] = result.get("bm25_score", 0.0)
             item["_semantic_score"] = result.get("semantic_score", 0.0)
+            item["_retrieval_evidence_score"] = result.get(
+                "retrieval_evidence_score", 0.0
+            )
+            item["_retrieval_evidence_version"] = result.get(
+                "retrieval_evidence_version", "coverage-semantic-v1"
+            )
         if result.get("snippet"):
             item["_snippet"] = result["snippet"]
         if result.get("expanded_terms"):

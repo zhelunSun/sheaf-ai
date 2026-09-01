@@ -244,6 +244,15 @@ def create_app(api_token: str | None = None) -> FastAPI:
     def search(
         q: str = Query(..., description="Search query"),
         limit: int = Query(10, ge=1, le=100, description="Max results"),
+        min_evidence_score: float = Query(
+            0.0,
+            ge=0.0,
+            le=1.0,
+            description=(
+                "Optional experimental relevance gate; zero disables abstention. "
+                "Thresholds are backend/version specific."
+            ),
+        ),
     ):
         """Hybrid keyword + semantic search across the Entry collection."""
         raw_diagnostics: dict[str, object] = {}
@@ -252,6 +261,7 @@ def create_app(api_token: str | None = None) -> FastAPI:
             limit=limit,
             include_raw=True,
             diagnostics=raw_diagnostics,
+            min_evidence_score=min_evidence_score,
         )
         if raw_diagnostics:
             diagnostics = {

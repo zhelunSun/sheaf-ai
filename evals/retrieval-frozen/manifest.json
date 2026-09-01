@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "experiment": "sheaf-entry-retrieval-frozen-v1",
+  "revision": "2026-09-01.1",
+  "files": {
+    "corpus.jsonl": {
+      "role": "ranker_input",
+      "sha256": "1e6d271d17ff86486926145f52117b911a9255d18c8e1ac95a2163ae79a02fbe"
+    },
+    "queries.jsonl": {
+      "role": "ranker_input",
+      "sha256": "a10f78de9cd2a8b86a956309f089f6e43aadab21acbc9207f6b84567d03678e1"
+    },
+    "qrels.jsonl": {
+      "role": "evaluator_only",
+      "sha256": "8b4bd5dc5c3bef1d07387f96217252dcfb92cc00a296fad5f1098c19bb81787d"
+    }
+  }
+}
