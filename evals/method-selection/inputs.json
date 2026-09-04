@@ -1,0 +1,40 @@
+[
+  {"bundle_id":"b01","sources":[
+    {"source_id":"s01","title":"Mero method notes","text":"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline. Method B requires a live network for every lookup."}
+  ],"tasks":[
+    {"task_id":"q01","question":"Choose a method for offline catalog lookup. The complete requested catalog is already cached.","options":["A","B"]},
+    {"task_id":"q02","question":"Choose a method to fetch uncached records without a network.","options":["A","B"]}
+  ]},
+  {"bundle_id":"b02","sources":[
+    {"source_id":"s02","title":"Vela version 1 note","text":"Method A version 1 exports PNG with a transparent background. This note applies only to version 1."},
+    {"source_id":"s03","title":"Vela version 2 note","text":"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG. These are the current version 2 capabilities."}
+  ],"tasks":[
+    {"task_id":"q03","question":"We run version 2 and need transparent PNG. Choose a method.","options":["A","B"]},
+    {"task_id":"q04","question":"For a machine fixed to version 1, does the provided evidence support Method A for transparent PNG? Choose A or abstain.","options":["A"]}
+  ]},
+  {"bundle_id":"b03","sources":[
+    {"source_id":"s04","title":"Pavo drawing export","text":"Method A produces flat RGB drawings. It does not contain depth data. Method B also produces flat RGB drawings and explicitly does not support depth maps. Method A supports SVG output; Method B exports PNG only."}
+  ],"tasks":[
+    {"task_id":"q05","question":"Choose a method that exports a depth map.","options":["A","B"]},
+    {"task_id":"q06","question":"Choose a method for SVG output.","options":["A","B"]}
+  ]},
+  {"bundle_id":"b04","sources":[
+    {"source_id":"s05","title":"Neri storage comparison","text":"Method A compresses daily archives to save storage. Method B keeps the uncompressed original. Neither note reports data about encryption or latency. Compression ratio for Method A was measured on daily archives, not on live streams."}
+  ],"tasks":[
+    {"task_id":"q07","question":"Choose the method with verified encryption support based only on these notes.","options":["A","B"]},
+    {"task_id":"q08","question":"For daily archives, choose the method supported by evidence for reducing storage volume.","options":["A","B"]}
+  ]},
+  {"bundle_id":"b05","sources":[
+    {"source_id":"s06","title":"Runa test team one","text":"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds."},
+    {"source_id":"s07","title":"Runa test team two","text":"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds. There is no adjudication between the two teams' reports."}
+  ],"tasks":[
+    {"task_id":"q09","question":"Choose a method with established worst-case latency below 50 milliseconds under workload W, version 3. Do not resolve conflicting reports by guessing.","options":["A","B"]},
+    {"task_id":"q10","question":"Is Method B supported for worst-case latency below 100 milliseconds under workload W, version 3? Choose B or abstain.","options":["B"]}
+  ]},
+  {"bundle_id":"b06","sources":[
+    {"source_id":"s08","title":"Tavi deployment guide","text":"Method A must run in a cloud service and sends source documents to that service. Method B can run locally without network access. Method B requires at least 8 GB of available RAM. Method A is not available for local deployment."}
+  ],"tasks":[
+    {"task_id":"q11","question":"Source documents must stay on the device, no network is allowed, and 16 GB RAM is available. Choose a supported method.","options":["A","B"]},
+    {"task_id":"q12","question":"Source documents must stay on the device, no network is allowed, and only 4 GB RAM is available. Choose a supported method.","options":["A","B"]}
+  ]}
+]

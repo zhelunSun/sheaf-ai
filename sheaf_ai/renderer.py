@@ -21,6 +21,7 @@ from dataclasses import dataclass, fields
 
 from sheaf_cards.base import KnowledgeCard
 from .card_trace import citation_trace, citation_trace_text
+from .card_governance import memory_status, memory_status_text
 
 
 # ============================================================
@@ -161,7 +162,9 @@ class CardRenderer:
 
     def _render_text(self, card: KnowledgeCard) -> str:
         """Render card as human-readable text (one-line per field)."""
-        lines = []
+        # Governance is a safety notice, not an optional content field.
+        notice = memory_status_text(card)
+        lines = [notice] if notice else []
 
         if self.config.include_id:
             lines.append(f"ID: {card.id}")
@@ -183,7 +186,7 @@ class CardRenderer:
         if self.config.include_tags and card.tags:
             lines.append(f"Tags: {', '.join(card.tags)}")
 
-        if self.config.include_confidence:
+        if self.config.include_confidence and not notice:
             lines.append(f"Confidence: {card.confidence:.0%}")
 
         if self.config.include_associations and card.associations:
@@ -213,6 +216,9 @@ class CardRenderer:
         """Render card with all fields, using labels and separators."""
         sep = "-" * 50
         lines = [sep]
+        notice = memory_status_text(card)
+        if notice:
+            lines.append(notice)
 
         if self.config.include_title:
             lines.append(f"Title:       {card.title}")
@@ -229,7 +235,7 @@ class CardRenderer:
         if self.config.include_tags and card.tags:
             lines.append(f"Tags:        {', '.join(card.tags)}")
 
-        if self.config.include_confidence:
+        if self.config.include_confidence and not notice:
             bar = _confidence_bar(card.confidence)
             lines.append(f"Confidence:  {card.confidence:.0%} {bar}")
 
@@ -260,6 +266,9 @@ class CardRenderer:
     def _render_json(self, card: KnowledgeCard) -> str:
         """Render card as JSON using config field filter."""
         data = {}
+        status = memory_status(card)
+        if status is not None:
+            data["memory_status"] = status
         if self.config.include_id:
             data["id"] = card.id
         if self.config.include_title:
@@ -330,18 +339,21 @@ class CardRenderer:
 
         for i, card in enumerate(cards, 1):
             topic = card.provenance.get("topic", "?")
+            notice = memory_status_text(card)
 
             # Topic header
             topic_header = f"[{topic}]"
 
             # Confidence
             conf_str = ""
-            if self.config.include_confidence and card.confidence:
+            if self.config.include_confidence and card.confidence and not notice:
                 conf_str = f" ({card.confidence:.0%})"
 
             # Title line with index
             title_line = f"{topic_header} {card.title}{conf_str}"
             lines.append(f"  {title_line}")
+            if notice:
+                lines.extend(f"     {line}" for line in notice.splitlines())
 
             # Claim (truncated)
             if self.config.include_claim and card.claim:

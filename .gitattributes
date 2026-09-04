@@ -7,3 +7,4 @@
 /evals/retrieval-prospective/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/representation-boundary/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/repair-regression/results/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/evals/method-selection/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

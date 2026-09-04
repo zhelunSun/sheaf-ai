@@ -1,0 +1,14 @@
+[
+  {"task_id":"q01","decision":"choose","method_id":"A","evidence_state":"supported","required_sources":["s01"]},
+  {"task_id":"q02","decision":"abstain","method_id":null,"evidence_state":"explicit_negative","required_sources":["s01"]},
+  {"task_id":"q03","decision":"choose","method_id":"B","evidence_state":"supported","required_sources":["s03"]},
+  {"task_id":"q04","decision":"choose","method_id":"A","evidence_state":"supported","required_sources":["s02"]},
+  {"task_id":"q05","decision":"abstain","method_id":null,"evidence_state":"explicit_negative","required_sources":["s04"]},
+  {"task_id":"q06","decision":"choose","method_id":"A","evidence_state":"supported","required_sources":["s04"]},
+  {"task_id":"q07","decision":"abstain","method_id":null,"evidence_state":"insufficient","required_sources":["s05"]},
+  {"task_id":"q08","decision":"choose","method_id":"A","evidence_state":"supported","required_sources":["s05"]},
+  {"task_id":"q09","decision":"abstain","method_id":null,"evidence_state":"conflict","required_sources":["s06","s07"]},
+  {"task_id":"q10","decision":"choose","method_id":"B","evidence_state":"supported","required_sources":["s06","s07"]},
+  {"task_id":"q11","decision":"choose","method_id":"B","evidence_state":"supported","required_sources":["s08"]},
+  {"task_id":"q12","decision":"abstain","method_id":null,"evidence_state":"explicit_negative","required_sources":["s08"]}
+]

@@ -302,6 +302,16 @@ def create_app(api_token: str | None = None) -> FastAPI:
             **diagnostics,
         )
 
+    @app.get("/memory/snapshot", tags=["memory"])
+    def memory_snapshot(topic: str = Query("")):
+        """Read governed versions explicitly; never auto-promote ordinary cards."""
+        from sheaf_ai.evidence_memory import EvidenceMemoryError
+
+        try:
+            return card_service.get_memory_snapshot(topic=topic)
+        except EvidenceMemoryError as exc:
+            raise HTTPException(500, "Evidence memory cannot be read safely") from exc
+
     @app.get("/entries", tags=["collection"])
     def list_entries(
         limit: int = Query(20, ge=1, le=100),

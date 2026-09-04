@@ -202,6 +202,10 @@ def test_snapshot_and_history_preserve_contest_and_resolution(isolated_data_dir)
     assert resolved["card"]["provenance"]["memory_state"] == "active"
 
     history = get_memory_history(topic="Memory", card_id=card_id)
+    versions = history["versions"]
+    assert [v["memory_status"]["state"] for v in versions] == ["superseded", "superseded", "active"]
+    assert [v["memory_status"]["recorded_state"] for v in versions] == ["active", "contested", "active"]
+    assert all(v["memory_status"]["metadata_valid"] for v in versions)
     contest_event = next(event for event in history["events"] if event["action"] == "CONTEST")
     update_event = next(event for event in history["events"] if event["action"] == "UPDATE")
     assert contest_event["proposed_conflict"]["fact_value"] == "two"

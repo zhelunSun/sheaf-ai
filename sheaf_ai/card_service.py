@@ -293,6 +293,7 @@ def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) 
         include_tag_entries: If True, include rich tag entries with source tracking
     """
     from .card_trace import citation_trace
+    from .card_governance import memory_status
 
     data = card.to_dict() if hasattr(card, "to_dict") else {}
     card_id = (
@@ -322,6 +323,9 @@ def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) 
         "citation_trace": citation_trace(card),
     }
     extra = data.get("extra", getattr(card, "extra", {})) or {}
+    status = memory_status(card)
+    if status is not None:
+        result["memory_status"] = status
     if extra:
         result["extra"] = extra
     # Issue #53: Rich tag entries with source tracking
@@ -639,6 +643,7 @@ def project_memory_version(version: CardVersion, *, public_state: str | None = N
             "transition_event_id": version.event_id,
             "memory_revision": version.revision,
             "memory_state": state,
+            "memory_recorded_state": version.state,
             "confidence_kind": "ordinal_evidence_strength",
             "is_probability": False,
         },
@@ -647,6 +652,7 @@ def project_memory_version(version: CardVersion, *, public_state: str | None = N
         extra={
             "evidence_governance": {
                 "state": state,
+                "recorded_state": version.state,
                 "version_id": version.version_id,
                 "revision": version.revision,
                 "parent_version_ids": list(version.parent_version_ids),
@@ -865,6 +871,12 @@ class EvidenceMemoryAtomicBatchExecutor:
                 raise StaleDecisionError(str(exc)) from exc
 
 
+def _public_version_state(version: CardVersion, active_heads: Mapping[str, str]) -> str:
+    if active_heads.get(version.card_id) == version.version_id and version.state in {"active", "contested"}:
+        return version.state
+    return "retired" if version.state == "retired" else "superseded"
+
+
 def get_memory_snapshot(
     topic: str = "",
     *,
@@ -874,6 +886,13 @@ def get_memory_snapshot(
     if not isinstance(topic, str):
         raise ValueError("topic must be a string")
     topic = topic.strip()
+    # An initial read must not enroll the user or create an empty business ledger.
+    resolved_path = Path(ledger_path) if ledger_path is not None else config.DATA_DIR / EVIDENCE_MEMORY_LEDGER_NAME
+    if not resolved_path.exists():
+        states = {state: [] for state in ("active", "contested", "retired", "superseded")}
+        return {"topic": topic, "current_total": 0, "total_latest_cards": 0,
+                "state_counts": {state: 0 for state in states}, "cards": [],
+                "states": states, "event_count": 0}
     snapshot = _memory(ledger_path).snapshot()
     latest_by_card: dict[str, CardVersion] = {}
     for version in snapshot.versions:
@@ -890,13 +909,7 @@ def get_memory_snapshot(
         "superseded": [],
     }
     for version in latest_by_card.values():
-        is_current = snapshot.active_heads.get(version.card_id) == version.version_id
-        if is_current and version.state in {"active", "contested"}:
-            state = version.state
-        elif version.state == "retired":
-            state = "retired"
-        else:
-            state = "superseded"
+        state = _public_version_state(version, snapshot.active_heads)
         groups[state].append(project_memory_version(version, public_state=state))
 
     for cards in groups.values():
@@ -953,7 +966,9 @@ def get_memory_history(
         "topic": topic,
         "card_id": card_id,
         "events": [_event_projection(event, snapshot) for event in events],
-        "versions": [project_memory_version(version) for version in versions],
+        "versions": [project_memory_version(
+            version, public_state=_public_version_state(version, snapshot.active_heads)
+        ) for version in versions],
         "audit_graph": {"nodes": nodes, "edges": edges},
     }
 

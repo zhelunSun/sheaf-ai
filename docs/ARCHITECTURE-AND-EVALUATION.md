@@ -16,9 +16,17 @@ text-only MCP clients. `candidates` and `review_required` are retrieval states,
 never answer verification. The legacy core `retrieval_gate_answerable` is now null;
 consumers checking the strict heuristic should use `retrieval_gate_passed`.
 
-R1 remains partial: ordinary cards and governed versions are not automatically
-merged, and compact governed-state/strength consumption still needs work. See the
-[repair record and investment assessment](FIX-ROUND-2026-09-04.md).
+The follow-up stage completes built-in governed-state/strength notices, including
+compact and field-filtered views. Historical projections distinguish the recorded
+state from whether a version has since been superseded; ledger events are unchanged.
+CLI/MCP and the explicit HTTP `GET /memory/snapshot` share the public projection.
+Ordinary cards are still not automatically merged with governed versions.
+
+Method-selection experiment preparation now compares raw sources, complete plain
+text cards and structured cards sharing one extraction. The offline importer and
+scorer are ready, but no real model effects or equal-token-budget result exists.
+See the [phase record](METHOD-SELECTION-PHASE-2026-09-04.md) and the earlier
+[repair/investment assessment](FIX-ROUND-2026-09-04.md).
 
 ## 1. Product position
 
