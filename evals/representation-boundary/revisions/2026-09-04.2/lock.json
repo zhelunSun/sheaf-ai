@@ -1,0 +1,72 @@
+{
+  "diagnostic_version": "representation-boundary-v1",
+  "character_budgets": [
+    160,
+    320,
+    640
+  ],
+  "character_unit": "Python len(str): Unicode code points, not tokens or UTF-8 bytes",
+  "code_verification": "CRLF-to-LF normalized source; original byte hashes recorded separately",
+  "files": [
+    {
+      "path": "evals/representation-boundary/fixtures.json",
+      "role": "input",
+      "sha256": "991b08ffa7224d85b9b520efa944b2256a9a9d70e9c0285068ce500668cc316a",
+      "bytes": 6465
+    },
+    {
+      "path": "evals/representation-boundary/checks.json",
+      "role": "input",
+      "sha256": "66710a2c3d9b804976f7aa2a487610aba6ac09df8214c9b43423706cb08211ad",
+      "bytes": 1927
+    },
+    {
+      "path": "sheaf_ai/card_extraction.py",
+      "role": "code",
+      "raw_sha256": "21fc3d93f9a2323771380209b4a1854c74f37018b166c96e58ee586f16dc3bfd",
+      "raw_bytes": 26785,
+      "lf_source_sha256": "6f8104db5adf4c2941c8d9eb97da9a1744f42b4ed6e9e3dd0e757e60992ed4ec",
+      "lf_source_bytes": 26239
+    },
+    {
+      "path": "sheaf_ai/renderer.py",
+      "role": "code",
+      "raw_sha256": "61144e69560daafa48eccdc0668914d981187d5f0f8a80132332adf19d6f1fc8",
+      "raw_bytes": 15029,
+      "lf_source_sha256": "5d128b3bec49fa469c322c4888cf0c8db38f40ed75d52af750b169893d3ef8f3",
+      "lf_source_bytes": 14610
+    },
+    {
+      "path": "sheaf_cards/base.py",
+      "role": "code",
+      "raw_sha256": "3ac5aa8fec6cb8da568144d7919678dd1d5943e29e8d7f3906bd8a047f0ae0ac",
+      "raw_bytes": 17256,
+      "lf_source_sha256": "948426f6a2e61b7539f814be9bd0080c9b2fd5343f2c2c1d5d0b254c93f1305b",
+      "lf_source_bytes": 17017
+    },
+    {
+      "path": "sheaf_cards/embeddings.py",
+      "role": "code",
+      "raw_sha256": "c334ea490ffbd1b249d87f11303b4c312fa12a5f81a80295104cfb0cbf9e6f94",
+      "raw_bytes": 9930,
+      "lf_source_sha256": "3b13dd2c3e782eafea1700ee4f75cb5ae05ef90a998b8cca4de6879b57337182",
+      "lf_source_bytes": 9666
+    },
+    {
+      "path": "evals/representation-boundary/run_diagnostic.py",
+      "role": "code",
+      "raw_sha256": "2383311a6f51fca767bab37d6db1598d7ef8861155f9b63263724705fa73e471",
+      "raw_bytes": 17914,
+      "lf_source_sha256": "2383311a6f51fca767bab37d6db1598d7ef8861155f9b63263724705fa73e471",
+      "lf_source_bytes": 17914
+    },
+    {
+      "path": "tests/test_representation_boundary.py",
+      "role": "code",
+      "raw_sha256": "bbcc60cfa33d4e4511a66586998c41309908e6612841bf2d7647b3d2a48d804c",
+      "raw_bytes": 7588,
+      "lf_source_sha256": "bbcc60cfa33d4e4511a66586998c41309908e6612841bf2d7647b3d2a48d804c",
+      "lf_source_bytes": 7588
+    }
+  ]
+}

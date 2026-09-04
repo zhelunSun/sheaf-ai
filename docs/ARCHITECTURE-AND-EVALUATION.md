@@ -161,8 +161,10 @@ model. They create isolated synthetic entries and frozen model responses.
 
 ## 7. Experiments required for the core claims
 
-An interview-worthy innovation needs negative results and ablations, not only a
-demo. Each run must record the dataset revision, fixture hash, code commit,
+An interview-worthy technical contribution needs negative results and ablations,
+not only a demo. Experiments test utility; they do not establish originality.
+The three core paths are responsibilities, not three novel algorithms.
+Each run must record the dataset revision, fixture hash, code commit,
 model and embedding versions, sampling settings, raw output, and human labels.
 
 ### Retrieval
@@ -187,6 +189,16 @@ back to keyword coverage. On already inspected labels, the v3 post-hoc
 regression reached Recall@5 `1.0`, nDCG@5 `0.9698`, and FPR `0.0`; that is a
 mechanism regression, not blind evidence. The next experiment needs a newly
 sealed set and a real embedding provider.
+
+On 2026-09-04, a new fixed-code synthetic diagnostic was completed on 28 documents
+and 24 queries. Fixed linear retrieval reached Recall@5 1.0 on 16 answerable
+queries; the deployed gate configuration reduced this to 0.8125 through three
+false rejections. It refused 5/8 protocol-defined no-answer queries, leaving 3/8
+nonempty responses. These labels describe unavailable requested procedures/facts:
+a retrieved explicit denial may still support a useful negative answer, so this
+FPR is not a hallucination rate. This remains classical LSA and internally
+authored synthetic evidence, not an independent external test or a live-model
+result. See [the run record](EXPERIMENT-ROUND-2026-09-04.md).
 
 ### Crystallization
 
@@ -218,6 +230,15 @@ atomic UPDATE+CREATE evidence-ledger commit. It still does not prove that a
 model chooses the right transition.
 
 ## 8. Claim boundary
+
+The 2026-09-04 representation audit also distinguishes capacity from use:
+`CardVersion` and evidence locators exist, and can be projected to ordinary cards,
+but ordinary crystallization does not automatically enter that ledger. Default
+card text rendering truncates the claim and hides provenance/source IDs; card
+embedding text excludes provenance and extra fields. A condition stored somewhere
+is not necessarily visible to an Agent. These are distinct from semantic
+extraction errors. See [the research agenda](REPRESENTATION-AND-RESEARCH-AGENDA.md)
+and the [controlled transport diagnostic](../evals/representation-boundary/README.md).
 
 Current safe claim:
 

@@ -1,3 +1,8 @@
 /evals/retrieval-frozen/*.jsonl text eol=lf
 /evals/retrieval-frozen/manifest.json text eol=lf
 /evals/retrieval-frozen/runs/*.json text eol=lf
+
+# Frozen experiment manifests bind exact file bytes. Preserve their authored
+# endings on all platforms instead of letting core.autocrlf rewrite the data.
+/evals/retrieval-prospective/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/evals/representation-boundary/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

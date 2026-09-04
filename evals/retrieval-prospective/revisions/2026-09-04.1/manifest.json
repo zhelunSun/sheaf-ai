@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "experiment": "prospective-synthetic-retrieval",
+  "revision": "2026-09-04.1",
+  "frozen_at_utc": "2026-09-04T07:00:24.9236689Z",
+  "scope": "prospective synthetic diagnostic/holdout; model-authored, not external independent blind evaluation",
+  "files": {
+    "corpus.jsonl": {
+      "role": "ranker_input",
+      "sha256": "7f39debd48985e963fd3a4f95656dd6c33f44a4746a3fcd4b28cc114caf6ae72"
+    },
+    "queries.jsonl": {
+      "role": "ranker_input",
+      "sha256": "b6c918b81b33c33a254809a830f9ee9e00b4a513dd70a0170df55e1fee897fd9"
+    },
+    "qrels.jsonl": {
+      "role": "evaluator_only",
+      "sha256": "4753210d9c098947e1d17202c3cb5a50d5ab9cd294b56a2bdaa2e2c1433be538"
+    }
+  },
+  "preregistration": {
+    "code-lock.json": "3cb0b3aa129b2a71315d52878b66f9d3dab6bfd0256bc2290f3fe0de86970865",
+    "protocol.md": "e2761bcf89c5f8745ac82dbc5c8073fced28b7911801daaf85944072a2418168"
+  },
+  "fixed_policy": {
+    "alpha": 0.25,
+    "min_evidence_score": 0.4,
+    "evidence_version": "query-support-v3",
+    "backend": "local-lsa",
+    "model": "local-lsa-v1",
+    "ranking_depth": 10,
+    "cutoff": 5,
+    "parameter_selection": false,
+    "arms": [
+      "keyword",
+      "semantic",
+      "fixed-linear",
+      "fixed-gate"
+    ]
+  }
+}

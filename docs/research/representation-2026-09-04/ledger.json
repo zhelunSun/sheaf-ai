@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.0",
+  "ledger_id": "sheaf-representation-2026-09-04",
+  "research_question": "Which existing representation ideas can Sheaf reuse, and what task-specific benefit must it still demonstrate?",
+  "scope": "Four representative primary sources, not an exhaustive or current state-of-the-art novelty review. Schema copied from literature-evidence-ledger/assets/ledger-template.json. Bibliography keys are declared in the adjacent task-local references.bib, not imported Zotero keys.",
+  "sources": [
+    {
+      "source_id": "S1",
+      "title": "PROV-DM: The PROV Data Model",
+      "bibtex_key": "w3c_prov_dm_2013",
+      "zotero_item_key": null,
+      "locator": "https://www.w3.org/TR/2013/REC-prov-dm-20130430/",
+      "read_state": "full_text",
+      "read_scope": "Selected full-text sections only: 2.1.2, 5.2.1 and 5.2.2. Not a cover-to-cover standards/conformance review.",
+      "evidence_status": "verified"
+    },
+    {
+      "source_id": "S2",
+      "title": "RAPTOR: Recursive Abstractive Processing for Tree-Organized Retrieval",
+      "bibtex_key": "sarthi2024raptor",
+      "zotero_item_key": null,
+      "locator": "https://arxiv.org/abs/2401.18059v1",
+      "identifiers": {"arxiv": "2401.18059"},
+      "read_state": "abstract",
+      "read_scope": "Title, authors, submission/version metadata and abstract only; no experiment tables verified.",
+      "evidence_status": "evidence_candidate"
+    },
+    {
+      "source_id": "S3",
+      "title": "From Local to Global: A Graph RAG Approach to Query-Focused Summarization",
+      "bibtex_key": "edge2024localglobal",
+      "zotero_item_key": null,
+      "locator": "https://arxiv.org/abs/2404.16130v2",
+      "identifiers": {"arxiv": "2404.16130"},
+      "read_state": "abstract",
+      "read_scope": "v2 metadata and abstract only, including v2 author list; no experiment tables verified.",
+      "evidence_status": "evidence_candidate"
+    },
+    {
+      "source_id": "S4",
+      "title": "HippoRAG: Neurobiologically Inspired Long-Term Memory for Large Language Models",
+      "bibtex_key": "gutierrez2024hipporag",
+      "zotero_item_key": null,
+      "locator": "https://arxiv.org/abs/2405.14831v3",
+      "identifiers": {"arxiv": "2405.14831"},
+      "read_state": "abstract",
+      "read_scope": "v3 metadata and abstract only; no experiment tables verified.",
+      "evidence_status": "evidence_candidate"
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Explicit derivation and revision relations already exist in PROV-DM; adding those concepts alone is not a new representation method.",
+      "evidence_status": "verified"
+    },
+    {
+      "claim_id": "C2",
+      "text": "RAPTOR describes recursively embedding, clustering and summarizing chunks into a multi-level retrieval tree.",
+      "evidence_status": "evidence_candidate",
+      "unresolved_marker": "[FULL-TEXT-REVIEW:C2]"
+    },
+    {
+      "claim_id": "C3",
+      "text": "GraphRAG describes entity graphs and community summaries for corpus-wide, query-focused summarization questions.",
+      "evidence_status": "evidence_candidate",
+      "unresolved_marker": "[FULL-TEXT-REVIEW:C3]"
+    },
+    {
+      "claim_id": "C4",
+      "text": "HippoRAG describes combining LLMs, knowledge graphs and Personalized PageRank for knowledge integration and multi-hop retrieval.",
+      "evidence_status": "evidence_candidate",
+      "unresolved_marker": "[FULL-TEXT-REVIEW:C4]"
+    },
+    {
+      "claim_id": "H1",
+      "text": "For Sheaf task families, condition-preserving, evidence-linked knowledge units may reduce applicability errors at a fixed context budget compared with source chunks and flat cards.",
+      "evidence_status": "hypothesis",
+      "unresolved_marker": "[EXPERIMENT-REQUIRED:H1]"
+    }
+  ],
+  "links": [
+    {
+      "claim_id": "C1",
+      "source_id": "S1",
+      "relation": "supports",
+      "entailment_status": "verified",
+      "source_excerpt": "A revision is a derivation for which the resulting entity is a revised version of some original.",
+      "source_location": "Section 5.2.2 Revision; also section 5.2.1 Derivation",
+      "note": "Verifies existence of these concepts, not Sheaf conformance, semantic truth or novelty of an entire system. Selected passages only."
+    },
+    {
+      "claim_id": "C2",
+      "source_id": "S2",
+      "relation": "supports",
+      "entailment_status": "abstract_consistent",
+      "source_excerpt": "recursively embedding, clustering, and summarizing chunks of text, constructing a tree with differing levels of summarization",
+      "source_location": "Abstract, arXiv v1",
+      "note": "Method sketch only. No numerical result or superiority claim imported."
+    },
+    {
+      "claim_id": "C3",
+      "source_id": "S3",
+      "relation": "supports",
+      "entailment_status": "abstract_consistent",
+      "source_excerpt": "first, to derive an entity knowledge graph from the source documents, then to pregenerate community summaries",
+      "source_location": "Abstract, arXiv v2",
+      "note": "Abstract positions the method for global questions; does not establish suitability for Sheaf or all retrieval tasks."
+    },
+    {
+      "claim_id": "C4",
+      "source_id": "S4",
+      "relation": "supports",
+      "entailment_status": "abstract_consistent",
+      "source_excerpt": "HippoRAG synergistically orchestrates LLMs, knowledge graphs, and the Personalized PageRank algorithm",
+      "source_location": "Abstract, arXiv v3",
+      "note": "No speed, cost or accuracy multiplier imported without full experimental review."
+    },
+    {
+      "claim_id": "H1",
+      "source_id": "S1",
+      "relation": "motivates",
+      "entailment_status": "unassessed",
+      "source_excerpt": null,
+      "source_location": null,
+      "note": "Provenance vocabulary motivates a design option. It does not establish its utility, originality, or efficiency. H1 needs Sheaf task-level experiments and a broader prior-work review."
+    }
+  ]
+}

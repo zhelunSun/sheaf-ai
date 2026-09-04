@@ -1,0 +1,28 @@
+{
+  "check_version": "representation-boundary-checks-v1",
+  "scope": "Exact transport visibility and parser field compatibility, not semantic entailment",
+  "cases": [
+    {"case_id": "condition_tail", "cards": [
+      {"card_index": 0, "qualifiers": [{"id": "complete_record_condition", "field": "claim", "text": "only when the cache contains the complete requested record"}], "unknown_structure_fields": ["conditions"]}
+    ]},
+    {"case_id": "scope_evidence_copy", "cards": [
+      {"card_index": 0, "qualifiers": [{"id": "evaluated_population", "field": "claim", "text": "only synthetic English support tickets from Site Q"}], "unknown_structure_fields": ["scope"]}
+    ]},
+    {"case_id": "temporal_version", "cards": [
+      {"card_index": 0, "qualifiers": [{"id": "effective_date_and_version", "field": "claim", "text": "effective from 2026-08-01 for version 2.0 only"}], "unknown_structure_fields": ["temporal"]}
+    ]},
+    {"case_id": "negation_exception", "cards": [
+      {"card_index": 0, "qualifiers": [{"id": "negation_and_exception", "field": "claim", "text": "must not reuse expired credentials unless an explicit offline grant is present"}], "unknown_structure_fields": ["polarity"]}
+    ]},
+    {"case_id": "multiple_claims", "cards": [
+      {"card_index": 0, "qualifiers": [
+        {"id": "latency_condition", "field": "claim", "text": "only for warm-cache requests"},
+        {"id": "memory_condition", "field": "claim", "text": "only for batches above 64 records"}
+      ], "unknown_structure_fields": ["claim_evidence_links"]}
+    ]},
+    {"case_id": "typed_relation", "cards": [
+      {"card_index": 0, "qualifiers": [{"id": "purge_scope", "field": "claim", "text": "only for stale entries"}], "unknown_structure_fields": ["typed_relations"]},
+      {"card_index": 1, "qualifiers": [{"id": "request_scope", "field": "claim", "text": "for the same key"}], "unknown_structure_fields": []}
+    ]}
+  ]
+}

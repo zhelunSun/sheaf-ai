@@ -1,0 +1,135 @@
+{
+  "fixture_version": "representation-boundary-v1",
+  "origin": "hand-authored synthetic model-response transport fixtures; not model outputs",
+  "cases": [
+    {
+      "case_id": "condition_tail",
+      "category": "condition",
+      "sources": [
+        {"entry_id": "fixture-condition-source", "title": "Synthetic cache trial", "summary": "", "text": "The candidate cache reduced repeated lookup work in the synthetic trial only when the cache contains the complete requested record."}
+      ],
+      "response": [
+        {
+          "title": "Cache trial result",
+          "claim": "The candidate cache reduced repeated lookup work in this synthetic trial, whose record describes a bounded configuration rather than an unrestricted deployment claim, only when the cache contains the complete requested record.",
+          "evidence": "The source describes the bounded cache trial [Source 0].",
+          "tags": ["cache"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "conditions": {"record_coverage": "complete requested record"}
+        }
+      ]
+    },
+    {
+      "case_id": "scope_evidence_copy",
+      "category": "applicability_scope",
+      "sources": [
+        {"entry_id": "fixture-scope-source", "title": "Synthetic evaluation scope", "summary": "", "text": "The synthetic evaluation covers only synthetic English support tickets from Site Q. No other language or site was evaluated."}
+      ],
+      "response": [
+        {
+          "title": "Bounded evaluation population",
+          "claim": "The evaluation reports improved answer coverage after retrieval changes, while its coverage does not justify unrestricted transfer to every possible deployment population: only synthetic English support tickets from Site Q.",
+          "evidence": "The evaluated scope was only synthetic English support tickets from Site Q [Source 0].",
+          "tags": ["scope"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "scope": {"language": "English", "site": "Site Q", "task": "synthetic support tickets"}
+        }
+      ]
+    },
+    {
+      "case_id": "temporal_version",
+      "category": "time_and_version",
+      "sources": [
+        {"entry_id": "fixture-version-source", "title": "Synthetic release notice", "summary": "", "text": "Synthetic Larch SDK version 2.0 uses five retries. This default is effective from 2026-08-01 for version 2.0 only; clients pinned to version 1.x retain three retries."}
+      ],
+      "response": [
+        {
+          "title": "Retry default after a release",
+          "claim": "The synthetic Larch SDK release changes its retry default to five attempts; the release note distinguishes the affected client version from clients that remain pinned: effective from 2026-08-01 for version 2.0 only.",
+          "evidence": "The release note distinguishes upgraded clients from older pinned clients [Source 0].",
+          "tags": ["release"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "temporal": {"effective_at": "2026-08-01", "version": "2.0", "prior_version_default": 3}
+        }
+      ]
+    },
+    {
+      "case_id": "negation_exception",
+      "category": "negation_and_exception",
+      "sources": [
+        {"entry_id": "fixture-negation-source", "title": "Synthetic access rule", "summary": "", "text": "The synthetic client must not reuse expired credentials unless an explicit offline grant is present."}
+      ],
+      "response": [
+        {
+          "title": "Credential reuse rule",
+          "claim": "The synthetic client has an access rule that distinguishes an exceptional offline authorization from routine credential handling under the ordinary online workflow: must not reuse expired credentials unless an explicit offline grant is present.",
+          "evidence": "The source states a credential rule and an explicit exception [Source 0].",
+          "tags": ["access"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "polarity": {"rule": "prohibited", "exception": "explicit offline grant"}
+        }
+      ]
+    },
+    {
+      "case_id": "multiple_claims",
+      "category": "multiple_claims_and_evidence_assignment",
+      "sources": [
+        {"entry_id": "fixture-multi-source-a", "title": "Synthetic latency result", "summary": "", "text": "Latency fell only for warm-cache requests."},
+        {"entry_id": "fixture-multi-source-b", "title": "Synthetic memory result", "summary": "", "text": "Memory use rose only for batches above 64 records."}
+      ],
+      "response": [
+        {
+          "title": "Two outcomes in one card",
+          "claim": "Latency fell only for warm-cache requests. Memory use rose only for batches above 64 records.",
+          "evidence": "The first source concerns latency [Source 0]. The second source concerns memory [Source 1].",
+          "tags": ["outcomes"],
+          "confidence": 0.8,
+          "source_ids": ["0", "1"],
+          "source_indices": [0, 1],
+          "claim_evidence_links": [
+            {"claim_index": 0, "source_indices": [0]},
+            {"claim_index": 1, "source_indices": [1]}
+          ]
+        }
+      ]
+    },
+    {
+      "case_id": "typed_relation",
+      "category": "relation_topology_and_type",
+      "sources": [
+        {"entry_id": "fixture-relation-source", "title": "Synthetic cache event sequence", "summary": "", "text": "A purge removes cached records only for stale entries. That purge causes the next request to miss for the same key."}
+      ],
+      "response": [
+        {
+          "title": "Purge event",
+          "claim": "A purge removes cached records only for stale entries.",
+          "evidence": "The source describes removal during a purge [Source 0].",
+          "tags": ["purge"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "related_to": [1],
+          "typed_relations": [{"target_index": 1, "relation": "causes"}]
+        },
+        {
+          "title": "Next request event",
+          "claim": "The next request misses for the same key.",
+          "evidence": "The source describes the next request [Source 0].",
+          "tags": ["miss"],
+          "confidence": 0.8,
+          "source_ids": ["0"],
+          "source_indices": [0],
+          "related_to": [0]
+        }
+      ]
+    }
+  ]
+}

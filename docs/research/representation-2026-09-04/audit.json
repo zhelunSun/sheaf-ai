@@ -1,0 +1,12 @@
+{
+  "ledger_id": "sheaf-representation-2026-09-04",
+  "ok": true,
+  "summary": {
+    "sources": 4,
+    "claims": 5,
+    "links": 5,
+    "errors": 0,
+    "warnings": 0
+  },
+  "findings": []
+}
