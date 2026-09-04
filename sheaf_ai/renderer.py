@@ -20,6 +20,7 @@ import json
 from dataclasses import dataclass, fields
 
 from sheaf_cards.base import KnowledgeCard
+from .card_trace import citation_trace, citation_trace_text
 
 
 # ============================================================
@@ -41,15 +42,16 @@ class CardOutputConfig:
     include_evidence: bool = True
     include_tags: bool = True
     include_confidence: bool = True
-    include_associations: bool = False
-    include_source_ids: bool = False
+    include_associations: bool = True
+    include_source_ids: bool = True
+    include_citation_trace: bool = True
     include_provenance: bool = False
     include_timestamps: bool = False
     include_extra: bool = False
 
     # Metadata for list rendering
     list_display: str = "default"  # "default" | "compact" | "full"
-    max_claim_length: int = 120    # Truncate claim in list views
+    max_claim_length: int = 0      # Full claims by default; previews opt into a cap
 
     @classmethod
     def compact(cls) -> CardOutputConfig:
@@ -58,6 +60,9 @@ class CardOutputConfig:
             include_evidence=False,
             include_tags=False,
             include_confidence=False,
+            include_associations=False,
+            include_source_ids=False,
+            include_citation_trace=False,
         )
 
     @classmethod
@@ -76,6 +81,7 @@ class CardOutputConfig:
     def list_view(cls, compact: bool = False) -> CardOutputConfig:
         """Card list view config (truncated claim)."""
         c = cls.compact()
+        c.include_id = True
         c.max_claim_length = 80 if compact else 120
         c.include_confidence = False if compact else True
         return c
@@ -168,6 +174,8 @@ class CardRenderer:
             if self.config.max_claim_length and len(claim_text) > self.config.max_claim_length:
                 claim_text = claim_text[:self.config.max_claim_length] + "..."
             lines.append(f"Claim: {claim_text}")
+            if claim_text != card.claim:
+                lines.append(f"Preview truncated; read full card: {card.id}")
 
         if self.config.include_evidence and card.evidence:
             lines.append(f"Evidence: {card.evidence}")
@@ -183,6 +191,9 @@ class CardRenderer:
 
         if self.config.include_source_ids and card.source_ids:
             lines.append(f"Sources: {', '.join(card.source_ids)}")
+
+        if self.config.include_citation_trace and (trace := citation_trace_text(card)):
+            lines.append(trace)
 
         if self.config.include_provenance and card.provenance:
             p = json.dumps(card.provenance, ensure_ascii=False)
@@ -225,6 +236,9 @@ class CardRenderer:
         if self.config.include_source_ids and card.source_ids:
             lines.append(f"Sources:     {', '.join(card.source_ids)}")
 
+        if self.config.include_citation_trace and (trace := citation_trace_text(card)):
+            lines.append(trace)
+
         if self.config.include_associations and card.associations:
             lines.append(f"Related:     {', '.join(card.associations)}")
 
@@ -262,6 +276,8 @@ class CardRenderer:
             data["associations"] = card.associations
         if self.config.include_source_ids:
             data["source_ids"] = card.source_ids
+        if self.config.include_citation_trace:
+            data["citation_trace"] = citation_trace(card)
         if self.config.include_provenance:
             data["provenance"] = card.provenance
         if self.config.include_timestamps:
@@ -333,6 +349,8 @@ class CardRenderer:
                 if self.config.max_claim_length and len(claim) > self.config.max_claim_length:
                     claim = claim[:self.config.max_claim_length] + "..."
                 lines.append(f"     {claim}")
+                if claim != card.claim:
+                    lines.append(f"     Preview truncated; read full card: {card.id}")
 
             # Card ID (compact)
             if self.config.include_id:

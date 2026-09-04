@@ -16,6 +16,7 @@ import json
 import os
 import tempfile
 import threading
+import time
 import uuid
 from contextlib import contextmanager
 from dataclasses import dataclass, field, asdict
@@ -34,6 +35,24 @@ class CardStoreError(RuntimeError):
 
 _CARD_STORE_LOCKS: dict[str, threading.RLock] = {}
 _CARD_STORE_LOCKS_GUARD = threading.Lock()
+_WINDOWS = os.name == "nt"
+
+
+def _replace_card_file(source: str, destination: Path) -> None:
+    """Bounded retry of Windows replace denials while the writer lock is held.
+
+    Readers/external handles may transiently deny replacement. Never unlink the
+    destination or retry the whole read-modify-write operation. Persistent
+    permission errors still surface, preserving the previous file.
+    """
+    for attempt in range(6):
+        try:
+            os.replace(source, destination)
+            return
+        except OSError as exc:
+            if not _WINDOWS or getattr(exc, "winerror", None) not in {5, 32, 33} or attempt == 5:
+                raise
+            time.sleep(0.01 * 2 ** attempt)
 
 
 def _card_store_lock(path: Path) -> threading.RLock:
@@ -276,7 +295,7 @@ class CardStore:
                 handle.write(payload)
                 handle.flush()
                 os.fsync(handle.fileno())
-            os.replace(tmp_path, self.path)
+            _replace_card_file(tmp_path, self.path)
         except OSError as exc:
             if tmp_path:
                 try:

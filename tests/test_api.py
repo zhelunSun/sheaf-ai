@@ -56,6 +56,31 @@ class TestStatsEndpoint:
 
 
 class TestSearchEndpoint:
+    def test_review_validation_and_empty_gate_diagnostics(self, client):
+        for params in (
+            {"q": "x", "gate_policy": "review"},
+            {"q": "x", "gate_policy": "typo", "min_evidence_score": 0.4},
+        ):
+            assert client.get("/search", params=params).status_code == 422
+
+        def withheld(*_args, diagnostics, **kwargs):
+            assert kwargs["gate_policy"] == "review"
+            diagnostics.update({
+                "backend": "entry_index", "degraded": False,
+                "retrieval_gate_version": "query-support-v4",
+                "retrieval_gate_policy": "review", "retrieval_gate_status": "withheld",
+                "retrieval_gate_reason_code": "top_identity_mismatch",
+            })
+            return []
+
+        with patch("sheaf_ai.api.search_hybrid", side_effect=withheld):
+            response = client.get("/search", params={
+                "q": "x", "gate_policy": "review", "min_evidence_score": 0.4,
+            })
+        assert response.status_code == 200
+        assert response.json()["retrieval_gate"]["reason_code"] == "top_identity_mismatch"
+        assert response.json()["retrieval_gate"]["answerability"] == "not_assessed"
+
     def test_search_with_query(self, client, mock_index_file):
         resp = client.get("/search", params={"q": "AI"})
         assert resp.status_code == 200

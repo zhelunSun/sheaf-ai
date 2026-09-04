@@ -65,6 +65,10 @@ def build_parser() -> argparse.ArgumentParser:
             "(default: 0)"
         ),
     )
+    p.add_argument(
+        "--gate-policy", choices=["strict", "review"], default="strict",
+        help="review exposes uncertain candidates for inspection; requires --min-evidence-score > 0",
+    )
     p = sub.add_parser(
         "search-index",
         help="Manage the Entry semantic search index",
@@ -531,6 +535,7 @@ def _search(p: argparse.Namespace) -> None:
     query = " ".join(p.query)
     limit = getattr(p, "limit", 10)
     min_evidence_score = getattr(p, "min_evidence_score", 0.0)
+    gate_policy = getattr(p, "gate_policy", "strict")
     json_output = getattr(p, "json", False)
 
     if json_output:
@@ -543,11 +548,16 @@ def _search(p: argparse.Namespace) -> None:
         }
         if min_evidence_score:
             search_kwargs["min_evidence_score"] = min_evidence_score
+        if gate_policy != "strict":
+            search_kwargs["gate_policy"] = gate_policy
         results = search_hybrid(query, **search_kwargs)
         formatted = []
         for r in results:
             item = r["entry"].copy()
             item["_score"] = r["score"]
+            item["_retrieval_gate"] = r.get("retrieval_gate", {
+                "status": "ungated", "answerability": "not_assessed",
+            })
             item["_bm25_score"] = r.get("bm25_score", 0.0)
             item["_semantic_score"] = r.get("semantic_score", 0.0)
             item["_retrieval_evidence_score"] = r.get(
@@ -577,7 +587,10 @@ def _search(p: argparse.Namespace) -> None:
             ]
         print(json.dumps(output, ensure_ascii=False, indent=2))
     else:
-        if min_evidence_score:
+        if gate_policy != "strict":
+            show_search(query, limit=limit, min_evidence_score=min_evidence_score,
+                        gate_policy=gate_policy)
+        elif min_evidence_score:
             show_search(query, limit=limit, min_evidence_score=min_evidence_score)
         else:
             show_search(query, limit=limit)
@@ -588,8 +601,12 @@ def _search_diagnostics(
     diagnostics: dict[str, object] | None = None,
 ) -> dict[str, object]:
     """Project result-level hybrid diagnostics onto an interface response."""
+    from .search_contract import public_retrieval_gate
+
     if diagnostics:
         return {
+            **({"retrieval_gate": public_retrieval_gate(diagnostics)}
+               if public_retrieval_gate(diagnostics) else {}),
             "semantic_backend": str(
                 diagnostics.get(
                     "semantic_backend",
@@ -1135,12 +1152,14 @@ def _serve(p: argparse.Namespace):
 
 
 def _crystallize(p: argparse.Namespace) -> None:
+    from sheaf_cards.base import KnowledgeCard
+
     from sheaf_ai.card_service import (
         crystallize_cards, list_cards, get_card_detail,
         delete_card_by_id, get_card_topic_stats, search_cards_semantic,
         rebuild_card_embeddings,
     )
-    from sheaf_ai.renderer import CardRenderer
+    from sheaf_ai.renderer import CardOutputConfig, CardRenderer
 
     # Build renderer from --format and --fields
     fmt = getattr(p, "format", "text")
@@ -1148,6 +1167,8 @@ def _crystallize(p: argparse.Namespace) -> None:
     renderer = CardRenderer(config)
 
     if p.list:
+        if fmt == "text" and not getattr(p, "fields", None):
+            renderer = CardRenderer(CardOutputConfig.list_view())
         cards = list_cards()
         if not cards:
             print("No crystallized cards yet. Try: sheaf crystallize <topic>")
@@ -1179,8 +1200,12 @@ def _crystallize(p: argparse.Namespace) -> None:
             return
         for r in results:
             card = r["card"]
-            print(f"  [{r['score']:.2f}] {card.get('title', '')}")
-            print(f"      {card.get('claim', '')[:80]}")
+            if fmt != "json":
+                print(f"  Score: {r['score']:.2f}")
+                print(renderer.render(KnowledgeCard.from_dict(card), format=fmt))
+        if fmt == "json":
+            print(json.dumps({"total": len(results), "results": results}, ensure_ascii=False))
+            return
         print(f"\n  {len(results)} results")
         return
     if hasattr(p, "rebuild_embeddings") and p.rebuild_embeddings:

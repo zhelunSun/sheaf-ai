@@ -7,7 +7,7 @@ import socket
 import pytest
 
 from sheaf_ai import card_extraction
-from sheaf_ai.renderer import CardRenderer
+from sheaf_ai.renderer import CardOutputConfig, CardRenderer
 from sheaf_cards import embeddings
 from sheaf_cards.base import KnowledgeCard
 
@@ -34,13 +34,13 @@ def test_current_diagnostic_is_deterministic_and_preserves_separate_groups():
         "present_in_input": 6, "retained_by_parser": 0,
     }
     native = report["summary"]["native"]
-    assert native["default_text"]["groups"]["qualifier_strings"]["visible"] == 5
+    assert native["default_text"]["groups"]["qualifier_strings"]["visible"] == 8
     for name in ("stored_json", "default_json", "detailed_text", "embedding_text"):
         assert native[name]["groups"]["qualifier_strings"]["visible"] == 8
-    for name in ("stored_json", "detailed_text"):
+    for name in ("stored_json", "detailed_text", "default_text", "default_json"):
         assert native[name]["groups"]["source_ids"]["visible"] == 8
         assert native[name]["groups"]["association_ids"]["visible"] == 2
-    for name in ("default_text", "default_json", "embedding_text"):
+    for name in ("embedding_text",):
         assert native[name]["groups"]["source_ids"]["visible"] == 0
         assert native[name]["groups"]["association_ids"]["visible"] == 0
         assert native[name]["groups"]["citation_markers"]["visible"] == 8
@@ -109,10 +109,14 @@ def test_same_literal_can_remain_in_evidence_after_claim_truncation():
     condition = report["cases"][0]["cards"][0]
     scope = report["cases"][1]["cards"][0]
     assert condition["parser_supported_transport"]["qualifiers"][0]["input_field_start"] > 120
-    assert condition["native"]["default_text"]["groups"]["qualifier_strings"]["visible"] == 0
+    assert condition["native"]["default_text"]["groups"]["qualifier_strings"]["visible"] == 1
     assert scope["parser_supported_transport"]["qualifiers"][0]["input_field_start"] > 120
     assert scope["native"]["default_text"]["groups"]["qualifier_strings"]["visible"] == 1
     assert "Evidence:" in scope["native"]["default_text"]["text"]
+    preview = CardRenderer(CardOutputConfig(max_claim_length=120))
+    card = KnowledgeCard.from_json(condition["native"]["stored_json"]["text"])
+    assert "only when the cache contains the complete requested record" not in preview.render(card)
+    assert "Preview truncated; read full card:" in preview.render(card)
 
 
 def test_lock_refuses_input_or_code_hash_drift(tmp_path, monkeypatch):

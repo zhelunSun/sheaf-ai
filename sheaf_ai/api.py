@@ -19,7 +19,7 @@ import re
 import secrets
 from datetime import datetime
 from ipaddress import ip_address
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +29,7 @@ from pydantic import BaseModel, Field
 from sheaf_ai.config import VERSION, DATA_DIR, ENTRIES_DIR, fix_windows_encoding
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path, validate_entry_id
 from sheaf_ai.search import search_hybrid
+from sheaf_ai.search_contract import public_retrieval_gate
 from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.mcp_server import MCP_PROTOCOL_VERSION
@@ -70,6 +71,7 @@ class SearchResponse(BaseModel):
     semantic_backend: str = "unknown"
     degraded: bool = False
     reason: str = ""
+    retrieval_gate: dict = Field(default_factory=dict)
 
 
 class CollectResponse(BaseModel):
@@ -253,15 +255,20 @@ def create_app(api_token: str | None = None) -> FastAPI:
                 "Thresholds are backend/version specific."
             ),
         ),
+        gate_policy: Literal["strict", "review"] = Query("strict"),
     ):
         """Hybrid keyword + semantic search across the Entry collection."""
+        if gate_policy == "review" and min_evidence_score <= 0:
+            raise HTTPException(422, "review gate_policy requires a positive min_evidence_score")
         raw_diagnostics: dict[str, object] = {}
+        policy_kwargs = {"gate_policy": gate_policy} if gate_policy != "strict" else {}
         results = search_hybrid(
             q,
             limit=limit,
             include_raw=True,
             diagnostics=raw_diagnostics,
             min_evidence_score=min_evidence_score,
+            **policy_kwargs,
         )
         if raw_diagnostics:
             diagnostics = {
@@ -291,6 +298,7 @@ def create_app(api_token: str | None = None) -> FastAPI:
             query=q,
             total=len(results),
             results=results,
+            retrieval_gate=public_retrieval_gate(raw_diagnostics),
             **diagnostics,
         )
 

@@ -165,6 +165,7 @@ def show_search(
     limit: int = 10,
     *,
     min_evidence_score: float = 0.0,
+    gate_policy: str = "strict",
 ) -> None:
     """Hybrid Entry search with relevance scoring and diagnostics."""
     diagnostics: dict[str, object] = {}
@@ -175,7 +176,18 @@ def show_search(
     }
     if min_evidence_score:
         search_kwargs["min_evidence_score"] = min_evidence_score
+    if gate_policy != "strict":
+        search_kwargs["gate_policy"] = gate_policy
     results = search_hybrid(query, **search_kwargs)
+
+    from .search_contract import public_retrieval_gate
+
+    gate = public_retrieval_gate(diagnostics)
+    if gate:
+        print(f"Retrieval gate: {gate['status']} ({gate['reason_code']}). {gate['reason']}")
+        print("Answerability not assessed. Read the sources to check conditions and denials.")
+        if gate["review_available"] and gate["policy"] == "strict":
+            print("Inspection candidates available with --gate-policy review and the same threshold.")
 
     if not results:
         print(f'No results for "{query}"')

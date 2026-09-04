@@ -258,7 +258,7 @@ _WORD_RE = re.compile(r"[a-zA-Z0-9]+|[\u4e00-\u9fff]")
 _CJK_RUN_RE = re.compile(r"[\u4e00-\u9fff]+")
 _IDENTITY_PART_RE = re.compile(r"[a-zA-Z0-9]+|[\u4e00-\u9fff]+")
 _IDENTITY_TOKEN_RE = re.compile(r"\b[A-Z][A-Za-z0-9]*(?:[-.][A-Za-z0-9]+)*\b")
-_QUERY_SUPPORT_VERSION = "query-support-v3"
+_QUERY_SUPPORT_VERSION = "query-support-v4"
 _HYBRID_CANDIDATE_LIMIT = 50
 _QUERY_STOPWORDS = frozenset({
     "a", "an", "and", "are", "as", "at", "be", "been", "being", "but",
@@ -782,7 +782,7 @@ def _query_support_decision(
             "absolute_support_below_threshold",
             "The strongest candidate lacks sufficient absolute retrieval support",
         )
-    return True, "accepted", "The returned candidate set has sufficient query support"
+    return True, "accepted", "Candidates passed retrieval heuristics; answerability is not assessed"
 
 
 def _publish_retrieval_gate_diagnostics(
@@ -792,16 +792,44 @@ def _publish_retrieval_gate_diagnostics(
     reason_code: str,
     reason: str,
     features: dict[str, object],
+    policy: str = "strict",
+    review_available: bool = False,
 ) -> None:
     if output is None:
         return
     output.update({
         "retrieval_gate_version": _QUERY_SUPPORT_VERSION,
-        "retrieval_gate_answerable": accepted,
+        # Legacy key retained as null: retrieval overlap never proves answerability.
+        "retrieval_gate_answerable": None,
+        "retrieval_gate_passed": accepted,
+        "retrieval_gate_policy": policy,
+        "retrieval_gate_status": (
+            "candidates" if accepted else
+            "review_required" if policy == "review" and review_available else "withheld"
+        ),
+        "retrieval_review_available": review_available,
         "retrieval_gate_reason": reason,
         "retrieval_gate_reason_code": reason_code,
         "retrieval_gate_features": features,
     })
+
+
+def _review_candidate_available(features: dict, reason_code: str, threshold: float) -> bool:
+    """Allow inspection of lexical uncertainty, never override hard failures.
+
+    This deliberately does not distinguish paraphrases from false premises. Both
+    need source inspection. Semantic score is relevance, not calibrated certainty.
+    """
+    return (
+        reason_code == "unsupported_modifiers"
+        and features.get("effective_evidence_mode") == "coverage_semantic"
+        and features.get("semantic_backend") == "entry_index"
+        and not features.get("semantic_degraded", True)
+        and bool(features.get("query_identities"))
+        and int(features.get("supported_modifier_count", 0)) > 0
+        and float(features.get("top_evidence_score", 0)) >= threshold
+        and float(features.get("top_semantic_score_raw", 0)) > 0.0
+    )
 
 
 def _fetch_semantic_scores(
@@ -947,6 +975,7 @@ def search_hybrid(
     filters: dict | None = None,
     diagnostics: dict[str, object] | None = None,
     min_evidence_score: float = 0.0,
+    gate_policy: str = "strict",
 ) -> list[dict]:
     """Hybrid search combining BM25 keyword matching with semantic similarity.
 
@@ -966,6 +995,9 @@ def search_hybrid(
         min_evidence_score: Query-level absolute-support threshold. A positive
             value may reject the entire result set; it never removes otherwise
             ranked secondary candidates one by one.
+        gate_policy: 'strict' preserves abstention. 'review' exposes bounded
+            lexical-uncertainty candidates with explicit review_required status;
+            it requires a positive threshold and does not assess answerability.
 
     Returns:
         List of result dicts with 'entry', 'score', 'bm25_score',
@@ -981,25 +1013,29 @@ def search_hybrid(
     min_evidence_score = float(min_evidence_score)
     if not math.isfinite(min_evidence_score) or not 0.0 <= min_evidence_score <= 1.0:
         raise ValueError("min_evidence_score must be a finite number between 0.0 and 1.0")
+    if gate_policy not in ("strict", "review"):
+        raise ValueError("gate_policy must be strict or review")
+    if gate_policy == "review" and min_evidence_score <= 0.0:
+        raise ValueError("review gate_policy requires a positive min_evidence_score")
+
+    def empty_result(reason_code: str, reason: str, *, degraded: bool = False) -> list:
+        _publish_hybrid_diagnostics(diagnostics, {
+            "backend": "not_run", "degraded": degraded,
+            "reason": reason, "reason_code": reason_code,
+        })
+        if min_evidence_score > 0:
+            _publish_retrieval_gate_diagnostics(
+                diagnostics, accepted=False, reason_code=reason_code, reason=reason,
+                features={"effective_evidence_mode": "not_run"}, policy=gate_policy,
+            )
+        return []
 
     if not INDEX_FILE.exists():
-        _publish_hybrid_diagnostics(diagnostics, {
-            "backend": "not_run",
-            "degraded": True,
-            "reason": "Collection index is missing",
-            "reason_code": "missing_collection_index",
-        })
-        return []
+        return empty_result("missing_collection_index", "Collection index is missing", degraded=True)
 
     query_lower = query.lower().strip()
     if not query_lower:
-        _publish_hybrid_diagnostics(diagnostics, {
-            "backend": "not_run",
-            "degraded": False,
-            "reason": "Search query is empty",
-            "reason_code": "empty_query",
-        })
-        return []
+        return empty_result("empty_query", "Search query is empty")
 
     # Issue #67: Expand search terms for match detection
     expanded_terms = expand_query_synonyms(query)
@@ -1024,13 +1060,7 @@ def search_hybrid(
             entries.append(entry)
 
     if not entries:
-        _publish_hybrid_diagnostics(diagnostics, {
-            "backend": "not_run",
-            "degraded": False,
-            "reason": "No entries are available for the requested search scope",
-            "reason_code": "empty_corpus",
-        })
-        return []
+        return empty_result("empty_corpus", "No entries are available for the requested search scope")
 
     collection_entry_count = len(entries)
     if filters:
@@ -1054,6 +1084,7 @@ def search_hybrid(
                     reason_code="invalid_filter",
                     reason=reason,
                     features={"effective_evidence_mode": "not_run"},
+                    policy=gate_policy,
                 )
             return []
         if not entries:
@@ -1071,6 +1102,7 @@ def search_hybrid(
                     reason_code="empty_filtered_scope",
                     reason=reason,
                     features={"effective_evidence_mode": "not_run"},
+                    policy=gate_policy,
                 )
             return []
 
@@ -1152,6 +1184,7 @@ def search_hybrid(
                 accepted=False,
                 reason_code="no_candidates_in_scope",
                 reason="No lexical or semantic candidates exist in the filtered search scope",
+                policy=gate_policy,
                 features={
                     "effective_evidence_mode": evidence_mode,
                     "semantic_backend": semantic_diagnostics.get("backend", "unknown"),
@@ -1241,6 +1274,7 @@ def search_hybrid(
                 accepted=False,
                 reason_code="no_ranked_candidates",
                 reason="Candidates exist in scope but none has a positive retrieval score",
+                policy=gate_policy,
                 features={
                     "effective_evidence_mode": evidence_mode,
                     "semantic_backend": semantic_diagnostics.get("backend", "unknown"),
@@ -1269,20 +1303,32 @@ def search_hybrid(
         support_features,
         min_evidence_score=min_evidence_score,
     )
+    review_available = _review_candidate_available(
+        support_features, gate_reason_code, min_evidence_score
+    )
+    gate_diagnostics: dict[str, object] = {}
     _publish_retrieval_gate_diagnostics(
-        diagnostics,
+        gate_diagnostics,
         accepted=accepted,
         reason_code=gate_reason_code,
         reason=gate_reason,
         features=support_features,
+        policy=gate_policy,
+        review_available=review_available,
     )
-    if not accepted:
+    if diagnostics is not None:
+        diagnostics.update(gate_diagnostics)
+    if not accepted and not (gate_policy == "review" and review_available):
         return []
+
+    from .search_contract import public_retrieval_gate
 
     for result in returned_results:
         result.update({
             "retrieval_gate_version": _QUERY_SUPPORT_VERSION,
-            "retrieval_gate_answerable": True,
+            "retrieval_gate_answerable": None,
+            "retrieval_gate_passed": accepted,
+            "retrieval_gate": public_retrieval_gate(gate_diagnostics),
             "retrieval_gate_reason_code": gate_reason_code,
             "retrieval_gate_reason": gate_reason,
         })

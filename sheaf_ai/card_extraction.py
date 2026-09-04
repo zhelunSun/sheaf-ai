@@ -501,6 +501,12 @@ def parse_card_extraction_response(
 
         confidence = float(item["confidence"])
 
+        # Bind the original prompt aliases, NOT positions in the cited subset.
+        # These fields are computed from the request, never copied from model JSON.
+        cited_indexes = sorted({
+            int(match) for match in _EXPLICIT_SOURCE_CITATION.findall(item["evidence"])
+        })
+        source_citations = {str(index): sources[index].entry_id for index in cited_indexes}
         cards.append(
             KnowledgeCard(
                 title=item.get("title", f"Insight on {topic}"),
@@ -515,6 +521,11 @@ def parse_card_extraction_response(
                     "model": model,
                     "topic": topic,
                     "source_count": len(sources),
+                    "source_citations": source_citations,
+                    "cited_input_trace": {
+                        str(index): _source_input_trace(sources[index])
+                        for index in cited_indexes
+                    },
                 },
             )
         )
@@ -542,6 +553,33 @@ def parse_card_extraction_response(
             card.associations = list(dict.fromkeys(related_ids))
 
     return CardExtractionResult(cards=cards, raw_response=raw, warnings=warnings, engine=engine)
+
+
+def _source_input_trace(source: CardSource) -> dict:
+    """Describe supplied input, not a supporting quote or authenticated origin."""
+    import hashlib
+    from copy import deepcopy
+
+    content = (source.text or source.summary)[:2000]
+    trace = {
+        "entry_id": source.entry_id,
+        "url": source.url,
+        "collected_at": source.collected_at,
+        "content_sha256": hashlib.sha256(content.encode("utf-8")).hexdigest(),
+        "content_chars": len(content),
+        "summary_sha256": hashlib.sha256(source.summary.encode("utf-8")).hexdigest(),
+        "verification": "input_selection_only; not_claim_evidence",
+    }
+    selection = source.metadata.get("passage_selection")
+    if isinstance(selection, dict):
+        # Only the selector's trace, never arbitrary Entry metadata/authority flags.
+        trace["passage_selection"] = deepcopy({
+            key: selection[key] for key in (
+                "algorithm_version", "strategy", "source_text_hash", "selection_hash",
+                "full_text_chars", "selected_chars", "truncated", "query_terms", "passages",
+            ) if key in selection
+        })
+    return trace
 
 
 def _validate_raw_card_item(item: dict) -> list[str]:

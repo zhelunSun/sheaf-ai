@@ -5,6 +5,7 @@ import json
 
 from sheaf_ai.mcp.protocol import jsonrpc_response
 from sheaf_ai.search import search_fulltext, search_hybrid, search_quick
+from sheaf_ai.search_contract import public_retrieval_gate
 
 # ── Tool definition ──────────────────────────────────────────
 
@@ -70,6 +71,14 @@ TOOLS = [
                     ),
                     "default": 0.0,
                 },
+                "gate_policy": {
+                    "type": "string", "enum": ["strict", "review"], "default": "strict",
+                    "description": (
+                        "Hybrid only. review requires min_evidence_score > 0 and may return "
+                        "review_required candidates for inspection. Neither policy verifies "
+                        "an answer; read source content, including denials and conditions."
+                    ),
+                },
             },
             "required": ["query"],
         },
@@ -88,6 +97,9 @@ def _handle_search(req_id: int | str, arguments: dict) -> str:
         alpha = arguments.get("alpha", 0.6)
         min_evidence_score = arguments.get("min_evidence_score", 0.0)
         raw_diagnostics: dict[str, object] = {}
+        policy_kwargs = {}
+        if "gate_policy" in arguments:
+            policy_kwargs["gate_policy"] = arguments["gate_policy"]
         results = search_hybrid(
             query_str,
             limit=limit,
@@ -95,6 +107,7 @@ def _handle_search(req_id: int | str, arguments: dict) -> str:
             include_raw=True,
             diagnostics=raw_diagnostics,
             min_evidence_score=min_evidence_score,
+            **policy_kwargs,
         )
         formatted = _format_ranked_results(results, hybrid=True)
         diagnostics = _semantic_diagnostics(results, raw_diagnostics)
@@ -145,6 +158,9 @@ def _format_ranked_results(results: list[dict], *, hybrid: bool) -> list[dict]:
         item["_score"] = result["score"]
         item["_match_locations"] = result.get("match_locations", [])
         if hybrid:
+            item["_retrieval_gate"] = result.get("retrieval_gate", {
+                "status": "ungated", "answerability": "not_assessed",
+            })
             item["_bm25_score"] = result.get("bm25_score", 0.0)
             item["_semantic_score"] = result.get("semantic_score", 0.0)
             item["_retrieval_evidence_score"] = result.get(
@@ -167,6 +183,8 @@ def _semantic_diagnostics(
 ) -> dict[str, object]:
     if diagnostics:
         return {
+            **({"retrieval_gate": public_retrieval_gate(diagnostics)}
+               if public_retrieval_gate(diagnostics) else {}),
             "semantic_backend": str(
                 diagnostics.get(
                     "semantic_backend",
@@ -196,15 +214,16 @@ def _search_response(
     diagnostics: dict[str, object],
 ) -> str:
     """Keep text-list compatibility while adding structured diagnostics."""
+    content = [{"type": "text", "text": json.dumps(results, ensure_ascii=False, indent=2)}]
+    if diagnostics.get("retrieval_gate"):
+        # Text-only MCP clients must receive the warning even for an empty list.
+        content.append({"type": "text", "text": json.dumps(
+            {"retrieval_gate": diagnostics["retrieval_gate"]}, ensure_ascii=False
+        )})
     return jsonrpc_response(
         req_id,
         {
-            "content": [
-                {
-                    "type": "text",
-                    "text": json.dumps(results, ensure_ascii=False, indent=2),
-                }
-            ],
+            "content": content,
             "structuredContent": {"results": results, **diagnostics},
         },
     )

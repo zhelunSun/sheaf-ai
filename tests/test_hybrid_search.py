@@ -501,6 +501,17 @@ class TestSearchHybrid:
         features = diagnostics["retrieval_gate_features"]
         assert family.lower() in features["query_identities"]
         assert features["unknown_modifier_mass"] >= 0.5
+        assert diagnostics["retrieval_review_available"] is True
+        assert diagnostics["retrieval_gate_answerable"] is None
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=healthy_scores):
+            reviewed = search_hybrid(
+                query, min_evidence_score=0.4, gate_policy="review", diagnostics=diagnostics,
+            )
+        # Includes a false-premise query deliberately: inspection is not an answer.
+        assert reviewed[0]["entry"]["id"] == candidate_id
+        assert reviewed[0]["retrieval_gate_passed"] is False
+        assert reviewed[0]["retrieval_gate"]["status"] == "review_required"
+        assert reviewed[0]["retrieval_gate"]["answerability"] == "not_assessed"
 
     def test_query_gate_rejects_top_candidate_from_wrong_identity(
         self,
@@ -551,6 +562,10 @@ class TestSearchHybrid:
         assert results == []
         assert diagnostics["retrieval_gate_reason_code"] == "top_identity_mismatch"
         assert diagnostics["retrieval_gate_features"]["query_identities"] == ["atlas"]
+        with patch("sheaf_ai.search._fetch_semantic_scores", side_effect=healthy_scores):
+            assert search_hybrid(
+                "Atlas guide", alpha=0.0, min_evidence_score=0.1, gate_policy="review",
+            ) == []
 
     def test_filter_scope_is_applied_before_candidate_limit(
         self,

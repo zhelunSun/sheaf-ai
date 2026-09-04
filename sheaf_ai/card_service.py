@@ -292,6 +292,8 @@ def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) 
         card: KnowledgeCard to project
         include_tag_entries: If True, include rich tag entries with source tracking
     """
+    from .card_trace import citation_trace
+
     data = card.to_dict() if hasattr(card, "to_dict") else {}
     card_id = (
         data.get("card_id")
@@ -317,6 +319,7 @@ def card_to_public_dict(card: KnowledgeCard, include_tag_entries: bool = False) 
         "provenance": data.get("provenance", getattr(card, "provenance", {})) or {},
         "created_at": data.get("created_at", getattr(card, "created_at", "")),
         "updated_at": data.get("updated_at", getattr(card, "updated_at", "")),
+        "citation_trace": citation_trace(card),
     }
     extra = data.get("extra", getattr(card, "extra", {})) or {}
     if extra:

@@ -3,6 +3,23 @@
 > Status: working contract for the current alpha. It separates implemented
 > guarantees from hypotheses that still need experiments.
 
+### 2026-09-04 consumption contract update
+
+Full-card rendering now preserves the whole claim and exposes original source-alias
+bindings. The parser records these in `provenance.source_citations`; old cards with
+missing maps are explicitly unresolved. `cited_input_trace` records input selection,
+not entailment or source authority. API/MCP card projections add `citation_trace`.
+
+`query-support-v4` keeps strict selection unchanged and adds an opt-in `review`
+policy. CLI/HTTP/MCP propagate the gate state even on empty results, including to
+text-only MCP clients. `candidates` and `review_required` are retrieval states,
+never answer verification. The legacy core `retrieval_gate_answerable` is now null;
+consumers checking the strict heuristic should use `retrieval_gate_passed`.
+
+R1 remains partial: ordinary cards and governed versions are not automatically
+merged, and compact governed-state/strength consumption still needs work. See the
+[repair record and investment assessment](FIX-ROUND-2026-09-04.md).
+
 ## 1. Product position
 
 Sheaf is a local knowledge layer for people who deliberately collect sources

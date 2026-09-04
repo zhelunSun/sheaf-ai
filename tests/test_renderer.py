@@ -114,8 +114,9 @@ class TestCardOutputConfig:
         assert config.include_confidence is True
         # Hidden by default
         assert config.include_id is False
-        assert config.include_associations is False
-        assert config.include_source_ids is False
+        assert config.include_associations is True
+        assert config.include_source_ids is True
+        assert config.include_citation_trace is True
         assert config.include_provenance is False
 
     def test_compact_mode(self):
@@ -194,6 +195,18 @@ class TestCardOutputConfig:
 # ============================================================
 
 class TestCardRendererRender:
+
+    def test_default_full_claim_preserves_tail_conditions(self):
+        claim = "A bounded observation. " * 10 + "Do not use for live requests."
+        card = KnowledgeCard(claim=claim)
+        assert claim in CardRenderer().render(card)
+        assert "Preview truncated" not in CardRenderer().render(card)
+
+    def test_list_preview_is_explicit_and_resolvable(self):
+        card = KnowledgeCard(card_id="card-preview", claim="x" * 200 + " ONLY if offline")
+        output = CardRenderer(CardOutputConfig.list_view()).render_list([card])
+        assert "ONLY if offline" not in output
+        assert "Preview truncated; read full card: card-preview" in output
     def test_render_text_default(self, sample_card):
         """Default text render should show core fields."""
         renderer = CardRenderer()
