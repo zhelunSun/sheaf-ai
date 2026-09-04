@@ -1,0 +1,39 @@
+{
+  "concurrency": 1,
+  "context_budget_characters": 6000,
+  "endpoint": "https://llmapi.paratera.com/v1/chat/completions",
+  "executor_code": {
+    "evals/method-selection/live_protocol.md": "c25d86bdd9b37f0e28b42210efce40185342481b0e77cac102befbb68371db7c",
+    "evals/method-selection/run_live.py": "3d44188022d24515f17a4529b7df60cd201b1ce1cb5a0ecdf472a372c8e495e9",
+    "sheaf_ai/provenance_registry.py": "ed2b297b6d47b4131a1e3838eda4e3d195691c33b9bb9e6976a08b364ed1487f"
+  },
+  "input_reservation": "utf8(system+prompt) bytes + 512; operational estimate, not tokenizer",
+  "lock": {
+    "code": {
+      "evals/method-selection/run_experiment.py": "f2e8d81be6044d013a1978c0f8316e540cda05ec6c352891a6b5fee544f9d380",
+      "sheaf_ai/card_governance.py": "b9260c8a31575d93724c8ebeb9dc99c99ff27c695fd2a57f5dfb34d85a2c265d",
+      "sheaf_ai/card_trace.py": "9e22857dbdc6e080ca2b9ea372b7cddb14f01596e64a593eff3e54101fbd4bc6",
+      "sheaf_ai/renderer.py": "1f5feb7a13ce605b5e743906e9888a602f64ca3d5d11edabae4b97429353914d",
+      "sheaf_cards/base.py": "dd9f732cc458daf29ff4ea99755300081e8c3230b0ca983e006971fb2322854c"
+    },
+    "evidence_grade": "synthetic_development_only",
+    "files": {
+      "gold.json": "3ad43fb4398cf7eb76f8e4b2afda45736c443e82217264f7233ba7d0bb7440c4",
+      "inputs.json": "dc69ddcfe84465b7f6d422da515ea4193d9fcb0563022850352b11415c1074bf",
+      "protocol.md": "afdb119577d07df0e49bbf4e0a31186b1ff355658cd43f90b21ab0f36cad30fd"
+    },
+    "version": "method-selection-v1"
+  },
+  "manifest_hash": "1ba4d47ca8dd9afcd5bfe8ec9d26067406a26899a6f01c154e0d3738e8f4371a",
+  "max_requests": 50,
+  "max_tokens": 150000,
+  "model": "DeepSeek-V3.2-Instruct",
+  "pricing": {
+    "amount": null,
+    "currency": "CNY",
+    "status": "provider_rate_not_verified"
+  },
+  "retries": 0,
+  "timeout_seconds": 90,
+  "version": "method-selection-live-v1"
+}

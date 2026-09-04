@@ -1,0 +1,31 @@
+{
+  "finished_at": "2026-09-04T09:10:26.549554+00:00",
+  "http_status": 200,
+  "intent_hash": "d895e90074e48fc728405f9abcd4eb2737cf905f5619a43fee6c23e15ca197d2",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 117,
+    "prompt_tokens": 213,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 330
+  },
+  "raw_body": "{\"id\":\"as-zki9hkypp0\",\"created\":1788513022,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A supports SVG output; Method B exports PNG only.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task requires choosing a method for SVG output. The evidence explicitly states that Method A supports SVG output, while Method B only exports PNG. Since Method A meets the constraint and there is no conflicting or prohibitive information, it is supported.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":117,\"prompt_tokens\":213,\"total_tokens\":330,\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "3b5af6e024a554d267119569c03f22e79c6bfa603db5b503c254921da657d16c",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4953.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "faaabccc2a4b1e5080e2141fbbf923c0df443c3f49ed7eca86d72528622ef0f1",
+    "request_id": "answer-q06-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output; Method B exports PNG only.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method for SVG output. The evidence explicitly states that Method A supports SVG output, while Method B only exports PNG. Since Method A meets the constraint and there is no conflicting or prohibitive information, it is supported.\"\n}",
+    "usage": {
+      "input_tokens": 213,
+      "output_tokens": 117
+    }
+  },
+  "transport_error_type": null
+}

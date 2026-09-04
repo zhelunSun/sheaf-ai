@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:25.311946+00:00",
+  "http_status": 200,
+  "intent_hash": "991e8ca75a28d9d445f089915821e7c5c8f431faae4e3a0fa9d0b0b19e4e10ee",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 76,
+    "prompt_tokens": 363,
+    "total_tokens": 439
+  },
+  "raw_body": "{\"id\":\"as-bt345zpz4w\",\"created\":1788513442,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"insufficient\\\",\\n  \\\"citations\\\": [],\\n  \\\"reason\\\": \\\"The task requires choosing a method with verified encryption support, but none of the provided evidence mentions encryption for either method A or B. The context only discusses compression and storage, not encryption.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":76,\"prompt_tokens\":363,\"total_tokens\":439}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "2db22623e469023089f8d453754c0b54a4c3b62bcf295e6e22abf5b4f8de7dca",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7719.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "14b56d0507df66b899d2795139f6891b756c9a12026fd0479e64244adcbef28d",
+    "request_id": "answer-q07-structured_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but none of the provided evidence mentions encryption for either method A or B. The context only discusses compression and storage, not encryption.\"\n}",
+    "usage": {
+      "input_tokens": 363,
+      "output_tokens": 76
+    }
+  },
+  "transport_error_type": null
+}

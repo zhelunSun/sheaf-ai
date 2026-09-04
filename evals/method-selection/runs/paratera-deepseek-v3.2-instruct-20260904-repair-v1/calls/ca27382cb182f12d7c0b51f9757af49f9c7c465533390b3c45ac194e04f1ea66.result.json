@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:15:20.057973+00:00",
+  "http_status": 200,
+  "intent_hash": "7266a4063672c5d980095aba80b5e043b23cc950e25a4c53d9453cdf2f0bf9be",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 202,
+    "prompt_tokens": 206,
+    "total_tokens": 408
+  },
+  "raw_body": "{\"id\":\"as-t7driwvf9b\",\"created\":1788513313,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"[\\n  {\\n    \\\"method_id\\\": \\\"A\\\",\\n    \\\"claim\\\": \\\"runs without a network when the entire requested catalog was cached before departure\\\",\\n    \\\"conditions\\\": [\\\"the entire requested catalog was cached before departure\\\"],\\n    \\\"exceptions\\\": [\\\"cannot fetch uncached records offline\\\"],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s01\\\",\\n        \\\"quote\\\": \\\"Method A runs without a network when the entire requested catalog was cached before departure.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s01\\\",\\n        \\\"quote\\\": \\\"It cannot fetch uncached records offline.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"B\\\",\\n    \\\"claim\\\": \\\"requires a live network for every lookup\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s01\\\",\\n        \\\"quote\\\": \\\"Method B requires a live network for every lookup.\\\"\\n      }\\n    ]\\n  }\\n]\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":202,\"prompt_tokens\":206,\"total_tokens\":408}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "420eac74531f2f61707bfcfec592593caa273bb31416bb6c889320f83bb810f0",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7343.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "ca27382cb182f12d7c0b51f9757af49f9c7c465533390b3c45ac194e04f1ea66",
+    "request_id": "extract-b01",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\"the entire requested catalog was cached before departure\"],\n    \"exceptions\": [\"cannot fetch uncached records offline\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 206,
+      "output_tokens": 202
+    }
+  },
+  "transport_error_type": null
+}

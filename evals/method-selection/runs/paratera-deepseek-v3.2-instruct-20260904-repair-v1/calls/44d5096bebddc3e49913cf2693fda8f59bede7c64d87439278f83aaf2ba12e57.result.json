@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:17.548781+00:00",
+  "http_status": 200,
+  "intent_hash": "803c17cb3d330d16cecbc35e2bbc6cfa6d5b47ac8d557674e6b1d80d4efb0ead",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 85,
+    "prompt_tokens": 265,
+    "total_tokens": 350
+  },
+  "raw_body": "{\"id\":\"as-y7ssymdb49\",\"created\":1788513434,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"insufficient\\\",\\n  \\\"citations\\\": [],\\n  \\\"reason\\\": \\\"The task requires choosing a method with 'verified encryption support,' but the provided evidence for both methods only discusses compression and storage, with no mention of encryption at all. Therefore, no method can be supported based on the given evidence.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":85,\"prompt_tokens\":265,\"total_tokens\":350}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "baab39adfd02d1e557e01dafa71bad9ded0fdda82f110aadfe0bf0469fbbd0fa",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 5422.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "44d5096bebddc3e49913cf2693fda8f59bede7c64d87439278f83aaf2ba12e57",
+    "request_id": "answer-q07-text_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with 'verified encryption support,' but the provided evidence for both methods only discusses compression and storage, with no mention of encryption at all. Therefore, no method can be supported based on the given evidence.\"\n}",
+    "usage": {
+      "input_tokens": 265,
+      "output_tokens": 85
+    }
+  },
+  "transport_error_type": null
+}

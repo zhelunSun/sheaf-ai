@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:34.175787+00:00",
+  "http_status": 200,
+  "intent_hash": "7ac41483255e13a5e82496b955d1803f7f6849bc02eae47a9a1b6cf02ad1ea15",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 313,
+    "prompt_tokens": 240,
+    "total_tokens": 553
+  },
+  "raw_body": "{\"id\":\"as-mbemdd3iv7\",\"created\":1788512963,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n    {\\n        \\\"method_id\\\": \\\"Method A\\\",\\n        \\\"claim\\\": \\\"has a worst-case latency of 20 milliseconds\\\",\\n        \\\"conditions\\\": [\\\"Under workload W\\\", \\\"version 3\\\"],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s06\\\",\\n                \\\"quote\\\": \\\"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\\\"\\n            }\\n        ]\\n    },\\n    {\\n        \\\"method_id\\\": \\\"Method A\\\",\\n        \\\"claim\\\": \\\"has a worst-case latency of 80 milliseconds\\\",\\n        \\\"conditions\\\": [\\\"Under workload W\\\", \\\"version 3\\\"],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s07\\\",\\n                \\\"quote\\\": \\\"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\\\"\\n            }\\n        ]\\n    },\\n    {\\n        \\\"method_id\\\": \\\"Method B\\\",\\n        \\\"claim\\\": \\\"has a worst-case latency of 90 milliseconds\\\",\\n        \\\"conditions\\\": [\\\"Under workload W\\\", \\\"version 3\\\"],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s06\\\",\\n                \\\"quote\\\": \\\"Method B has a worst-case latency of 90 milliseconds.\\\"\\n            },\\n            {\\n                \\\"source_id\\\": \\\"s07\\\",\\n                \\\"quote\\\": \\\"Method B has a worst-case latency of 90 milliseconds.\\\"\\n            }\\n        ]\\n    }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":313,\"prompt_tokens\":240,\"total_tokens\":553}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b7cb00d867cb32c29be90dab512bc4f2adedbfa0b6100f21c9e771ea101b49ec",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 12734.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "60c1c8c7c34d8619486264cbeb15ea28c1b98b82e6c57f9a8256f595d69ff080",
+    "request_id": "extract-b05",
+    "text": "```json\n[\n    {\n        \"method_id\": \"Method A\",\n        \"claim\": \"has a worst-case latency of 20 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s06\",\n                \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"Method A\",\n        \"claim\": \"has a worst-case latency of 80 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s07\",\n                \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"Method B\",\n        \"claim\": \"has a worst-case latency of 90 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s06\",\n                \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n            },\n            {\n                \"source_id\": \"s07\",\n                \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n            }\n        ]\n    }\n]\n```",
+    "usage": {
+      "input_tokens": 240,
+      "output_tokens": 313
+    }
+  },
+  "transport_error_type": null
+}

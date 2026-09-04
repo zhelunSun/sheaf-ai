@@ -1,0 +1,781 @@
+{
+  "budget": {
+    "limit": 6000,
+    "unit": "characters"
+  },
+  "construction": [
+    {
+      "bundle_id": "b01",
+      "cards": null,
+      "contexts": {
+        "raw": "s01 | Mero method notes\nMethod A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline. Method B requires a live network for every lookup."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7093.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "67a17576943a1075af2187668ff9c9c6ac0886981f7353adabc023dddeee5825",
+        "request_id": "extract-b01",
+        "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\"entire requested catalog was cached before departure\"],\n    \"exceptions\": [\"cannot fetch uncached records offline\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]\n```",
+        "usage": {
+          "input_tokens": 172,
+          "output_tokens": 208
+        }
+      }
+    },
+    {
+      "bundle_id": "b02",
+      "cards": null,
+      "contexts": {
+        "raw": "s02 | Vela version 1 note\nMethod A version 1 exports PNG with a transparent background. This note applies only to version 1.\n\ns03 | Vela version 2 note\nIn version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG. These are the current version 2 capabilities."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8219.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "84b05aabdc0a6c9800f8b83675caf84b564b8fa054759b612d158f56ea66d13b",
+        "request_id": "extract-b02",
+        "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\"version 1\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]\n```",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 233
+        }
+      }
+    },
+    {
+      "bundle_id": "b03",
+      "cards": null,
+      "contexts": {
+        "raw": "s04 | Pavo drawing export\nMethod A produces flat RGB drawings. It does not contain depth data. Method B also produces flat RGB drawings and explicitly does not support depth maps. Method A supports SVG output; Method B exports PNG only."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 12796.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "db4f1a64e7632ff462afffed31a4c1bb205abbf75d7a621d915867fcc9d5f875",
+        "request_id": "extract-b03",
+        "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [\"supports SVG output\"],\n    \"exceptions\": [\"does not contain depth data\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A produces flat RGB drawings.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"It does not contain depth data.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A supports SVG output;\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [\"exports PNG only\"],\n    \"exceptions\": [\"explicitly does not support depth maps\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B also produces flat RGB drawings\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"explicitly does not support depth maps.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B exports PNG only.\"\n      }\n    ]\n  }\n]\n```",
+        "usage": {
+          "input_tokens": 179,
+          "output_tokens": 269
+        }
+      }
+    },
+    {
+      "bundle_id": "b04",
+      "cards": null,
+      "contexts": {
+        "raw": "s05 | Neri storage comparison\nMethod A compresses daily archives to save storage. Method B keeps the uncompressed original. Neither note reports data about encryption or latency. Compression ratio for Method A was measured on daily archives, not on live streams."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 12578.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "9b200e838417587a37ebf99ee031c33b535addc94292bd68dccbaf729dc3969d",
+        "request_id": "extract-b04",
+        "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"applied to daily archives\", \"not applied to live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"compression ratio was measured on daily archives\",\n    \"conditions\": [\"measurement performed on daily archives\"],\n    \"exceptions\": [\"not measured on live streams\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  }\n]\n```",
+        "usage": {
+          "input_tokens": 181,
+          "output_tokens": 292
+        }
+      }
+    },
+    {
+      "bundle_id": "b05",
+      "cards": null,
+      "contexts": {
+        "raw": "s06 | Runa test team one\nUnder workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\n\ns07 | Runa test team two\nUnder the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds. There is no adjudication between the two teams' reports."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 12734.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "60c1c8c7c34d8619486264cbeb15ea28c1b98b82e6c57f9a8256f595d69ff080",
+        "request_id": "extract-b05",
+        "text": "```json\n[\n    {\n        \"method_id\": \"Method A\",\n        \"claim\": \"has a worst-case latency of 20 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s06\",\n                \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"Method A\",\n        \"claim\": \"has a worst-case latency of 80 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s07\",\n                \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"Method B\",\n        \"claim\": \"has a worst-case latency of 90 milliseconds\",\n        \"conditions\": [\"Under workload W\", \"version 3\"],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s06\",\n                \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n            },\n            {\n                \"source_id\": \"s07\",\n                \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n            }\n        ]\n    }\n]\n```",
+        "usage": {
+          "input_tokens": 240,
+          "output_tokens": 313
+        }
+      }
+    },
+    {
+      "bundle_id": "b06",
+      "cards": null,
+      "contexts": {
+        "raw": "s08 | Tavi deployment guide\nMethod A must run in a cloud service and sends source documents to that service. Method B can run locally without network access. Method B requires at least 8 GB of available RAM. Method A is not available for local deployment."
+      },
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 12625.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "c340b5de43b95a7b38ab24588d12ab70af2deea40be940130170dfc46b0e22bc",
+        "request_id": "extract-b06",
+        "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"must run in a cloud service and sends source documents to that service\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"is not available for local deployment\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A is not available for local deployment.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"can run locally without network access\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B can run locally without network access.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"requires at least 8 GB of available RAM\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n      }\n    ]\n  }\n]\n```",
+        "usage": {
+          "input_tokens": 184,
+          "output_tokens": 311
+        }
+      }
+    }
+  ],
+  "evidence_grade": "synthetic_development_only",
+  "limitations": [
+    "No semantic entailment judge; quotes verify identity only",
+    "Character budget is not equal token budget",
+    "Imported model identity/usage is not independently authenticated",
+    "Shared extraction cost belongs in full to either card arm when deployed separately"
+  ],
+  "lock": {
+    "code": {
+      "evals/method-selection/run_experiment.py": "f2e8d81be6044d013a1978c0f8316e540cda05ec6c352891a6b5fee544f9d380",
+      "sheaf_ai/card_governance.py": "b9260c8a31575d93724c8ebeb9dc99c99ff27c695fd2a57f5dfb34d85a2c265d",
+      "sheaf_ai/card_trace.py": "9e22857dbdc6e080ca2b9ea372b7cddb14f01596e64a593eff3e54101fbd4bc6",
+      "sheaf_ai/renderer.py": "1f5feb7a13ce605b5e743906e9888a602f64ca3d5d11edabae4b97429353914d",
+      "sheaf_cards/base.py": "dd9f732cc458daf29ff4ea99755300081e8c3230b0ca983e006971fb2322854c"
+    },
+    "evidence_grade": "synthetic_development_only",
+    "files": {
+      "gold.json": "3ad43fb4398cf7eb76f8e4b2afda45736c443e82217264f7233ba7d0bb7440c4",
+      "inputs.json": "dc69ddcfe84465b7f6d422da515ea4193d9fcb0563022850352b11415c1074bf",
+      "protocol.md": "afdb119577d07df0e49bbf4e0a31186b1ff355658cd43f90b21ab0f36cad30fd"
+    },
+    "version": "method-selection-v1"
+  },
+  "plan_hash": "4e66ca6becf5ba3c07be8e30003f609f0737c3542dace9103490c6cec0e3c6a8",
+  "rows": [
+    {
+      "arm": "raw",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4281.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "addbb5789ab7251ebeac62dd3016be3074314f79927c51f59828b0a01b83aac2",
+        "request_id": "answer-q01-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task specifies that the complete requested catalog is already cached, which directly matches the condition under which Method A operates offline, as stated in the evidence.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 103
+        }
+      },
+      "request_id": "answer-q01-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q01"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q01-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q01"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q01-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q01"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6000.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b4a503b3c814823af64fa8b6b483a033f038c517c51066359f8646c9e81faa61",
+        "request_id": "answer-q02-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Both methods fail to meet the requirement of fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup, making it impossible to operate without a network.\"\n}",
+        "usage": {
+          "input_tokens": 211,
+          "output_tokens": 159
+        }
+      },
+      "request_id": "answer-q02-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q02"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q02-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q02"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q02-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q02"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 9359.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5671583fd8ff25fabec31019eff648013a6af4d617d0b7b0968b3302afabf49f",
+        "request_id": "answer-q03-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task specifies running version 2 and needing transparent PNG. The evidence from s03 explicitly states that in version 2, Method B exports transparent PNG, while Method A exports opaque PNG only. This directly supports choosing Method B to meet all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 128
+        }
+      },
+      "request_id": "answer-q03-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q03"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q03-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q03"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q03-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q03"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4875.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "240202bb19782fb188cf71b230ecac8ffe6f0416ed2d1f3783acb6004eed9977",
+        "request_id": "answer-q04-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background. This note applies only to version 1.\"\n    }\n  ],\n  \"reason\": \"The task specifies a machine fixed to version 1, and s02 explicitly states that Method A in version 1 exports PNG with a transparent background, meeting the requirement for transparent PNG. No conflicting evidence exists for version 1.\"\n}",
+        "usage": {
+          "input_tokens": 251,
+          "output_tokens": 124
+        }
+      },
+      "request_id": "answer-q04-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q04"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q04-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q04"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q04-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q04"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e27fd3e3d9c516ffa2f17d25f6ef80554d4407c37002ad117dfe83ebfe458b27",
+        "request_id": "answer-q05-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings. It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings without depth data. Method A 'does not contain depth data,' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the requirement to export a depth map.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 157
+        }
+      },
+      "request_id": "answer-q05-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q05"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q05-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q05"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q05-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q05"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4953.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "faaabccc2a4b1e5080e2141fbbf923c0df443c3f49ed7eca86d72528622ef0f1",
+        "request_id": "answer-q06-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output; Method B exports PNG only.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method for SVG output. The evidence explicitly states that Method A supports SVG output, while Method B only exports PNG. Since Method A meets the constraint and there is no conflicting or prohibitive information, it is supported.\"\n}",
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 117
+        }
+      },
+      "request_id": "answer-q06-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q06"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q06-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q06"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q06-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q06"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4187.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e8e4243ef52d23b20a9b293466fa29359b340bf6a3ba44828a994cc9f30cc614",
+        "request_id": "answer-q07-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Neither note reports data about encryption or latency.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but the evidence explicitly states that no data about encryption is reported for either method, so no option meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 221,
+          "output_tokens": 102
+        }
+      },
+      "request_id": "answer-q07-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q07"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q07-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q07"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q07-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q07"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7328.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5e5d909c10e4f16e5a0101203a008ad0223d13011a1c7a83b0e86a07387d3e76",
+        "request_id": "answer-q08-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    }\n  ],\n  \"reason\": \"The task asks to choose a method for reducing storage volume for daily archives. Source s05 explicitly states that Method A compresses daily archives to save storage, which directly satisfies the task constraint. Method B is described as keeping the uncompressed original, which does not reduce storage. No evidence contradicts Method A's suitability, and no other constraints (like encryption or latency) are reported as relevant.\"\n}",
+        "usage": {
+          "input_tokens": 223,
+          "output_tokens": 145
+        }
+      },
+      "request_id": "answer-q08-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q08"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q08-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q08"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q08-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q08"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7485.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "849ec1991a35a0e1cce81249fa3b1b0705135dc20ddd440bccd0a8d94af9b1a5",
+        "request_id": "answer-q09-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s06\", \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"},\n    {\"source_id\": \"s07\", \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"}\n  ],\n  \"reason\": \"There is a direct conflict in the reported worst-case latency for Method A under workload W, version 3: s06 reports 20 ms, while s07 reports 80 ms. The task requires a method with established worst-case latency below 50 ms, and prohibits resolving conflicts by guessing. Since the evidence for Method A is contradictory and there is no adjudication, it cannot be reliably established that Method A meets the constraint. Method B is consistently reported above 50 ms (90 ms). Therefore, no method can be chosen with certainty.\"\n}",
+        "usage": {
+          "input_tokens": 281,
+          "output_tokens": 244
+        }
+      },
+      "request_id": "answer-q09-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q09"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q09-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q09"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q09-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q09"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7109.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "c1998dac33fbab1a577bfc942d4436acdcd917655527b83fb417a2ee992dc059",
+        "request_id": "answer-q10-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Both sources s06 and s07 report that Method B has a worst-case latency of 90 milliseconds under workload W, version 3, which is below the 100-millisecond threshold. There is no disagreement on Method B's latency, and no evidence prohibits its use or indicates it exceeds the constraint.\"\n}",
+        "usage": {
+          "input_tokens": 276,
+          "output_tokens": 203
+        }
+      },
+      "request_id": "answer-q10-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q10"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q10-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q10"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q10-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q10"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": true,
+      "error": "Citation must resolve to one original source span",
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6547.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "459c14786a2f4fd93f6c76137f7284ae6492a3e4ada096361b01177983c981ce",
+        "request_id": "answer-q11-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access. Method B requires at least 8 GB of available RAM.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service. Method A is not available for local deployment.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all constraints: it runs locally without network access, keeps source documents on the device, and the available 16 GB RAM meets its minimum 8 GB requirement. Method A is explicitly incompatible as it requires cloud service, network access, and sending documents off-device.\"\n}",
+        "usage": {
+          "input_tokens": 237,
+          "output_tokens": 177
+        }
+      },
+      "request_id": "answer-q11-raw",
+      "required_sources_covered": false,
+      "state_correct": true,
+      "task_id": "q11"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q11-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q11"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q11-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q11"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "preparation_error": null,
+      "raw_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8188.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ffef9d5d9b96cc30b9e2f4c3b60d2e3fbf6995f954ea794342ca18a5823048b0",
+        "request_id": "answer-q12-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A is not available for local deployment.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method A violates the constraints because it requires network access and cloud service, which conflicts with 'no network is allowed' and 'source documents must stay on the device'. Method B satisfies the local and network constraints but fails the RAM requirement, as it needs at least 8 GB while only 4 GB is available. No method meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 238,
+          "output_tokens": 230
+        }
+      },
+      "request_id": "answer-q12-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q12"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q12-text_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q12"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": false,
+      "error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "preparation_error": "invalid_extraction: Expecting value: line 1 column 1 (char 0)",
+      "raw_response": null,
+      "request_id": "answer-q12-structured_card",
+      "required_sources_covered": false,
+      "state_correct": false,
+      "task_id": "q12"
+    }
+  ],
+  "status": "scored_imported_responses",
+  "summary": {
+    "raw": {
+      "citation_identity_valid": 0.9166666666666666,
+      "decision_correct": 1.0,
+      "failed": 1,
+      "required_sources_covered": 0.9166666666666666,
+      "state_correct": 1.0,
+      "tasks": 12
+    },
+    "structured_card": {
+      "citation_identity_valid": 0.0,
+      "decision_correct": 0.0,
+      "failed": 12,
+      "required_sources_covered": 0.0,
+      "state_correct": 0.0,
+      "tasks": 12
+    },
+    "text_card": {
+      "citation_identity_valid": 0.0,
+      "decision_correct": 0.0,
+      "failed": 12,
+      "required_sources_covered": 0.0,
+      "state_correct": 0.0,
+      "tasks": 12
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "finished_at": "2026-09-04T09:10:52.884430+00:00",
+  "http_status": 200,
+  "intent_hash": "47d9aa1cb3fc1b676b44c5fd9ce907debb34fd70db5d9e6d83d7c73672580634",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 203,
+    "prompt_tokens": 276,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 479
+  },
+  "raw_body": "{\"id\":\"as-1jn267vc1x\",\"created\":1788513046,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"B\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s06\\\",\\n      \\\"quote\\\": \\\"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s07\\\",\\n      \\\"quote\\\": \\\"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Both sources s06 and s07 report that Method B has a worst-case latency of 90 milliseconds under workload W, version 3, which is below the 100-millisecond threshold. There is no disagreement on Method B's latency, and no evidence prohibits its use or indicates it exceeds the constraint.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":203,\"prompt_tokens\":276,\"total_tokens\":479,\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "3771cd3e76694fd84742355661e2fb47868bb18ef49fba3b90a55a825fc660df",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7109.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "c1998dac33fbab1a577bfc942d4436acdcd917655527b83fb417a2ee992dc059",
+    "request_id": "answer-q10-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Both sources s06 and s07 report that Method B has a worst-case latency of 90 milliseconds under workload W, version 3, which is below the 100-millisecond threshold. There is no disagreement on Method B's latency, and no evidence prohibits its use or indicates it exceeds the constraint.\"\n}",
+    "usage": {
+      "input_tokens": 276,
+      "output_tokens": 203
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:45.731635+00:00",
+  "http_status": 200,
+  "intent_hash": "2defbf217a388ad46bbd9a6c8f31a06c5c7430bf9624c581596b7570520c3a4b",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 91,
+    "prompt_tokens": 292,
+    "total_tokens": 383
+  },
+  "raw_body": "{\"id\":\"as-pzwmfhixpa\",\"created\":1788513402,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s02\\\",\\n      \\\"quote\\\": \\\"Method A version 1 exports PNG with a transparent background.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The evidence directly supports Method A for transparent PNG under version 1, with no conflicting evidence for that version.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":91,\"prompt_tokens\":292,\"total_tokens\":383}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "7609b22d63cdc27d05deb0deb1a82256d40f30cda89cd32af10482544dbda316",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3860.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "b1b6c14d733c480f40a62c5dc993bfe3dc85155724bd4ae1f42acf202a5cf408",
+    "request_id": "answer-q04-text_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence directly supports Method A for transparent PNG under version 1, with no conflicting evidence for that version.\"\n}",
+    "usage": {
+      "input_tokens": 292,
+      "output_tokens": 91
+    }
+  },
+  "transport_error_type": null
+}

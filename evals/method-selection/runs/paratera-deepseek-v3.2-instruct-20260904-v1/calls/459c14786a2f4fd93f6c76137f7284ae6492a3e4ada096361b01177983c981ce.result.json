@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:59.487621+00:00",
+  "http_status": 200,
+  "intent_hash": "c914e551f4c63bec68c9a9893e0ffabc7fb79643203d20897700bb8e0a84238d",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 177,
+    "prompt_tokens": 237,
+    "total_tokens": 414
+  },
+  "raw_body": "{\"id\":\"as-t5yg0gwfh6\",\"created\":1788513053,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"B\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method B can run locally without network access. Method B requires at least 8 GB of available RAM.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method A must run in a cloud service and sends source documents to that service. Method A is not available for local deployment.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method B satisfies all constraints: it runs locally without network access, keeps source documents on the device, and the available 16 GB RAM meets its minimum 8 GB requirement. Method A is explicitly incompatible as it requires cloud service, network access, and sending documents off-device.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":177,\"prompt_tokens\":237,\"total_tokens\":414}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "ba1dcf8bde5186f48a4b5ec6884077c07e803fcaaabb5d230d77992646366815",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6547.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "459c14786a2f4fd93f6c76137f7284ae6492a3e4ada096361b01177983c981ce",
+    "request_id": "answer-q11-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access. Method B requires at least 8 GB of available RAM.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service. Method A is not available for local deployment.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all constraints: it runs locally without network access, keeps source documents on the device, and the available 16 GB RAM meets its minimum 8 GB requirement. Method A is explicitly incompatible as it requires cloud service, network access, and sending documents off-device.\"\n}",
+    "usage": {
+      "input_tokens": 237,
+      "output_tokens": 177
+    }
+  },
+  "transport_error_type": null
+}

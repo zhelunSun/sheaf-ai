@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:03.821075+00:00",
+  "http_status": 200,
+  "intent_hash": "e29f3286b2c8e0d8c8fd7a68dfd2d1e4ba476513369d57e77e15091985c13ef7",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 192,
+    "prompt_tokens": 571,
+    "total_tokens": 763
+  },
+  "raw_body": "{\"id\":\"as-mwupu2nd05\",\"created\":1788513417,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A produces flat RGB drawings.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"It does not contain depth data.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method B also produces flat RGB drawings\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"and explicitly does not support depth maps.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Both methods are explicitly stated to not support depth maps: Method A 'does not contain depth data' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the task constraint of exporting a depth map.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":192,\"prompt_tokens\":571,\"total_tokens\":763}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e544aee16d443f899b76dd888c430ecd1d2b6cc5b367fc5e57bd28831a4f559e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7531.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "1bf8d11cc577a8a946e1b3e1b0491b94a277f9755e06b3ac62d6a3a181c12929",
+    "request_id": "answer-q05-structured_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly stated to not support depth maps: Method A 'does not contain depth data' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the task constraint of exporting a depth map.\"\n}",
+    "usage": {
+      "input_tokens": 571,
+      "output_tokens": 192
+    }
+  },
+  "transport_error_type": null
+}

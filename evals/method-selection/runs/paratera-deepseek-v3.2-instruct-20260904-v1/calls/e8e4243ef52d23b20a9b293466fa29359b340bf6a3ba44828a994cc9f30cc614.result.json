@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:30.751702+00:00",
+  "http_status": 200,
+  "intent_hash": "c0469fcd97748de67337223faf24860cd997b373e9320b2bc57c203c14fb93b3",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 102,
+    "prompt_tokens": 221,
+    "total_tokens": 323
+  },
+  "raw_body": "{\"id\":\"as-tpmsmj6a5v\",\"created\":1788513027,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"insufficient\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s05\\\",\\n      \\\"quote\\\": \\\"Neither note reports data about encryption or latency.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task requires choosing a method with verified encryption support, but the evidence explicitly states that no data about encryption is reported for either method, so no option meets all constraints.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":102,\"prompt_tokens\":221,\"total_tokens\":323}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "bd5306934652729b62eaa8e5610b1459a409d7c09a86024863a1937ecc49cea1",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4187.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "e8e4243ef52d23b20a9b293466fa29359b340bf6a3ba44828a994cc9f30cc614",
+    "request_id": "answer-q07-raw",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Neither note reports data about encryption or latency.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but the evidence explicitly states that no data about encryption is reported for either method, so no option meets all constraints.\"\n}",
+    "usage": {
+      "input_tokens": 221,
+      "output_tokens": 102
+    }
+  },
+  "transport_error_type": null
+}

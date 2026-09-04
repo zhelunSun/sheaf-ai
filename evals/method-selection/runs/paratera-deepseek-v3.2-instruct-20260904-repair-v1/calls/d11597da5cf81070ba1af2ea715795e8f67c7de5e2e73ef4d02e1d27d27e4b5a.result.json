@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:14.123662+00:00",
+  "http_status": 200,
+  "intent_hash": "415d99bdcbe17f74686866a5064ffbd8d76989b0b0e0552bf7ccefd790d1a2dd",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 108,
+    "prompt_tokens": 282,
+    "total_tokens": 390
+  },
+  "raw_body": "{\"id\":\"as-bym9sd6tcu\",\"created\":1788513370,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"Method A runs without a network when the entire requested catalog was cached before departure.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task states the complete requested catalog is already cached, which satisfies the condition for Method A to run without a network. The evidence explicitly supports Method A for this specific scenario.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":108,\"prompt_tokens\":282,\"total_tokens\":390}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "a7bac27d2ec88854e4556fe27d615b8340995840b87f922e875a093db96ed384",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3734.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "d11597da5cf81070ba1af2ea715795e8f67c7de5e2e73ef4d02e1d27d27e4b5a",
+    "request_id": "answer-q01-text_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task states the complete requested catalog is already cached, which satisfies the condition for Method A to run without a network. The evidence explicitly supports Method A for this specific scenario.\"\n}",
+    "usage": {
+      "input_tokens": 282,
+      "output_tokens": 108
+    }
+  },
+  "transport_error_type": null
+}

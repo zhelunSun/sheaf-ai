@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:07.978437+00:00",
+  "http_status": 200,
+  "intent_hash": "e334043ce64caa377ed7af4ec59bb640b4b5e0c18526dbb7ef8e4035034c2b60",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 105,
+    "prompt_tokens": 339,
+    "total_tokens": 444
+  },
+  "raw_body": "{\"id\":\"as-6x4mme8d3f\",\"created\":1788513424,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A supports SVG output;\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, with no evidence of SVG support, so it does not meet the constraint.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":105,\"prompt_tokens\":339,\"total_tokens\":444}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "0949393ed36fb29307bd815e8df8cca9a0ea1e25574b1447569336dec61b3fd5",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4094.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "a24aec2ebaa0271614607699607a614c197047e89eb90c5f5eb92919bf870aae",
+    "request_id": "answer-q06-text_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, with no evidence of SVG support, so it does not meet the constraint.\"\n}",
+    "usage": {
+      "input_tokens": 339,
+      "output_tokens": 105
+    }
+  },
+  "transport_error_type": null
+}

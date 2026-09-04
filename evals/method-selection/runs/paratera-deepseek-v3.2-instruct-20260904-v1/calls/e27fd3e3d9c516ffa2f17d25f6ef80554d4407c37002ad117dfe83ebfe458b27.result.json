@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:21.587006+00:00",
+  "http_status": 200,
+  "intent_hash": "7a2431b95bf5261d398505e6d19f7392d8e119741306840dbca55085a1932cb7",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 157,
+    "prompt_tokens": 215,
+    "total_tokens": 372
+  },
+  "raw_body": "{\"id\":\"as-cw3ghsp8bx\",\"created\":1788513012,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A produces flat RGB drawings. It does not contain depth data.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method B also produces flat RGB drawings and explicitly does not support depth maps.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Both methods are explicitly described as producing flat RGB drawings without depth data. Method A 'does not contain depth data,' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the requirement to export a depth map.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":157,\"prompt_tokens\":215,\"total_tokens\":372}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "3ba28c12a633da7f8e78f556c368aa679aac08afd4cdf42589efe81df5784da6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 10125.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "e27fd3e3d9c516ffa2f17d25f6ef80554d4407c37002ad117dfe83ebfe458b27",
+    "request_id": "answer-q05-raw",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings. It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings without depth data. Method A 'does not contain depth data,' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the requirement to export a depth map.\"\n}",
+    "usage": {
+      "input_tokens": 215,
+      "output_tokens": 157
+    }
+  },
+  "transport_error_type": null
+}

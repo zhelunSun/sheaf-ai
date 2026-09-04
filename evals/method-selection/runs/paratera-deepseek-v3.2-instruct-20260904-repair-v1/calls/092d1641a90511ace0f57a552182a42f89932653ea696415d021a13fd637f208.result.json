@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:10.065047+00:00",
+  "http_status": 200,
+  "intent_hash": "08677da2c02bc3548c9214ce62635900cf50bdbd5fd3b6bc927115e91cea45dc",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 307,
+    "prompt_tokens": 218,
+    "total_tokens": 525
+  },
+  "raw_body": "{\"id\":\"as-h21wr6t6nm\",\"created\":1788513360,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n    {\\n        \\\"method_id\\\": \\\"A\\\",\\n        \\\"claim\\\": \\\"must run in a cloud service and sends source documents to that service\\\",\\n        \\\"conditions\\\": [],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s08\\\",\\n                \\\"quote\\\": \\\"Method A must run in a cloud service and sends source documents to that service.\\\"\\n            }\\n        ]\\n    },\\n    {\\n        \\\"method_id\\\": \\\"A\\\",\\n        \\\"claim\\\": \\\"is not available for local deployment\\\",\\n        \\\"conditions\\\": [],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s08\\\",\\n                \\\"quote\\\": \\\"Method A is not available for local deployment.\\\"\\n            }\\n        ]\\n    },\\n    {\\n        \\\"method_id\\\": \\\"B\\\",\\n        \\\"claim\\\": \\\"can run locally without network access\\\",\\n        \\\"conditions\\\": [],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s08\\\",\\n                \\\"quote\\\": \\\"Method B can run locally without network access.\\\"\\n            }\\n        ]\\n    },\\n    {\\n        \\\"method_id\\\": \\\"B\\\",\\n        \\\"claim\\\": \\\"requires at least 8 GB of available RAM\\\",\\n        \\\"conditions\\\": [],\\n        \\\"exceptions\\\": [],\\n        \\\"citations\\\": [\\n            {\\n                \\\"source_id\\\": \\\"s08\\\",\\n                \\\"quote\\\": \\\"Method B requires at least 8 GB of available RAM.\\\"\\n            }\\n        ]\\n    }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":307,\"prompt_tokens\":218,\"total_tokens\":525}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "2eb91b0fd673cbfd92e75b4c2870e2d257d9d76d805baf796e18e9bb99ecdac7",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 10281.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "092d1641a90511ace0f57a552182a42f89932653ea696415d021a13fd637f208",
+    "request_id": "extract-b06",
+    "text": "```json\n[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"must run in a cloud service and sends source documents to that service\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"is not available for local deployment\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A is not available for local deployment.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"can run locally without network access\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B can run locally without network access.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"requires at least 8 GB of available RAM\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n            }\n        ]\n    }\n]\n```",
+    "usage": {
+      "input_tokens": 218,
+      "output_tokens": 307
+    }
+  },
+  "transport_error_type": null
+}

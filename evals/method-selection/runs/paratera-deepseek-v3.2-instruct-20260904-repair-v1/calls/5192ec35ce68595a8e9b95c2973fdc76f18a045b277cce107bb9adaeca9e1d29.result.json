@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:50.108010+00:00",
+  "http_status": 200,
+  "intent_hash": "9c6d50bbf99eb0c1605a068a46641debcbb3803fb7a7fa36eedee3f67bdad5a7",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 105,
+    "prompt_tokens": 417,
+    "total_tokens": 522
+  },
+  "raw_body": "{\"id\":\"as-d29gcuygwp\",\"created\":1788513406,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s02\\\",\\n      \\\"quote\\\": \\\"Method A version 1 exports PNG with a transparent background.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The evidence explicitly states that Method A in version 1 exports PNG with a transparent background, which directly supports the task constraint of using version 1 and the requirement for transparent PNG.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":105,\"prompt_tokens\":417,\"total_tokens\":522}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "38ce2c9627b8cf43793d7d2dd52bc4a38209c82ac5c856589bdcce39a999860c",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4313.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "5192ec35ce68595a8e9b95c2973fdc76f18a045b277cce107bb9adaeca9e1d29",
+    "request_id": "answer-q04-structured_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence explicitly states that Method A in version 1 exports PNG with a transparent background, which directly supports the task constraint of using version 1 and the requirement for transparent PNG.\"\n}",
+    "usage": {
+      "input_tokens": 417,
+      "output_tokens": 105
+    }
+  },
+  "transport_error_type": null
+}

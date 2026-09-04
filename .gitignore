@@ -68,3 +68,6 @@ debug.log
 
 # CCP backup (local data cleanup, not for git)
 .ccp-backup/
+
+# Advisory execution locks are local process state, not experiment evidence.
+/evals/method-selection/runs/**/execution.lock

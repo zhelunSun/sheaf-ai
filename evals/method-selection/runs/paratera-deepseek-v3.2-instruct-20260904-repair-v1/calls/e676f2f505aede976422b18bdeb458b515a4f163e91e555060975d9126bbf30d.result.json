@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:18:02.401472+00:00",
+  "http_status": 200,
+  "intent_hash": "fb5ef3d94a1212fb3f2ba688f603edd1da585c30e4b1e8ba506bcb12b4a5bb44",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 220,
+    "prompt_tokens": 362,
+    "total_tokens": 582
+  },
+  "raw_body": "{\"id\":\"as-yzsautz7fd\",\"created\":1788513474,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"conflict\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s06\\\",\\n      \\\"quote\\\": \\\"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s07\\\",\\n      \\\"quote\\\": \\\"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The evidence for Method B consistently shows a worst-case latency of 90 milliseconds under workload W with version 3, which is below 100 milliseconds. However, there is a conflict in the evidence for Method A under the same conditions (20 ms vs. 80 ms), indicating unresolved disagreement about the context or measurements. Since the task requires choosing only if all constraints are supported without conflict, and the conflicting evidence for Method A introduces uncertainty about the reliability or consistency of the data, abstention is warranted.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":220,\"prompt_tokens\":362,\"total_tokens\":582}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b512902274ae39d8b8a34c3187fbc871f652a55d4e1e73891997126976155315",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7984.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "e676f2f505aede976422b18bdeb458b515a4f163e91e555060975d9126bbf30d",
+    "request_id": "answer-q10-text_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"The evidence for Method B consistently shows a worst-case latency of 90 milliseconds under workload W with version 3, which is below 100 milliseconds. However, there is a conflict in the evidence for Method A under the same conditions (20 ms vs. 80 ms), indicating unresolved disagreement about the context or measurements. Since the task requires choosing only if all constraints are supported without conflict, and the conflicting evidence for Method A introduces uncertainty about the reliability or consistency of the data, abstention is warranted.\"\n}",
+    "usage": {
+      "input_tokens": 362,
+      "output_tokens": 220
+    }
+  },
+  "transport_error_type": null
+}

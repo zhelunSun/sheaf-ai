@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:15:48.551153+00:00",
+  "http_status": 200,
+  "intent_hash": "6717c47b3120b115f87d64f64b0a2d6d76d235d34c5a24ef5b10806cd55496ad",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 189,
+    "prompt_tokens": 215,
+    "total_tokens": 404
+  },
+  "raw_body": "{\"id\":\"as-294aaustpc\",\"created\":1788513342,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"[\\n  {\\n    \\\"method_id\\\": \\\"A\\\",\\n    \\\"claim\\\": \\\"compresses daily archives to save storage\\\",\\n    \\\"conditions\\\": [\\\"on daily archives\\\", \\\"not on live streams\\\"],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Method A compresses daily archives to save storage.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Compression ratio for Method A was measured on daily archives, not on live streams.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"B\\\",\\n    \\\"claim\\\": \\\"keeps the uncompressed original\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Method B keeps the uncompressed original.\\\"\\n      }\\n    ]\\n  }\\n]\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":189,\"prompt_tokens\":215,\"total_tokens\":404}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "10f188e20a59e17b9253f35da466f842293ba5a206619134f3bacb44c0098e65",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6828.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "2272870db401dd3367e93d30800f8c20d9d438cb811ae7074548c3233464e409",
+    "request_id": "extract-b04",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"on daily archives\", \"not on live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 215,
+      "output_tokens": 189
+    }
+  },
+  "transport_error_type": null
+}

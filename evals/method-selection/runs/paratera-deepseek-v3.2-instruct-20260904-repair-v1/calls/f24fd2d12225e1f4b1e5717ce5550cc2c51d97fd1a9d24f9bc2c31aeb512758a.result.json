@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:56.224895+00:00",
+  "http_status": 200,
+  "intent_hash": "462216aa819ec09057e3eea9dedc725c2e85a36836a456b350f9f2d3c0180118",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 204,
+    "prompt_tokens": 341,
+    "total_tokens": 545
+  },
+  "raw_body": "{\"id\":\"as-rsd3cc1cd9\",\"created\":1788513410,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A produces flat RGB drawings.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"It does not contain depth data.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method B also produces flat RGB drawings\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"and explicitly does not support depth maps.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Both methods are explicitly described as producing flat RGB drawings and lacking depth data. Method A is stated to not contain depth data, and Method B is explicitly stated to not support depth maps. No evidence indicates that either method exports a depth map, so the task constraint is not supported by any option.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":204,\"prompt_tokens\":341,\"total_tokens\":545}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "edef699c9c1e4d314656eb61bc4dc56bd17a0af6916715e3564c9dc6b2515dc7",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6062.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "f24fd2d12225e1f4b1e5717ce5550cc2c51d97fd1a9d24f9bc2c31aeb512758a",
+    "request_id": "answer-q05-text_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings and lacking depth data. Method A is stated to not contain depth data, and Method B is explicitly stated to not support depth maps. No evidence indicates that either method exports a depth map, so the task constraint is not supported by any option.\"\n}",
+    "usage": {
+      "input_tokens": 341,
+      "output_tokens": 204
+    }
+  },
+  "transport_error_type": null
+}

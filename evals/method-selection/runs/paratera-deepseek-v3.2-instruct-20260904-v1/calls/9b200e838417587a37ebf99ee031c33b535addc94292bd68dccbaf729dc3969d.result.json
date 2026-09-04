@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:21.383920+00:00",
+  "http_status": 200,
+  "intent_hash": "0b94c6c736ba5c8ebf8a26d8f0eb0b52bae0cc09f6f0a463a7378558a261d743",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 292,
+    "prompt_tokens": 181,
+    "total_tokens": 473
+  },
+  "raw_body": "{\"id\":\"as-q2bwf4yue9\",\"created\":1788512952,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"Method A\\\",\\n    \\\"claim\\\": \\\"compresses daily archives to save storage\\\",\\n    \\\"conditions\\\": [\\\"applied to daily archives\\\", \\\"not applied to live streams\\\"],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Method A compresses daily archives to save storage.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Compression ratio for Method A was measured on daily archives, not on live streams.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method B\\\",\\n    \\\"claim\\\": \\\"keeps the uncompressed original\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Method B keeps the uncompressed original.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method A\\\",\\n    \\\"claim\\\": \\\"compression ratio was measured on daily archives\\\",\\n    \\\"conditions\\\": [\\\"measurement performed on daily archives\\\"],\\n    \\\"exceptions\\\": [\\\"not measured on live streams\\\"],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s05\\\",\\n        \\\"quote\\\": \\\"Compression ratio for Method A was measured on daily archives, not on live streams.\\\"\\n      }\\n    ]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":292,\"prompt_tokens\":181,\"total_tokens\":473}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "515bdbe36a7faffee378abf8f2bee75e945e6734f68447ec3f13aec03ba472b4",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 12578.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "9b200e838417587a37ebf99ee031c33b535addc94292bd68dccbaf729dc3969d",
+    "request_id": "extract-b04",
+    "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"applied to daily archives\", \"not applied to live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"compression ratio was measured on daily archives\",\n    \"conditions\": [\"measurement performed on daily archives\"],\n    \"exceptions\": [\"not measured on live streams\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 181,
+      "output_tokens": 292
+    }
+  },
+  "transport_error_type": null
+}

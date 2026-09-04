@@ -1,0 +1,45 @@
+{
+  "actual_cost": null,
+  "actual_requests": 19,
+  "cost_status": "No verified provider prices or invoice; tokens are not money",
+  "currency": "CNY",
+  "groups": {
+    "construction": {
+      "calls": 6,
+      "input_tokens": 1171,
+      "output_tokens": 1626
+    },
+    "probe": {
+      "calls": 1,
+      "input_tokens": 31,
+      "output_tokens": 6
+    },
+    "raw": {
+      "calls": 12,
+      "input_tokens": 2823,
+      "output_tokens": 1889
+    },
+    "structured_card": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "text_card": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    }
+  },
+  "limitations": [
+    "Probe excluded from standalone arm cost",
+    "Shared extraction charged in full to each standalone card arm",
+    "Provider-reported token usage; no independent billing verification",
+    "Operational reservation is not a tokenizer or equal-token comparison"
+  ],
+  "standalone_arm_total_tokens": {
+    "raw": 4712,
+    "structured_card": 2797,
+    "text_card": 2797
+  },
+  "total_tokens": 7546
+}

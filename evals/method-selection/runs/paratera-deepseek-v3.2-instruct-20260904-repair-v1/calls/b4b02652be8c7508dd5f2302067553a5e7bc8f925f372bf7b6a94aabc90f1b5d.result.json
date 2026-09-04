@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:36.902852+00:00",
+  "http_status": 200,
+  "intent_hash": "8f0145db67f8510e28b5d87333b8885a387f77a95694b2337b103690e1c38b2e",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 137,
+    "prompt_tokens": 365,
+    "total_tokens": 502
+  },
+  "raw_body": "{\"id\":\"as-7225qvt43j\",\"created\":1788513452,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s05\\\",\\n      \\\"quote\\\": \\\"Method A compresses daily archives to save storage.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s05\\\",\\n      \\\"quote\\\": \\\"Compression ratio for Method A was measured on daily archives, not on live streams.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B keeps the uncompressed original and offers no evidence of storage reduction.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":137,\"prompt_tokens\":365,\"total_tokens\":502}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "457475eee4362d6497a2f907cc7b52e7c2912fbe694e199b33800c7e4bbf4f36",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 5328.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "b4b02652be8c7508dd5f2302067553a5e7bc8f925f372bf7b6a94aabc90f1b5d",
+    "request_id": "answer-q08-structured_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    },\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B keeps the uncompressed original and offers no evidence of storage reduction.\"\n}",
+    "usage": {
+      "input_tokens": 365,
+      "output_tokens": 137
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:06.522603+00:00",
+  "http_status": 200,
+  "intent_hash": "56c6d03deef109c171ffc80dd77af216397fa469125cc25ac22cf1901c1fcf4f",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 128,
+    "prompt_tokens": 242,
+    "total_tokens": 370
+  },
+  "raw_body": "{\"id\":\"as-2herdz27fs\",\"created\":1788513002,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"B\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s03\\\",\\n      \\\"quote\\\": \\\"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task specifies running version 2 and needing transparent PNG. The evidence from s03 explicitly states that in version 2, Method B exports transparent PNG, while Method A exports opaque PNG only. This directly supports choosing Method B to meet all constraints.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":128,\"prompt_tokens\":242,\"total_tokens\":370}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "0f1a4a0ebbc37f22cd0a9d00b63af2ef20d644eed7c86459c1d72dd0beb6c168",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 9359.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "5671583fd8ff25fabec31019eff648013a6af4d617d0b7b0968b3302afabf49f",
+    "request_id": "answer-q03-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task specifies running version 2 and needing transparent PNG. The evidence from s03 explicitly states that in version 2, Method B exports transparent PNG, while Method A exports opaque PNG only. This directly supports choosing Method B to meet all constraints.\"\n}",
+    "usage": {
+      "input_tokens": 242,
+      "output_tokens": 128
+    }
+  },
+  "transport_error_type": null
+}

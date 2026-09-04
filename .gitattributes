@@ -8,3 +8,4 @@
 /evals/representation-boundary/** -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/repair-regression/results/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/method-selection/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/evals/method-selection/runs/**/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

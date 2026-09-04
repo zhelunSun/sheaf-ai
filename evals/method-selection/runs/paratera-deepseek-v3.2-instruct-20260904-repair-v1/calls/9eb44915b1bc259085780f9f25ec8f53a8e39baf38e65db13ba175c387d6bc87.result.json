@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:54.346316+00:00",
+  "http_status": 200,
+  "intent_hash": "f6c12b1c07b41ecdf61fcbb8fdc4d9f8ef22509757484b50e4c2a42debdf3bb7",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 196,
+    "prompt_tokens": 510,
+    "total_tokens": 706
+  },
+  "raw_body": "{\"id\":\"as-qwep82bd6w\",\"created\":1788513468,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"conflict\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s06\\\",\\n      \\\"quote\\\": \\\"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s07\\\",\\n      \\\"quote\\\": \\\"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method A has conflicting reported worst-case latencies (20 ms and 80 ms) under workload W, version 3, with both claims directly supported by source quotes. Since the task prohibits resolving conflicts by guessing, and the evidence does not support all constraints for either method (Method B's latency is 90 ms, exceeding the 50 ms threshold), no method can be chosen.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":196,\"prompt_tokens\":510,\"total_tokens\":706}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "5f072b05bfd19bad527989d8336482e08beec5e3470128d8a494141d59063ef2",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 8828.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "9eb44915b1bc259085780f9f25ec8f53a8e39baf38e65db13ba175c387d6bc87",
+    "request_id": "answer-q09-structured_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Method A has conflicting reported worst-case latencies (20 ms and 80 ms) under workload W, version 3, with both claims directly supported by source quotes. Since the task prohibits resolving conflicts by guessing, and the evidence does not support all constraints for either method (Method B's latency is 90 ms, exceeding the 50 ms threshold), no method can be chosen.\"\n}",
+    "usage": {
+      "input_tokens": 510,
+      "output_tokens": 196
+    }
+  },
+  "transport_error_type": null
+}

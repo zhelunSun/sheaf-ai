@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:57.136676+00:00",
+  "http_status": 200,
+  "intent_hash": "4bfd0239c90f891b7b56b3348c9d848e08ff0657fad7aa4f2a539efb065fa60c",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 159,
+    "prompt_tokens": 211,
+    "total_tokens": 370
+  },
+  "raw_body": "{\"id\":\"as-9ijxssx98m\",\"created\":1788512991,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"Method B requires a live network for every lookup.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Both methods fail to meet the requirement of fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup, making it impossible to operate without a network.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":159,\"prompt_tokens\":211,\"total_tokens\":370}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b0bbb91432281543026bbc95078f47a9e7b965fb7856cb48f9b45d0329d913ad",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6000.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "b4a503b3c814823af64fa8b6b483a033f038c517c51066359f8646c9e81faa61",
+    "request_id": "answer-q02-raw",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Both methods fail to meet the requirement of fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup, making it impossible to operate without a network.\"\n}",
+    "usage": {
+      "input_tokens": 211,
+      "output_tokens": 159
+    }
+  },
+  "transport_error_type": null
+}

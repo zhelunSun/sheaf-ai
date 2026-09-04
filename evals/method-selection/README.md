@@ -1,8 +1,10 @@
 # 方法选择：三种知识表示的实验入口
 
-本目录已完成输入/标签隔离、请求准备、响应导入、评分和失败处理；**没有真实模型结果**。
-[预检](preflight.json)只证明六个来源包、十二题、三个表示组可以进入实验，未调用 API。
-设计限制和指标解释以冻结的 [protocol.md](protocol.md) 为准。
+本目录已完成输入/标签隔离、请求准备、响应导入、评分和失败处理。2026-09-04 已增加
+[真实模型运行入口](LIVE-RUNS.md)和 [Paratera 实验记录](../../docs/PARATERA-EXPERIMENT-2026-09-04.md)：
+首轮接口失败原样保存，另有修订后的三组开发诊断；未观察到结构卡的任务收益。
+[预检](preflight.json)仍保留当时“未调用 API”的历史状态，不覆盖成模型结果。
+以下是原始离线协议说明；其设计限制和指标以冻结的 [protocol.md](protocol.md) 为准。
 
 ## 运行顺序
 
@@ -17,9 +19,10 @@ python evals/method-selection/run_experiment.py prepare-answers --plan extractio
 python evals/method-selection/run_experiment.py score --plan answer-plan.json --responses answer-responses.json --output result.json
 ```
 
-runner 默认无网络，也没有隐式付费调用。它负责严格的离线执行协议；实际模型执行器
-尚未绑定供应商。不能因为存在请求文件，就称“完成了真实模型实验”。在接入执行器前，
-固定模型、tokenizer、预算、重试策略及 usage 记录，并另立正式 token-budget 协议。
+runner 默认无网络，也没有隐式付费调用。它负责严格的离线执行协议；供应商调用现在
+由单独的 run_live.py / run_live_repair.py 显式执行。不能因为存在请求文件，就称
+“完成了真实模型实验”。后续正式实验仍须固定模型、tokenizer、预算、重试策略及 usage
+记录，并另立正式 token-budget 协议。
 目前的字符上限只约束 context，不是整个模型请求或输出的 token 总量。
 
 每个响应文件是一个 JSON 数组，每条记录必须包含以下全部键：

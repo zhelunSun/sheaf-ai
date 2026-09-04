@@ -22,10 +22,14 @@ state from whether a version has since been superseded; ledger events are unchan
 CLI/MCP and the explicit HTTP `GET /memory/snapshot` share the public projection.
 Ordinary cards are still not automatically merged with governed versions.
 
-Method-selection experiment preparation now compares raw sources, complete plain
-text cards and structured cards sharing one extraction. The offline importer and
-scorer are ready, but no real model effects or equal-token-budget result exists.
-See the [phase record](METHOD-SELECTION-PHASE-2026-09-04.md) and the earlier
+Method-selection now has a real Paratera development pilot, plus an explicitly
+post-hoc interface repair: raw sources scored 12/12 on method choice, and both card
+forms scored 11/12 with higher token use. No structural-format benefit was observed.
+The two card forms share one extraction; raw answers were reused by exact request.
+The runner persists budgeted calls and supports network-free replay, not independent
+model replication. Equal-token evaluation and new held-out sources remain pending.
+See the [live experiment](PARATERA-EXPERIMENT-2026-09-04.md), the earlier
+[phase record](METHOD-SELECTION-PHASE-2026-09-04.md) and
 [repair/investment assessment](FIX-ROUND-2026-09-04.md).
 
 ## 1. Product position

@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:15:26.699263+00:00",
+  "http_status": 200,
+  "intent_hash": "e2fea67c511ab078c0b8a4868472384f0007aa9c8aa10803b6aa899ac1a032f5",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 226,
+    "prompt_tokens": 249,
+    "total_tokens": 475
+  },
+  "raw_body": "{\"id\":\"as-a19dmzim2y\",\"created\":1788513320,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"[\\n  {\\n    \\\"method_id\\\": \\\"A\\\",\\n    \\\"claim\\\": \\\"exports PNG with a transparent background\\\",\\n    \\\"conditions\\\": [\\\"version 1\\\"],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s02\\\",\\n        \\\"quote\\\": \\\"Method A version 1 exports PNG with a transparent background.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"A\\\",\\n    \\\"claim\\\": \\\"exports opaque PNG only\\\",\\n    \\\"conditions\\\": [\\\"version 2\\\"],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s03\\\",\\n        \\\"quote\\\": \\\"In version 2, Method A exports opaque PNG only.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"B\\\",\\n    \\\"claim\\\": \\\"exports transparent PNG\\\",\\n    \\\"conditions\\\": [\\\"version 2\\\"],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s03\\\",\\n        \\\"quote\\\": \\\"Method B version 2 exports transparent PNG.\\\"\\n      }\\n    ]\\n  }\\n]\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":226,\"prompt_tokens\":249,\"total_tokens\":475}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "79cca742c60fb3de800a016fefa188a96baf1458e55d2e2d5b1a3832c3aadb80",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6594.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "a76d795e22dffe3135a348f2fe6e626d04e5030fa28eaab123816056d835145b",
+    "request_id": "extract-b02",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\"version 1\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 249,
+      "output_tokens": 226
+    }
+  },
+  "transport_error_type": null
+}

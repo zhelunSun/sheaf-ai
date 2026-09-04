@@ -1,0 +1,74 @@
+[
+  {
+    "finish_reason": "stop",
+    "latency_ms": 7343.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "ca27382cb182f12d7c0b51f9757af49f9c7c465533390b3c45ac194e04f1ea66",
+    "request_id": "extract-b01",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\"the entire requested catalog was cached before departure\"],\n    \"exceptions\": [\"cannot fetch uncached records offline\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 206,
+      "output_tokens": 202
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 6594.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "a76d795e22dffe3135a348f2fe6e626d04e5030fa28eaab123816056d835145b",
+    "request_id": "extract-b02",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\"version 1\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 249,
+      "output_tokens": 226
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 14922.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "ea5e29245560b1714f0fd5748df485dff981161b71288742df53baee10c7308d",
+    "request_id": "extract-b03",
+    "text": "[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A produces flat RGB drawings.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"does not contain depth data\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"It does not contain depth data.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"supports SVG output\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A supports SVG output;\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B also produces flat RGB drawings\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"explicitly does not support depth maps\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"and explicitly does not support depth maps.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"exports PNG only\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B exports PNG only.\"\n            }\n        ]\n    }\n]",
+    "usage": {
+      "input_tokens": 213,
+      "output_tokens": 410
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 6828.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "2272870db401dd3367e93d30800f8c20d9d438cb811ae7074548c3233464e409",
+    "request_id": "extract-b04",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"on daily archives\", \"not on live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 215,
+      "output_tokens": 189
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 11109.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "fbbf2c11b55e6145ad7a02e8114c956dbcb00af34696cc7bd53b4388633a3be0",
+    "request_id": "extract-b05",
+    "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 20 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 80 milliseconds\",\n    \"conditions\": [\"Under the same workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"has a worst-case latency of 90 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      },\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 274,
+      "output_tokens": 311
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 10281.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "092d1641a90511ace0f57a552182a42f89932653ea696415d021a13fd637f208",
+    "request_id": "extract-b06",
+    "text": "[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"must run in a cloud service and sends source documents to that service\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"is not available for local deployment\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A is not available for local deployment.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"can run locally without network access\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B can run locally without network access.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"requires at least 8 GB of available RAM\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n            }\n        ]\n    }\n]",
+    "usage": {
+      "input_tokens": 218,
+      "output_tokens": 307
+    }
+  }
+]

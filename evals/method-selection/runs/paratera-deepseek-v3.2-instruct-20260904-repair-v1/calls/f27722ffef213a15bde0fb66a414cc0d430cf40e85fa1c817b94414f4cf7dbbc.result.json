@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:41.817561+00:00",
+  "http_status": 200,
+  "intent_hash": "07f3f41cb3acc9b9f847c9d75eb180e2394c242bbbfcf6822d68737649fd6024",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 113,
+    "prompt_tokens": 408,
+    "total_tokens": 521
+  },
+  "raw_body": "{\"id\":\"as-pxmk0dh4yc\",\"created\":1788513398,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"B\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s03\\\",\\n      \\\"quote\\\": \\\"Method B version 2 exports transparent PNG.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task requires a method for version 2 that supports transparent PNG. Method A is explicitly stated to export opaque PNG only in version 2, while Method B is documented to export transparent PNG in version 2, meeting all constraints.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":113,\"prompt_tokens\":408,\"total_tokens\":521}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "49ae555aa4aa685926bddee0710b2d94fe933014b7d49c2e9bb6df08961528bc",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4359.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "f27722ffef213a15bde0fb66a414cc0d430cf40e85fa1c817b94414f4cf7dbbc",
+    "request_id": "answer-q03-structured_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task requires a method for version 2 that supports transparent PNG. Method A is explicitly stated to export opaque PNG only in version 2, while Method B is documented to export transparent PNG in version 2, meeting all constraints.\"\n}",
+    "usage": {
+      "input_tokens": 408,
+      "output_tokens": 113
+    }
+  },
+  "transport_error_type": null
+}

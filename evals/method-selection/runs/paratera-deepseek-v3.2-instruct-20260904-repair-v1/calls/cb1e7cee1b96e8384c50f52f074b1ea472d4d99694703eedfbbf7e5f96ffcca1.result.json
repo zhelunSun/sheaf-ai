@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:18:22.381911+00:00",
+  "http_status": 200,
+  "intent_hash": "64034c485995f347a832f48c010b8d51a52885a674936c1a5b18afc3cf3c2524",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 165,
+    "prompt_tokens": 485,
+    "total_tokens": 650
+  },
+  "raw_body": "{\"id\":\"as-g1e7euampu\",\"created\":1788513496,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"B\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method B can run locally without network access.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method B requires at least 8 GB of available RAM.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method B satisfies all task constraints: it runs locally without network access (keeping source documents on the device) and requires at least 8 GB RAM, which is met by the available 16 GB. Method A is unsupported because it must run in a cloud service and sends source documents externally, violating the requirement to keep documents on the device.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":165,\"prompt_tokens\":485,\"total_tokens\":650}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "ce70b009b0d65616c4adf2d7cb31c704a3b94c432863e64a67deb28011d494ba",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6250.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "cb1e7cee1b96e8384c50f52f074b1ea472d4d99694703eedfbbf7e5f96ffcca1",
+    "request_id": "answer-q11-structured_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all task constraints: it runs locally without network access (keeping source documents on the device) and requires at least 8 GB RAM, which is met by the available 16 GB. Method A is unsupported because it must run in a cloud service and sends source documents externally, violating the requirement to keep documents on the device.\"\n}",
+    "usage": {
+      "input_tokens": 485,
+      "output_tokens": 165
+    }
+  },
+  "transport_error_type": null
+}

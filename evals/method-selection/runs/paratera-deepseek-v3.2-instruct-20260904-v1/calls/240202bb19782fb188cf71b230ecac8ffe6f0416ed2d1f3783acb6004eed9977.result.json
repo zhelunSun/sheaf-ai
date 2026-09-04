@@ -1,0 +1,31 @@
+{
+  "finished_at": "2026-09-04T09:10:11.419569+00:00",
+  "http_status": 200,
+  "intent_hash": "33a501b9c62a0fc331f89f2ecd85a3abe4fb35708cf3aff54ab145172610870e",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 124,
+    "prompt_tokens": 251,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 375
+  },
+  "raw_body": "{\"id\":\"as-jxcay147my\",\"created\":1788513007,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s02\\\",\\n      \\\"quote\\\": \\\"Method A version 1 exports PNG with a transparent background. This note applies only to version 1.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task specifies a machine fixed to version 1, and s02 explicitly states that Method A in version 1 exports PNG with a transparent background, meeting the requirement for transparent PNG. No conflicting evidence exists for version 1.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":124,\"prompt_tokens\":251,\"total_tokens\":375,\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "5a40c1291e5bd54338998ff11c4f25066a5db3906dba1191c2ab7932694084b9",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4875.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "240202bb19782fb188cf71b230ecac8ffe6f0416ed2d1f3783acb6004eed9977",
+    "request_id": "answer-q04-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background. This note applies only to version 1.\"\n    }\n  ],\n  \"reason\": \"The task specifies a machine fixed to version 1, and s02 explicitly states that Method A in version 1 exports PNG with a transparent background, meeting the requirement for transparent PNG. No conflicting evidence exists for version 1.\"\n}",
+    "usage": {
+      "input_tokens": 251,
+      "output_tokens": 124
+    }
+  },
+  "transport_error_type": null
+}

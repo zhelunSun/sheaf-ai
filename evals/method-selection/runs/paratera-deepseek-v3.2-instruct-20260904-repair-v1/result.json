@@ -1,0 +1,2102 @@
+{
+  "budget": {
+    "limit": 6000,
+    "unit": "characters"
+  },
+  "construction": [
+    {
+      "bundle_id": "b01",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Method A runs without a network when the entire requested catalog was cached before departure.",
+              "source_id": "s01"
+            },
+            {
+              "quote": "It cannot fetch uncached records offline.",
+              "source_id": "s01"
+            }
+          ],
+          "claim": "runs without a network when the entire requested catalog was cached before departure",
+          "conditions": [
+            "the entire requested catalog was cached before departure"
+          ],
+          "exceptions": [
+            "cannot fetch uncached records offline"
+          ],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B requires a live network for every lookup.",
+              "source_id": "s01"
+            }
+          ],
+          "claim": "requires a live network for every lookup",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s01 | Mero method notes\nMethod A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline. Method B requires a live network for every lookup.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\n      \"the entire requested catalog was cached before departure\"\n    ],\n    \"exceptions\": [\n      \"cannot fetch uncached records offline\"\n    ],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: runs without a network when the entire requested catalog was cached before departure\nConditions: [\"the entire requested catalog was cached before departure\"]\nExceptions: [\"cannot fetch uncached records offline\"]\nEvidence: s01: Method A runs without a network when the entire requested catalog was cached before departure.\ns01: It cannot fetch uncached records offline.\n\nTitle: B\nClaim: requires a live network for every lookup\nConditions: []\nExceptions: []\nEvidence: s01: Method B requires a live network for every lookup."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7343.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ca27382cb182f12d7c0b51f9757af49f9c7c465533390b3c45ac194e04f1ea66",
+        "request_id": "extract-b01",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\"the entire requested catalog was cached before departure\"],\n    \"exceptions\": [\"cannot fetch uncached records offline\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 206,
+          "output_tokens": 202
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7343.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ca27382cb182f12d7c0b51f9757af49f9c7c465533390b3c45ac194e04f1ea66",
+        "request_id": "extract-b01",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"runs without a network when the entire requested catalog was cached before departure\",\n    \"conditions\": [\"the entire requested catalog was cached before departure\"],\n    \"exceptions\": [\"cannot fetch uncached records offline\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n      },\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"It cannot fetch uncached records offline.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires a live network for every lookup\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s01\",\n        \"quote\": \"Method B requires a live network for every lookup.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 206,
+          "output_tokens": 202
+        }
+      }
+    },
+    {
+      "bundle_id": "b02",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Method A version 1 exports PNG with a transparent background.",
+              "source_id": "s02"
+            }
+          ],
+          "claim": "exports PNG with a transparent background",
+          "conditions": [
+            "version 1"
+          ],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "In version 2, Method A exports opaque PNG only.",
+              "source_id": "s03"
+            }
+          ],
+          "claim": "exports opaque PNG only",
+          "conditions": [
+            "version 2"
+          ],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B version 2 exports transparent PNG.",
+              "source_id": "s03"
+            }
+          ],
+          "claim": "exports transparent PNG",
+          "conditions": [
+            "version 2"
+          ],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s02 | Vela version 1 note\nMethod A version 1 exports PNG with a transparent background. This note applies only to version 1.\n\ns03 | Vela version 2 note\nIn version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG. These are the current version 2 capabilities.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\n      \"version 1\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\n      \"version 2\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\n      \"version 2\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: exports PNG with a transparent background\nConditions: [\"version 1\"]\nExceptions: []\nEvidence: s02: Method A version 1 exports PNG with a transparent background.\n\nTitle: A\nClaim: exports opaque PNG only\nConditions: [\"version 2\"]\nExceptions: []\nEvidence: s03: In version 2, Method A exports opaque PNG only.\n\nTitle: B\nClaim: exports transparent PNG\nConditions: [\"version 2\"]\nExceptions: []\nEvidence: s03: Method B version 2 exports transparent PNG."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6594.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a76d795e22dffe3135a348f2fe6e626d04e5030fa28eaab123816056d835145b",
+        "request_id": "extract-b02",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\"version 1\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 249,
+          "output_tokens": 226
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6594.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a76d795e22dffe3135a348f2fe6e626d04e5030fa28eaab123816056d835145b",
+        "request_id": "extract-b02",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports PNG with a transparent background\",\n    \"conditions\": [\"version 1\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s02\",\n        \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"exports opaque PNG only\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"In version 2, Method A exports opaque PNG only.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports transparent PNG\",\n    \"conditions\": [\"version 2\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s03\",\n        \"quote\": \"Method B version 2 exports transparent PNG.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 249,
+          "output_tokens": 226
+        }
+      }
+    },
+    {
+      "bundle_id": "b03",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Method A produces flat RGB drawings.",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "produces flat RGB drawings",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "It does not contain depth data.",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "does not contain depth data",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method A supports SVG output;",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "supports SVG output",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B also produces flat RGB drawings",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "produces flat RGB drawings",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        },
+        {
+          "citations": [
+            {
+              "quote": "and explicitly does not support depth maps.",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "explicitly does not support depth maps",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B exports PNG only.",
+              "source_id": "s04"
+            }
+          ],
+          "claim": "exports PNG only",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s04 | Pavo drawing export\nMethod A produces flat RGB drawings. It does not contain depth data. Method B also produces flat RGB drawings and explicitly does not support depth maps. Method A supports SVG output; Method B exports PNG only.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A produces flat RGB drawings.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"does not contain depth data\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"It does not contain depth data.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"supports SVG output\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A supports SVG output;\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B also produces flat RGB drawings\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"explicitly does not support depth maps\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"and explicitly does not support depth maps.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"exports PNG only\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B exports PNG only.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: produces flat RGB drawings\nConditions: []\nExceptions: []\nEvidence: s04: Method A produces flat RGB drawings.\n\nTitle: A\nClaim: does not contain depth data\nConditions: []\nExceptions: []\nEvidence: s04: It does not contain depth data.\n\nTitle: A\nClaim: supports SVG output\nConditions: []\nExceptions: []\nEvidence: s04: Method A supports SVG output;\n\nTitle: B\nClaim: produces flat RGB drawings\nConditions: []\nExceptions: []\nEvidence: s04: Method B also produces flat RGB drawings\n\nTitle: B\nClaim: explicitly does not support depth maps\nConditions: []\nExceptions: []\nEvidence: s04: and explicitly does not support depth maps.\n\nTitle: B\nClaim: exports PNG only\nConditions: []\nExceptions: []\nEvidence: s04: Method B exports PNG only."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 14922.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ea5e29245560b1714f0fd5748df485dff981161b71288742df53baee10c7308d",
+        "request_id": "extract-b03",
+        "text": "[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A produces flat RGB drawings.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"does not contain depth data\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"It does not contain depth data.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"supports SVG output\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A supports SVG output;\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B also produces flat RGB drawings\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"explicitly does not support depth maps\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"and explicitly does not support depth maps.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"exports PNG only\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B exports PNG only.\"\n            }\n        ]\n    }\n]",
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 410
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 14922.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ea5e29245560b1714f0fd5748df485dff981161b71288742df53baee10c7308d",
+        "request_id": "extract-b03",
+        "text": "```json\n[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A produces flat RGB drawings.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"does not contain depth data\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"It does not contain depth data.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"supports SVG output\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method A supports SVG output;\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"produces flat RGB drawings\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B also produces flat RGB drawings\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"explicitly does not support depth maps\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"and explicitly does not support depth maps.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"exports PNG only\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s04\",\n                \"quote\": \"Method B exports PNG only.\"\n            }\n        ]\n    }\n]\n```",
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 410
+        }
+      }
+    },
+    {
+      "bundle_id": "b04",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Method A compresses daily archives to save storage.",
+              "source_id": "s05"
+            },
+            {
+              "quote": "Compression ratio for Method A was measured on daily archives, not on live streams.",
+              "source_id": "s05"
+            }
+          ],
+          "claim": "compresses daily archives to save storage",
+          "conditions": [
+            "on daily archives",
+            "not on live streams"
+          ],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B keeps the uncompressed original.",
+              "source_id": "s05"
+            }
+          ],
+          "claim": "keeps the uncompressed original",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s05 | Neri storage comparison\nMethod A compresses daily archives to save storage. Method B keeps the uncompressed original. Neither note reports data about encryption or latency. Compression ratio for Method A was measured on daily archives, not on live streams.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\n      \"on daily archives\",\n      \"not on live streams\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: compresses daily archives to save storage\nConditions: [\"on daily archives\", \"not on live streams\"]\nExceptions: []\nEvidence: s05: Method A compresses daily archives to save storage.\ns05: Compression ratio for Method A was measured on daily archives, not on live streams.\n\nTitle: B\nClaim: keeps the uncompressed original\nConditions: []\nExceptions: []\nEvidence: s05: Method B keeps the uncompressed original."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6828.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2272870db401dd3367e93d30800f8c20d9d438cb811ae7074548c3233464e409",
+        "request_id": "extract-b04",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"on daily archives\", \"not on live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 189
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6828.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2272870db401dd3367e93d30800f8c20d9d438cb811ae7074548c3233464e409",
+        "request_id": "extract-b04",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"compresses daily archives to save storage\",\n    \"conditions\": [\"on daily archives\", \"not on live streams\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method A compresses daily archives to save storage.\"\n      },\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"keeps the uncompressed original\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s05\",\n        \"quote\": \"Method B keeps the uncompressed original.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 189
+        }
+      }
+    },
+    {
+      "bundle_id": "b05",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.",
+              "source_id": "s06"
+            }
+          ],
+          "claim": "has a worst-case latency of 20 milliseconds",
+          "conditions": [
+            "Under workload W",
+            "with version 3"
+          ],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.",
+              "source_id": "s07"
+            }
+          ],
+          "claim": "has a worst-case latency of 80 milliseconds",
+          "conditions": [
+            "Under the same workload W",
+            "with version 3"
+          ],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B has a worst-case latency of 90 milliseconds.",
+              "source_id": "s06"
+            },
+            {
+              "quote": "Method B has a worst-case latency of 90 milliseconds.",
+              "source_id": "s07"
+            }
+          ],
+          "claim": "has a worst-case latency of 90 milliseconds",
+          "conditions": [
+            "Under workload W",
+            "with version 3"
+          ],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s06 | Runa test team one\nUnder workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\n\ns07 | Runa test team two\nUnder the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds. There is no adjudication between the two teams' reports.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 20 milliseconds\",\n    \"conditions\": [\n      \"Under workload W\",\n      \"with version 3\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 80 milliseconds\",\n    \"conditions\": [\n      \"Under the same workload W\",\n      \"with version 3\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"has a worst-case latency of 90 milliseconds\",\n    \"conditions\": [\n      \"Under workload W\",\n      \"with version 3\"\n    ],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      },\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: has a worst-case latency of 20 milliseconds\nConditions: [\"Under workload W\", \"with version 3\"]\nExceptions: []\nEvidence: s06: Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\n\nTitle: A\nClaim: has a worst-case latency of 80 milliseconds\nConditions: [\"Under the same workload W\", \"with version 3\"]\nExceptions: []\nEvidence: s07: Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\n\nTitle: B\nClaim: has a worst-case latency of 90 milliseconds\nConditions: [\"Under workload W\", \"with version 3\"]\nExceptions: []\nEvidence: s06: Method B has a worst-case latency of 90 milliseconds.\ns07: Method B has a worst-case latency of 90 milliseconds."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 11109.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "fbbf2c11b55e6145ad7a02e8114c956dbcb00af34696cc7bd53b4388633a3be0",
+        "request_id": "extract-b05",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 20 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 80 milliseconds\",\n    \"conditions\": [\"Under the same workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"has a worst-case latency of 90 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      },\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 274,
+          "output_tokens": 311
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 11109.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "fbbf2c11b55e6145ad7a02e8114c956dbcb00af34696cc7bd53b4388633a3be0",
+        "request_id": "extract-b05",
+        "text": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 20 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"has a worst-case latency of 80 milliseconds\",\n    \"conditions\": [\"Under the same workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"has a worst-case latency of 90 milliseconds\",\n    \"conditions\": [\"Under workload W\", \"with version 3\"],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s06\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      },\n      {\n        \"source_id\": \"s07\",\n        \"quote\": \"Method B has a worst-case latency of 90 milliseconds.\"\n      }\n    ]\n  }\n]",
+        "usage": {
+          "input_tokens": 274,
+          "output_tokens": 311
+        }
+      }
+    },
+    {
+      "bundle_id": "b06",
+      "cards": [
+        {
+          "citations": [
+            {
+              "quote": "Method A must run in a cloud service and sends source documents to that service.",
+              "source_id": "s08"
+            }
+          ],
+          "claim": "must run in a cloud service and sends source documents to that service",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method A is not available for local deployment.",
+              "source_id": "s08"
+            }
+          ],
+          "claim": "is not available for local deployment",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "A"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B can run locally without network access.",
+              "source_id": "s08"
+            }
+          ],
+          "claim": "can run locally without network access",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        },
+        {
+          "citations": [
+            {
+              "quote": "Method B requires at least 8 GB of available RAM.",
+              "source_id": "s08"
+            }
+          ],
+          "claim": "requires at least 8 GB of available RAM",
+          "conditions": [],
+          "exceptions": [],
+          "method_id": "B"
+        }
+      ],
+      "contexts": {
+        "raw": "s08 | Tavi deployment guide\nMethod A must run in a cloud service and sends source documents to that service. Method B can run locally without network access. Method B requires at least 8 GB of available RAM. Method A is not available for local deployment.",
+        "structured_card": "[\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"must run in a cloud service and sends source documents to that service\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"A\",\n    \"claim\": \"is not available for local deployment\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A is not available for local deployment.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"can run locally without network access\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B can run locally without network access.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"B\",\n    \"claim\": \"requires at least 8 GB of available RAM\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n      }\n    ]\n  }\n]",
+        "text_card": "Title: A\nClaim: must run in a cloud service and sends source documents to that service\nConditions: []\nExceptions: []\nEvidence: s08: Method A must run in a cloud service and sends source documents to that service.\n\nTitle: A\nClaim: is not available for local deployment\nConditions: []\nExceptions: []\nEvidence: s08: Method A is not available for local deployment.\n\nTitle: B\nClaim: can run locally without network access\nConditions: []\nExceptions: []\nEvidence: s08: Method B can run locally without network access.\n\nTitle: B\nClaim: requires at least 8 GB of available RAM\nConditions: []\nExceptions: []\nEvidence: s08: Method B requires at least 8 GB of available RAM."
+      },
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10281.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "092d1641a90511ace0f57a552182a42f89932653ea696415d021a13fd637f208",
+        "request_id": "extract-b06",
+        "text": "[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"must run in a cloud service and sends source documents to that service\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"is not available for local deployment\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A is not available for local deployment.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"can run locally without network access\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B can run locally without network access.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"requires at least 8 GB of available RAM\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n            }\n        ]\n    }\n]",
+        "usage": {
+          "input_tokens": 218,
+          "output_tokens": 307
+        }
+      },
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10281.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "092d1641a90511ace0f57a552182a42f89932653ea696415d021a13fd637f208",
+        "request_id": "extract-b06",
+        "text": "```json\n[\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"must run in a cloud service and sends source documents to that service\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"A\",\n        \"claim\": \"is not available for local deployment\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method A is not available for local deployment.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"can run locally without network access\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B can run locally without network access.\"\n            }\n        ]\n    },\n    {\n        \"method_id\": \"B\",\n        \"claim\": \"requires at least 8 GB of available RAM\",\n        \"conditions\": [],\n        \"exceptions\": [],\n        \"citations\": [\n            {\n                \"source_id\": \"s08\",\n                \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n            }\n        ]\n    }\n]\n```",
+        "usage": {
+          "input_tokens": 218,
+          "output_tokens": 307
+        }
+      }
+    }
+  ],
+  "evidence_grade": "post_hoc_synthetic_development_only",
+  "limitations": [
+    "No semantic entailment judge; quotes verify identity only",
+    "Character budget is not equal token budget",
+    "Imported model identity/usage is not independently authenticated",
+    "Shared extraction cost belongs in full to either card arm when deployed separately",
+    "Interface repair designed after seeing v1 failures; not an independent replication",
+    "Raw answers reused by exact request hash; not newly sampled"
+  ],
+  "lock": {
+    "code": {
+      "evals/method-selection/run_experiment.py": "f2e8d81be6044d013a1978c0f8316e540cda05ec6c352891a6b5fee544f9d380",
+      "sheaf_ai/card_governance.py": "b9260c8a31575d93724c8ebeb9dc99c99ff27c695fd2a57f5dfb34d85a2c265d",
+      "sheaf_ai/card_trace.py": "9e22857dbdc6e080ca2b9ea372b7cddb14f01596e64a593eff3e54101fbd4bc6",
+      "sheaf_ai/renderer.py": "1f5feb7a13ce605b5e743906e9888a602f64ca3d5d11edabae4b97429353914d",
+      "sheaf_cards/base.py": "dd9f732cc458daf29ff4ea99755300081e8c3230b0ca983e006971fb2322854c"
+    },
+    "evidence_grade": "synthetic_development_only",
+    "files": {
+      "gold.json": "3ad43fb4398cf7eb76f8e4b2afda45736c443e82217264f7233ba7d0bb7440c4",
+      "inputs.json": "dc69ddcfe84465b7f6d422da515ea4193d9fcb0563022850352b11415c1074bf",
+      "protocol.md": "afdb119577d07df0e49bbf4e0a31186b1ff355658cd43f90b21ab0f36cad30fd"
+    },
+    "version": "method-selection-v1"
+  },
+  "normalization_audit": [
+    {
+      "original_text_hash": "53d2fe8df6ef9f99e684a3b5d2796063d19fd5bc80887d14cd7a1d2de6943e46",
+      "parsed_text_hash": "53d2fe8df6ef9f99e684a3b5d2796063d19fd5bc80887d14cd7a1d2de6943e46",
+      "request_id": "extract-b01",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "73fa06d5bd73d31b0798fb9d2444288fcfd2d1a1f6a648c777ce1da1c91c7392",
+      "parsed_text_hash": "73fa06d5bd73d31b0798fb9d2444288fcfd2d1a1f6a648c777ce1da1c91c7392",
+      "request_id": "extract-b02",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "d8aa61594e43faa83f41ac9e2162596b1d20886addc88c6e318daaf9f9e63a58",
+      "parsed_text_hash": "ece651327dcf9442e21d362814811446f748209322f38f5f96a3716b7c86f590",
+      "request_id": "extract-b03",
+      "transformation": "whole_message_json_fence_removed"
+    },
+    {
+      "original_text_hash": "4a87fc12c70d776c4f7abd311df0d0f06bf893e10ad502f6dbc0e68b7b3b0817",
+      "parsed_text_hash": "4a87fc12c70d776c4f7abd311df0d0f06bf893e10ad502f6dbc0e68b7b3b0817",
+      "request_id": "extract-b04",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "7469513b871ef661ca86c7bdd77c9f920fc034bb653332a4734d1e703bc27b77",
+      "parsed_text_hash": "7469513b871ef661ca86c7bdd77c9f920fc034bb653332a4734d1e703bc27b77",
+      "request_id": "extract-b05",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "47956224580b6b56c56dcd827cbcedc5cdaa71971ba376287c91b488f2ee4533",
+      "parsed_text_hash": "350cfa3be5e5fc07ad6e93314649a384b5dab360223483a05c0254ce588f7d18",
+      "request_id": "extract-b06",
+      "transformation": "whole_message_json_fence_removed"
+    },
+    {
+      "original_text_hash": "021ce8dc16294dd4184e43a5a475804387ccde6d0d699763cb7229f338b7da14",
+      "parsed_text_hash": "021ce8dc16294dd4184e43a5a475804387ccde6d0d699763cb7229f338b7da14",
+      "request_id": "answer-q01-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "5e718469b0cffc34494f031abf066a0f76de825525389eecd9b619f07160e2a6",
+      "parsed_text_hash": "5e718469b0cffc34494f031abf066a0f76de825525389eecd9b619f07160e2a6",
+      "request_id": "answer-q01-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "a6a84153db11a5490199f88f93d319c78f8b9da8e231c0124cf39a1b616c0e88",
+      "parsed_text_hash": "a6a84153db11a5490199f88f93d319c78f8b9da8e231c0124cf39a1b616c0e88",
+      "request_id": "answer-q01-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "5d8ff417799e512b60421ae5356373310da7f6bff964675f815aeb8c7d00f5db",
+      "parsed_text_hash": "5d8ff417799e512b60421ae5356373310da7f6bff964675f815aeb8c7d00f5db",
+      "request_id": "answer-q02-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "c6d699bb4f9d9a5ccd3781e3fca121fdedb6cc1040deff2e4334a806b3481e94",
+      "parsed_text_hash": "c6d699bb4f9d9a5ccd3781e3fca121fdedb6cc1040deff2e4334a806b3481e94",
+      "request_id": "answer-q02-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "73aafc27035ed7614284e717f4a881e96f772c839a0c02c5cf9e699c93190062",
+      "parsed_text_hash": "73aafc27035ed7614284e717f4a881e96f772c839a0c02c5cf9e699c93190062",
+      "request_id": "answer-q02-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "315458761657ca6a719f9d1b82ad5f3ce50a2d268f2d448ed04e279d2c676d50",
+      "parsed_text_hash": "315458761657ca6a719f9d1b82ad5f3ce50a2d268f2d448ed04e279d2c676d50",
+      "request_id": "answer-q03-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "153fd84d9e324cc9a5640e10d29b57b13a7f03b000a1623f64462218bff8098e",
+      "parsed_text_hash": "153fd84d9e324cc9a5640e10d29b57b13a7f03b000a1623f64462218bff8098e",
+      "request_id": "answer-q03-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "7d0d289c6c610115497b003d1c14b312d0897e305af8a6371c90a29c53f6fcee",
+      "parsed_text_hash": "7d0d289c6c610115497b003d1c14b312d0897e305af8a6371c90a29c53f6fcee",
+      "request_id": "answer-q03-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "3492adf42b9f54a7926032684b9e63e93332d10c02fda98f476dd16589b232bd",
+      "parsed_text_hash": "3492adf42b9f54a7926032684b9e63e93332d10c02fda98f476dd16589b232bd",
+      "request_id": "answer-q04-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "e4390ab72ecb44f5becfd353b6151dcc5d21341b1b0b29c7c27ca997908dd914",
+      "parsed_text_hash": "e4390ab72ecb44f5becfd353b6151dcc5d21341b1b0b29c7c27ca997908dd914",
+      "request_id": "answer-q04-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "7c0010c0069a65105e3d5ca26d10c440a795de6b77d9bbd5ad1aaa3d1fe82546",
+      "parsed_text_hash": "7c0010c0069a65105e3d5ca26d10c440a795de6b77d9bbd5ad1aaa3d1fe82546",
+      "request_id": "answer-q04-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "e97d53212491c853369b75250bc6f4a1e2300ee40bfb622ca290dc365123cdaa",
+      "parsed_text_hash": "e97d53212491c853369b75250bc6f4a1e2300ee40bfb622ca290dc365123cdaa",
+      "request_id": "answer-q05-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "d9f696427f8b457267e5462cf2940e1028c9f76153c7e0c05920571c17771b43",
+      "parsed_text_hash": "d9f696427f8b457267e5462cf2940e1028c9f76153c7e0c05920571c17771b43",
+      "request_id": "answer-q05-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "7fc27da34a22365d07b39a488696b8b77af368dee7d646f39454d87e05a2c3ec",
+      "parsed_text_hash": "7fc27da34a22365d07b39a488696b8b77af368dee7d646f39454d87e05a2c3ec",
+      "request_id": "answer-q05-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "cb26081e8f929ef6ef4d5032343bfc29fdf610500be86abccddedf2972e5db02",
+      "parsed_text_hash": "cb26081e8f929ef6ef4d5032343bfc29fdf610500be86abccddedf2972e5db02",
+      "request_id": "answer-q06-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "ce885dccb1dd2def3e5ad3fa5307f302f0f0b9dfd37a934f16e9332fe544c496",
+      "parsed_text_hash": "ce885dccb1dd2def3e5ad3fa5307f302f0f0b9dfd37a934f16e9332fe544c496",
+      "request_id": "answer-q06-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "69db659f67a8c6069949c15f065959a4564a4e0beda1f626de1edf110a9242b4",
+      "parsed_text_hash": "69db659f67a8c6069949c15f065959a4564a4e0beda1f626de1edf110a9242b4",
+      "request_id": "answer-q06-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "ec16fac03b922bc00426d3c92616de3335e34b648319c19cc030b0a780e81a75",
+      "parsed_text_hash": "ec16fac03b922bc00426d3c92616de3335e34b648319c19cc030b0a780e81a75",
+      "request_id": "answer-q07-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "6156aad92503f1a1b35ef19a3df4ff2aef61af0908382888c05ddfcf68a01162",
+      "parsed_text_hash": "6156aad92503f1a1b35ef19a3df4ff2aef61af0908382888c05ddfcf68a01162",
+      "request_id": "answer-q07-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "339797428b144d6f4bf25daf3c9be4ddab15d12b9ca6b9f76f1481f45939221a",
+      "parsed_text_hash": "339797428b144d6f4bf25daf3c9be4ddab15d12b9ca6b9f76f1481f45939221a",
+      "request_id": "answer-q07-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "e43060b36b681bc250aa5176a75f2b9bf2c537dcf13eddf708bb81708f9ff0ef",
+      "parsed_text_hash": "e43060b36b681bc250aa5176a75f2b9bf2c537dcf13eddf708bb81708f9ff0ef",
+      "request_id": "answer-q08-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "bbee60856d4e53da780ba21c9bad6c1a73d8915648f8be2b79e7264839281e45",
+      "parsed_text_hash": "bbee60856d4e53da780ba21c9bad6c1a73d8915648f8be2b79e7264839281e45",
+      "request_id": "answer-q08-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "d5d4036c8db3c4590f00dfc0716a5fc3d8d4a6b92738de1b25e05962f544909c",
+      "parsed_text_hash": "d5d4036c8db3c4590f00dfc0716a5fc3d8d4a6b92738de1b25e05962f544909c",
+      "request_id": "answer-q08-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "da28373b2d799cb0ac9afd4e33068e156cc05a0c42077c35e400e5169e646c27",
+      "parsed_text_hash": "da28373b2d799cb0ac9afd4e33068e156cc05a0c42077c35e400e5169e646c27",
+      "request_id": "answer-q09-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "5337ee444022e3b236a8b238cadb8fe245818b7b00eacd1dd8b565d501d894bc",
+      "parsed_text_hash": "5337ee444022e3b236a8b238cadb8fe245818b7b00eacd1dd8b565d501d894bc",
+      "request_id": "answer-q09-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "08363ef84f9a862263c164d7aa66735b0d3d691dbf2616a0347f88c4c24ac85a",
+      "parsed_text_hash": "08363ef84f9a862263c164d7aa66735b0d3d691dbf2616a0347f88c4c24ac85a",
+      "request_id": "answer-q09-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "2d0a2b3f83c5021e929b8ab9971d2e9b32fc75d6c6d8b70dca3a5682dbd9a222",
+      "parsed_text_hash": "2d0a2b3f83c5021e929b8ab9971d2e9b32fc75d6c6d8b70dca3a5682dbd9a222",
+      "request_id": "answer-q10-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "31084e37afb8c77b2e4df9b3a2616ef4f7cd4346b21f9c35d33692053ef8a321",
+      "parsed_text_hash": "31084e37afb8c77b2e4df9b3a2616ef4f7cd4346b21f9c35d33692053ef8a321",
+      "request_id": "answer-q10-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "3fa739d15574d3f576532d553dd1ba81307bc39d54a58a231d577d694074dcdf",
+      "parsed_text_hash": "3fa739d15574d3f576532d553dd1ba81307bc39d54a58a231d577d694074dcdf",
+      "request_id": "answer-q10-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "97ed125cfbb60e7da1b3699ae16457f7ac56ed3eee1db1e4ad8ae885a9a9f71e",
+      "parsed_text_hash": "97ed125cfbb60e7da1b3699ae16457f7ac56ed3eee1db1e4ad8ae885a9a9f71e",
+      "request_id": "answer-q11-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "d032399047dd392d0fcc769b7fc3fbcb18e36fd73da80087cc4fa359038ebef3",
+      "parsed_text_hash": "d032399047dd392d0fcc769b7fc3fbcb18e36fd73da80087cc4fa359038ebef3",
+      "request_id": "answer-q11-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "71ee3a515ecf20e5cc140b34d0010a46cf776eeb8f670458edc6b96a486d2f46",
+      "parsed_text_hash": "71ee3a515ecf20e5cc140b34d0010a46cf776eeb8f670458edc6b96a486d2f46",
+      "request_id": "answer-q11-structured_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "01c901e5ea105d7091ef87277e53b9b7e0e8d0e11821c7c581cb7142c79545e8",
+      "parsed_text_hash": "01c901e5ea105d7091ef87277e53b9b7e0e8d0e11821c7c581cb7142c79545e8",
+      "request_id": "answer-q12-raw",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "a6daa4476d2eefb5bd550e93f16c3d1809ef45d1bed54a0546517851abfad1a3",
+      "parsed_text_hash": "a6daa4476d2eefb5bd550e93f16c3d1809ef45d1bed54a0546517851abfad1a3",
+      "request_id": "answer-q12-text_card",
+      "transformation": "identity"
+    },
+    {
+      "original_text_hash": "e9dc92eeb826a62c03a3e6b8f568d7dffff8b9045f64e0b66fae1151e8ebe929",
+      "parsed_text_hash": "e9dc92eeb826a62c03a3e6b8f568d7dffff8b9045f64e0b66fae1151e8ebe929",
+      "request_id": "answer-q12-structured_card",
+      "transformation": "identity"
+    }
+  ],
+  "plan_hash": "9bd9b39408cf49b9d1ffa77a8f52cf7ea7199380fcd3ee1877c3e26a74b1b584",
+  "protocol_revision": {
+    "manifest_hash": "5170d322272e78946c42ad317f06939ec071382336b8030bc78bbe942f0bfb74",
+    "revision": "method-selection-post-hoc-interface-repair-v1"
+  },
+  "reused_raw_baseline_requests": 12,
+  "rows": [
+    {
+      "arm": "raw",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4281.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "addbb5789ab7251ebeac62dd3016be3074314f79927c51f59828b0a01b83aac2",
+        "request_id": "answer-q01-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task specifies that the complete requested catalog is already cached, which directly matches the condition under which Method A operates offline, as stated in the evidence.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 103
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4281.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "addbb5789ab7251ebeac62dd3016be3074314f79927c51f59828b0a01b83aac2",
+        "request_id": "answer-q01-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task specifies that the complete requested catalog is already cached, which directly matches the condition under which Method A operates offline, as stated in the evidence.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 103
+        }
+      },
+      "request_id": "answer-q01-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q01"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 3734.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "d11597da5cf81070ba1af2ea715795e8f67c7de5e2e73ef4d02e1d27d27e4b5a",
+        "request_id": "answer-q01-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task states the complete requested catalog is already cached, which satisfies the condition for Method A to run without a network. The evidence explicitly supports Method A for this specific scenario.\"\n}",
+        "usage": {
+          "input_tokens": 282,
+          "output_tokens": 108
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 3734.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "d11597da5cf81070ba1af2ea715795e8f67c7de5e2e73ef4d02e1d27d27e4b5a",
+        "request_id": "answer-q01-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task states the complete requested catalog is already cached, which satisfies the condition for Method A to run without a network. The evidence explicitly supports Method A for this specific scenario.\"\n}",
+        "usage": {
+          "input_tokens": 282,
+          "output_tokens": 108
+        }
+      },
+      "request_id": "answer-q01-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q01"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a6ae02e23ecefa19c6474b972adc8afe16bf4af9044bf1080dc351a3dfc2320e",
+        "request_id": "answer-q01-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task states that the complete requested catalog is already cached, which directly satisfies the condition for Method A to run without a network, as supported by the source quote.\"\n}",
+        "usage": {
+          "input_tokens": 382,
+          "output_tokens": 106
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a6ae02e23ecefa19c6474b972adc8afe16bf4af9044bf1080dc351a3dfc2320e",
+        "request_id": "answer-q01-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task states that the complete requested catalog is already cached, which directly satisfies the condition for Method A to run without a network, as supported by the source quote.\"\n}",
+        "usage": {
+          "input_tokens": 382,
+          "output_tokens": 106
+        }
+      },
+      "request_id": "answer-q01-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q01"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6000.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b4a503b3c814823af64fa8b6b483a033f038c517c51066359f8646c9e81faa61",
+        "request_id": "answer-q02-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Both methods fail to meet the requirement of fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup, making it impossible to operate without a network.\"\n}",
+        "usage": {
+          "input_tokens": 211,
+          "output_tokens": 159
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6000.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b4a503b3c814823af64fa8b6b483a033f038c517c51066359f8646c9e81faa61",
+        "request_id": "answer-q02-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure. It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Both methods fail to meet the requirement of fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup, making it impossible to operate without a network.\"\n}",
+        "usage": {
+          "input_tokens": 211,
+          "output_tokens": 159
+        }
+      },
+      "request_id": "answer-q02-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q02"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8110.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "7c338da0454cb21d22dc7cd7fe5ad2d5f13b2d0a7c00edecbf4279e495fee1eb",
+        "request_id": "answer-q02-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"It cannot fetch uncached records offline.\"\n    }\n  ],\n  \"reason\": \"The task requires fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, as stated in the evidence, so it does not support all constraints. Method B requires a live network for every lookup, making it unsuitable for offline use. Therefore, no method meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 278,
+          "output_tokens": 163
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8110.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "7c338da0454cb21d22dc7cd7fe5ad2d5f13b2d0a7c00edecbf4279e495fee1eb",
+        "request_id": "answer-q02-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"It cannot fetch uncached records offline.\"\n    }\n  ],\n  \"reason\": \"The task requires fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, as stated in the evidence, so it does not support all constraints. Method B requires a live network for every lookup, making it unsuitable for offline use. Therefore, no method meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 278,
+          "output_tokens": 163
+        }
+      },
+      "request_id": "answer-q02-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q02"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b01",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6250.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2cafdc958474e484f135d6273da6778228234f3d3d7637f49568653f9245070d",
+        "request_id": "answer-q02-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup. Neither method satisfies the task constraint of fetching uncached records without a network.\"\n}",
+        "usage": {
+          "input_tokens": 378,
+          "output_tokens": 167
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6250.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2cafdc958474e484f135d6273da6778228234f3d3d7637f49568653f9245070d",
+        "request_id": "answer-q02-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"It cannot fetch uncached records offline.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method B requires a live network for every lookup.\"\n    }\n  ],\n  \"reason\": \"Method A explicitly cannot fetch uncached records offline, and Method B requires a live network for every lookup. Neither method satisfies the task constraint of fetching uncached records without a network.\"\n}",
+        "usage": {
+          "input_tokens": 378,
+          "output_tokens": 167
+        }
+      },
+      "request_id": "answer-q02-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q02"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 9359.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5671583fd8ff25fabec31019eff648013a6af4d617d0b7b0968b3302afabf49f",
+        "request_id": "answer-q03-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task specifies running version 2 and needing transparent PNG. The evidence from s03 explicitly states that in version 2, Method B exports transparent PNG, while Method A exports opaque PNG only. This directly supports choosing Method B to meet all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 128
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 9359.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5671583fd8ff25fabec31019eff648013a6af4d617d0b7b0968b3302afabf49f",
+        "request_id": "answer-q03-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"In version 2, Method A exports opaque PNG only. Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task specifies running version 2 and needing transparent PNG. The evidence from s03 explicitly states that in version 2, Method B exports transparent PNG, while Method A exports opaque PNG only. This directly supports choosing Method B to meet all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 242,
+          "output_tokens": 128
+        }
+      },
+      "request_id": "answer-q03-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q03"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4562.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "743e7fd936ac7e3be416039c34a381fb985b55052497658379fd8c8a747353b4",
+        "request_id": "answer-q03-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task requires a method for version 2 that supports transparent PNG. Method B is explicitly documented as exporting transparent PNG under version 2, meeting all constraints. Method A is documented as exporting opaque PNG only in version 2, which does not satisfy the requirement.\"\n}",
+        "usage": {
+          "input_tokens": 283,
+          "output_tokens": 119
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4562.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "743e7fd936ac7e3be416039c34a381fb985b55052497658379fd8c8a747353b4",
+        "request_id": "answer-q03-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task requires a method for version 2 that supports transparent PNG. Method B is explicitly documented as exporting transparent PNG under version 2, meeting all constraints. Method A is documented as exporting opaque PNG only in version 2, which does not satisfy the requirement.\"\n}",
+        "usage": {
+          "input_tokens": 283,
+          "output_tokens": 119
+        }
+      },
+      "request_id": "answer-q03-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q03"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4359.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "f27722ffef213a15bde0fb66a414cc0d430cf40e85fa1c817b94414f4cf7dbbc",
+        "request_id": "answer-q03-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task requires a method for version 2 that supports transparent PNG. Method A is explicitly stated to export opaque PNG only in version 2, while Method B is documented to export transparent PNG in version 2, meeting all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 408,
+          "output_tokens": 113
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4359.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "f27722ffef213a15bde0fb66a414cc0d430cf40e85fa1c817b94414f4cf7dbbc",
+        "request_id": "answer-q03-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s03\",\n      \"quote\": \"Method B version 2 exports transparent PNG.\"\n    }\n  ],\n  \"reason\": \"The task requires a method for version 2 that supports transparent PNG. Method A is explicitly stated to export opaque PNG only in version 2, while Method B is documented to export transparent PNG in version 2, meeting all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 408,
+          "output_tokens": 113
+        }
+      },
+      "request_id": "answer-q03-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q03"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4875.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "240202bb19782fb188cf71b230ecac8ffe6f0416ed2d1f3783acb6004eed9977",
+        "request_id": "answer-q04-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background. This note applies only to version 1.\"\n    }\n  ],\n  \"reason\": \"The task specifies a machine fixed to version 1, and s02 explicitly states that Method A in version 1 exports PNG with a transparent background, meeting the requirement for transparent PNG. No conflicting evidence exists for version 1.\"\n}",
+        "usage": {
+          "input_tokens": 251,
+          "output_tokens": 124
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4875.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "240202bb19782fb188cf71b230ecac8ffe6f0416ed2d1f3783acb6004eed9977",
+        "request_id": "answer-q04-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background. This note applies only to version 1.\"\n    }\n  ],\n  \"reason\": \"The task specifies a machine fixed to version 1, and s02 explicitly states that Method A in version 1 exports PNG with a transparent background, meeting the requirement for transparent PNG. No conflicting evidence exists for version 1.\"\n}",
+        "usage": {
+          "input_tokens": 251,
+          "output_tokens": 124
+        }
+      },
+      "request_id": "answer-q04-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q04"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 3860.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b1b6c14d733c480f40a62c5dc993bfe3dc85155724bd4ae1f42acf202a5cf408",
+        "request_id": "answer-q04-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence directly supports Method A for transparent PNG under version 1, with no conflicting evidence for that version.\"\n}",
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 91
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 3860.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b1b6c14d733c480f40a62c5dc993bfe3dc85155724bd4ae1f42acf202a5cf408",
+        "request_id": "answer-q04-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence directly supports Method A for transparent PNG under version 1, with no conflicting evidence for that version.\"\n}",
+        "usage": {
+          "input_tokens": 292,
+          "output_tokens": 91
+        }
+      },
+      "request_id": "answer-q04-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q04"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b02",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4313.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5192ec35ce68595a8e9b95c2973fdc76f18a045b277cce107bb9adaeca9e1d29",
+        "request_id": "answer-q04-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence explicitly states that Method A in version 1 exports PNG with a transparent background, which directly supports the task constraint of using version 1 and the requirement for transparent PNG.\"\n}",
+        "usage": {
+          "input_tokens": 417,
+          "output_tokens": 105
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4313.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5192ec35ce68595a8e9b95c2973fdc76f18a045b277cce107bb9adaeca9e1d29",
+        "request_id": "answer-q04-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s02\",\n      \"quote\": \"Method A version 1 exports PNG with a transparent background.\"\n    }\n  ],\n  \"reason\": \"The evidence explicitly states that Method A in version 1 exports PNG with a transparent background, which directly supports the task constraint of using version 1 and the requirement for transparent PNG.\"\n}",
+        "usage": {
+          "input_tokens": 417,
+          "output_tokens": 105
+        }
+      },
+      "request_id": "answer-q04-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q04"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e27fd3e3d9c516ffa2f17d25f6ef80554d4407c37002ad117dfe83ebfe458b27",
+        "request_id": "answer-q05-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings. It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings without depth data. Method A 'does not contain depth data,' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the requirement to export a depth map.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 157
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e27fd3e3d9c516ffa2f17d25f6ef80554d4407c37002ad117dfe83ebfe458b27",
+        "request_id": "answer-q05-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings. It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings without depth data. Method A 'does not contain depth data,' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the requirement to export a depth map.\"\n}",
+        "usage": {
+          "input_tokens": 215,
+          "output_tokens": 157
+        }
+      },
+      "request_id": "answer-q05-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q05"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6062.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "f24fd2d12225e1f4b1e5717ce5550cc2c51d97fd1a9d24f9bc2c31aeb512758a",
+        "request_id": "answer-q05-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings and lacking depth data. Method A is stated to not contain depth data, and Method B is explicitly stated to not support depth maps. No evidence indicates that either method exports a depth map, so the task constraint is not supported by any option.\"\n}",
+        "usage": {
+          "input_tokens": 341,
+          "output_tokens": 204
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6062.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "f24fd2d12225e1f4b1e5717ce5550cc2c51d97fd1a9d24f9bc2c31aeb512758a",
+        "request_id": "answer-q05-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly described as producing flat RGB drawings and lacking depth data. Method A is stated to not contain depth data, and Method B is explicitly stated to not support depth maps. No evidence indicates that either method exports a depth map, so the task constraint is not supported by any option.\"\n}",
+        "usage": {
+          "input_tokens": 341,
+          "output_tokens": 204
+        }
+      },
+      "request_id": "answer-q05-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q05"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7531.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "1bf8d11cc577a8a946e1b3e1b0491b94a277f9755e06b3ac62d6a3a181c12929",
+        "request_id": "answer-q05-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly stated to not support depth maps: Method A 'does not contain depth data' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the task constraint of exporting a depth map.\"\n}",
+        "usage": {
+          "input_tokens": 571,
+          "output_tokens": 192
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7531.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "1bf8d11cc577a8a946e1b3e1b0491b94a277f9755e06b3ac62d6a3a181c12929",
+        "request_id": "answer-q05-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A produces flat RGB drawings.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"It does not contain depth data.\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method B also produces flat RGB drawings\"\n    },\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"and explicitly does not support depth maps.\"\n    }\n  ],\n  \"reason\": \"Both methods are explicitly stated to not support depth maps: Method A 'does not contain depth data' and Method B 'explicitly does not support depth maps.' Therefore, no method meets the task constraint of exporting a depth map.\"\n}",
+        "usage": {
+          "input_tokens": 571,
+          "output_tokens": 192
+        }
+      },
+      "request_id": "answer-q05-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q05"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4953.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "faaabccc2a4b1e5080e2141fbbf923c0df443c3f49ed7eca86d72528622ef0f1",
+        "request_id": "answer-q06-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output; Method B exports PNG only.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method for SVG output. The evidence explicitly states that Method A supports SVG output, while Method B only exports PNG. Since Method A meets the constraint and there is no conflicting or prohibitive information, it is supported.\"\n}",
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 117
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4953.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "faaabccc2a4b1e5080e2141fbbf923c0df443c3f49ed7eca86d72528622ef0f1",
+        "request_id": "answer-q06-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output; Method B exports PNG only.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method for SVG output. The evidence explicitly states that Method A supports SVG output, while Method B only exports PNG. Since Method A meets the constraint and there is no conflicting or prohibitive information, it is supported.\"\n}",
+        "usage": {
+          "input_tokens": 213,
+          "output_tokens": 117
+        }
+      },
+      "request_id": "answer-q06-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q06"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4094.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a24aec2ebaa0271614607699607a614c197047e89eb90c5f5eb92919bf870aae",
+        "request_id": "answer-q06-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, with no evidence of SVG support, so it does not meet the constraint.\"\n}",
+        "usage": {
+          "input_tokens": 339,
+          "output_tokens": 105
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4094.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "a24aec2ebaa0271614607699607a614c197047e89eb90c5f5eb92919bf870aae",
+        "request_id": "answer-q06-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, with no evidence of SVG support, so it does not meet the constraint.\"\n}",
+        "usage": {
+          "input_tokens": 339,
+          "output_tokens": 105
+        }
+      },
+      "request_id": "answer-q06-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q06"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b03",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4047.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b66dce760d73490dc443827db3a93b49fe5043da09d458e4a270b7853f4629cb",
+        "request_id": "answer-q06-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, so it does not meet the SVG output constraint.\"\n}",
+        "usage": {
+          "input_tokens": 569,
+          "output_tokens": 100
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4047.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b66dce760d73490dc443827db3a93b49fe5043da09d458e4a270b7853f4629cb",
+        "request_id": "answer-q06-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, so it does not meet the SVG output constraint.\"\n}",
+        "usage": {
+          "input_tokens": 569,
+          "output_tokens": 100
+        }
+      },
+      "request_id": "answer-q06-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q06"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4187.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e8e4243ef52d23b20a9b293466fa29359b340bf6a3ba44828a994cc9f30cc614",
+        "request_id": "answer-q07-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Neither note reports data about encryption or latency.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but the evidence explicitly states that no data about encryption is reported for either method, so no option meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 221,
+          "output_tokens": 102
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 4187.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e8e4243ef52d23b20a9b293466fa29359b340bf6a3ba44828a994cc9f30cc614",
+        "request_id": "answer-q07-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Neither note reports data about encryption or latency.\"\n    }\n  ],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but the evidence explicitly states that no data about encryption is reported for either method, so no option meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 221,
+          "output_tokens": 102
+        }
+      },
+      "request_id": "answer-q07-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q07"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": true,
+      "error": "At least one source citation is required",
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5422.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "44d5096bebddc3e49913cf2693fda8f59bede7c64d87439278f83aaf2ba12e57",
+        "request_id": "answer-q07-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with 'verified encryption support,' but the provided evidence for both methods only discusses compression and storage, with no mention of encryption at all. Therefore, no method can be supported based on the given evidence.\"\n}",
+        "usage": {
+          "input_tokens": 265,
+          "output_tokens": 85
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5422.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "44d5096bebddc3e49913cf2693fda8f59bede7c64d87439278f83aaf2ba12e57",
+        "request_id": "answer-q07-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with 'verified encryption support,' but the provided evidence for both methods only discusses compression and storage, with no mention of encryption at all. Therefore, no method can be supported based on the given evidence.\"\n}",
+        "usage": {
+          "input_tokens": 265,
+          "output_tokens": 85
+        }
+      },
+      "request_id": "answer-q07-text_card",
+      "required_sources_covered": false,
+      "state_correct": true,
+      "task_id": "q07"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": false,
+      "decision_correct": true,
+      "error": "At least one source citation is required",
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7719.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "14b56d0507df66b899d2795139f6891b756c9a12026fd0479e64244adcbef28d",
+        "request_id": "answer-q07-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but none of the provided evidence mentions encryption for either method A or B. The context only discusses compression and storage, not encryption.\"\n}",
+        "usage": {
+          "input_tokens": 363,
+          "output_tokens": 76
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7719.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "14b56d0507df66b899d2795139f6891b756c9a12026fd0479e64244adcbef28d",
+        "request_id": "answer-q07-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"insufficient\",\n  \"citations\": [],\n  \"reason\": \"The task requires choosing a method with verified encryption support, but none of the provided evidence mentions encryption for either method A or B. The context only discusses compression and storage, not encryption.\"\n}",
+        "usage": {
+          "input_tokens": 363,
+          "output_tokens": 76
+        }
+      },
+      "request_id": "answer-q07-structured_card",
+      "required_sources_covered": false,
+      "state_correct": true,
+      "task_id": "q07"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7328.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5e5d909c10e4f16e5a0101203a008ad0223d13011a1c7a83b0e86a07387d3e76",
+        "request_id": "answer-q08-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    }\n  ],\n  \"reason\": \"The task asks to choose a method for reducing storage volume for daily archives. Source s05 explicitly states that Method A compresses daily archives to save storage, which directly satisfies the task constraint. Method B is described as keeping the uncompressed original, which does not reduce storage. No evidence contradicts Method A's suitability, and no other constraints (like encryption or latency) are reported as relevant.\"\n}",
+        "usage": {
+          "input_tokens": 223,
+          "output_tokens": 145
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7328.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "5e5d909c10e4f16e5a0101203a008ad0223d13011a1c7a83b0e86a07387d3e76",
+        "request_id": "answer-q08-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    }\n  ],\n  \"reason\": \"The task asks to choose a method for reducing storage volume for daily archives. Source s05 explicitly states that Method A compresses daily archives to save storage, which directly satisfies the task constraint. Method B is described as keeping the uncompressed original, which does not reduce storage. No evidence contradicts Method A's suitability, and no other constraints (like encryption or latency) are reported as relevant.\"\n}",
+        "usage": {
+          "input_tokens": 223,
+          "output_tokens": 145
+        }
+      },
+      "request_id": "answer-q08-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q08"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "460a84709dbae1e1e57a78e6492c30a30c819b367bf4bec6a1250293dda58c17",
+        "request_id": "answer-q08-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    },\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B does not compress and keeps the uncompressed original, which does not align with the task's goal of reducing storage.\"\n}",
+        "usage": {
+          "input_tokens": 267,
+          "output_tokens": 147
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6125.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "460a84709dbae1e1e57a78e6492c30a30c819b367bf4bec6a1250293dda58c17",
+        "request_id": "answer-q08-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    },\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B does not compress and keeps the uncompressed original, which does not align with the task's goal of reducing storage.\"\n}",
+        "usage": {
+          "input_tokens": 267,
+          "output_tokens": 147
+        }
+      },
+      "request_id": "answer-q08-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q08"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b04",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5328.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b4b02652be8c7508dd5f2302067553a5e7bc8f925f372bf7b6a94aabc90f1b5d",
+        "request_id": "answer-q08-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    },\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B keeps the uncompressed original and offers no evidence of storage reduction.\"\n}",
+        "usage": {
+          "input_tokens": 365,
+          "output_tokens": 137
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5328.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b4b02652be8c7508dd5f2302067553a5e7bc8f925f372bf7b6a94aabc90f1b5d",
+        "request_id": "answer-q08-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    },\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Compression ratio for Method A was measured on daily archives, not on live streams.\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly supported for reducing storage volume on daily archives, as it compresses them, while Method B keeps the uncompressed original and offers no evidence of storage reduction.\"\n}",
+        "usage": {
+          "input_tokens": 365,
+          "output_tokens": 137
+        }
+      },
+      "request_id": "answer-q08-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q08"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7485.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "849ec1991a35a0e1cce81249fa3b1b0705135dc20ddd440bccd0a8d94af9b1a5",
+        "request_id": "answer-q09-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s06\", \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"},\n    {\"source_id\": \"s07\", \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"}\n  ],\n  \"reason\": \"There is a direct conflict in the reported worst-case latency for Method A under workload W, version 3: s06 reports 20 ms, while s07 reports 80 ms. The task requires a method with established worst-case latency below 50 ms, and prohibits resolving conflicts by guessing. Since the evidence for Method A is contradictory and there is no adjudication, it cannot be reliably established that Method A meets the constraint. Method B is consistently reported above 50 ms (90 ms). Therefore, no method can be chosen with certainty.\"\n}",
+        "usage": {
+          "input_tokens": 281,
+          "output_tokens": 244
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7485.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "849ec1991a35a0e1cce81249fa3b1b0705135dc20ddd440bccd0a8d94af9b1a5",
+        "request_id": "answer-q09-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s06\", \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"},\n    {\"source_id\": \"s07\", \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"}\n  ],\n  \"reason\": \"There is a direct conflict in the reported worst-case latency for Method A under workload W, version 3: s06 reports 20 ms, while s07 reports 80 ms. The task requires a method with established worst-case latency below 50 ms, and prohibits resolving conflicts by guessing. Since the evidence for Method A is contradictory and there is no adjudication, it cannot be reliably established that Method A meets the constraint. Method B is consistently reported above 50 ms (90 ms). Therefore, no method can be chosen with certainty.\"\n}",
+        "usage": {
+          "input_tokens": 281,
+          "output_tokens": 244
+        }
+      },
+      "request_id": "answer-q09-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q09"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8500.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "0c3fc6461433fab46532b95f6136aa882a78b264316286f2e68a44a54ab7886c",
+        "request_id": "answer-q09-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"There is a direct conflict in the evidence for Method A: one source reports a worst-case latency of 20 milliseconds (below 50 ms), while another reports 80 milliseconds (above 50 ms). Since the task prohibits resolving conflicting reports by guessing, and the evidence does not support all constraints for either method (Method B's latency is consistently reported as 90 milliseconds, above the threshold), abstention is required.\"\n}",
+        "usage": {
+          "input_tokens": 367,
+          "output_tokens": 203
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8500.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "0c3fc6461433fab46532b95f6136aa882a78b264316286f2e68a44a54ab7886c",
+        "request_id": "answer-q09-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"There is a direct conflict in the evidence for Method A: one source reports a worst-case latency of 20 milliseconds (below 50 ms), while another reports 80 milliseconds (above 50 ms). Since the task prohibits resolving conflicting reports by guessing, and the evidence does not support all constraints for either method (Method B's latency is consistently reported as 90 milliseconds, above the threshold), abstention is required.\"\n}",
+        "usage": {
+          "input_tokens": 367,
+          "output_tokens": 203
+        }
+      },
+      "request_id": "answer-q09-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q09"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8828.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "9eb44915b1bc259085780f9f25ec8f53a8e39baf38e65db13ba175c387d6bc87",
+        "request_id": "answer-q09-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Method A has conflicting reported worst-case latencies (20 ms and 80 ms) under workload W, version 3, with both claims directly supported by source quotes. Since the task prohibits resolving conflicts by guessing, and the evidence does not support all constraints for either method (Method B's latency is 90 ms, exceeding the 50 ms threshold), no method can be chosen.\"\n}",
+        "usage": {
+          "input_tokens": 510,
+          "output_tokens": 196
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8828.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "9eb44915b1bc259085780f9f25ec8f53a8e39baf38e65db13ba175c387d6bc87",
+        "request_id": "answer-q09-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Method A has conflicting reported worst-case latencies (20 ms and 80 ms) under workload W, version 3, with both claims directly supported by source quotes. Since the task prohibits resolving conflicts by guessing, and the evidence does not support all constraints for either method (Method B's latency is 90 ms, exceeding the 50 ms threshold), no method can be chosen.\"\n}",
+        "usage": {
+          "input_tokens": 510,
+          "output_tokens": 196
+        }
+      },
+      "request_id": "answer-q09-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q09"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7109.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "c1998dac33fbab1a577bfc942d4436acdcd917655527b83fb417a2ee992dc059",
+        "request_id": "answer-q10-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Both sources s06 and s07 report that Method B has a worst-case latency of 90 milliseconds under workload W, version 3, which is below the 100-millisecond threshold. There is no disagreement on Method B's latency, and no evidence prohibits its use or indicates it exceeds the constraint.\"\n}",
+        "usage": {
+          "input_tokens": 276,
+          "output_tokens": 203
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7109.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "c1998dac33fbab1a577bfc942d4436acdcd917655527b83fb417a2ee992dc059",
+        "request_id": "answer-q10-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"\n    }\n  ],\n  \"reason\": \"Both sources s06 and s07 report that Method B has a worst-case latency of 90 milliseconds under workload W, version 3, which is below the 100-millisecond threshold. There is no disagreement on Method B's latency, and no evidence prohibits its use or indicates it exceeds the constraint.\"\n}",
+        "usage": {
+          "input_tokens": 276,
+          "output_tokens": 203
+        }
+      },
+      "request_id": "answer-q10-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q10"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": false,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7984.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e676f2f505aede976422b18bdeb458b515a4f163e91e555060975d9126bbf30d",
+        "request_id": "answer-q10-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"The evidence for Method B consistently shows a worst-case latency of 90 milliseconds under workload W with version 3, which is below 100 milliseconds. However, there is a conflict in the evidence for Method A under the same conditions (20 ms vs. 80 ms), indicating unresolved disagreement about the context or measurements. Since the task requires choosing only if all constraints are supported without conflict, and the conflicting evidence for Method A introduces uncertainty about the reliability or consistency of the data, abstention is warranted.\"\n}",
+        "usage": {
+          "input_tokens": 362,
+          "output_tokens": 220
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7984.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "e676f2f505aede976422b18bdeb458b515a4f163e91e555060975d9126bbf30d",
+        "request_id": "answer-q10-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"The evidence for Method B consistently shows a worst-case latency of 90 milliseconds under workload W with version 3, which is below 100 milliseconds. However, there is a conflict in the evidence for Method A under the same conditions (20 ms vs. 80 ms), indicating unresolved disagreement about the context or measurements. Since the task requires choosing only if all constraints are supported without conflict, and the conflicting evidence for Method A introduces uncertainty about the reliability or consistency of the data, abstention is warranted.\"\n}",
+        "usage": {
+          "input_tokens": 362,
+          "output_tokens": 220
+        }
+      },
+      "request_id": "answer-q10-text_card",
+      "required_sources_covered": true,
+      "state_correct": false,
+      "task_id": "q10"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b05",
+      "citation_identity_valid": true,
+      "decision_correct": false,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7844.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2a791d3071020bf0903a134d91f5c378cbae52df0643754c90a28f0c9af9a8f3",
+        "request_id": "answer-q10-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"The evidence for Method B consistently states a worst-case latency of 90 milliseconds under workload W, version 3, which meets the constraint of below 100 milliseconds. However, there is an unresolved conflict regarding Method A's worst-case latency under the same conditions (20 ms vs. 80 ms), which introduces uncertainty about the overall reliability of the data. Since the task requires choosing only if all constraints are supported without conflicts, and the conflicting evidence for Method A suggests potential data inconsistency, abstention is warranted.\"\n}",
+        "usage": {
+          "input_tokens": 505,
+          "output_tokens": 221
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 7844.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2a791d3071020bf0903a134d91f5c378cbae52df0643754c90a28f0c9af9a8f3",
+        "request_id": "answer-q10-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s06\",\n      \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds.\"\n    },\n    {\n      \"source_id\": \"s07\",\n      \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds.\"\n    }\n  ],\n  \"reason\": \"The evidence for Method B consistently states a worst-case latency of 90 milliseconds under workload W, version 3, which meets the constraint of below 100 milliseconds. However, there is an unresolved conflict regarding Method A's worst-case latency under the same conditions (20 ms vs. 80 ms), which introduces uncertainty about the overall reliability of the data. Since the task requires choosing only if all constraints are supported without conflicts, and the conflicting evidence for Method A suggests potential data inconsistency, abstention is warranted.\"\n}",
+        "usage": {
+          "input_tokens": 505,
+          "output_tokens": 221
+        }
+      },
+      "request_id": "answer-q10-structured_card",
+      "required_sources_covered": true,
+      "state_correct": false,
+      "task_id": "q10"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b06",
+      "citation_identity_valid": false,
+      "decision_correct": true,
+      "error": "Citation must resolve to one original source span",
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6547.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "459c14786a2f4fd93f6c76137f7284ae6492a3e4ada096361b01177983c981ce",
+        "request_id": "answer-q11-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access. Method B requires at least 8 GB of available RAM.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service. Method A is not available for local deployment.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all constraints: it runs locally without network access, keeps source documents on the device, and the available 16 GB RAM meets its minimum 8 GB requirement. Method A is explicitly incompatible as it requires cloud service, network access, and sending documents off-device.\"\n}",
+        "usage": {
+          "input_tokens": 237,
+          "output_tokens": 177
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6547.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "459c14786a2f4fd93f6c76137f7284ae6492a3e4ada096361b01177983c981ce",
+        "request_id": "answer-q11-raw",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access. Method B requires at least 8 GB of available RAM.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service. Method A is not available for local deployment.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all constraints: it runs locally without network access, keeps source documents on the device, and the available 16 GB RAM meets its minimum 8 GB requirement. Method A is explicitly incompatible as it requires cloud service, network access, and sending documents off-device.\"\n}",
+        "usage": {
+          "input_tokens": 237,
+          "output_tokens": 177
+        }
+      },
+      "request_id": "answer-q11-raw",
+      "required_sources_covered": false,
+      "state_correct": true,
+      "task_id": "q11"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5625.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b370227020d8bdc4dae7c873d480d4ebd3c1351af1a25d32bbf9fc4891840ed0",
+        "request_id": "answer-q11-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all task constraints: it runs locally without network access, keeping source documents on the device, and the available 16 GB RAM meets its minimum requirement of 8 GB. Method A is explicitly unsupported as it requires cloud service and network access, contradicting the task.\"\n}",
+        "usage": {
+          "input_tokens": 335,
+          "output_tokens": 153
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 5625.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "b370227020d8bdc4dae7c873d480d4ebd3c1351af1a25d32bbf9fc4891840ed0",
+        "request_id": "answer-q11-text_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all task constraints: it runs locally without network access, keeping source documents on the device, and the available 16 GB RAM meets its minimum requirement of 8 GB. Method A is explicitly unsupported as it requires cloud service and network access, contradicting the task.\"\n}",
+        "usage": {
+          "input_tokens": 335,
+          "output_tokens": 153
+        }
+      },
+      "request_id": "answer-q11-text_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q11"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6250.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "cb1e7cee1b96e8384c50f52f074b1ea472d4d99694703eedfbbf7e5f96ffcca1",
+        "request_id": "answer-q11-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all task constraints: it runs locally without network access (keeping source documents on the device) and requires at least 8 GB RAM, which is met by the available 16 GB. Method A is unsupported because it must run in a cloud service and sends source documents externally, violating the requirement to keep documents on the device.\"\n}",
+        "usage": {
+          "input_tokens": 485,
+          "output_tokens": 165
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 6250.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "cb1e7cee1b96e8384c50f52f074b1ea472d4d99694703eedfbbf7e5f96ffcca1",
+        "request_id": "answer-q11-structured_card",
+        "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"B\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies all task constraints: it runs locally without network access (keeping source documents on the device) and requires at least 8 GB RAM, which is met by the available 16 GB. Method A is unsupported because it must run in a cloud service and sends source documents externally, violating the requirement to keep documents on the device.\"\n}",
+        "usage": {
+          "input_tokens": 485,
+          "output_tokens": 165
+        }
+      },
+      "request_id": "answer-q11-structured_card",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q11"
+    },
+    {
+      "arm": "raw",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8188.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ffef9d5d9b96cc30b9e2f4c3b60d2e3fbf6995f954ea794342ca18a5823048b0",
+        "request_id": "answer-q12-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A is not available for local deployment.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method A violates the constraints because it requires network access and cloud service, which conflicts with 'no network is allowed' and 'source documents must stay on the device'. Method B satisfies the local and network constraints but fails the RAM requirement, as it needs at least 8 GB while only 4 GB is available. No method meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 238,
+          "output_tokens": 230
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 8188.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "ffef9d5d9b96cc30b9e2f4c3b60d2e3fbf6995f954ea794342ca18a5823048b0",
+        "request_id": "answer-q12-raw",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A is not available for local deployment.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method A violates the constraints because it requires network access and cloud service, which conflicts with 'no network is allowed' and 'source documents must stay on the device'. Method B satisfies the local and network constraints but fails the RAM requirement, as it needs at least 8 GB while only 4 GB is available. No method meets all constraints.\"\n}",
+        "usage": {
+          "input_tokens": 238,
+          "output_tokens": 230
+        }
+      },
+      "request_id": "answer-q12-raw",
+      "required_sources_covered": true,
+      "state_correct": true,
+      "task_id": "q12"
+    },
+    {
+      "arm": "text_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 9203.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "d4ff961e0b5f71c3521a964785db412190ac9e337a8acb118f78d74b0572bd5c",
+        "request_id": "answer-q12-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s08\", \"quote\": \"Method B can run locally without network access.\"},\n    {\"source_id\": \"s08\", \"quote\": \"Method B requires at least 8 GB of available RAM.\"}\n  ],\n  \"reason\": \"Method B satisfies the constraints for local execution without network access but fails the 4 GB RAM requirement, as it needs at least 8 GB. No evidence supports Method A meeting any constraints, as it requires cloud service and network access. Since no method meets all constraints, abstention is required.\"\n}",
+        "usage": {
+          "input_tokens": 336,
+          "output_tokens": 149
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 9203.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "d4ff961e0b5f71c3521a964785db412190ac9e337a8acb118f78d74b0572bd5c",
+        "request_id": "answer-q12-text_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s08\", \"quote\": \"Method B can run locally without network access.\"},\n    {\"source_id\": \"s08\", \"quote\": \"Method B requires at least 8 GB of available RAM.\"}\n  ],\n  \"reason\": \"Method B satisfies the constraints for local execution without network access but fails the 4 GB RAM requirement, as it needs at least 8 GB. No evidence supports Method A meeting any constraints, as it requires cloud service and network access. Since no method meets all constraints, abstention is required.\"\n}",
+        "usage": {
+          "input_tokens": 336,
+          "output_tokens": 149
+        }
+      },
+      "request_id": "answer-q12-text_card",
+      "required_sources_covered": true,
+      "state_correct": false,
+      "task_id": "q12"
+    },
+    {
+      "arm": "structured_card",
+      "bundle_id": "b06",
+      "citation_identity_valid": true,
+      "decision_correct": true,
+      "error": null,
+      "parsed_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10594.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2a35ba81aca3eadd7a6d170da9a7a8b1301b475b0385fc5b0b4565da0e383f72",
+        "request_id": "answer-q12-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies the constraints for local execution and no network access, but it fails the RAM constraint (requires at least 8 GB, while only 4 GB is available). No evidence supports Method A meeting all constraints, as it requires cloud service and network access. Therefore, no method fully satisfies all task constraints.\"\n}",
+        "usage": {
+          "input_tokens": 486,
+          "output_tokens": 161
+        }
+      },
+      "preparation_error": null,
+      "raw_provider_response": {
+        "finish_reason": "stop",
+        "latency_ms": 10594.0,
+        "model": "DeepSeek-V3.2-Instruct",
+        "request_hash": "2a35ba81aca3eadd7a6d170da9a7a8b1301b475b0385fc5b0b4565da0e383f72",
+        "request_id": "answer-q12-structured_card",
+        "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method B satisfies the constraints for local execution and no network access, but it fails the RAM constraint (requires at least 8 GB, while only 4 GB is available). No evidence supports Method A meeting all constraints, as it requires cloud service and network access. Therefore, no method fully satisfies all task constraints.\"\n}",
+        "usage": {
+          "input_tokens": 486,
+          "output_tokens": 161
+        }
+      },
+      "request_id": "answer-q12-structured_card",
+      "required_sources_covered": true,
+      "state_correct": false,
+      "task_id": "q12"
+    }
+  ],
+  "status": "scored_imported_responses",
+  "summary": {
+    "raw": {
+      "citation_identity_valid": 0.9166666666666666,
+      "decision_correct": 1.0,
+      "failed": 1,
+      "required_sources_covered": 0.9166666666666666,
+      "state_correct": 1.0,
+      "tasks": 12
+    },
+    "structured_card": {
+      "citation_identity_valid": 0.9166666666666666,
+      "decision_correct": 0.9166666666666666,
+      "failed": 1,
+      "required_sources_covered": 0.9166666666666666,
+      "state_correct": 0.8333333333333334,
+      "tasks": 12
+    },
+    "text_card": {
+      "citation_identity_valid": 0.9166666666666666,
+      "decision_correct": 0.9166666666666666,
+      "failed": 1,
+      "required_sources_covered": 0.9166666666666666,
+      "state_correct": 0.8333333333333334,
+      "tasks": 12
+    }
+  }
+}

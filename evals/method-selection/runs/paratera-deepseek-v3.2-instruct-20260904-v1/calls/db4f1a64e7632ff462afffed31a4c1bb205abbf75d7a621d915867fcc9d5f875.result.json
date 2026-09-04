@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:08.750642+00:00",
+  "http_status": 200,
+  "intent_hash": "0e0c3070fe65694442b1c02c0e0df9a0a9e7d245c7d93c129050e136f1db093d",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 269,
+    "prompt_tokens": 179,
+    "total_tokens": 448
+  },
+  "raw_body": "{\"id\":\"as-kteqh0eg4y\",\"created\":1788512936,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"Method A\\\",\\n    \\\"claim\\\": \\\"produces flat RGB drawings\\\",\\n    \\\"conditions\\\": [\\\"supports SVG output\\\"],\\n    \\\"exceptions\\\": [\\\"does not contain depth data\\\"],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"Method A produces flat RGB drawings.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"It does not contain depth data.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"Method A supports SVG output;\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method B\\\",\\n    \\\"claim\\\": \\\"produces flat RGB drawings\\\",\\n    \\\"conditions\\\": [\\\"exports PNG only\\\"],\\n    \\\"exceptions\\\": [\\\"explicitly does not support depth maps\\\"],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"Method B also produces flat RGB drawings\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"explicitly does not support depth maps.\\\"\\n      },\\n      {\\n        \\\"source_id\\\": \\\"s04\\\",\\n        \\\"quote\\\": \\\"Method B exports PNG only.\\\"\\n      }\\n    ]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":269,\"prompt_tokens\":179,\"total_tokens\":448}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "fd8493cb6bddf3097439881657967c586f8f9656bd739251b70760d01185ec7e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 12796.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "db4f1a64e7632ff462afffed31a4c1bb205abbf75d7a621d915867fcc9d5f875",
+    "request_id": "extract-b03",
+    "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [\"supports SVG output\"],\n    \"exceptions\": [\"does not contain depth data\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A produces flat RGB drawings.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"It does not contain depth data.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method A supports SVG output;\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"produces flat RGB drawings\",\n    \"conditions\": [\"exports PNG only\"],\n    \"exceptions\": [\"explicitly does not support depth maps\"],\n    \"citations\": [\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B also produces flat RGB drawings\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"explicitly does not support depth maps.\"\n      },\n      {\n        \"source_id\": \"s04\",\n        \"quote\": \"Method B exports PNG only.\"\n      }\n    ]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 179,
+      "output_tokens": 269
+    }
+  },
+  "transport_error_type": null
+}

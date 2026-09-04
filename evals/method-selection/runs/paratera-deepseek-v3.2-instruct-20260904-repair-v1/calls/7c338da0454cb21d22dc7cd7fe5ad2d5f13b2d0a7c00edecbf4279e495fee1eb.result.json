@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:16:26.451548+00:00",
+  "http_status": 200,
+  "intent_hash": "adfa7bf70dfa7cc73d5e59ae204d75c02dd00dc193b597ec609dd2abf06da12d",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 163,
+    "prompt_tokens": 278,
+    "total_tokens": 441
+  },
+  "raw_body": "{\"id\":\"as-qnn1tqt072\",\"created\":1788513381,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"Method A runs without a network when the entire requested catalog was cached before departure.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"It cannot fetch uncached records offline.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task requires fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, as stated in the evidence, so it does not support all constraints. Method B requires a live network for every lookup, making it unsuitable for offline use. Therefore, no method meets all constraints.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":163,\"prompt_tokens\":278,\"total_tokens\":441}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "8c424641c4fa59fc30b2a54f986d19507ebeba8683049a1155c4143dcdd180eb",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 8110.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "7c338da0454cb21d22dc7cd7fe5ad2d5f13b2d0a7c00edecbf4279e495fee1eb",
+    "request_id": "answer-q02-text_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    },\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"It cannot fetch uncached records offline.\"\n    }\n  ],\n  \"reason\": \"The task requires fetching uncached records without a network. Method A explicitly cannot fetch uncached records offline, as stated in the evidence, so it does not support all constraints. Method B requires a live network for every lookup, making it unsuitable for offline use. Therefore, no method meets all constraints.\"\n}",
+    "usage": {
+      "input_tokens": 278,
+      "output_tokens": 163
+    }
+  },
+  "transport_error_type": null
+}

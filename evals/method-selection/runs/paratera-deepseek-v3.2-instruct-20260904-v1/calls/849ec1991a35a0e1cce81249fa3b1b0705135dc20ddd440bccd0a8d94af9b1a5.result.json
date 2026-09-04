@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:45.709859+00:00",
+  "http_status": 200,
+  "intent_hash": "3916eca5994244203ff8276c794b879444d58f12feeb53fa9508dcd0819ad96b",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 244,
+    "prompt_tokens": 281,
+    "total_tokens": 525
+  },
+  "raw_body": "{\"id\":\"as-tj38xi7xh7\",\"created\":1788513038,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"conflict\\\",\\n  \\\"citations\\\": [\\n    {\\\"source_id\\\": \\\"s06\\\", \\\"quote\\\": \\\"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\\\"},\\n    {\\\"source_id\\\": \\\"s07\\\", \\\"quote\\\": \\\"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\\\"}\\n  ],\\n  \\\"reason\\\": \\\"There is a direct conflict in the reported worst-case latency for Method A under workload W, version 3: s06 reports 20 ms, while s07 reports 80 ms. The task requires a method with established worst-case latency below 50 ms, and prohibits resolving conflicts by guessing. Since the evidence for Method A is contradictory and there is no adjudication, it cannot be reliably established that Method A meets the constraint. Method B is consistently reported above 50 ms (90 ms). Therefore, no method can be chosen with certainty.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":244,\"prompt_tokens\":281,\"total_tokens\":525}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "61020051804e39edb1279d3fa65a0235f8ed40780884382bd5bf79b36e87adba",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7485.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "849ec1991a35a0e1cce81249fa3b1b0705135dc20ddd440bccd0a8d94af9b1a5",
+    "request_id": "answer-q09-raw",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s06\", \"quote\": \"Under workload W with version 3, Method A has a worst-case latency of 20 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"},\n    {\"source_id\": \"s07\", \"quote\": \"Under the same workload W with version 3, Method A has a worst-case latency of 80 milliseconds. Method B has a worst-case latency of 90 milliseconds.\"}\n  ],\n  \"reason\": \"There is a direct conflict in the reported worst-case latency for Method A under workload W, version 3: s06 reports 20 ms, while s07 reports 80 ms. The task requires a method with established worst-case latency below 50 ms, and prohibits resolving conflicts by guessing. Since the evidence for Method A is contradictory and there is no adjudication, it cannot be reliably established that Method A meets the constraint. Method B is consistently reported above 50 ms (90 ms). Therefore, no method can be chosen with certainty.\"\n}",
+    "usage": {
+      "input_tokens": 281,
+      "output_tokens": 244
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,54 @@
+{
+  "actual_cost": null,
+  "actual_requests": 30,
+  "campaign_total_requests": 49,
+  "campaign_total_tokens": 23238,
+  "cost_status": "No verified provider prices or invoice; tokens are not money",
+  "currency": "CNY",
+  "groups": {
+    "construction": {
+      "calls": 6,
+      "input_tokens": 1375,
+      "output_tokens": 1645
+    },
+    "probe": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "raw": {
+      "calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0
+    },
+    "structured_card": {
+      "calls": 12,
+      "input_tokens": 5439,
+      "output_tokens": 1739
+    },
+    "text_card": {
+      "calls": 12,
+      "input_tokens": 3747,
+      "output_tokens": 1747
+    }
+  },
+  "limitations": [
+    "Probe excluded from standalone arm cost",
+    "Shared extraction charged in full to each standalone card arm",
+    "Provider-reported token usage; no independent billing verification",
+    "Operational reservation is not a tokenizer or equal-token comparison",
+    "Campaign total includes failed v1 construction and probe",
+    "Standalone card costs use repaired construction; failed v1 is setup overhead"
+  ],
+  "reused_raw_baseline": {
+    "calls": 12,
+    "input_tokens": 2823,
+    "output_tokens": 1889
+  },
+  "standalone_arm_total_tokens": {
+    "raw": 4712,
+    "structured_card": 10198,
+    "text_card": 8514
+  },
+  "total_tokens": 15692
+}

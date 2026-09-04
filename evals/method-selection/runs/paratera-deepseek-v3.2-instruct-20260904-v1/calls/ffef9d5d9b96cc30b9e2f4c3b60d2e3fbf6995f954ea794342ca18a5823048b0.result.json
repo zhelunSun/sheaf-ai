@@ -1,0 +1,31 @@
+{
+  "finished_at": "2026-09-04T09:11:07.743761+00:00",
+  "http_status": 200,
+  "intent_hash": "6f5bf0d9111ed796230907e68cbba03850ead6bd7fdf4f165a56c44d11296c0c",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 230,
+    "prompt_tokens": 238,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 468
+  },
+  "raw_body": "{\"id\":\"as-63a8i2j691\",\"created\":1788513060,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"explicit_negative\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method A must run in a cloud service and sends source documents to that service.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method A is not available for local deployment.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method B can run locally without network access.\\\"\\n    },\\n    {\\n      \\\"source_id\\\": \\\"s08\\\",\\n      \\\"quote\\\": \\\"Method B requires at least 8 GB of available RAM.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method A violates the constraints because it requires network access and cloud service, which conflicts with 'no network is allowed' and 'source documents must stay on the device'. Method B satisfies the local and network constraints but fails the RAM requirement, as it needs at least 8 GB while only 4 GB is available. No method meets all constraints.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":230,\"prompt_tokens\":238,\"total_tokens\":468,\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "f42fb0712ff8488fc6312acf8d9b33a79a0d8367e2f83ca6e4cebd34c83ba77e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 8188.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "ffef9d5d9b96cc30b9e2f4c3b60d2e3fbf6995f954ea794342ca18a5823048b0",
+    "request_id": "answer-q12-raw",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"explicit_negative\",\n  \"citations\": [\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method A is not available for local deployment.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B can run locally without network access.\"\n    },\n    {\n      \"source_id\": \"s08\",\n      \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n    }\n  ],\n  \"reason\": \"Method A violates the constraints because it requires network access and cloud service, which conflicts with 'no network is allowed' and 'source documents must stay on the device'. Method B satisfies the local and network constraints but fails the RAM requirement, as it needs at least 8 GB while only 4 GB is available. No method meets all constraints.\"\n}",
+    "usage": {
+      "input_tokens": 238,
+      "output_tokens": 230
+    }
+  },
+  "transport_error_type": null
+}

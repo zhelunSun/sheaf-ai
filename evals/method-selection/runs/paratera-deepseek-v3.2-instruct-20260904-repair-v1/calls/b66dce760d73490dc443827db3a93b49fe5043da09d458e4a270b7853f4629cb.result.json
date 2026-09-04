@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:17:12.071958+00:00",
+  "http_status": 200,
+  "intent_hash": "f4fe4b568d1a59e91870d4432294c3f0ac5f6c8b20ecbbb4425b22e63cd4d60d",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 100,
+    "prompt_tokens": 569,
+    "total_tokens": 669
+  },
+  "raw_body": "{\"id\":\"as-hb6vk5prej\",\"created\":1788513428,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s04\\\",\\n      \\\"quote\\\": \\\"Method A supports SVG output;\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, so it does not meet the SVG output constraint.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":100,\"prompt_tokens\":569,\"total_tokens\":669}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "683a8612f1b280fa385a2926a3f0ca59d0e98fb7fd9adaaac87e62e9c7322be9",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4047.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "b66dce760d73490dc443827db3a93b49fe5043da09d458e4a270b7853f4629cb",
+    "request_id": "answer-q06-structured_card",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s04\",\n      \"quote\": \"Method A supports SVG output;\"\n    }\n  ],\n  \"reason\": \"Method A is explicitly stated to support SVG output, which directly satisfies the task requirement. Method B is documented as exporting PNG only, so it does not meet the SVG output constraint.\"\n}",
+    "usage": {
+      "input_tokens": 569,
+      "output_tokens": 100
+    }
+  },
+  "transport_error_type": null
+}

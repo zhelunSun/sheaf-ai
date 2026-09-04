@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:46.823573+00:00",
+  "http_status": 200,
+  "intent_hash": "578f7c4043d6bbab1509e457a46e35ca34c236b1a690407f7a61f8deaf453016",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 311,
+    "prompt_tokens": 184,
+    "total_tokens": 495
+  },
+  "raw_body": "{\"id\":\"as-aq6c7zcyyk\",\"created\":1788512977,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"Method A\\\",\\n    \\\"claim\\\": \\\"must run in a cloud service and sends source documents to that service\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s08\\\",\\n        \\\"quote\\\": \\\"Method A must run in a cloud service and sends source documents to that service.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method A\\\",\\n    \\\"claim\\\": \\\"is not available for local deployment\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s08\\\",\\n        \\\"quote\\\": \\\"Method A is not available for local deployment.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method B\\\",\\n    \\\"claim\\\": \\\"can run locally without network access\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s08\\\",\\n        \\\"quote\\\": \\\"Method B can run locally without network access.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"Method B\\\",\\n    \\\"claim\\\": \\\"requires at least 8 GB of available RAM\\\",\\n    \\\"conditions\\\": [],\\n    \\\"exceptions\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"s08\\\",\\n        \\\"quote\\\": \\\"Method B requires at least 8 GB of available RAM.\\\"\\n      }\\n    ]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":311,\"prompt_tokens\":184,\"total_tokens\":495}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "86d08a352cd23a498f342d45c5155bfc6f78c330c34e836824f3ae6ba8262435",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 12625.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "c340b5de43b95a7b38ab24588d12ab70af2deea40be940130170dfc46b0e22bc",
+    "request_id": "extract-b06",
+    "text": "```json\n[\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"must run in a cloud service and sends source documents to that service\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A must run in a cloud service and sends source documents to that service.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method A\",\n    \"claim\": \"is not available for local deployment\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method A is not available for local deployment.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"can run locally without network access\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B can run locally without network access.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"Method B\",\n    \"claim\": \"requires at least 8 GB of available RAM\",\n    \"conditions\": [],\n    \"exceptions\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"s08\",\n        \"quote\": \"Method B requires at least 8 GB of available RAM.\"\n      }\n    ]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 184,
+      "output_tokens": 311
+    }
+  },
+  "transport_error_type": null
+}

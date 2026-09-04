@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:08:31.917286+00:00",
+  "http_status": 200,
+  "intent_hash": "0d9711b4eba9372afd7e3150465e529be5d9dd58bbcfa58170e14ce9c550f6d3",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 6,
+    "prompt_tokens": 31,
+    "total_tokens": 37
+  },
+  "raw_body": "{\"id\":\"as-f896u1dgxm\",\"created\":1788512911,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"ok\\\": true}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":6,\"prompt_tokens\":31,\"total_tokens\":37}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "f967c34993f5d427c1f6497fb60bfff91c613d0a3480f00d86e23d88dc3f6a65",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7860.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "7b325382882b02585e5504e8aaf09625383bab161aad65944f6ebca7c89e9c40",
+    "request_id": "probe",
+    "text": "{\"ok\": true}",
+    "usage": {
+      "input_tokens": 31,
+      "output_tokens": 6
+    }
+  },
+  "transport_error_type": null
+}

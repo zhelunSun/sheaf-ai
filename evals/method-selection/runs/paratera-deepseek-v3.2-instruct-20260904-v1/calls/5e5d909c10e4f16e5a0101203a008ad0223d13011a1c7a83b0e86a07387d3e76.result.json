@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:10:38.164102+00:00",
+  "http_status": 200,
+  "intent_hash": "b4280dea8dfbcf2c53d55db83506b01c148cedd66ade777cf2005f50cacbdcc3",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 145,
+    "prompt_tokens": 223,
+    "total_tokens": 368
+  },
+  "raw_body": "{\"id\":\"as-3jgifgkaa7\",\"created\":1788513033,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s05\\\",\\n      \\\"quote\\\": \\\"Method A compresses daily archives to save storage.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task asks to choose a method for reducing storage volume for daily archives. Source s05 explicitly states that Method A compresses daily archives to save storage, which directly satisfies the task constraint. Method B is described as keeping the uncompressed original, which does not reduce storage. No evidence contradicts Method A's suitability, and no other constraints (like encryption or latency) are reported as relevant.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":145,\"prompt_tokens\":223,\"total_tokens\":368}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "6c8a6c48a4f7316fc86aa53a725c480dbf7ff742b9186fe3993040cb44450ebb",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7328.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "5e5d909c10e4f16e5a0101203a008ad0223d13011a1c7a83b0e86a07387d3e76",
+    "request_id": "answer-q08-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s05\",\n      \"quote\": \"Method A compresses daily archives to save storage.\"\n    }\n  ],\n  \"reason\": \"The task asks to choose a method for reducing storage volume for daily archives. Source s05 explicitly states that Method A compresses daily archives to save storage, which directly satisfies the task constraint. Method B is described as keeping the uncompressed original, which does not reduce storage. No evidence contradicts Method A's suitability, and no other constraints (like encryption or latency) are reported as relevant.\"\n}",
+    "usage": {
+      "input_tokens": 223,
+      "output_tokens": 145
+    }
+  },
+  "transport_error_type": null
+}

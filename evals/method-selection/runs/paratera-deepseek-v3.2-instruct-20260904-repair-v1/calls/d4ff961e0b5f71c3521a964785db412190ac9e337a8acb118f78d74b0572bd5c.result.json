@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:18:31.657451+00:00",
+  "http_status": 200,
+  "intent_hash": "4b743bb5e2b73c73e633240f1d5b87f2cbd701bbac483356da90417aa093f8ee",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 149,
+    "prompt_tokens": 336,
+    "total_tokens": 485
+  },
+  "raw_body": "{\"id\":\"as-155zscsk3s\",\"created\":1788513506,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"abstain\\\",\\n  \\\"method_id\\\": null,\\n  \\\"evidence_state\\\": \\\"conflict\\\",\\n  \\\"citations\\\": [\\n    {\\\"source_id\\\": \\\"s08\\\", \\\"quote\\\": \\\"Method B can run locally without network access.\\\"},\\n    {\\\"source_id\\\": \\\"s08\\\", \\\"quote\\\": \\\"Method B requires at least 8 GB of available RAM.\\\"}\\n  ],\\n  \\\"reason\\\": \\\"Method B satisfies the constraints for local execution without network access but fails the 4 GB RAM requirement, as it needs at least 8 GB. No evidence supports Method A meeting any constraints, as it requires cloud service and network access. Since no method meets all constraints, abstention is required.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":149,\"prompt_tokens\":336,\"total_tokens\":485}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "6b6f59f49535b7f8c2d2ae0fa1fa46eca4fab7c61de52aebc5ba1b1c2ca42434",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 9203.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "d4ff961e0b5f71c3521a964785db412190ac9e337a8acb118f78d74b0572bd5c",
+    "request_id": "answer-q12-text_card",
+    "text": "{\n  \"decision\": \"abstain\",\n  \"method_id\": null,\n  \"evidence_state\": \"conflict\",\n  \"citations\": [\n    {\"source_id\": \"s08\", \"quote\": \"Method B can run locally without network access.\"},\n    {\"source_id\": \"s08\", \"quote\": \"Method B requires at least 8 GB of available RAM.\"}\n  ],\n  \"reason\": \"Method B satisfies the constraints for local execution without network access but fails the 4 GB RAM requirement, as it needs at least 8 GB. No evidence supports Method A meeting any constraints, as it requires cloud service and network access. Since no method meets all constraints, abstention is required.\"\n}",
+    "usage": {
+      "input_tokens": 336,
+      "output_tokens": 149
+    }
+  },
+  "transport_error_type": null
+}

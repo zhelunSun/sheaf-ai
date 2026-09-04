@@ -1,0 +1,28 @@
+{
+  "finished_at": "2026-09-04T09:09:51.129467+00:00",
+  "http_status": 200,
+  "intent_hash": "c6959c3039abfb58ce6bde9369cb67e172c70dc891460706a1ec0927ac5ab0ce",
+  "issues": [],
+  "provider_model": "DeepSeek-V3.2-Instruct",
+  "provider_usage": {
+    "completion_tokens": 103,
+    "prompt_tokens": 215,
+    "total_tokens": 318
+  },
+  "raw_body": "{\"id\":\"as-f9ye12whms\",\"created\":1788512987,\"model\":\"DeepSeek-V3.2-Instruct\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\n  \\\"decision\\\": \\\"choose\\\",\\n  \\\"method_id\\\": \\\"A\\\",\\n  \\\"evidence_state\\\": \\\"supported\\\",\\n  \\\"citations\\\": [\\n    {\\n      \\\"source_id\\\": \\\"s01\\\",\\n      \\\"quote\\\": \\\"Method A runs without a network when the entire requested catalog was cached before departure.\\\"\\n    }\\n  ],\\n  \\\"reason\\\": \\\"The task specifies that the complete requested catalog is already cached, which directly matches the condition under which Method A operates offline, as stated in the evidence.\\\"\\n}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{\"flag\":0}}],\"usage\":{\"completion_tokens\":103,\"prompt_tokens\":215,\"total_tokens\":318}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "4f30a8da043f8bd5475020336de541ff27477b1e246520726bce5fec7c76ba8a",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4281.0,
+    "model": "DeepSeek-V3.2-Instruct",
+    "request_hash": "addbb5789ab7251ebeac62dd3016be3074314f79927c51f59828b0a01b83aac2",
+    "request_id": "answer-q01-raw",
+    "text": "{\n  \"decision\": \"choose\",\n  \"method_id\": \"A\",\n  \"evidence_state\": \"supported\",\n  \"citations\": [\n    {\n      \"source_id\": \"s01\",\n      \"quote\": \"Method A runs without a network when the entire requested catalog was cached before departure.\"\n    }\n  ],\n  \"reason\": \"The task specifies that the complete requested catalog is already cached, which directly matches the condition under which Method A operates offline, as stated in the evidence.\"\n}",
+    "usage": {
+      "input_tokens": 215,
+      "output_tokens": 103
+    }
+  },
+  "transport_error_type": null
+}
