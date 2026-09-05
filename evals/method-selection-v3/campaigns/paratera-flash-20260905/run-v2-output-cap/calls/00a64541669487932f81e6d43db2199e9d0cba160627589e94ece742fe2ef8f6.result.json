@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:42:25.388484+00:00",
+  "http_status": 200,
+  "intent_hash": "1731a1340e59d1f10b154c387b26a2ad1b56221ed29fa6966d2e643a12d18888",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "a639e165625d0a320b96fe6c7870f47e719b549c92d2c470a5b2d0be33edf9f7",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 219,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1034,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1253
+  },
+  "raw_body": "{\"id\":\"27318108-9994-46a2-a9ed-c4d594f4b2e1\",\"created\":1788590544,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\\\"}],\\\"reason\\\":\\\"The question asks which of MicaX or R7 can be accepted within an absolute 25 MiB allowance for the complete required installation. The evidence provides installed footprints: MicaX is 29 MiB and R7 is 83 MiB, both exceeding 25 MiB. However, the evidence does not state that these footprints are the complete required installation or that no required components can be removed; it only notes that optional graphical consoles were removed and that removing any remaining library made the package fail its startup check. This does not establish whether the 25 MiB allowance can be met by either option without removing required components. Therefore, the evidence is insufficient to support a decision for either option.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":219,\"prompt_tokens\":1034,\"total_tokens\":1253,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "a8fa5bcb308f5dfaf010aa706e6b78821a1885d179b419d16274987cefe29e06",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2344.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "a639e165625d0a320b96fe6c7870f47e719b549c92d2c470a5b2d0be33edf9f7",
+    "request_id": "answer-b01q02-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\"}],\"reason\":\"The question asks which of MicaX or R7 can be accepted within an absolute 25 MiB allowance for the complete required installation. The evidence provides installed footprints: MicaX is 29 MiB and R7 is 83 MiB, both exceeding 25 MiB. However, the evidence does not state that these footprints are the complete required installation or that no required components can be removed; it only notes that optional graphical consoles were removed and that removing any remaining library made the package fail its startup check. This does not establish whether the 25 MiB allowance can be met by either option without removing required components. Therefore, the evidence is insufficient to support a decision for either option.\"}",
+    "usage": {
+      "input_tokens": 1034,
+      "output_tokens": 219
+    }
+  },
+  "transport_error": false
+}

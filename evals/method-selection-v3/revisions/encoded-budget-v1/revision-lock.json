@@ -1,0 +1,9 @@
+{
+  "code": {
+    "protocol.md": "cb0e8d2b1313c3ad6b3f8a65d5944615ec977011107ea194fd811eeefb500393",
+    "run.py": "fb3d8709b9c482069c232631739090fe68957755838ba78f78a86344d02f3d4e"
+  },
+  "parent_revision_lock_hash": "4b352725e8ad497b4ec946e8559afe3af0a208464826b8e3a3bd09b58c54f449",
+  "revision": "encoded-budget-v1",
+  "revision_lock_hash": "18c374bdcd74ff3b01bb33e7464287e2bc471f9f00fac4791f437e0867c87add"
+}

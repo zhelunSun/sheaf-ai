@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:46:39.979881+00:00",
+  "http_status": 200,
+  "intent_hash": "660d15dd3b1486c5c3c2ae65c69ae8753e0b1405171dbe3ecdbc2a21d45fe9aa",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "acc0aad9eb087f718207aa25ab83f3ecf145ec6550384ee95f910c65654eac17",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 155,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1217,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1372
+  },
+  "raw_body": "{\"id\":\"17fe59d4-acb4-4e18-ac2f-a515acab12a3\",\"created\":1788590799,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\\\"}],\\\"reason\\\":\\\"The task requires an image with an absolute 25 MiB allowance for the complete required installation. The evidence states required installed footprints are 29 MiB for MicaX 6 and 83 MiB for R7 7.1, both exceeding 25 MiB. Therefore, both options are explicitly ruled out by the size requirement, so neither can be accepted.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":155,\"prompt_tokens\":1217,\"total_tokens\":1372,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "c9e7c025193ee2fe0f886b8b04d7dc70c649e1f667c9210bcaaf0d939b405ec2",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1625.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "acc0aad9eb087f718207aa25ab83f3ecf145ec6550384ee95f910c65654eac17",
+    "request_id": "answer-b01q02-scoped_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\"}],\"reason\":\"The task requires an image with an absolute 25 MiB allowance for the complete required installation. The evidence states required installed footprints are 29 MiB for MicaX 6 and 83 MiB for R7 7.1, both exceeding 25 MiB. Therefore, both options are explicitly ruled out by the size requirement, so neither can be accepted.\"}",
+    "usage": {
+      "input_tokens": 1217,
+      "output_tokens": 155
+    }
+  },
+  "transport_error": false
+}

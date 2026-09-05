@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:32.580878+00:00",
+  "http_status": 200,
+  "intent_hash": "a8a5065174c06ddf068fa8fda41ddc8faad893c3e64b88647b672b3f80b1cd7a",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "f410fba867583831f74f5c6a378fbf41d8cc06958c180d32b2107de8303835e1",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 184,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1082,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1266
+  },
+  "raw_body": "{\"id\":\"4801bce8-4433-4b50-8000-9df4a76e507e\",\"created\":1788590608,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x08s3\\\",\\\"quote\\\":\\\"No 256-bit encryption-mode latency test was performed for Kestrel, R3, or Nacre-10.\\\"},{\\\"source_id\\\":\\\"x08s3\\\",\\\"quote\\\":\\\"A short installation demonstration enabled a 128-bit profile on all three devices and confirmed that a stream appeared, but it did not record latency percentiles.\\\"}],\\\"reason\\\":\\\"The task requires a measured p95 forwarding latency at most 10 ms while using 256-bit encryption mode. The context explicitly states that no 256-bit encryption-mode latency test was performed for any of the candidates, and the only encryption-related test used a 128-bit profile without recording latency percentiles. Therefore, the relevant ability is not established for any option, leading to abstention due to insufficient evidence.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":184,\"prompt_tokens\":1082,\"total_tokens\":1266,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "05ee46227c258401cbe0bebe17e5269d36745464ddb8cdd4a8dc28a9d6c6dcb4",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 7188.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "f410fba867583831f74f5c6a378fbf41d8cc06958c180d32b2107de8303835e1",
+    "request_id": "answer-b08q02-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x08s3\",\"quote\":\"No 256-bit encryption-mode latency test was performed for Kestrel, R3, or Nacre-10.\"},{\"source_id\":\"x08s3\",\"quote\":\"A short installation demonstration enabled a 128-bit profile on all three devices and confirmed that a stream appeared, but it did not record latency percentiles.\"}],\"reason\":\"The task requires a measured p95 forwarding latency at most 10 ms while using 256-bit encryption mode. The context explicitly states that no 256-bit encryption-mode latency test was performed for any of the candidates, and the only encryption-related test used a 128-bit profile without recording latency percentiles. Therefore, the relevant ability is not established for any option, leading to abstention due to insufficient evidence.\"}",
+    "usage": {
+      "input_tokens": 1082,
+      "output_tokens": 184
+    }
+  },
+  "transport_error": false
+}

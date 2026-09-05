@@ -1,0 +1,10 @@
+{
+  "model_repository": "deepseek-ai/DeepSeek-V4-Flash",
+  "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+  "url": "https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash/resolve/60d8d70770c6776ff598c94bb586a859a38244f1/tokenizer.json",
+  "sha256": "8f9f37ca37fdc4f5fd36d5cf4d3b0e8392edb4e894fd10cc0d70b4957c8633cf",
+  "bytes": 6367146,
+  "tokenizers_version": "0.22.2",
+  "add_special_tokens": false,
+  "scope": "Local content token budget; provider chat template and alias revision are not certified"
+}

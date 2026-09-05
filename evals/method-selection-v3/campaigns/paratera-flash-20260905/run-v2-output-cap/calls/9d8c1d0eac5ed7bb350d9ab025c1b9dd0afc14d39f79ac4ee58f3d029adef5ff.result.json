@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:00.822147+00:00",
+  "http_status": 200,
+  "intent_hash": "4ae8f87bdd5356f22bdff7b8cf3954db29ae31751d4c2e93d8ac17c8ccb0888e",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "1839d23e3de9afef8f990ee7965ff63aa16714bebbe57157f00317d3f6ae6f32",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 160,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1057,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1217
+  },
+  "raw_body": "{\"id\":\"e67406b1-9803-4d18-b4db-50a970eabacf\",\"created\":1788590580,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Quill-9\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x06s2\\\",\\\"quote\\\":\\\"Quill-9 9.1 permits an ordinary update at 20 percent indicated charge. Quill-9 completed the 20-percent ordinary update on both board revisions A and B without a charger. Its signature verification for preloaded packages is entirely local and requires no network connection.\\\"},{\\\"source_id\\\":\\\"x06s2\\\",\\\"quote\\\":\\\"The audit disconnected every network interface during those Quill-9 runs.\\\"}],\\\"reason\\\":\\\"Quill-9 is the only option with demonstrated completion on both revisions A and B at 20% indicated charge without a charger, and its signature verification is entirely local, satisfying all task requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":160,\"prompt_tokens\":1057,\"total_tokens\":1217,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "cb1a311ceafd8d130b9981883ac35f82e3ab7c2c508225273710de61b7b094e6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1906.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "1839d23e3de9afef8f990ee7965ff63aa16714bebbe57157f00317d3f6ae6f32",
+    "request_id": "answer-b06q01-raw_passages-r1",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Quill-9\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x06s2\",\"quote\":\"Quill-9 9.1 permits an ordinary update at 20 percent indicated charge. Quill-9 completed the 20-percent ordinary update on both board revisions A and B without a charger. Its signature verification for preloaded packages is entirely local and requires no network connection.\"},{\"source_id\":\"x06s2\",\"quote\":\"The audit disconnected every network interface during those Quill-9 runs.\"}],\"reason\":\"Quill-9 is the only option with demonstrated completion on both revisions A and B at 20% indicated charge without a charger, and its signature verification is entirely local, satisfying all task requirements.\"}",
+    "usage": {
+      "input_tokens": 1057,
+      "output_tokens": 160
+    }
+  },
+  "transport_error": false
+}

@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:32.322909+00:00",
+  "http_status": 200,
+  "intent_hash": "fbe3c2d6c0c6bb368f9fb1700e8c32b63ddc0899d197b6802fc2169d3cbe33d8",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "4f52c2c53570ccbac401acde9528c1c5fbf71cd5790d30bd28479cf47aec7f48",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 390,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1211,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1601
+  },
+  "raw_body": "{\"id\":\"744884d1-7cfe-4067-939b-73d61495d6a9\",\"created\":1788590728,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s1\\\",\\\"quote\\\":\\\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery.\\\"}],\\\"reason\\\":\\\"Tide-4 has evidence for all three requirements: resume without resending acknowledged chunks, staging encryption on disk, and installed footprint 46 MiB (under 60 MiB). However, the evidence for Tide-4's resume and encryption is not explicitly tied to the same version (4.2) as the footprint measurement, and the alternating-link test conditions include a 512 MiB process allowance, which is not the same as the required installation size. The footprint measurement is for 'Tide-4 4.2' with optional graphical consoles removed, but the resume test does not specify version. The encryption statement is for 'release 4.2', but the resume test does not state version. Thus, it is unclear if the resume capability applies to version 4.2. Also, the context notes no measured peak resident memory on ARM for any candidate, but that is not a stated requirement. The requirement is to fit installation within 60 MiB, which Tide-4 meets at 46 MiB, but the resume and encryption evidence may not be for the same configuration as the footprint. Therefore, evidence is insufficient to confirm all three requirements are met for the same tested configuration.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":390,\"prompt_tokens\":1211,\"total_tokens\":1601,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "c1b54dbe698a183f70176a20ff7ff3eae6bdc63f96846f1b00f00c4ca67424ad",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4859.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "4f52c2c53570ccbac401acde9528c1c5fbf71cd5790d30bd28479cf47aec7f48",
+    "request_id": "answer-b01q01-scoped_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s1\",\"quote\":\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again.\"},{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\"},{\"source_id\":\"x01s2\",\"quote\":\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery.\"}],\"reason\":\"Tide-4 has evidence for all three requirements: resume without resending acknowledged chunks, staging encryption on disk, and installed footprint 46 MiB (under 60 MiB). However, the evidence for Tide-4's resume and encryption is not explicitly tied to the same version (4.2) as the footprint measurement, and the alternating-link test conditions include a 512 MiB process allowance, which is not the same as the required installation size. The footprint measurement is for 'Tide-4 4.2' with optional graphical consoles removed, but the resume test does not specify version. The encryption statement is for 'release 4.2', but the resume test does not state version. Thus, it is unclear if the resume capability applies to version 4.2. Also, the context notes no measured peak resident memory on ARM for any candidate, but that is not a stated requirement. The requirement is to fit installation within 60 MiB, which Tide-4 meets at 46 MiB, but the resume and encryption evidence may not be for the same configuration as the footprint. Therefore, evidence is insufficient to confirm all three requirements are met for the same tested configuration.\"}",
+    "usage": {
+      "input_tokens": 1211,
+      "output_tokens": 390
+    }
+  },
+  "transport_error": false
+}

@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:53.500013+00:00",
+  "http_status": 200,
+  "intent_hash": "8dc40bb61254c11bea11c11f701e15fe94b98da9e2402df8ddace9753b049f3c",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "420c8c271a137b9d3721ff23a97d9c6ab8351f58666cc81516bc09f0d92841a8",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 271,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1123,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1394
+  },
+  "raw_body": "{\"id\":\"d6ce3c93-cf34-4447-b994-666422220a8e\",\"created\":1788591832,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x03s1\\\",\\\"quote\\\":\\\"At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms.\\\"},{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\\\"},{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write.\\\"},{\\\"source_id\\\":\\\"x03s1\\\",\\\"quote\\\":\\\"A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms. The room-temperature result is useful for diagnosing the clock problem, but does not replace the cold-chamber result.\\\"}],\\\"reason\\\":\\\"No single option meets both requirements. Lantern-P meets the cold-run requirement (no missed records, 140 ms latency) but fails the recovery requirement (requires proprietary tool). F3 meets the recovery requirement but has no evidence for the cold-run requirement. Wisp8 has only room-temperature latency evidence, not the required minus-25-degree run, and no recovery evidence. Thus no option is supported for all requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":271,\"prompt_tokens\":1123,\"total_tokens\":1394,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "70b33dafa25f5dc19aaab47976878f5a8092b220df871470fbf9a192a68a62e4",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2093.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "420c8c271a137b9d3721ff23a97d9c6ab8351f58666cc81516bc09f0d92841a8",
+    "request_id": "answer-b03q01-scoped_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x03s1\",\"quote\":\"At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms.\"},{\"source_id\":\"x03s2\",\"quote\":\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\"},{\"source_id\":\"x03s2\",\"quote\":\"Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write.\"},{\"source_id\":\"x03s1\",\"quote\":\"A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms. The room-temperature result is useful for diagnosing the clock problem, but does not replace the cold-chamber result.\"}],\"reason\":\"No single option meets both requirements. Lantern-P meets the cold-run requirement (no missed records, 140 ms latency) but fails the recovery requirement (requires proprietary tool). F3 meets the recovery requirement but has no evidence for the cold-run requirement. Wisp8 has only room-temperature latency evidence, not the required minus-25-degree run, and no recovery evidence. Thus no option is supported for all requirements.\"}",
+    "usage": {
+      "input_tokens": 1123,
+      "output_tokens": 271
+    }
+  },
+  "transport_error": false
+}

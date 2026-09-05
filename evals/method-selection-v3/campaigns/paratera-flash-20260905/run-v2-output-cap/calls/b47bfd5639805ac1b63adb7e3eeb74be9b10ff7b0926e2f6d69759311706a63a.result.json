@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:10.159567+00:00",
+  "http_status": 200,
+  "intent_hash": "a1d6eb3491ab2dc56740ab909c3ae1fc4428ea86a2da3ba85513dc995ba23d29",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "bb80ae31802e666cafdba7bfc4e77e88a43a0a4f5b0dbbf041cfdccf27433d96",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 605,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1089,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1694
+  },
+  "raw_body": "{\"id\":\"c1647bca-4db9-485b-b648-6570078aabc1\",\"created\":1788590586,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s1\\\",\\\"quote\\\":\\\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again. Under the same alternating-link test, MicaX restarted the current file after every outage and could not resume acknowledged chunks. R7 resumed all acknowledged chunks under the alternating-link test.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery. Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure. MicaX 6 writes a plaintext compression spool on the system volume before uploading. R7 7.1 stages only ciphertext on disk, including after a forced exit.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1. These are uncompressed sizes on the branch system volume.\\\"}],\\\"reason\\\":\\\"Tide-4 meets resume and encryption, and its 46 MiB footprint is under 60 MiB. MicaX fails resume (explicit negative) and encryption (plaintext spool). R7 meets resume and encryption but its 83 MiB footprint exceeds 60 MiB. Thus no candidate satisfies all three requirements; the evidence explicitly rules out MicaX and R7, and Tide-4 is the only one that could, but the question asks for a candidate satisfying all three, and Tide-4 does satisfy all three based on the evidence. However, the decision must be 'choose' if a candidate satisfies all requirements. Since Tide-4 satisfies all three, the correct decision is 'choose' with method_id 'Tide-4'. But the instruction says 'abstain' when evidence does not establish every requirement. Here evidence establishes all requirements for Tide-4. So decision should be 'choose'. However, the options include Tide-4, and evidence supports it. Therefore, I will choose Tide-4. But the instruction says 'abstain' only if no option is supported. Since Tide-4 is supported, choose. So final: choose Tide-4. But note: the question says 'tested configuration' – the resume test was on the alternating-link rig, encryption on disk is stated for release 4.2, and footprint is 46 MiB. All are in the tested configuration? The encryption statement is general for release 4.2, not specifically under the alternating-link test, but it says 'including during resume and forced-exit recovery' which covers the tested scenario. So yes. Thus choose Tide-4. I will output that.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":605,\"prompt_tokens\":1089,\"total_tokens\":1694,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "4178ab3fda0cea4cdf56c6febe7406be86607bcc8dfe73ec267ad75c92480c2e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 9235.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "bb80ae31802e666cafdba7bfc4e77e88a43a0a4f5b0dbbf041cfdccf27433d96",
+    "request_id": "answer-b01q01-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s1\",\"quote\":\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again. Under the same alternating-link test, MicaX restarted the current file after every outage and could not resume acknowledged chunks. R7 resumed all acknowledged chunks under the alternating-link test.\"},{\"source_id\":\"x01s2\",\"quote\":\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery. Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure. MicaX 6 writes a plaintext compression spool on the system volume before uploading. R7 7.1 stages only ciphertext on disk, including after a forced exit.\"},{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1. These are uncompressed sizes on the branch system volume.\"}],\"reason\":\"Tide-4 meets resume and encryption, and its 46 MiB footprint is under 60 MiB. MicaX fails resume (explicit negative) and encryption (plaintext spool). R7 meets resume and encryption but its 83 MiB footprint exceeds 60 MiB. Thus no candidate satisfies all three requirements; the evidence explicitly rules out MicaX and R7, and Tide-4 is the only one that could, but the question asks for a candidate satisfying all three, and Tide-4 does satisfy all three based on the evidence. However, the decision must be 'choose' if a candidate satisfies all requirements. Since Tide-4 satisfies all three, the correct decision is 'choose' with method_id 'Tide-4'. But the instruction says 'abstain' when evidence does not establish every requirement. Here evidence establishes all requirements for Tide-4. So decision should be 'choose'. However, the options include Tide-4, and evidence supports it. Therefore, I will choose Tide-4. But the instruction says 'abstain' only if no option is supported. Since Tide-4 is supported, choose. So final: choose Tide-4. But note: the question says 'tested configuration' – the resume test was on the alternating-link rig, encryption on disk is stated for release 4.2, and footprint is 46 MiB. All are in the tested configuration? The encryption statement is general for release 4.2, not specifically under the alternating-link test, but it says 'including during resume and forced-exit recovery' which covers the tested scenario. So yes. Thus choose Tide-4. I will output that.\"}",
+    "usage": {
+      "input_tokens": 1089,
+      "output_tokens": 605
+    }
+  },
+  "transport_error": false
+}

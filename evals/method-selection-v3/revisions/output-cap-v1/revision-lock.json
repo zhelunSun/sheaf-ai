@@ -1,0 +1,10 @@
+{
+  "code": {
+    "protocol.md": "3094caab68110b2b2a8557fcefe1d7942bdc554a237d72fc4382e60f1cca4724",
+    "run.py": "2312276579c7df7cbed1f54c30c0deeaa7b258b4ac14b48d7545b85a640247ff",
+    "transport.py": "074f48e8ec80f365128538d1edf7ef2137d59b1ac78aa73bfdfc0c1e49129c97"
+  },
+  "parent_lock_hash": "1a6d139d6ac43d2de517b45cac29dd7215a16073db42ac89f9b50c5b0187dc8a",
+  "revision": "output-cap-v1",
+  "revision_lock_hash": "4b352725e8ad497b4ec946e8559afe3af0a208464826b8e3a3bd09b58c54f449"
+}

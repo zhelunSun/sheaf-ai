@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:39.811072+00:00",
+  "http_status": 200,
+  "intent_hash": "7a3155f33170b3d98f4c2b4fb9c56e964c230cbde1fa888be7f51e8ce93e45d3",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "8fc714178b6429f5205ff0d358c9552edecee1f4f2f8f20b443a687b976a01bc",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 337,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1074,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1411
+  },
+  "raw_body": "{\"id\":\"a8613a41-004e-4a7f-af53-9ae2a81fbd9d\",\"created\":1788590618,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x02s1\\\",\\\"quote\\\":\\\"On the twelve-million-record workload with four readers and one writer, Oak had p99 query latency of 71 ms, Silt-22 had 43 ms, and N9 had 38 ms.\\\"},{\\\"source_id\\\":\\\"x02s2\\\",\\\"quote\\\":\\\"In the fifty-cut test, Oak release 3 retained every acknowledged record. In the fifty-cut test, Silt-22 release 22.4 retained every acknowledged record. Worksheet A reports that N9 release 9.2 in default durability mode retained every acknowledged record on the internal disk with its ordinary write cache enabled.\\\"},{\\\"source_id\\\":\\\"x02s3\\\",\\\"quote\\\":\\\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check. N9 release 9.2 needs an online license refresh every thirty days, even when event data stays local.\\\"}],\\\"reason\\\":\\\"Silt-22 meets p99 latency (43 ms ≤ 50 ms) and durability (retained every acknowledged record in fifty-cut test) but its indefinite operation without network license check is not explicitly stated; N9 meets latency (38 ms) and durability but fails the license requirement (needs online refresh every thirty days); Oak fails latency (71 ms > 50 ms). No single candidate satisfies all three requirements based on the evidence. The evidence for Silt-22's license behavior is insufficient, and N9's license conflict is explicit, so the decision is abstain.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":337,\"prompt_tokens\":1074,\"total_tokens\":1411,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "35cddfba5e2849125adef748162deaff052fa82959b680af887328e8f730d61d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3031.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "8fc714178b6429f5205ff0d358c9552edecee1f4f2f8f20b443a687b976a01bc",
+    "request_id": "answer-b02q01-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"x02s1\",\"quote\":\"On the twelve-million-record workload with four readers and one writer, Oak had p99 query latency of 71 ms, Silt-22 had 43 ms, and N9 had 38 ms.\"},{\"source_id\":\"x02s2\",\"quote\":\"In the fifty-cut test, Oak release 3 retained every acknowledged record. In the fifty-cut test, Silt-22 release 22.4 retained every acknowledged record. Worksheet A reports that N9 release 9.2 in default durability mode retained every acknowledged record on the internal disk with its ordinary write cache enabled.\"},{\"source_id\":\"x02s3\",\"quote\":\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check. N9 release 9.2 needs an online license refresh every thirty days, even when event data stays local.\"}],\"reason\":\"Silt-22 meets p99 latency (43 ms ≤ 50 ms) and durability (retained every acknowledged record in fifty-cut test) but its indefinite operation without network license check is not explicitly stated; N9 meets latency (38 ms) and durability but fails the license requirement (needs online refresh every thirty days); Oak fails latency (71 ms > 50 ms). No single candidate satisfies all three requirements based on the evidence. The evidence for Silt-22's license behavior is insufficient, and N9's license conflict is explicit, so the decision is abstain.\"}",
+    "usage": {
+      "input_tokens": 1074,
+      "output_tokens": 337
+    }
+  },
+  "transport_error": false
+}

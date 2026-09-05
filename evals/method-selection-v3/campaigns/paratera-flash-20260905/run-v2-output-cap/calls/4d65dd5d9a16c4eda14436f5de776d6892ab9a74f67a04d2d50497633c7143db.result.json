@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:44:38.807214+00:00",
+  "http_status": 200,
+  "intent_hash": "e6af42fcdd9bc016d303db49a4db1c5dac7617b163ce7a78eb201d3f7c8cb5c9",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "59ab317b9b61c056d80efea1b3dc52b46bf12d011c2f4741e9e18737c7faa4ef",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 240,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1091,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1331
+  },
+  "raw_body": "{\"id\":\"fff353a8-2682-40f2-9ab4-98ed3ac92bec\",\"created\":1788590678,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0. These figures include mandatory metadata and lookup files but exclude the original document archive, which every deployment retains separately.\\\"}],\\\"reason\\\":\\\"The task requires a configuration that fits within 1.0 GiB for the complete mandatory index. The context provides complete on-disk index sizes: Dune-15 2.6 GiB, Larch 1.8 GiB, P6 1.4 GiB, all exceeding 1.0 GiB. No option meets the size constraint, so all are explicitly ruled out by the size requirement. However, the evidence_state should be 'explicit_negative' because every candidate is explicitly ruled out by the size requirement. The decision is 'abstain' because no option fits.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":240,\"prompt_tokens\":1091,\"total_tokens\":1331,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "8cf78cceda6975ce0a430b43c0dd111fcb127332183f14db4d505fe0b8d4db91",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4218.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "59ab317b9b61c056d80efea1b3dc52b46bf12d011c2f4741e9e18737c7faa4ef",
+    "request_id": "answer-b07q02-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0. These figures include mandatory metadata and lookup files but exclude the original document archive, which every deployment retains separately.\"}],\"reason\":\"The task requires a configuration that fits within 1.0 GiB for the complete mandatory index. The context provides complete on-disk index sizes: Dune-15 2.6 GiB, Larch 1.8 GiB, P6 1.4 GiB, all exceeding 1.0 GiB. No option meets the size constraint, so all are explicitly ruled out by the size requirement. However, the evidence_state should be 'explicit_negative' because every candidate is explicitly ruled out by the size requirement. The decision is 'abstain' because no option fits.\"}",
+    "usage": {
+      "input_tokens": 1091,
+      "output_tokens": 240
+    }
+  },
+  "transport_error": false
+}

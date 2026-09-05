@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:44:17.653476+00:00",
+  "http_status": 200,
+  "intent_hash": "3184e386634380e6af18c6c561a291a98658b22c543ae9338f3ab79df1b50c31",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "2fcb3e5fd977fb34260c04b55c12debebd84bb48e39240e6a5aafa61870a6f4f",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 220,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1043,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1263
+  },
+  "raw_body": "{\"id\":\"a9edea5e-0652-490e-9dab-b843f199bb13\",\"created\":1788590657,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Oak\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x02s2\\\",\\\"quote\\\":\\\"For Oak release 3, cancelling an export left no partial export file visible in the destination directory.\\\"},{\\\"source_id\\\":\\\"x02s2\\\",\\\"quote\\\":\\\"Silt-22 release 22.4 exposed a partial export file after cancellation, requiring the caller to delete it.\\\"},{\\\"source_id\\\":\\\"x02s3\\\",\\\"quote\\\":\\\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check.\\\"}],\\\"reason\\\":\\\"The task requires a candidate that (1) leaves no partial destination file after cancellation without caller cleanup, and (2) works indefinitely disconnected. Oak release 3 meets both: cancellation left no partial export file visible in the destination directory, and it runs all operations without network connection or license check. Silt-22 fails the first requirement because it exposed a partial export file requiring caller deletion. Thus Oak is the only candidate meeting both requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":220,\"prompt_tokens\":1043,\"total_tokens\":1263,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "33cfd082cef45924d33fc1d6df211447978e125caed032805199b388d926f9fa",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2219.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "2fcb3e5fd977fb34260c04b55c12debebd84bb48e39240e6a5aafa61870a6f4f",
+    "request_id": "answer-b02q03-raw_passages-r2",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Oak\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x02s2\",\"quote\":\"For Oak release 3, cancelling an export left no partial export file visible in the destination directory.\"},{\"source_id\":\"x02s2\",\"quote\":\"Silt-22 release 22.4 exposed a partial export file after cancellation, requiring the caller to delete it.\"},{\"source_id\":\"x02s3\",\"quote\":\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check.\"}],\"reason\":\"The task requires a candidate that (1) leaves no partial destination file after cancellation without caller cleanup, and (2) works indefinitely disconnected. Oak release 3 meets both: cancellation left no partial export file visible in the destination directory, and it runs all operations without network connection or license check. Silt-22 fails the first requirement because it exposed a partial export file requiring caller deletion. Thus Oak is the only candidate meeting both requirements.\"}",
+    "usage": {
+      "input_tokens": 1043,
+      "output_tokens": 220
+    }
+  },
+  "transport_error": false
+}

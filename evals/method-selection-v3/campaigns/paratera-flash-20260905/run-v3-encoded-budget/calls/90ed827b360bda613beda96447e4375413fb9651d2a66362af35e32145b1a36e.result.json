@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:48.776257+00:00",
+  "http_status": 200,
+  "intent_hash": "9268b09360a50d7688170c4f77477cda11e629a406fc400c2faa03e3ef9fd883",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "3af26ac5a868fae5552bf1cd761f250180b6f9f8c551261c1384411115e65108",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 246,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1111,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1357
+  },
+  "raw_body": "{\"id\":\"4e5f50a0-0531-4855-8eaa-6228ba600bcc\",\"created\":1788591827,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"No undocumented P6 flag for byte-exact filtering was evaluated.\\\"}],\\\"reason\\\":\\\"Larch is explicitly stated to provide byte-exact product-code equality filtering, and the requirement that no post-filter is allowed is satisfied by the retrieval method itself. However, the task also requires local index construction, changes, and queries. The context provides no evidence about Larch's ability to perform local index construction, changes, or queries. P6 is not explicitly denied for byte-exact filtering, but no evidence establishes that P6 provides byte-exact filtering; the only P6 statement is a denial about undocumented flags. Therefore, relevant abilities for both candidates are not established, leading to insufficient evidence.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":246,\"prompt_tokens\":1111,\"total_tokens\":1357,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e1c64a86e09789973140fb146f1d72b2298c62b2b8489c10ce726c9a3bf2c09d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3172.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "3af26ac5a868fae5552bf1cd761f250180b6f9f8c551261c1384411115e65108",
+    "request_id": "answer-b07q03-all_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s2\",\"quote\":\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\"},{\"source_id\":\"x07s2\",\"quote\":\"No undocumented P6 flag for byte-exact filtering was evaluated.\"}],\"reason\":\"Larch is explicitly stated to provide byte-exact product-code equality filtering, and the requirement that no post-filter is allowed is satisfied by the retrieval method itself. However, the task also requires local index construction, changes, and queries. The context provides no evidence about Larch's ability to perform local index construction, changes, or queries. P6 is not explicitly denied for byte-exact filtering, but no evidence establishes that P6 provides byte-exact filtering; the only P6 statement is a denial about undocumented flags. Therefore, relevant abilities for both candidates are not established, leading to insufficient evidence.\"}",
+    "usage": {
+      "input_tokens": 1111,
+      "output_tokens": 246
+    }
+  },
+  "transport_error": false
+}

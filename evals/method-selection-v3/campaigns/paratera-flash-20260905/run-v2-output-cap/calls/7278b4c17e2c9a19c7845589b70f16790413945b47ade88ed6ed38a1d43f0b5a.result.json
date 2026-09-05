@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:45.943468+00:00",
+  "http_status": 200,
+  "intent_hash": "2c54502a41c9f689b330bb56021acc3773cd11b3c40a6a6e944243a2ddbb29d3",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "00c6a9ac308156ad0ca8e22faedeaf66b3b4dfad9ada0d68328559fc29733b90",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 173,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1068,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1241
+  },
+  "raw_body": "{\"id\":\"9559dc1f-dda4-4bb5-896c-2e81e3de80b0\",\"created\":1788590745,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"F3\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x03s1\\\",\\\"quote\\\":\\\"At minus 25 degrees Celsius for forty-eight hours, F3 recorded every scheduled measurement and its maximum wake-to-record latency was 180 ms.\\\"},{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\\\"}],\\\"reason\\\":\\\"F3 meets all requirements: no missed records and max wake-to-record latency 180 ms (≤200 ms) during the -25°C 48-hour run, and automatic next-boot log recovery without a proprietary service tool in the interrupted-metadata-write exercise. Lantern-P fails recovery (requires proprietary tool) and Wisp8 misses measurements in the cold run.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":173,\"prompt_tokens\":1068,\"total_tokens\":1241,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "75ac86f7a7ecc4f89b8abd3161072616ae882febed44d9889e29f042dcafd83d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1938.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "00c6a9ac308156ad0ca8e22faedeaf66b3b4dfad9ada0d68328559fc29733b90",
+    "request_id": "answer-b03q01-raw_passages-r2",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"F3\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x03s1\",\"quote\":\"At minus 25 degrees Celsius for forty-eight hours, F3 recorded every scheduled measurement and its maximum wake-to-record latency was 180 ms.\"},{\"source_id\":\"x03s2\",\"quote\":\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\"}],\"reason\":\"F3 meets all requirements: no missed records and max wake-to-record latency 180 ms (≤200 ms) during the -25°C 48-hour run, and automatic next-boot log recovery without a proprietary service tool in the interrupted-metadata-write exercise. Lantern-P fails recovery (requires proprietary tool) and Wisp8 misses measurements in the cold run.\"}",
+    "usage": {
+      "input_tokens": 1068,
+      "output_tokens": 173
+    }
+  },
+  "transport_error": false
+}

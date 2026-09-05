@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:04:32.237864+00:00",
+  "http_status": 200,
+  "intent_hash": "14bf0b28f3581fcda08bbf4ed63259afe7dec60bc3a8a8e22d2f41115481fc5d",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "e53af751b384567e247b72e5acbdeabb76ab838c1e18a765719bcef1a9542646",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 226,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1064,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1290
+  },
+  "raw_body": "{\"id\":\"85e16b1c-27f9-4bb4-8c70-ef6e06734d8d\",\"created\":1788591870,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Tide-4\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s1\\\",\\\"quote\\\":\\\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery.\\\"}],\\\"reason\\\":\\\"Tide-4 meets all three requirements: it resumes transfers without resending acknowledged chunks under the alternating-link test (x01s1), its installed footprint is 46 MiB which is under 60 MiB (x01s2), and all staging bytes remain encrypted on disk in release 4.2 (x01s2). The evidence applies to the tested configuration and scope.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":226,\"prompt_tokens\":1064,\"total_tokens\":1290,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "003cbb0483b5a828c4d921191f48b1b56045aade66a2e02b1a7ad4c859c37ea4",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6063.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "e53af751b384567e247b72e5acbdeabb76ab838c1e18a765719bcef1a9542646",
+    "request_id": "answer-b01q01-scoped_facts-r1",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Tide-4\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x01s1\",\"quote\":\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again.\"},{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\"},{\"source_id\":\"x01s2\",\"quote\":\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery.\"}],\"reason\":\"Tide-4 meets all three requirements: it resumes transfers without resending acknowledged chunks under the alternating-link test (x01s1), its installed footprint is 46 MiB which is under 60 MiB (x01s2), and all staging bytes remain encrypted on disk in release 4.2 (x01s2). The evidence applies to the tested configuration and scope.\"}",
+    "usage": {
+      "input_tokens": 1064,
+      "output_tokens": 226
+    }
+  },
+  "transport_error": false
+}

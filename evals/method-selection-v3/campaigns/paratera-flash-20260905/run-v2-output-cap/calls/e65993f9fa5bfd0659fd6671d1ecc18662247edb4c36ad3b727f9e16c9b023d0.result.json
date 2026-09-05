@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:46:14.583561+00:00",
+  "http_status": 200,
+  "intent_hash": "f9b34067d2e5b90db288562040e1697f53dfea2334d225105181939fc0d27202",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "4a98cdd295dca4ce1670f93ba41a021251cfe8593a2da687381cadd88595734d",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 286,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1062,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1348
+  },
+  "raw_body": "{\"id\":\"fd3958cd-9366-47e6-8d99-463919a43662\",\"created\":1788590773,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion. Larch build 4.1 made a withdrawn passage ineligible for retrieval before acknowledging deletion. P6 build 6.0 could return a withdrawn passage for up to thirty seconds after acknowledging deletion.\\\"}],\\\"reason\\\":\\\"Latency requirement: Dune-15 (96 ms) and P6 (84 ms) meet p95 ≤110 ms; Larch (130 ms) does not. Withdrawal visibility: Dune-15 and Larch meet the requirement; P6 does not. No single candidate meets both requirements. Therefore no option is supported; the evidence explicitly rules out each candidate for at least one requirement, but the task asks which candidate satisfies both, and none does. This is an explicit_negative situation, but the instruction says to abstain when no option is supported; the evidence state is explicit_negative because every candidate is ruled out by at least one requirement.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":286,\"prompt_tokens\":1062,\"total_tokens\":1348,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "644dfd66345a71ad700ad47a85838e7f9bb964c375e4695f31c0f1f78b1acce8",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2657.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "4a98cdd295dca4ce1670f93ba41a021251cfe8593a2da687381cadd88595734d",
+    "request_id": "answer-b07q01-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0\"},{\"source_id\":\"x07s2\",\"quote\":\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion. Larch build 4.1 made a withdrawn passage ineligible for retrieval before acknowledging deletion. P6 build 6.0 could return a withdrawn passage for up to thirty seconds after acknowledging deletion.\"}],\"reason\":\"Latency requirement: Dune-15 (96 ms) and P6 (84 ms) meet p95 ≤110 ms; Larch (130 ms) does not. Withdrawal visibility: Dune-15 and Larch meet the requirement; P6 does not. No single candidate meets both requirements. Therefore no option is supported; the evidence explicitly rules out each candidate for at least one requirement, but the task asks which candidate satisfies both, and none does. This is an explicit_negative situation, but the instruction says to abstain when no option is supported; the evidence state is explicit_negative because every candidate is ruled out by at least one requirement.\"}",
+    "usage": {
+      "input_tokens": 1062,
+      "output_tokens": 286
+    }
+  },
+  "transport_error": false
+}

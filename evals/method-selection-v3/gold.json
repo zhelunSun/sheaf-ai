@@ -1,0 +1,647 @@
+[
+  {
+    "task_id": "b01q01",
+    "decision": "choose",
+    "method_id": "Tide-4",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x01s1",
+      "x01s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x01s1",
+          "quote": "Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again."
+        },
+        {
+          "source_id": "x01s2",
+          "quote": "For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery."
+        },
+        {
+          "source_id": "x01s2",
+          "quote": "Required installed footprints are 46 MiB for Tide-4 4.2"
+        }
+      ]
+    ],
+    "rationale": "Tide-4 meets resume and encrypted-staging requirements and its required installation is 46 MiB, below 60 MiB. MicaX explicitly fails acknowledged-chunk resume. R7 exceeds the installation allowance at 83 MiB. These independent exclusions make Tide-4 unique; an account of R7 staging is unnecessary to eliminate it."
+  },
+  {
+    "task_id": "b01q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "explicit_negative",
+    "required_sources": [
+      "x01s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x01s2",
+          "quote": "Required installed footprints are"
+        },
+        {
+          "source_id": "x01s2",
+          "quote": "29 MiB for MicaX 6"
+        },
+        {
+          "source_id": "x01s2",
+          "quote": "83 MiB for R7 7.1"
+        }
+      ]
+    ],
+    "rationale": "Both eligible methods explicitly exceed the 25 MiB complete-installation cap: MicaX needs 29 MiB and R7 needs 83 MiB. Tide-4 is outside this question's candidate subset. Required-footprint measurements directly contradict acceptance; this is not a missing-measurement case."
+  },
+  {
+    "task_id": "b01q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "insufficient",
+    "required_sources": [
+      "x01s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x01s3",
+          "quote": "The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor."
+        }
+      ]
+    ],
+    "rationale": "Approval requires an observed ARM peak, and none is reported. The process allowance on a different rig is not a measured peak and the x86 demonstration did not sample memory. No candidate is shown to violate 128 MiB either, so the appropriate state is insufficient evidence."
+  },
+  {
+    "task_id": "b02q01",
+    "decision": "choose",
+    "method_id": "Silt-22",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x02s1",
+      "x02s2",
+      "x02s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x02s1",
+          "quote": "On the twelve-million-record workload with four readers and one writer"
+        },
+        {
+          "source_id": "x02s1",
+          "quote": "p99 query latency"
+        },
+        {
+          "source_id": "x02s1",
+          "quote": "Silt-22 had 43 ms"
+        },
+        {
+          "source_id": "x02s2",
+          "quote": "In the fifty-cut test, Silt-22 release 22.4 retained every acknowledged record."
+        },
+        {
+          "source_id": "x02s3",
+          "quote": "Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check."
+        }
+      ]
+    ],
+    "rationale": "Silt-22 has 43 ms p99 at the required concurrency, retains all acknowledged records in the specified test, and runs without network checks. Oak fails the 50 ms cap at 71 ms. N9's mandatory online refresh excludes it regardless of the separate unresolved N9 recovery reports; that excluded candidate's durability conflict does not prevent selecting Silt-22."
+  },
+  {
+    "task_id": "b02q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "conflict",
+    "required_sources": [
+      "x02s1",
+      "x02s2",
+      "x02s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x02s1",
+          "quote": "On the twelve-million-record workload with four readers and one writer, Oak had p99 query latency of 71 ms"
+        },
+        {
+          "source_id": "x02s1",
+          "quote": "N9 had 38 ms"
+        },
+        {
+          "source_id": "x02s2",
+          "quote": "Worksheet A reports that N9 release 9.2 in default durability mode retained every acknowledged record on the internal disk with its ordinary write cache enabled."
+        },
+        {
+          "source_id": "x02s3",
+          "quote": "The independent replay reports that N9 release 9.2 in default durability mode lost three acknowledged records on the internal disk with its ordinary write cache enabled."
+        },
+        {
+          "source_id": "x02s3",
+          "quote": "Worksheet A and the independent replay describe the same N9 configuration and procedure; neither report has been withdrawn, and no reconciliation or precedence rule has been issued."
+        }
+      ]
+    ],
+    "rationale": "Oak is definitively excluded by its 71 ms latency. N9 passes the latency cap, but two active reports about the same release, durability mode, disk setting, and procedure disagree on retaining acknowledged records. No precedence rule resolves the disagreement. The sole remaining candidate is blocked by conflict, with no unknown alternative and no permission to prefer one report."
+  },
+  {
+    "task_id": "b02q03",
+    "decision": "choose",
+    "method_id": "Oak",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x02s2",
+      "x02s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x02s2",
+          "quote": "For Oak release 3, cancelling an export left no partial export file visible in the destination directory."
+        },
+        {
+          "source_id": "x02s3",
+          "quote": "Oak release 3"
+        },
+        {
+          "source_id": "x02s3",
+          "quote": "run all query and export operations without a network connection or a network license check."
+        }
+      ]
+    ],
+    "rationale": "Both candidates support the disconnected operation requirement, but only Oak leaves no partial destination file on cancellation. Silt-22 explicitly requires caller cleanup, which the watcher workflow cannot tolerate. This task has no query-latency cap, so Oak's latency result from another task does not disqualify it."
+  },
+  {
+    "task_id": "b03q01",
+    "decision": "choose",
+    "method_id": "F3",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x03s1",
+      "x03s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x03s1",
+          "quote": "At minus 25 degrees Celsius for forty-eight hours, F3 recorded every scheduled measurement and its maximum wake-to-record latency was 180 ms."
+        },
+        {
+          "source_id": "x03s2",
+          "quote": "The operator recovery exercise removed power during a metadata write on each board while the service cable was absent."
+        },
+        {
+          "source_id": "x03s2",
+          "quote": "F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required."
+        }
+      ]
+    ],
+    "rationale": "F3 records every cold-test measurement within 180 ms and automatically recovers after the separately documented metadata-write interruption. The common recovery condition explicitly applies to each board. Wisp8 fails the cold acquisition requirement; Lantern-P fails tool-free recovery. No cold-temperature recovery experiment is inferred: the question combines the stated cold acquisition test with the stated recovery exercise."
+  },
+  {
+    "task_id": "b03q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "explicit_negative",
+    "required_sources": [
+      "x03s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x03s2",
+          "quote": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8."
+        }
+      ]
+    ],
+    "rationale": "Every measured daily board load exceeds 0.60 Wh under the exact requested temperature and schedule. The lightest is Wisp8 at 0.68 Wh, which still fails. This concerns measured load at twenty degrees Celsius and makes no untested cold-battery-life inference."
+  },
+  {
+    "task_id": "b03q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "insufficient",
+    "required_sources": [
+      "x03s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x03s3",
+          "quote": "No salt-mist exposure test was performed for F3, Lantern-P, or Wisp8."
+        }
+      ],
+      [
+        {
+          "source_id": "x03s3",
+          "quote": "No salt-mist exposure test was performed for F3"
+        },
+        {
+          "source_id": "x03s3",
+          "quote": "or Wisp8."
+        }
+      ]
+    ],
+    "rationale": "Neither eligible board has an observed salt-mist result. The planned seventy-two-hour protocol, gasket drawing, cold run, and dry vibration screening do not establish the requested exposure pass. No salt-mist failure is observed, so this is insufficient evidence rather than explicit negative evidence."
+  },
+  {
+    "task_id": "b04q01",
+    "decision": "choose",
+    "method_id": "Vela",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x04s1",
+      "x04s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x04s1",
+          "quote": "On S80 with the standard rule pack, Vela used 2.4 GiB peak workspace and finished in 69 seconds."
+        },
+        {
+          "source_id": "x04s2",
+          "quote": "Vela build 5.0 load their complete standard rule packs locally and require no remote catalog service."
+        }
+      ]
+    ],
+    "rationale": "Vela meets both S80 limits at 2.4 GiB and 69 seconds and loads its complete rules locally. CedarPlan-6 fails the workspace cap and Q2x fails the deadline. The separate saved-plan guard disagreement concerns a condition this task does not request and does not contradict Vela's measured S80 or local-loading evidence."
+  },
+  {
+    "task_id": "b04q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "insufficient",
+    "required_sources": [
+      "x04s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x04s3",
+          "quote": "No floating-point outer-join workload was evaluated for CedarPlan-6, Vela, or Q2x."
+        }
+      ],
+      [
+        {
+          "source_id": "x04s3",
+          "quote": "No floating-point outer-join workload was evaluated for CedarPlan-6"
+        },
+        {
+          "source_id": "x04s3",
+          "quote": "or Q2x."
+        }
+      ]
+    ],
+    "rationale": "Neither candidate in the restricted subset has an evaluated floating-point outer join. Correct integer inner-join aggregation is outside the required semantic scope. A proposed follow-up checker provides no completed result, and the packet demonstrates no outer-join failure from which to classify explicit negatives."
+  },
+  {
+    "task_id": "b04q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "conflict",
+    "required_sources": [
+      "x04s2",
+      "x04s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x04s2",
+          "quote": "In the additive-column drift test, CedarPlan-6 build 6.3 executed the stale saved plan without rejection."
+        },
+        {
+          "source_id": "x04s2",
+          "quote": "Worksheet A reports that Vela build 5.0 with the standard rule pack rejected the stale saved plan before execution in the additive-column drift test."
+        },
+        {
+          "source_id": "x04s3",
+          "quote": "The verification replay reports that Vela build 5.0 with the standard rule pack executed the stale saved plan without rejection in the additive-column drift test."
+        },
+        {
+          "source_id": "x04s3",
+          "quote": "The two Vela reports use the same VD-12 configuration, remain active, and have no published reconciliation or designated precedence."
+        }
+      ]
+    ],
+    "rationale": "CedarPlan-6 explicitly fails rejection before execution. Vela is reported both to reject and to execute the stale plan under the same VD-12 configuration. Both reports remain active without precedence, leaving a direct conflict for the only candidate that could qualify."
+  },
+  {
+    "task_id": "b05q01",
+    "decision": "choose",
+    "method_id": "JettyS",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x05s1",
+      "x05s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x05s1",
+          "quote": "During the forty-session replacement test, JettyS version 1.8 drained all accepted transactions without loss or duplicate application."
+        },
+        {
+          "source_id": "x05s2",
+          "quote": "The complete manager installation occupies 52 MiB for JettyS version 1.8"
+        }
+      ]
+    ],
+    "rationale": "JettyS preserves accepted transactions and fits the installation allowance at 52 MiB. C4 explicitly loses accepted transactions; Umbra-2 exceeds 70 MiB. The package figures use the requested complete-manager boundary and exclude the separately stored images and data volume."
+  },
+  {
+    "task_id": "b05q02",
+    "decision": "choose",
+    "method_id": "Umbra-2",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x05s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x05s3",
+          "quote": "With compatible application state and a preloaded previous image, local rollback completed"
+        },
+        {
+          "source_id": "x05s3",
+          "quote": "22 seconds for Umbra-2 version 2.5"
+        },
+        {
+          "source_id": "x05s3",
+          "quote": "No external controller participated in these rollback runs."
+        },
+        {
+          "source_id": "x05s3",
+          "quote": "Umbra-2 used the writable data volume with a read-only root"
+        }
+      ],
+      [
+        {
+          "source_id": "x05s3",
+          "quote": "With compatible application state and a preloaded previous image, local rollback completed"
+        },
+        {
+          "source_id": "x05s3",
+          "quote": "22 seconds for Umbra-2 version 2.5"
+        },
+        {
+          "source_id": "x05s3",
+          "quote": "No external controller participated in these rollback runs."
+        },
+        {
+          "source_id": "x05s2",
+          "quote": "With a writable data volume"
+        },
+        {
+          "source_id": "x05s2",
+          "quote": "Umbra-2 version 2.5 perform replacement and rollback while the root filesystem remains read-only."
+        }
+      ]
+    ],
+    "rationale": "Umbra-2 completes the specified local rollback in 22 seconds under a read-only root with a writable data volume and no external controller. C4 requires writing the root and is excluded despite its faster rollback. The selected method's entire positive case can be cited from x05s3, or its timing and controller conditions can be combined with the filesystem evidence in x05s2. Only x05s3 is indispensable across the two alternatives. Candidate exclusions remain explanatory rather than mandatory positive-answer evidence."
+  },
+  {
+    "task_id": "b05q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "explicit_negative",
+    "required_sources": [
+      "x05s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x05s3",
+          "quote": "JettyS version 1.8, C4 version 4.0, and Umbra-2 version 2.5 all run managed services as processes sharing the appliance's host kernel; none provides a separate guest kernel."
+        }
+      ]
+    ],
+    "rationale": "The architecture review explicitly states that all three candidates share the host kernel and supply no separate guest kernel. Process namespaces do not meet the task's independent-kernel condition, and adding a virtual-machine layer would be a different untested configuration."
+  },
+  {
+    "task_id": "b06q01",
+    "decision": "choose",
+    "method_id": "Quill-9",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x06s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x06s2",
+          "quote": "Quill-9 completed the 20-percent ordinary update on both board revisions A and B without a charger."
+        },
+        {
+          "source_id": "x06s2",
+          "quote": "Its signature verification for preloaded packages is entirely local and requires no network connection."
+        }
+      ]
+    ],
+    "rationale": "Quill-9 completed the exact twenty-percent, charger-free update on both requested revisions, with local signature verification. Aster and M4L explicitly refuse at that starting charge. The visit leaves the trust key unchanged; results about interrupted key rotation therefore neither establish nor undermine this ordinary-update selection."
+  },
+  {
+    "task_id": "b06q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "insufficient",
+    "required_sources": [],
+    "support_sets": [
+      [
+        {
+          "source_id": "x06s1",
+          "quote": "The qualification campaign used board revisions A and B only; no update run was performed on board revision C for Aster, M4L, or Quill-9."
+        }
+      ],
+      [
+        {
+          "source_id": "x06s3",
+          "quote": "The team has also drafted a revision-C update checklist, but there is still no physical revision-C update result in this packet."
+        }
+      ]
+    ],
+    "rationale": "No candidate has a completed physical revision-C update run. A/B success, a revision-C manifest, and an unexecuted checklist do not cover the requested hardware. Either the explicit candidate-wide campaign scope in x06s1 or the packet-wide absence statement in x06s3 is sufficient; no individual source is common to both alternatives."
+  },
+  {
+    "task_id": "b06q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "conflict",
+    "required_sources": [
+      "x06s2",
+      "x06s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x06s2",
+          "quote": "A separate exercise on board revision B rotated the updater trust key and interrupted power after the new key write but before the commit marker."
+        },
+        {
+          "source_id": "x06s2",
+          "quote": "In that interrupted key-rotation exercise, Aster 3.4 erased the old recovery key and could not authenticate the previous recovery image on restart."
+        },
+        {
+          "source_id": "x06s2",
+          "quote": "Worksheet A reports that M4L 4.7 retained the old recovery key and authenticated the previous recovery image after interruption between the new key write and commit marker."
+        },
+        {
+          "source_id": "x06s2",
+          "quote": "The M4L record uses board revision B, the standard boot helper, and manifest KR-7."
+        },
+        {
+          "source_id": "x06s3",
+          "quote": "The replay reports that M4L 4.7 lost the old recovery key and could not authenticate the previous recovery image after interruption between the new key write and commit marker."
+        },
+        {
+          "source_id": "x06s3",
+          "quote": "Worksheet A and the replay both describe board revision B under KR-7 with the same standard boot helper; both remain valid records pending investigation, with no correction or precedence rule."
+        }
+      ]
+    ],
+    "rationale": "The common exercise condition places both Aster and M4L on revision B at the requested interruption point. Aster explicitly loses the old recovery capability. M4L's two active KR-7 reports disagree on retaining that capability under the same board, helper, and interruption conditions, and no precedence rule resolves the conflict."
+  },
+  {
+    "task_id": "b07q01",
+    "decision": "choose",
+    "method_id": "Dune-15",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x07s1",
+      "x07s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x07s1",
+          "quote": "On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2"
+        },
+        {
+          "source_id": "x07s2",
+          "quote": "Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion."
+        }
+      ]
+    ],
+    "rationale": "Dune-15 meets the 110 ms p95 cap at 96 ms and makes withdrawal effective before acknowledgement. Larch fails the latency cap at 130 ms. P6 passes latency but explicitly permits retrieval after deletion acknowledgement. Physical byte reclamation is not part of the task's retrieval-eligibility condition."
+  },
+  {
+    "task_id": "b07q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "explicit_negative",
+    "required_sources": [
+      "x07s1"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x07s1",
+          "quote": "Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0."
+        },
+        {
+          "source_id": "x07s1",
+          "quote": "These figures include mandatory metadata and lookup files but exclude the original document archive, which every deployment retains separately."
+        }
+      ]
+    ],
+    "rationale": "All complete mandatory indices exceed 1.0 GiB, even excluding originals. P6's single compressed vector component is an incomplete accounting boundary and does not override its 1.4 GiB complete index. Each candidate has a direct measured violation."
+  },
+  {
+    "task_id": "b07q03",
+    "decision": "choose",
+    "method_id": "Larch",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x07s2",
+      "x07s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x07s2",
+          "quote": "Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation."
+        },
+        {
+          "source_id": "x07s3",
+          "quote": "Larch build 4.1 can build, update, and query their local indices indefinitely without a network service or license refresh."
+        }
+      ]
+    ],
+    "rationale": "Larch supplies both exact literal-code filtering and indefinite local construction, changes, and queries. P6 is excluded by its merging of distinct codes and its mandatory remote calibration, while Dune-15 is outside the candidate subset. Mandatory citation anchors cover the selected method's full positive case; citing the P6 exclusions is optional."
+  },
+  {
+    "task_id": "b08q01",
+    "decision": "choose",
+    "method_id": "Kestrel",
+    "evidence_state": "supported",
+    "required_sources": [
+      "x08s1",
+      "x08s2"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x08s1",
+          "quote": "In the ordinary-profile uplink-A interruption test, Kestrel resumed through B in 42 ms and delivered zero out-of-order packets."
+        },
+        {
+          "source_id": "x08s2",
+          "quote": "Under the active two-uplink ordinary profile, measured DC input power"
+        },
+        {
+          "source_id": "x08s2",
+          "quote": "5.4 W for Kestrel firmware 2.2"
+        }
+      ]
+    ],
+    "rationale": "Kestrel resumes in 42 ms with no out-of-order packets and draws 5.4 W in the requested active profile. R3 violates ordering; Nacre-10 violates the power cap. The unresolved Kestrel loop-isolation reports concern a different event and do not contradict these uplink-loss and active-power observations."
+  },
+  {
+    "task_id": "b08q02",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "insufficient",
+    "required_sources": [
+      "x08s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x08s3",
+          "quote": "No 256-bit encryption-mode latency test was performed for Kestrel, R3, or Nacre-10."
+        }
+      ]
+    ],
+    "rationale": "The required encrypted-mode p95 measurement is absent for every candidate. Main tests disabled encryption, while the 128-bit demonstration measured no latency percentiles. Neither supplies the requested 256-bit result, and no candidate has a measured violation of the 10 ms cap in that mode."
+  },
+  {
+    "task_id": "b08q03",
+    "decision": "abstain",
+    "method_id": null,
+    "evidence_state": "conflict",
+    "required_sources": [
+      "x08s2",
+      "x08s3"
+    ],
+    "support_sets": [
+      [
+        {
+          "source_id": "x08s2",
+          "quote": "Worksheet A reports that Kestrel firmware 2.2 isolated the secondary port in 82 ms under topology LG-4 with the ordinary profile."
+        },
+        {
+          "source_id": "x08s2",
+          "quote": "Under topology LG-4 with the ordinary profile, R3 firmware 3.3 isolated the secondary port in 160 ms, and Nacre-10 firmware 10.1 did so in 140 ms."
+        },
+        {
+          "source_id": "x08s3",
+          "quote": "The verification replay reports that Kestrel firmware 2.2 did not isolate the secondary port within 240 ms under topology LG-4 with the ordinary profile."
+        },
+        {
+          "source_id": "x08s3",
+          "quote": "Worksheet A and the replay describe the same Kestrel configuration and loop event, and both remain active with no reconciliation or precedence rule."
+        }
+      ]
+    ],
+    "rationale": "R3 and Nacre-10 definitively miss the 100 ms isolation limit. Kestrel has incompatible active reports for the same configuration and event: isolation in 82 ms versus no isolation within 240 ms. A 75 ms warning in the replay cannot satisfy actual isolation. The remaining candidate is blocked by a genuine unresolved conflict."
+  }
+]

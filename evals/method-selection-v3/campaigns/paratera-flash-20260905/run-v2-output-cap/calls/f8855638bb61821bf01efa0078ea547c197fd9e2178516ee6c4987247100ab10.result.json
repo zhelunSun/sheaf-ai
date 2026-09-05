@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:36.684390+00:00",
+  "http_status": 200,
+  "intent_hash": "b516e4af6605f520a2173e7e34a1a3e07574d85d015a5cfe6601235c46c46442",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "c13061018998651ad5306f74b6146b1d438d7d8619363b355ac87d8dee3370e7",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 150,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1094,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1244
+  },
+  "raw_body": "{\"id\":\"07f43c85-9f9a-4138-9502-c93b33c6edf5\",\"created\":1788590616,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x04s3\\\",\\\"quote\\\":\\\"No floating-point outer-join workload was evaluated for CedarPlan-6, Vela, or Q2x.\\\"},{\\\"source_id\\\":\\\"x04s3\\\",\\\"quote\\\":\\\"The reference-output check in S80 therefore does not establish exact null-extension behavior or floating-point comparison semantics for an outer join.\\\"}],\\\"reason\\\":\\\"The context explicitly states that no floating-point outer-join workload was evaluated for CedarPlan-6 or Q2x, and the S80 workload does not establish the required null-extension or floating-point comparison behavior. Therefore, neither option has sufficient evidence for approval.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":150,\"prompt_tokens\":1094,\"total_tokens\":1244,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "d2799099d495d6a0bf249c9cdcc9e5d337b2447768de6a17d9a236c7b3051bc6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1406.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "c13061018998651ad5306f74b6146b1d438d7d8619363b355ac87d8dee3370e7",
+    "request_id": "answer-b04q02-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x04s3\",\"quote\":\"No floating-point outer-join workload was evaluated for CedarPlan-6, Vela, or Q2x.\"},{\"source_id\":\"x04s3\",\"quote\":\"The reference-output check in S80 therefore does not establish exact null-extension behavior or floating-point comparison semantics for an outer join.\"}],\"reason\":\"The context explicitly states that no floating-point outer-join workload was evaluated for CedarPlan-6 or Q2x, and the S80 workload does not establish the required null-extension or floating-point comparison behavior. Therefore, neither option has sufficient evidence for approval.\"}",
+    "usage": {
+      "input_tokens": 1094,
+      "output_tokens": 150
+    }
+  },
+  "transport_error": false
+}

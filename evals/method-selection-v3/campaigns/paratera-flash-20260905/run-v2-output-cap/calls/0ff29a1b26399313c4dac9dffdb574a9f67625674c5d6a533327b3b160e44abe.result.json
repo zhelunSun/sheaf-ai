@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:50.300200+00:00",
+  "http_status": 200,
+  "intent_hash": "62c96ddb662255e20e8347ca39c55545216937b1523a0b12fcbc88e94799ca1e",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "b2ae2fce89b741902a81cd0617f839ed2bfdcaffb0c25872c39acc250aaee1bd",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 284,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1089,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1373
+  },
+  "raw_body": "{\"id\":\"7465cf7e-d3ae-43f8-b19c-c5fbb6ac45b2\",\"created\":1788590749,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x06s2\\\",\\\"quote\\\":\\\"Worksheet A reports that M4L 4.7 retained the old recovery key and authenticated the previous recovery image after interruption between the new key write and commit marker.\\\"},{\\\"source_id\\\":\\\"x06s3\\\",\\\"quote\\\":\\\"The replay reports that M4L 4.7 lost the old recovery key and could not authenticate the previous recovery image after interruption between the new key write and commit marker.\\\"},{\\\"source_id\\\":\\\"x06s3\\\",\\\"quote\\\":\\\"The packet does not resolve these incompatible observations or identify a configuration difference that would make them results for separate cases.\\\"}],\\\"reason\\\":\\\"For M4L, worksheet A reports successful retention and authentication, while the replay reports failure under the same board revision, boot helper, and interruption point. The packet explicitly states these incompatible observations are unresolved and no configuration difference separates them. Thus, M4L cannot be approved on a resolved set of observations. For Aster, worksheet A reports failure to retain the old key and authenticate, so Aster is explicitly ruled out. Since M4L has conflicting evidence and Aster is explicitly negative, no option can be approved; the evidence state is conflict for M4L, and explicit_negative for Aster, but the overall decision is abstain because the conflict blocks a supported choice.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":284,\"prompt_tokens\":1089,\"total_tokens\":1373,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "580eb1f12e3efe68e2a5a68646a238ac2ffe9ce1e17c8fb94520c3200b0bdd2c",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2375.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "b2ae2fce89b741902a81cd0617f839ed2bfdcaffb0c25872c39acc250aaee1bd",
+    "request_id": "answer-b06q03-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"x06s2\",\"quote\":\"Worksheet A reports that M4L 4.7 retained the old recovery key and authenticated the previous recovery image after interruption between the new key write and commit marker.\"},{\"source_id\":\"x06s3\",\"quote\":\"The replay reports that M4L 4.7 lost the old recovery key and could not authenticate the previous recovery image after interruption between the new key write and commit marker.\"},{\"source_id\":\"x06s3\",\"quote\":\"The packet does not resolve these incompatible observations or identify a configuration difference that would make them results for separate cases.\"}],\"reason\":\"For M4L, worksheet A reports successful retention and authentication, while the replay reports failure under the same board revision, boot helper, and interruption point. The packet explicitly states these incompatible observations are unresolved and no configuration difference separates them. Thus, M4L cannot be approved on a resolved set of observations. For Aster, worksheet A reports failure to retain the old key and authenticate, so Aster is explicitly ruled out. Since M4L has conflicting evidence and Aster is explicitly negative, no option can be approved; the evidence state is conflict for M4L, and explicit_negative for Aster, but the overall decision is abstain because the conflict blocks a supported choice.\"}",
+    "usage": {
+      "input_tokens": 1089,
+      "output_tokens": 284
+    }
+  },
+  "transport_error": false
+}

@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:25.300882+00:00",
+  "http_status": 200,
+  "intent_hash": "c936a575c5292e9e3f65d581ded973c7775296fcf7764442346f38b8602db924",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "c15aa7270a2ec2f0782bbdec9809e78fcdca525ce426e887e44a68af3ebfea94",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 149,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1099,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1248
+  },
+  "raw_body": "{\"id\":\"45502e05-80bf-48ce-af57-40b5440364fc\",\"created\":1788590605,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x06s1\\\",\\\"quote\\\":\\\"The qualification campaign used board revisions A and B only; no update run was performed on board revision C for Aster, M4L, or Quill-9.\\\"},{\\\"source_id\\\":\\\"x06s3\\\",\\\"quote\\\":\\\"The team has also drafted a revision-C update checklist, but there is still no physical revision-C update result in this packet.\\\"}],\\\"reason\\\":\\\"All candidates are explicitly ruled out because the context states no update run was performed on board revision C for any of the three candidates, and only a draft manifest and checklist exist, not a completed hardware update.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":149,\"prompt_tokens\":1099,\"total_tokens\":1248,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b009ef5383612b5a4cb0b3188cfc0fdf1ebd5b6dfbf530dca6629e447c9b49bf",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1422.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "c15aa7270a2ec2f0782bbdec9809e78fcdca525ce426e887e44a68af3ebfea94",
+    "request_id": "answer-b06q02-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x06s1\",\"quote\":\"The qualification campaign used board revisions A and B only; no update run was performed on board revision C for Aster, M4L, or Quill-9.\"},{\"source_id\":\"x06s3\",\"quote\":\"The team has also drafted a revision-C update checklist, but there is still no physical revision-C update result in this packet.\"}],\"reason\":\"All candidates are explicitly ruled out because the context states no update run was performed on board revision C for any of the three candidates, and only a draft manifest and checklist exist, not a completed hardware update.\"}",
+    "usage": {
+      "input_tokens": 1099,
+      "output_tokens": 149
+    }
+  },
+  "transport_error": false
+}

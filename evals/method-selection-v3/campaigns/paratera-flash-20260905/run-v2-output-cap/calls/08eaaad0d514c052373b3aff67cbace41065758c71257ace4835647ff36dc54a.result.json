@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:14.543743+00:00",
+  "http_status": 200,
+  "intent_hash": "b05764869bc81421081b5f1ea738490e8e054030b520c518dc4245c8af1e1957",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "7f6c22dd5b5367365d46112f26498330887fb3f8e828a125f5d96ae69647114c",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 83,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1066,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1149
+  },
+  "raw_body": "{\"id\":\"9067c5b1-be9b-4e3e-9587-a27502e482c3\",\"created\":1788590714,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s3\\\",\\\"quote\\\":\\\"The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor.\\\"}],\\\"reason\\\":\\\"No measured peak resident memory on ARM is provided for any candidate, so the requirement cannot be assessed.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":83,\"prompt_tokens\":1066,\"total_tokens\":1149,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "13f87fceb1a81777f1aed229eee8fb9ebb93cd881d73d928449eb4e378970c8a",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1344.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "7f6c22dd5b5367365d46112f26498330887fb3f8e828a125f5d96ae69647114c",
+    "request_id": "answer-b01q03-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s3\",\"quote\":\"The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor.\"}],\"reason\":\"No measured peak resident memory on ARM is provided for any candidate, so the requirement cannot be assessed.\"}",
+    "usage": {
+      "input_tokens": 1066,
+      "output_tokens": 83
+    }
+  },
+  "transport_error": false
+}

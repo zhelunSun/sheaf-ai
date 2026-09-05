@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:58.410914+00:00",
+  "http_status": 200,
+  "intent_hash": "cb857c4f5219aaf3170c7b400774a93c3939d5f86105631a8747d3b9fddca227",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "420c8c271a137b9d3721ff23a97d9c6ab8351f58666cc81516bc09f0d92841a8",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 257,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1123,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1380
+  },
+  "raw_body": "{\"id\":\"5a5852fe-d0c5-4fd2-8c4a-bae73171fb85\",\"created\":1788591835,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x03s1\\\",\\\"quote\\\":\\\"At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms.\\\"},{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\\\"},{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write.\\\"},{\\\"source_id\\\":\\\"x03s1\\\",\\\"quote\\\":\\\"A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms. The room-temperature result is useful for diagnosing the clock problem, but does not replace the cold-chamber result.\\\"}],\\\"reason\\\":\\\"Lantern-P meets the cold-temperature latency and no-missed-records requirement but fails the recovery requirement because it requires a proprietary service tool. F3 meets the recovery requirement but has no evidence of cold-temperature performance. Wisp8 has only room-temperature latency evidence, not the required minus-25-degree condition. No single option satisfies all requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":257,\"prompt_tokens\":1123,\"total_tokens\":1380,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "9ad3361412650ffdfaf50e3e81bbcfdf95679ae2acf24f62eb5bf95fe7291d82",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4719.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "420c8c271a137b9d3721ff23a97d9c6ab8351f58666cc81516bc09f0d92841a8",
+    "request_id": "answer-b03q01-scoped_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x03s1\",\"quote\":\"At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms.\"},{\"source_id\":\"x03s2\",\"quote\":\"F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.\"},{\"source_id\":\"x03s2\",\"quote\":\"Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write.\"},{\"source_id\":\"x03s1\",\"quote\":\"A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms. The room-temperature result is useful for diagnosing the clock problem, but does not replace the cold-chamber result.\"}],\"reason\":\"Lantern-P meets the cold-temperature latency and no-missed-records requirement but fails the recovery requirement because it requires a proprietary service tool. F3 meets the recovery requirement but has no evidence of cold-temperature performance. Wisp8 has only room-temperature latency evidence, not the required minus-25-degree condition. No single option satisfies all requirements.\"}",
+    "usage": {
+      "input_tokens": 1123,
+      "output_tokens": 257
+    }
+  },
+  "transport_error": false
+}

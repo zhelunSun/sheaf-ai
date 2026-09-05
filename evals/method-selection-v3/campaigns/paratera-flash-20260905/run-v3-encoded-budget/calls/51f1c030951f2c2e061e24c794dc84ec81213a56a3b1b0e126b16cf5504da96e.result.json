@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:34.420256+00:00",
+  "http_status": 200,
+  "intent_hash": "2c85933820ffcc30ea5a2f757ef2e33c934509c9465f536190319186b6977e5c",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "3af26ac5a868fae5552bf1cd761f250180b6f9f8c551261c1384411115e65108",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 212,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1111,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "total_tokens": 1323
+  },
+  "raw_body": "{\"id\":\"965d57f7-39fc-4640-b83f-37dc7e917535\",\"created\":1788591813,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"No undocumented P6 flag for byte-exact filtering was evaluated.\\\"}],\\\"reason\\\":\\\"Larch is explicitly stated to provide byte-exact product-code equality filtering, and the requirement that no post-filter is allowed is satisfied because the filtering is supplied by the retrieval method itself. However, the task also requires local index construction, changes, and queries, but no evidence in the context addresses these capabilities for Larch or P6. Therefore, the relevant ability is not established for either candidate, making the evidence insufficient to choose.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":212,\"prompt_tokens\":1111,\"total_tokens\":1323,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":512}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "6e6077df3483fc3be0378ec575d74dd0e07a09faa15796529e43cab88514ee4e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 5797.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "3af26ac5a868fae5552bf1cd761f250180b6f9f8c551261c1384411115e65108",
+    "request_id": "answer-b07q03-all_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s2\",\"quote\":\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\"},{\"source_id\":\"x07s2\",\"quote\":\"No undocumented P6 flag for byte-exact filtering was evaluated.\"}],\"reason\":\"Larch is explicitly stated to provide byte-exact product-code equality filtering, and the requirement that no post-filter is allowed is satisfied because the filtering is supplied by the retrieval method itself. However, the task also requires local index construction, changes, and queries, but no evidence in the context addresses these capabilities for Larch or P6. Therefore, the relevant ability is not established for either candidate, making the evidence insufficient to choose.\"}",
+    "usage": {
+      "input_tokens": 1111,
+      "output_tokens": 212
+    }
+  },
+  "transport_error": false
+}

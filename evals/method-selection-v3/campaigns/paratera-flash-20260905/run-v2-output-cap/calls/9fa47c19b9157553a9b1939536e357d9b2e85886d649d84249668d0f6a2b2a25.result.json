@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:46:41.638009+00:00",
+  "http_status": 200,
+  "intent_hash": "1d184b3d6e394ced24693444e0aa454028c2b610721e58881ab0f747270236f0",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "6930b99f90f488a3ea976b182763d7791b1b15a722253adde01f3c3b662f3feb",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 148,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1022,
+    "prompt_tokens_details": {
+      "cached_tokens": 896
+    },
+    "total_tokens": 1170
+  },
+  "raw_body": "{\"id\":\"a7236893-2b46-42fc-9b52-26fc14eb62c2\",\"created\":1788590801,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Larch\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s3\\\",\\\"quote\\\":\\\"Dune-15 build 15.2 and Larch build 4.1 can build, update, and query their local indices indefinitely without a network service or license refresh.\\\"}],\\\"reason\\\":\\\"Larch meets all requirements: it provides byte-exact product-code equality preserving case and punctuation, and can operate indefinitely disconnected. P6 is excluded because it normalizes product codes and requires remote calibration after each thousand queries.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":148,\"prompt_tokens\":1022,\"total_tokens\":1170,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":896}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e5bb5d8a2b0cc785d47aa270d7460393f6b6a0f4f463365a91d2f3bde64c6f59",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1500.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "6930b99f90f488a3ea976b182763d7791b1b15a722253adde01f3c3b662f3feb",
+    "request_id": "answer-b07q03-raw_passages-r2",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Larch\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s3\",\"quote\":\"Dune-15 build 15.2 and Larch build 4.1 can build, update, and query their local indices indefinitely without a network service or license refresh.\"}],\"reason\":\"Larch meets all requirements: it provides byte-exact product-code equality preserving case and punctuation, and can operate indefinitely disconnected. P6 is excluded because it normalizes product codes and requires remote calibration after each thousand queries.\"}",
+    "usage": {
+      "input_tokens": 1022,
+      "output_tokens": 148
+    }
+  },
+  "transport_error": false
+}

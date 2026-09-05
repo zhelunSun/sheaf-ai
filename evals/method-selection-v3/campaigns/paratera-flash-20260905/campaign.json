@@ -1,0 +1,7 @@
+{
+  "campaign_id": "6f6ef73e-6fe3-4964-b353-0a88d14b80cf",
+  "max_requests": 170,
+  "max_tokens": 600000,
+  "receipt_hash": "7cf9bde285832679cfee8dc307821a57c6b94848d8a94c728c790eef6fb9c5e2",
+  "version": "method-selection-v3-campaign-v1"
+}

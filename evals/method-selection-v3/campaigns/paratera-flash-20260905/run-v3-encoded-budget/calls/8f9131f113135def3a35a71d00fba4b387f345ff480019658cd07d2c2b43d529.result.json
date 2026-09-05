@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:04:44.969358+00:00",
+  "http_status": 200,
+  "intent_hash": "4bafe18a97dba42786e187ff79a01a4b94710410b5755f7efefbfdfeb64399c8",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "286ff77cf51a4d07dffdd669588bcb8e4fee015edf530d97e19802afbefd47c2",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 179,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1065,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1244
+  },
+  "raw_body": "{\"id\":\"c5ca3f18-e453-409c-9dac-68e83553e8bb\",\"created\":1788591884,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.\\\"}],\\\"reason\\\":\\\"The partition allows at most 1.0 GiB for the complete mandatory index. All three options have complete on-disk index sizes exceeding 1.0 GiB: Dune-15 2.6 GiB, Larch 1.8 GiB, P6 1.4 GiB. Therefore, every candidate is explicitly ruled out by the size constraint, so no configuration fits.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":179,\"prompt_tokens\":1065,\"total_tokens\":1244,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "dcc830e6560803931f5eb2bf561b67143e5cba8ed9b6cda600e90f8f7aa031a6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1906.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "286ff77cf51a4d07dffdd669588bcb8e4fee015edf530d97e19802afbefd47c2",
+    "request_id": "answer-b07q02-scoped_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.\"}],\"reason\":\"The partition allows at most 1.0 GiB for the complete mandatory index. All three options have complete on-disk index sizes exceeding 1.0 GiB: Dune-15 2.6 GiB, Larch 1.8 GiB, P6 1.4 GiB. Therefore, every candidate is explicitly ruled out by the size constraint, so no configuration fits.\"}",
+    "usage": {
+      "input_tokens": 1065,
+      "output_tokens": 179
+    }
+  },
+  "transport_error": false
+}

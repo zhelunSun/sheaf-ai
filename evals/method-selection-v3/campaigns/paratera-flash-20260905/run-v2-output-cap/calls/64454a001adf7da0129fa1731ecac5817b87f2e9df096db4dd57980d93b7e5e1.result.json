@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:42.006555+00:00",
+  "http_status": 200,
+  "intent_hash": "d6ef8756d83c70577904726befdb27a83136729050670c728510778e50a5e2b9",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "ca3755aebf9a3973368c366690093a4a07e7f28a871d9779df11d79efd43a23b",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 317,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1092,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1409
+  },
+  "raw_body": "{\"id\":\"439ab4eb-f84c-4f8c-8210-f6105c32101d\",\"created\":1788590741,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, CedarPlan-6 used 3.6 GiB peak workspace and finished in 74 seconds.\\\"},{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, Vela used 2.4 GiB peak workspace and finished in 69 seconds.\\\"},{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, Q2x used 2.1 GiB peak workspace but exceeded the ninety-second deadline, finishing in 128 seconds.\\\"},{\\\"source_id\\\":\\\"x04s2\\\",\\\"quote\\\":\\\"Q2x build 2.8 requires a remote catalog lookup before compiling each new schema.\\\"}],\\\"reason\\\":\\\"CedarPlan-6 exceeds the 2.5 GiB workspace limit (3.6 GiB). Vela meets both S80 workspace (2.4 GiB ≤ 2.5 GiB) and time (69s ≤ 90s) but fails the local compilation requirement because it is not stated to compile new schemas locally; the audit only says Vela loads its rule pack locally, not that it compiles schemas without remote services. Q2x fails the time requirement (128s > 90s) and also fails local compilation (requires remote catalog). Thus every candidate is explicitly ruled out by at least one requirement, so abstain.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":317,\"prompt_tokens\":1092,\"total_tokens\":1409,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "8485753167a3083bbc73d77c95a878c0e68b33c3660b39cb71e9d991c97229eb",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 5343.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "ca3755aebf9a3973368c366690093a4a07e7f28a871d9779df11d79efd43a23b",
+    "request_id": "answer-b04q01-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, CedarPlan-6 used 3.6 GiB peak workspace and finished in 74 seconds.\"},{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, Vela used 2.4 GiB peak workspace and finished in 69 seconds.\"},{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, Q2x used 2.1 GiB peak workspace but exceeded the ninety-second deadline, finishing in 128 seconds.\"},{\"source_id\":\"x04s2\",\"quote\":\"Q2x build 2.8 requires a remote catalog lookup before compiling each new schema.\"}],\"reason\":\"CedarPlan-6 exceeds the 2.5 GiB workspace limit (3.6 GiB). Vela meets both S80 workspace (2.4 GiB ≤ 2.5 GiB) and time (69s ≤ 90s) but fails the local compilation requirement because it is not stated to compile new schemas locally; the audit only says Vela loads its rule pack locally, not that it compiles schemas without remote services. Q2x fails the time requirement (128s > 90s) and also fails local compilation (requires remote catalog). Thus every candidate is explicitly ruled out by at least one requirement, so abstain.\"}",
+    "usage": {
+      "input_tokens": 1092,
+      "output_tokens": 317
+    }
+  },
+  "transport_error": false
+}

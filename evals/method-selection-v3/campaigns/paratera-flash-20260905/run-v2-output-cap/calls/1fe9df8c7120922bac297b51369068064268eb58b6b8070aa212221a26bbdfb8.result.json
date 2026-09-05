@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:06.484447+00:00",
+  "http_status": 200,
+  "intent_hash": "29fea6b6251f983cf37562a7e2d7ad63237747da300f7c4fe3ae2bf92741ac79",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "bb18a9faa98ac59370ce4f5805ec3ca2dae3bc8676009fef61902bd3728d6902",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 192,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1107,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1299
+  },
+  "raw_body": "{\"id\":\"fa2c6008-b3a0-4411-b114-d64fb9d30633\",\"created\":1788590706,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x08s2\\\",\\\"quote\\\":\\\"Worksheet A reports that Kestrel firmware 2.2 isolated the secondary port in 82 ms under topology LG-4 with the ordinary profile.\\\"},{\\\"source_id\\\":\\\"x08s3\\\",\\\"quote\\\":\\\"The verification replay reports that Kestrel firmware 2.2 did not isolate the secondary port within 240 ms under topology LG-4 with the ordinary profile.\\\"}],\\\"reason\\\":\\\"The evidence for Kestrel is directly contradictory: worksheet A reports isolation in 82 ms, while the replay reports no isolation within 240 ms for the same configuration and event, with no reconciliation. R3 and Nacre-10 are not selected because their documented times (160 ms and 140 ms) exceed the 100 ms requirement, but the conflict about Kestrel blocks a resolved choice.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":192,\"prompt_tokens\":1107,\"total_tokens\":1299,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "de192b63fe9c116988a2191c9017dc71559c8de0dfaad800c18b90f97f8ed101",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1875.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "bb18a9faa98ac59370ce4f5805ec3ca2dae3bc8676009fef61902bd3728d6902",
+    "request_id": "answer-b08q03-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"x08s2\",\"quote\":\"Worksheet A reports that Kestrel firmware 2.2 isolated the secondary port in 82 ms under topology LG-4 with the ordinary profile.\"},{\"source_id\":\"x08s3\",\"quote\":\"The verification replay reports that Kestrel firmware 2.2 did not isolate the secondary port within 240 ms under topology LG-4 with the ordinary profile.\"}],\"reason\":\"The evidence for Kestrel is directly contradictory: worksheet A reports isolation in 82 ms, while the replay reports no isolation within 240 ms for the same configuration and event, with no reconciliation. R3 and Nacre-10 are not selected because their documented times (160 ms and 140 ms) exceed the 100 ms requirement, but the conflict about Kestrel blocks a resolved choice.\"}",
+    "usage": {
+      "input_tokens": 1107,
+      "output_tokens": 192
+    }
+  },
+  "transport_error": false
+}

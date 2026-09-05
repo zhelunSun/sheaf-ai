@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:42:47.055250+00:00",
+  "http_status": 200,
+  "intent_hash": "beea77a853ed76e8cd079b38fa422aef8187e031a629bba9b02e018f8a248b9d",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "1a22bd109dbe8d9f1a8bbc0c896a064801d0c8f80ee7d348099bdbc194786892",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 249,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1177,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1426
+  },
+  "raw_body": "{\"id\":\"ec74a652-74ae-4584-b974-0e895992292d\",\"created\":1788590566,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.\\\"},{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"P6's compressed vector file alone occupied less than one GiB, but the rest of its mandatory index files raised the complete total to the stated figure.\\\"},{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"The appliance cannot delete those mandatory files and still execute the reference workload.\\\"}],\\\"reason\\\":\\\"All three options exceed the 1.0 GiB limit for the complete mandatory index: Dune-15 is 2.6 GiB, Larch is 1.8 GiB, and P6 is 1.4 GiB. P6 cannot delete mandatory files, and no option is reported to fit within 1.0 GiB. Thus every candidate is explicitly ruled out by the size requirement.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":249,\"prompt_tokens\":1177,\"total_tokens\":1426,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e1c05d3fe760379efed07986311c266533a5ed13e6a5ca90beb12bfedde6f31b",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2125.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "1a22bd109dbe8d9f1a8bbc0c896a064801d0c8f80ee7d348099bdbc194786892",
+    "request_id": "answer-b07q02-scoped_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.\"},{\"source_id\":\"x07s1\",\"quote\":\"P6's compressed vector file alone occupied less than one GiB, but the rest of its mandatory index files raised the complete total to the stated figure.\"},{\"source_id\":\"x07s1\",\"quote\":\"The appliance cannot delete those mandatory files and still execute the reference workload.\"}],\"reason\":\"All three options exceed the 1.0 GiB limit for the complete mandatory index: Dune-15 is 2.6 GiB, Larch is 1.8 GiB, and P6 is 1.4 GiB. P6 cannot delete mandatory files, and no option is reported to fit within 1.0 GiB. Thus every candidate is explicitly ruled out by the size requirement.\"}",
+    "usage": {
+      "input_tokens": 1177,
+      "output_tokens": 249
+    }
+  },
+  "transport_error": false
+}

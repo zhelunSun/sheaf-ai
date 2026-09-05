@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:46:28.501621+00:00",
+  "http_status": 200,
+  "intent_hash": "bcb5635359399101771ad1869a272e4b40970b102116453998de1ce8d86f1f75",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "bb80ae31802e666cafdba7bfc4e77e88a43a0a4f5b0dbbf041cfdccf27433d96",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 451,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1089,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1540
+  },
+  "raw_body": "{\"id\":\"3bd8e50c-4af5-4b21-85b0-c6fb48de9979\",\"created\":1788590786,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s1\\\",\\\"quote\\\":\\\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again. Under the same alternating-link test, MicaX restarted the current file after every outage and could not resume acknowledged chunks. R7 resumed all acknowledged chunks under the alternating-link test.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery. Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure. MicaX 6 writes a plaintext compression spool on the system volume before uploading. R7 7.1 stages only ciphertext on disk, including after a forced exit.\\\"},{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1. These are uncompressed sizes on the branch system volume.\\\"}],\\\"reason\\\":\\\"Tide-4 meets resume (x01s1), encryption (x01s2), and size 46 MiB ≤ 60 MiB (x01s2). MicaX fails resume (x01s1) and encryption (x01s2). R7 meets resume (x01s1) and encryption (x01s2) but size 83 MiB > 60 MiB (x01s2). Thus only Tide-4 satisfies all three, but the evidence does not explicitly state that the tested configuration for Tide-4 is the same across all sources (e.g., release 4.2 in x01s2 vs. unspecified version in x01s1). The context does not confirm that the alternating-link test used Tide-4 4.2 or that the size measurement applies to that same version. Therefore, the evidence is insufficient to establish that Tide-4 in the tested configuration meets all requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":451,\"prompt_tokens\":1089,\"total_tokens\":1540,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "6253651db09491b2206eec63f67c7e2cd4b7d173911d84ea969dad584f16f60c",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3468.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "bb80ae31802e666cafdba7bfc4e77e88a43a0a4f5b0dbbf041cfdccf27433d96",
+    "request_id": "answer-b01q01-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s1\",\"quote\":\"Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again. Under the same alternating-link test, MicaX restarted the current file after every outage and could not resume acknowledged chunks. R7 resumed all acknowledged chunks under the alternating-link test.\"},{\"source_id\":\"x01s2\",\"quote\":\"For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery. Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure. MicaX 6 writes a plaintext compression spool on the system volume before uploading. R7 7.1 stages only ciphertext on disk, including after a forced exit.\"},{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1. These are uncompressed sizes on the branch system volume.\"}],\"reason\":\"Tide-4 meets resume (x01s1), encryption (x01s2), and size 46 MiB ≤ 60 MiB (x01s2). MicaX fails resume (x01s1) and encryption (x01s2). R7 meets resume (x01s1) and encryption (x01s2) but size 83 MiB > 60 MiB (x01s2). Thus only Tide-4 satisfies all three, but the evidence does not explicitly state that the tested configuration for Tide-4 is the same across all sources (e.g., release 4.2 in x01s2 vs. unspecified version in x01s1). The context does not confirm that the alternating-link test used Tide-4 4.2 or that the size measurement applies to that same version. Therefore, the evidence is insufficient to establish that Tide-4 in the tested configuration meets all requirements.\"}",
+    "usage": {
+      "input_tokens": 1089,
+      "output_tokens": 451
+    }
+  },
+  "transport_error": false
+}

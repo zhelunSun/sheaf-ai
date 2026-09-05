@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:22.073323+00:00",
+  "http_status": 200,
+  "intent_hash": "5abf59fac1d672b3f91942972dd7d39db6494407aee1c8472bacf88a675f1aea",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "ee9230c41754f3c738d62e7c800a1d1a4eea19e3e8d7a34ea7ea8747143f2163",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 194,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1103,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 1297
+  },
+  "raw_body": "{\"id\":\"cd8b8e4d-4954-417f-ba54-5fff20c0bd4f\",\"created\":1788591801,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Dune-15\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion.\\\"}],\\\"reason\\\":\\\"Dune-15 meets both requirements: its p95 latency is 96 ms (≤110 ms) on the documented workload, and it makes withdrawn passages ineligible before deletion acknowledgment. Larch fails latency (130 ms >110 ms), and P6 fails the visibility requirement as its background cleanup is not acknowledgement-bound.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":194,\"prompt_tokens\":1103,\"total_tokens\":1297,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "4d803322406d9f663f3fd8565d15a4cbef129bcf5d353142dce41c6d10ffa47d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2406.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "ee9230c41754f3c738d62e7c800a1d1a4eea19e3e8d7a34ea7ea8747143f2163",
+    "request_id": "answer-b07q01-scoped_facts-r1",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Dune-15\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.\"},{\"source_id\":\"x07s2\",\"quote\":\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion.\"}],\"reason\":\"Dune-15 meets both requirements: its p95 latency is 96 ms (≤110 ms) on the documented workload, and it makes withdrawn passages ineligible before deletion acknowledgment. Larch fails latency (130 ms >110 ms), and P6 fails the visibility requirement as its background cleanup is not acknowledgement-bound.\"}",
+    "usage": {
+      "input_tokens": 1103,
+      "output_tokens": 194
+    }
+  },
+  "transport_error": false
+}

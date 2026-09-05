@@ -72,3 +72,4 @@ debug.log
 # Advisory execution locks are local process state, not experiment evidence.
 /evals/method-selection/runs/**/execution.lock
 /evals/method-selection-v2/runs/**/execution.lock
+/evals/method-selection-v3/campaigns/**/execution.lock

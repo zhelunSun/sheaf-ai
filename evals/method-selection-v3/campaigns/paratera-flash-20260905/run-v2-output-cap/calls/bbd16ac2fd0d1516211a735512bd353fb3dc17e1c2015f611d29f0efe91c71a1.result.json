@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:07.922299+00:00",
+  "http_status": 200,
+  "intent_hash": "5bbe0fb58d609ff8b186d9d5160c044642a6a9e2288e6ef54ef8144791e04646",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "acc0aad9eb087f718207aa25ab83f3ecf145ec6550384ee95f910c65654eac17",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 121,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1217,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 1338
+  },
+  "raw_body": "{\"id\":\"c3708908-9cec-44b2-bf85-3a8b9575bd8d\",\"created\":1788590708,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s2\\\",\\\"quote\\\":\\\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\\\"}],\\\"reason\\\":\\\"The absolute allowance is 25 MiB. MicaX requires 29 MiB and R7 requires 83 MiB, both exceeding the allowance, so neither can be accepted without removing required components.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":121,\"prompt_tokens\":1217,\"total_tokens\":1338,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "af441aa478f374f2185ed576ba183311e097727ab59fa7390f7e9942add5094f",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1281.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "acc0aad9eb087f718207aa25ab83f3ecf145ec6550384ee95f910c65654eac17",
+    "request_id": "answer-b01q02-scoped_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x01s2\",\"quote\":\"Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.\"}],\"reason\":\"The absolute allowance is 25 MiB. MicaX requires 29 MiB and R7 requires 83 MiB, both exceeding the allowance, so neither can be accepted without removing required components.\"}",
+    "usage": {
+      "input_tokens": 1217,
+      "output_tokens": 121
+    }
+  },
+  "transport_error": false
+}

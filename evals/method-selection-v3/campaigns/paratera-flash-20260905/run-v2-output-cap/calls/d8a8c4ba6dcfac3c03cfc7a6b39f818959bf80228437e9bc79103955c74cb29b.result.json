@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:47.768833+00:00",
+  "http_status": 200,
+  "intent_hash": "26a647430a48ade08feca42b5a0e560dc738656645524e3f7a9dfb71e9e436de",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "abd3f67c2812061827ba1d03f26941af481d23ca8aa27b720594fac6d9f6102e",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 120,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1067,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1187
+  },
+  "raw_body": "{\"id\":\"d01a76ac-e747-4f5f-84e6-cebd4dc1f6f6\",\"created\":1788590747,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x05s3\\\",\\\"quote\\\":\\\"JettyS version 1.8, C4 version 4.0, and Umbra-2 version 2.5 all run managed services as processes sharing the appliance's host kernel; none provides a separate guest kernel.\\\"}],\\\"reason\\\":\\\"The context explicitly states that none of the three candidates provides a separate guest kernel, directly ruling out all options for the requirement that each managed service boot an independent guest kernel.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":120,\"prompt_tokens\":1067,\"total_tokens\":1187,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b61261d30dcc17d8d8ac82d9169fdf59a54d9a662dee970b66ad7280221b8cee",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1672.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "abd3f67c2812061827ba1d03f26941af481d23ca8aa27b720594fac6d9f6102e",
+    "request_id": "answer-b05q03-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x05s3\",\"quote\":\"JettyS version 1.8, C4 version 4.0, and Umbra-2 version 2.5 all run managed services as processes sharing the appliance's host kernel; none provides a separate guest kernel.\"}],\"reason\":\"The context explicitly states that none of the three candidates provides a separate guest kernel, directly ruling out all options for the requirement that each managed service boot an independent guest kernel.\"}",
+    "usage": {
+      "input_tokens": 1067,
+      "output_tokens": 120
+    }
+  },
+  "transport_error": false
+}

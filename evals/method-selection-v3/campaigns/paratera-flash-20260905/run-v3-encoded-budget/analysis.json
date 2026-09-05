@@ -1,0 +1,249 @@
+{
+  "actual_answer_calls_used": 84,
+  "conditional_analysis": {
+    "bundle_ids": [
+      "x01",
+      "x03",
+      "x07"
+    ],
+    "cost": {
+      "arms": {
+        "all_facts": {
+          "actual_answer_tokens_two_draws": 23680,
+          "construction_tokens": 21396,
+          "scenario_total_tokens": {
+            "1": 25342.666666666664,
+            "20": 100329.33333333334,
+            "5": 41129.333333333336
+          }
+        },
+        "raw_passages": {
+          "actual_answer_tokens_two_draws": 23654,
+          "construction_tokens": 0,
+          "scenario_total_tokens": {
+            "1": 3942.333333333334,
+            "20": 78846.66666666666,
+            "5": 19711.666666666664
+          }
+        },
+        "scoped_facts": {
+          "actual_answer_tokens_two_draws": 23388,
+          "construction_tokens": 21396,
+          "scenario_total_tokens": {
+            "1": 25294.0,
+            "20": 99356.0,
+            "5": 40886.0
+          }
+        }
+      },
+      "currency_cost": null,
+      "probe_tokens": 33,
+      "scenario_definition": "N future queries per bundle at the mean usage of its three tasks and two draws; not additional live measurements. Full shared construction charged to each standalone fact deployment. Token total is not a money estimate.",
+      "shared_construction_by_bundle": {
+        "x01": 6641,
+        "x03": 6531,
+        "x07": 8224
+      }
+    },
+    "scope": "Post-hoc accepted-construction subset; survivor-biased, not a replacement for the full denominator and not a fresh holdout.",
+    "summary": {
+      "arms": {
+        "all_facts": {
+          "all_correct": 0.4444444444444444,
+          "answers": 18,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 0.6666666666666666,
+          "decision_correct": 0.6666666666666666,
+          "failed": 0,
+          "state_correct": 0.5555555555555556,
+          "support_covered": 0.6666666666666666
+        },
+        "raw_passages": {
+          "all_correct": 0.3333333333333333,
+          "answers": 18,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 1.0,
+          "decision_correct": 0.7222222222222222,
+          "failed": 0,
+          "state_correct": 0.5,
+          "support_covered": 0.7777777777777778
+        },
+        "scoped_facts": {
+          "all_correct": 0.4444444444444444,
+          "answers": 18,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 0.6666666666666666,
+          "decision_correct": 0.7222222222222222,
+          "failed": 0,
+          "state_correct": 0.5555555555555556,
+          "support_covered": 0.6666666666666666
+        }
+      },
+      "scope_eligible_subset": {
+        "all_facts": {
+          "all_correct": 0.0,
+          "answers": 6,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 0.6666666666666666,
+          "decision_correct": 0.3333333333333333,
+          "state_correct": 0.0,
+          "support_covered": 0.6666666666666666
+        },
+        "raw_passages": {
+          "all_correct": 0.5,
+          "answers": 6,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 1.0,
+          "decision_correct": 0.8333333333333334,
+          "state_correct": 0.5,
+          "support_covered": 1.0
+        },
+        "scoped_facts": {
+          "all_correct": 0.0,
+          "answers": 6,
+          "citation_identity_valid": 1.0,
+          "citations_visible": 1.0,
+          "context_sufficient": 0.6666666666666666,
+          "decision_correct": 0.5,
+          "state_correct": 0.0,
+          "support_covered": 0.6666666666666666
+        }
+      }
+    },
+    "tasks": 9
+  },
+  "context_pairs": [
+    {
+      "same_context": true,
+      "task_id": "b01q01"
+    },
+    {
+      "same_context": false,
+      "task_id": "b01q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b01q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b02q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b02q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b02q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b03q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b03q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b03q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b04q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b04q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b04q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b05q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b05q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b05q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b06q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b06q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b06q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b07q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b07q02"
+    },
+    {
+      "same_context": false,
+      "task_id": "b07q03"
+    },
+    {
+      "same_context": true,
+      "task_id": "b08q01"
+    },
+    {
+      "same_context": true,
+      "task_id": "b08q02"
+    },
+    {
+      "same_context": true,
+      "task_id": "b08q03"
+    }
+  ],
+  "evidence_grade": "small_agent_reviewed_synthetic_with_explicit_post_run_budget_correction",
+  "failure_reasons_full_denominator": {
+    "Citation not a unique original span": 12,
+    "Expected 1-40 facts": 48
+  },
+  "first_draw_semantic_review": {
+    "all_facts": {
+      "all_three_correct": 5,
+      "cited_evidence_sufficient": 6,
+      "decision_semantically_correct": 6,
+      "denominator": 24,
+      "state_semantically_correct": 5
+    },
+    "raw_passages": {
+      "all_three_correct": 9,
+      "cited_evidence_sufficient": 12,
+      "decision_semantically_correct": 17,
+      "denominator": 24,
+      "state_semantically_correct": 13
+    },
+    "scoped_facts": {
+      "all_three_correct": 5,
+      "cited_evidence_sufficient": 7,
+      "decision_semantically_correct": 7,
+      "denominator": 24,
+      "state_semantically_correct": 5
+    }
+  },
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "primary_result_hash": "e93ecaf66606f472f7ff0ac6a9e66798f880605efafba3efc254416b101a2cc1",
+  "semantic_review_hash": "de5d089fdaf0809ccd01328034eecf9d92ddf0b706b009ec25e6f280cabb1f2a"
+}

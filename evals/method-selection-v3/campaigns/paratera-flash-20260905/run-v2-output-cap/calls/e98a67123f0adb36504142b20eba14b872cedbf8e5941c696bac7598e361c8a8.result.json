@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:20.940590+00:00",
+  "http_status": 200,
+  "intent_hash": "a07bf488612c51cda7aa4f5b723a89147dd0f97ec711342e4fff2155eec7fb04",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "91f4a79f416e1f9faced85b89b01e971c3d7373b658a76e547482915e1625c74",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 243,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1055,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1298
+  },
+  "raw_body": "{\"id\":\"54a29bce-15b6-4fb6-9348-fec97c1cd7dc\",\"created\":1788590720,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x04s2\\\",\\\"quote\\\":\\\"Worksheet A reports that Vela build 5.0 with the standard rule pack rejected the stale saved plan before execution in the additive-column drift test.\\\"},{\\\"source_id\\\":\\\"x04s3\\\",\\\"quote\\\":\\\"The verification replay reports that Vela build 5.0 with the standard rule pack executed the stale saved plan without rejection in the additive-column drift test.\\\"},{\\\"source_id\\\":\\\"x04s2\\\",\\\"quote\\\":\\\"In the additive-column drift test, CedarPlan-6 build 6.3 executed the stale saved plan without rejection.\\\"}],\\\"reason\\\":\\\"For Vela, worksheet A states rejection before execution, while the verification replay states execution without rejection under the same VD-12 configuration, with no reconciliation or precedence; this is incompatible evidence about the same candidate, version, and scope, blocking a decision. For CedarPlan-6, the only evidence states it executed without rejection, which fails the mandatory guard, but the conflict about Vela means no resolved evidentiary basis exists for either option; the conflict is not about methods outside the options.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":243,\"prompt_tokens\":1055,\"total_tokens\":1298,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "a484bb00bebb514891a968f052f509a4499758abe0eb8436b6259277a6682c4e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4219.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "91f4a79f416e1f9faced85b89b01e971c3d7373b658a76e547482915e1625c74",
+    "request_id": "answer-b04q03-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"x04s2\",\"quote\":\"Worksheet A reports that Vela build 5.0 with the standard rule pack rejected the stale saved plan before execution in the additive-column drift test.\"},{\"source_id\":\"x04s3\",\"quote\":\"The verification replay reports that Vela build 5.0 with the standard rule pack executed the stale saved plan without rejection in the additive-column drift test.\"},{\"source_id\":\"x04s2\",\"quote\":\"In the additive-column drift test, CedarPlan-6 build 6.3 executed the stale saved plan without rejection.\"}],\"reason\":\"For Vela, worksheet A states rejection before execution, while the verification replay states execution without rejection under the same VD-12 configuration, with no reconciliation or precedence; this is incompatible evidence about the same candidate, version, and scope, blocking a decision. For CedarPlan-6, the only evidence states it executed without rejection, which fails the mandatory guard, but the conflict about Vela means no resolved evidentiary basis exists for either option; the conflict is not about methods outside the options.\"}",
+    "usage": {
+      "input_tokens": 1055,
+      "output_tokens": 243
+    }
+  },
+  "transport_error": false
+}

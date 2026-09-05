@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:04:39.732372+00:00",
+  "http_status": 200,
+  "intent_hash": "71996ace4754291a012bfe6cc53a8275e278daacbc85b66306354c6d2418649c",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "01d0948c0e33b6d916f0b9b1e893e2a484d92744e8be15559ba771b11a674e8d",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 183,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1077,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1260
+  },
+  "raw_body": "{\"id\":\"81a492d0-fa12-4432-9123-919f627ff2de\",\"created\":1788591879,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x03s3\\\",\\\"quote\\\":\\\"No salt-mist exposure test was performed for F3, Lantern-P, or Wisp8.\\\"},{\\\"source_id\\\":\\\"x03s3\\\",\\\"quote\\\":\\\"The proposed salt-mist test would examine both electrical operation and post-exposure connector resistance after seventy-two hours. That protocol is merely a proposal, with no measured observations in the packet.\\\"}],\\\"reason\\\":\\\"The requirement is an observed pass after seventy-two hours of salt-mist exposure. The packet explicitly states no salt-mist exposure test was performed for F3 or Wisp8, and the only salt-mist protocol is a proposal with no measured observations. Therefore, neither candidate has evidence of a pass, and both are explicitly ruled out by the absence of any such test.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":183,\"prompt_tokens\":1077,\"total_tokens\":1260,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "c84c1418d4f532108d0cc0966c86e6ef04027ebf0b903f89aa6df780df0cc4c1",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2078.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "01d0948c0e33b6d916f0b9b1e893e2a484d92744e8be15559ba771b11a674e8d",
+    "request_id": "answer-b03q03-all_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x03s3\",\"quote\":\"No salt-mist exposure test was performed for F3, Lantern-P, or Wisp8.\"},{\"source_id\":\"x03s3\",\"quote\":\"The proposed salt-mist test would examine both electrical operation and post-exposure connector resistance after seventy-two hours. That protocol is merely a proposal, with no measured observations in the packet.\"}],\"reason\":\"The requirement is an observed pass after seventy-two hours of salt-mist exposure. The packet explicitly states no salt-mist exposure test was performed for F3 or Wisp8, and the only salt-mist protocol is a proposal with no measured observations. Therefore, neither candidate has evidence of a pass, and both are explicitly ruled out by the absence of any such test.\"}",
+    "usage": {
+      "input_tokens": 1077,
+      "output_tokens": 183
+    }
+  },
+  "transport_error": false
+}

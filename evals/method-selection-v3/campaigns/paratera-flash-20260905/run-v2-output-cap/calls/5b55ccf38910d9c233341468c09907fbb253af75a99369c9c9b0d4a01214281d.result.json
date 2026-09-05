@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:12.446511+00:00",
+  "http_status": 200,
+  "intent_hash": "d0696e09e7b16e198870418d8a3e89819f2cfbcf7d0f5f852808426a18d85821",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "2fcb3e5fd977fb34260c04b55c12debebd84bb48e39240e6a5aafa61870a6f4f",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 250,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1043,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1293
+  },
+  "raw_body": "{\"id\":\"6bf7b9f4-226e-424a-acab-becfe1f20161\",\"created\":1788590591,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"Oak\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x02s2\\\",\\\"quote\\\":\\\"For Oak release 3, cancelling an export left no partial export file visible in the destination directory.\\\"},{\\\"source_id\\\":\\\"x02s2\\\",\\\"quote\\\":\\\"Silt-22 release 22.4 exposed a partial export file after cancellation, requiring the caller to delete it.\\\"},{\\\"source_id\\\":\\\"x02s3\\\",\\\"quote\\\":\\\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check.\\\"}],\\\"reason\\\":\\\"The task requires a candidate that (1) works indefinitely disconnected and (2) leaves no partial destination file after cancellation without caller cleanup. Oak release 3 is explicitly stated to leave no partial export file visible in the destination directory upon cancellation, satisfying the cleanup requirement. Silt-22 release 22.4 is explicitly stated to expose a partial export file after cancellation requiring caller deletion, failing that requirement. Both Oak and Silt-22 are stated to run without network connection or license check, satisfying the disconnected requirement. Thus Oak meets both requirements, while Silt-22 does not.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":250,\"prompt_tokens\":1043,\"total_tokens\":1293,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "c0b14d809f281a3e97702f35049092e2c60cd620c8b42654554a84e828a1b5e2",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2156.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "2fcb3e5fd977fb34260c04b55c12debebd84bb48e39240e6a5aafa61870a6f4f",
+    "request_id": "answer-b02q03-raw_passages-r1",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"Oak\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x02s2\",\"quote\":\"For Oak release 3, cancelling an export left no partial export file visible in the destination directory.\"},{\"source_id\":\"x02s2\",\"quote\":\"Silt-22 release 22.4 exposed a partial export file after cancellation, requiring the caller to delete it.\"},{\"source_id\":\"x02s3\",\"quote\":\"Oak release 3 and Silt-22 release 22.4 both run all query and export operations without a network connection or a network license check.\"}],\"reason\":\"The task requires a candidate that (1) works indefinitely disconnected and (2) leaves no partial destination file after cancellation without caller cleanup. Oak release 3 is explicitly stated to leave no partial export file visible in the destination directory upon cancellation, satisfying the cleanup requirement. Silt-22 release 22.4 is explicitly stated to expose a partial export file after cancellation requiring caller deletion, failing that requirement. Both Oak and Silt-22 are stated to run without network connection or license check, satisfying the disconnected requirement. Thus Oak meets both requirements, while Silt-22 does not.\"}",
+    "usage": {
+      "input_tokens": 1043,
+      "output_tokens": 250
+    }
+  },
+  "transport_error": false
+}

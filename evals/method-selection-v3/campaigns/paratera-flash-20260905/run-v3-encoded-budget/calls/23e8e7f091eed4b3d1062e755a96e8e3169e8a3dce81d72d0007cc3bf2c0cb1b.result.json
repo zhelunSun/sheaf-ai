@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T07:03:41.877724+00:00",
+  "http_status": 200,
+  "intent_hash": "06354ac0d4d81df7cb6368d23e423eca5464cc75f7174df965012f248f64c32b",
+  "issues": [],
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "payload_hash": "eedf06bab9609396f4f156b2f9facd5880285af85562b3a33ce972de7c41fafd",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 228,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1112,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1340
+  },
+  "raw_body": "{\"id\":\"9be2e0c3-2b25-42f4-8e2a-88b668bf8435\",\"created\":1788591821,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\\\"},{\\\"source_id\\\":\\\"x07s3\\\",\\\"quote\\\":\\\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\\\"}],\\\"reason\\\":\\\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter, and indefinite disconnection. Larch is stated to provide byte-exact equality filtering, but no evidence establishes that Larch supports local index construction, changes, and queries while disconnected. P6 is ruled out by the remote calibration requirement, but the evidence does not establish that Larch meets all requirements; thus relevant ability is not established.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":228,\"prompt_tokens\":1112,\"total_tokens\":1340,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "17a4655f766e93d805429187a10aa979aed8c2b55a31fd560a234cce643824c8",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4953.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "eedf06bab9609396f4f156b2f9facd5880285af85562b3a33ce972de7c41fafd",
+    "request_id": "answer-b07q03-scoped_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s2\",\"quote\":\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\"},{\"source_id\":\"x07s3\",\"quote\":\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\"}],\"reason\":\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter, and indefinite disconnection. Larch is stated to provide byte-exact equality filtering, but no evidence establishes that Larch supports local index construction, changes, and queries while disconnected. P6 is ruled out by the remote calibration requirement, but the evidence does not establish that Larch meets all requirements; thus relevant ability is not established.\"}",
+    "usage": {
+      "input_tokens": 1112,
+      "output_tokens": 228
+    }
+  },
+  "transport_error": false
+}

@@ -1,0 +1,20 @@
+{
+  "code": {
+    "evals/method-selection-v3/DATASET-NOTES.md": "1b154d9c7ffd5bf84aab8e339b0afc599a78cf904c31517da36ad7290a0d682f",
+    "evals/method-selection-v3/PREFLIGHT-REVIEW.md": "019737b9ab3f8332a451dde1cae07a44293ee0a404efa1050b9013a0f2dce8a3",
+    "evals/method-selection-v3/experiment.py": "ee482536e4d41c9c31a776c5f1a722bfc268f99285e18d148b0e1b3e5a222ebe",
+    "evals/method-selection-v3/protocol.md": "4842a530ba4586f344023ef487fa180d6e4ba9c05fc6f15085f9a9ece6756875",
+    "evals/method-selection-v3/run.py": "668772cf6961268398e50a6cfffa9997eea8ddc89792b477208874115388db2d",
+    "evals/method-selection-v3/tokenizer.json.meta": "4412d9e7e8c9da4c91fd6e4242b41809e4c06730a03ef8e998e6c683c67aa301",
+    "evals/method-selection-v3/transport.py": "4b081ec5b8472f7fe9a865555369b68a52027788cf24aa64db7ee4a7bd0bd6bc",
+    "sheaf_ai/passage_selection.py": "c2981a07f051ee6f27468f353036d14ea535db3356b326831b5ba713ba4f8082",
+    "sheaf_ai/provenance_registry.py": "ed2b297b6d47b4131a1e3838eda4e3d195691c33b9bb9e6976a08b364ed1487f"
+  },
+  "evidence_grade": "independent_agent_authored_synthetic",
+  "files": {
+    "gold.json": "8f971056cc9598d4e74be0f968ae0bf637fc99bd5134912d9abe1afa4f12a4b9",
+    "inputs.json": "084c2bee916a5fc02eb4bf3814ccf663ebc1618904b0c97037c4fa395a539e2b"
+  },
+  "lock_hash": "1a6d139d6ac43d2de517b45cac29dd7215a16073db42ac89f9b50c5b0187dc8a",
+  "version": "method-selection-v3"
+}

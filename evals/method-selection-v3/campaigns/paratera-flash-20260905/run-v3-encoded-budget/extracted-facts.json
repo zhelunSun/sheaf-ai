@@ -1,0 +1,2195 @@
+[
+  {
+    "audit": {
+      "parsed_text_hash": "88a18aca8ad716b5223756beab0bacdbc71a49273ec6c271a6c87a2d78487dd9",
+      "raw_text_hash": "88a18aca8ad716b5223756beab0bacdbc71a49273ec6c271a6c87a2d78487dd9",
+      "transformation": "identity"
+    },
+    "bundle_id": "x01",
+    "error": null,
+    "facts": [
+      {
+        "applicability_conditions": [
+          "alternating-link test with one worker, eight thousand files, 512 MiB process allowance, link alternating between ninety seconds available and four minutes unavailable",
+          "process retained between outages"
+        ],
+        "citations": [
+          {
+            "quote": "Under the alternating-link test, Tide-4 resumed all transfers without sending previously acknowledged chunks again.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "Tide-4 resumed all transfers without sending previously acknowledged chunks again under the alternating-link test."
+      },
+      {
+        "applicability_conditions": [
+          "alternating-link test with one worker, eight thousand files, 512 MiB process allowance, link alternating between ninety seconds available and four minutes unavailable",
+          "process retained between outages"
+        ],
+        "citations": [
+          {
+            "quote": "Under the same alternating-link test, MicaX restarted the current file after every outage and could not resume acknowledged chunks.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "MicaX",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "MicaX restarted the current file after every outage and could not resume acknowledged chunks under the alternating-link test."
+      },
+      {
+        "applicability_conditions": [
+          "alternating-link test with one worker, eight thousand files, 512 MiB process allowance, link alternating between ninety seconds available and four minutes unavailable",
+          "process retained between outages"
+        ],
+        "citations": [
+          {
+            "quote": "R7 resumed all acknowledged chunks under the alternating-link test.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "R7",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "R7 resumed all acknowledged chunks under the alternating-link test."
+      },
+      {
+        "applicability_conditions": [
+          "process killed after a chunk write",
+          "test retained process between outages"
+        ],
+        "citations": [
+          {
+            "quote": "Tide-4 and R7 also recovered from the process kill without editing the input directory.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "Tide-4 recovered from the process kill without editing the input directory."
+      },
+      {
+        "applicability_conditions": [
+          "process killed after a chunk write",
+          "test retained process between outages"
+        ],
+        "citations": [
+          {
+            "quote": "Tide-4 and R7 also recovered from the process kill without editing the input directory.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "R7",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "R7 recovered from the process kill without editing the input directory."
+      },
+      {
+        "applicability_conditions": [
+          "process killed after a chunk write",
+          "test retained process between outages"
+        ],
+        "citations": [
+          {
+            "quote": "MicaX recovered its queue, which should not be confused with recovering progress inside a file. Queue recovery restored file order and author labels, but a large file could still begin at byte zero.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "transport rig",
+          "file completion and network work"
+        ],
+        "method_id": "MicaX",
+        "not_evaluated_scope": [
+          "credential revocation",
+          "clock moving backward",
+          "removable media",
+          "ARM processor memory"
+        ],
+        "statement": "MicaX recovered its queue after a process kill, restoring file order and author labels, but a large file could still begin at byte zero."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "transfer from disconnected workshop to central repository"
+        ],
+        "citations": [
+          {
+            "quote": "Operators must retain the original files until central acknowledgement, even when the client has displayed a complete local checksum pass. The engineering team considers that retention rule a workflow requirement common to all three methods rather than a differentiating feature.",
+            "source_id": "x01s1"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "workflow"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Operators must retain the original files until central acknowledgement, even when the client has displayed a complete local checksum pass."
+      },
+      {
+        "applicability_conditions": [
+          "Tide-4 release 4.2",
+          "ordinary journal",
+          "new workspace for each run",
+          "checked ordinary directory entries and files left after forced process exit"
+        ],
+        "citations": [
+          {
+            "quote": "For Tide-4, all staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "storage inspection",
+          "temporary files from creation to deletion"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [
+          "memory disclosure",
+          "permission changes outside workspace",
+          "repairing incorrectly owned directory",
+          "certificate provisioning",
+          "account creation"
+        ],
+        "statement": "All staging bytes remain encrypted on disk in release 4.2, including during resume and forced-exit recovery."
+      },
+      {
+        "applicability_conditions": [
+          "Tide-4 release 4.2",
+          "staging bytes encrypted on disk"
+        ],
+        "citations": [
+          {
+            "quote": "Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "storage inspection"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [
+          "memory disclosure"
+        ],
+        "statement": "Its in-memory checksum buffer is plaintext, so this statement should not be read as a guarantee about memory disclosure."
+      },
+      {
+        "applicability_conditions": [
+          "MicaX release 6",
+          "batch compression enabled",
+          "new workspace for each run",
+          "checked ordinary directory entries and files left after forced process exit"
+        ],
+        "citations": [
+          {
+            "quote": "MicaX 6 writes a plaintext compression spool on the system volume before uploading.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "storage inspection",
+          "temporary files from creation to deletion"
+        ],
+        "method_id": "MicaX",
+        "not_evaluated_scope": [
+          "permission changes outside workspace",
+          "repairing incorrectly owned directory",
+          "certificate provisioning",
+          "account creation"
+        ],
+        "statement": "MicaX 6 writes a plaintext compression spool on the system volume before uploading."
+      },
+      {
+        "applicability_conditions": [
+          "R7 release 7.1",
+          "rotating staging directory",
+          "new workspace for each run",
+          "checked ordinary directory entries and files left after forced process exit"
+        ],
+        "citations": [
+          {
+            "quote": "R7 7.1 stages only ciphertext on disk, including after a forced exit.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "storage inspection",
+          "temporary files from creation to deletion"
+        ],
+        "method_id": "R7",
+        "not_evaluated_scope": [
+          "permission changes outside workspace",
+          "repairing incorrectly owned directory",
+          "certificate provisioning",
+          "account creation"
+        ],
+        "statement": "R7 7.1 stages only ciphertext on disk, including after a forced exit."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "original input files",
+          "client-created staging"
+        ],
+        "citations": [
+          {
+            "quote": "Deleting the original input file is outside the client contract: none of these packages automatically sanitizes files placed in the input directory by a user.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "storage inspection"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "None of these packages automatically sanitizes files placed in the input directory by a user."
+      },
+      {
+        "applicability_conditions": [
+          "required libraries",
+          "optional graphical consoles removed",
+          "uncompressed sizes on branch system volume"
+        ],
+        "citations": [
+          {
+            "quote": "Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "installation sizes",
+          "branch image builder"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [
+          "compressed download size"
+        ],
+        "statement": "Required installed footprint is 46 MiB for Tide-4 4.2."
+      },
+      {
+        "applicability_conditions": [
+          "required libraries",
+          "optional graphical consoles removed",
+          "uncompressed sizes on branch system volume"
+        ],
+        "citations": [
+          {
+            "quote": "Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "installation sizes",
+          "branch image builder"
+        ],
+        "method_id": "MicaX",
+        "not_evaluated_scope": [
+          "compressed download size"
+        ],
+        "statement": "Required installed footprint is 29 MiB for MicaX 6."
+      },
+      {
+        "applicability_conditions": [
+          "required libraries",
+          "optional graphical consoles removed",
+          "uncompressed sizes on branch system volume"
+        ],
+        "citations": [
+          {
+            "quote": "Required installed footprints are 46 MiB for Tide-4 4.2, 29 MiB for MicaX 6, and 83 MiB for R7 7.1.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "installation sizes",
+          "branch image builder"
+        ],
+        "method_id": "R7",
+        "not_evaluated_scope": [
+          "compressed download size"
+        ],
+        "statement": "Required installed footprint is 83 MiB for R7 7.1."
+      },
+      {
+        "applicability_conditions": [
+          "workspace ownership established by image builder before launch",
+          "all three methods"
+        ],
+        "citations": [
+          {
+            "quote": "However, workspace ownership was established by the image builder before launch; the clients were not tested for repairing an incorrectly owned directory.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "storage inspection"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "permission changes outside workspace",
+          "repairing incorrectly owned directory"
+        ],
+        "statement": "The clients were not tested for repairing an incorrectly owned directory."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "branch image acceptance"
+        ],
+        "citations": [
+          {
+            "quote": "Support staff should record the exact package release when accepting a branch image, since a package with the same display name but different bundled libraries would require a new size and staging inspection.",
+            "source_id": "x01s2"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "storage inspection"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Support staff should record the exact package release when accepting a branch image, since a package with the same display name but different bundled libraries would require a new size and staging inspection."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "scheduled job",
+          "no interactive desktop"
+        ],
+        "citations": [
+          {
+            "quote": "All three clients can be launched from a scheduled job and can read a manifest without an interactive desktop.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "All three clients can be launched from a scheduled job and can read a manifest without an interactive desktop."
+      },
+      {
+        "applicability_conditions": [
+          "Tide-4 release 4.2"
+        ],
+        "citations": [
+          {
+            "quote": "Tide-4 exposes a machine-readable checkpoint counter.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": "Tide-4",
+        "not_evaluated_scope": [],
+        "statement": "Tide-4 exposes a machine-readable checkpoint counter."
+      },
+      {
+        "applicability_conditions": [
+          "MicaX release 6"
+        ],
+        "citations": [
+          {
+            "quote": "MicaX provides a final report for each file but no checkpoint counter.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": "MicaX",
+        "not_evaluated_scope": [],
+        "statement": "MicaX provides a final report for each file but no checkpoint counter."
+      },
+      {
+        "applicability_conditions": [
+          "R7 release 7.1"
+        ],
+        "citations": [
+          {
+            "quote": "R7 exposes both a checkpoint counter and a staging-directory inventory.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": "R7",
+        "not_evaluated_scope": [],
+        "statement": "R7 exposes both a checkpoint counter and a staging-directory inventory."
+      },
+      {
+        "applicability_conditions": [
+          "R7 staging-directory inventory"
+        ],
+        "citations": [
+          {
+            "quote": "The inventory helps operators account for space occupied by unfinished transfers; it is not itself a proof that a transfer can safely resume.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The inventory is not itself a proof that a transfer can safely resume."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "original input files"
+        ],
+        "citations": [
+          {
+            "quote": "The team has not authorized deleting the original input after a local checksum, because only central acknowledgement proves that another recoverable copy exists.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The team has not authorized deleting the original input after a local checksum, because only central acknowledgement proves that another recoverable copy exists."
+      },
+      {
+        "applicability_conditions": [
+          "proposed low-space workflow",
+          "removable media"
+        ],
+        "citations": [
+          {
+            "quote": "A proposed low-space workflow would keep large source files on removable media, but none of the qualification runs used removable media. Its performance, disconnect behavior, and failure recovery remain separate questions from the ordinary system-volume setup.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "removable media performance",
+          "disconnect behavior",
+          "failure recovery"
+        ],
+        "statement": "None of the qualification runs used removable media; its performance, disconnect behavior, and failure recovery remain separate questions from the ordinary system-volume setup."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "ARM processor"
+        ],
+        "citations": [
+          {
+            "quote": "The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "peak resident memory on ARM"
+        ],
+        "statement": "The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "x86 workstation"
+        ],
+        "citations": [
+          {
+            "quote": "A desktop demonstration showed all three running on an x86 workstation, but the demonstration did not sample resident memory.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "resident memory sampling"
+        ],
+        "statement": "A desktop demonstration showed all three running on an x86 workstation, but the demonstration did not sample resident memory."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "transport rig"
+        ],
+        "citations": [
+          {
+            "quote": "The 512 MiB allowance on the transport rig was a process limit, not an observed peak, and it did not establish whether any client could operate below 128 MiB.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "peak memory",
+          "operation below 128 MiB"
+        ],
+        "statement": "The 512 MiB allowance on the transport rig was a process limit, not an observed peak, and it did not establish whether any client could operate below 128 MiB."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods"
+        ],
+        "citations": [
+          {
+            "quote": "Likewise, total machine memory displayed by the operating system includes unrelated services and cannot be assigned to the transfer client.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Total machine memory displayed by the operating system includes unrelated services and cannot be assigned to the transfer client."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "prospective rollouts"
+        ],
+        "citations": [
+          {
+            "quote": "For prospective rollouts, the worksheet asks operators to separate mandatory acceptance constraints from conveniences such as progress presentation.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "For prospective rollouts, operators must separate mandatory acceptance constraints from conveniences such as progress presentation."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "actual branch board",
+          "same payload shape as transport qualification"
+        ],
+        "citations": [
+          {
+            "quote": "The next proposed exercise would measure startup and steady-state memory on the actual branch board, with the same payload shape as transport qualification. That exercise has not been executed, and its proposed thresholds must not be described as results.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "unresolved_evidence",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "startup memory",
+          "steady-state memory on branch board"
+        ],
+        "statement": "The next proposed exercise would measure startup and steady-state memory on the actual branch board, with the same payload shape as transport qualification. That exercise has not been executed, and its proposed thresholds must not be described as results."
+      },
+      {
+        "applicability_conditions": [
+          "all three methods",
+          "actual branch board"
+        ],
+        "citations": [
+          {
+            "quote": "Until then, decisions about memory on that board need an explicit unresolved-evidence entry.",
+            "source_id": "x01s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "adoption worksheet"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Until then, decisions about memory on that board need an explicit unresolved-evidence entry."
+      }
+    ]
+  },
+  {
+    "audit": null,
+    "bundle_id": "x02",
+    "error": "Expected 1-40 facts",
+    "facts": null
+  },
+  {
+    "audit": {
+      "parsed_text_hash": "50103ca3f7155a81696677de6e53a910dd9a6d63d07897e61a2b97f8ae2c5611",
+      "raw_text_hash": "50103ca3f7155a81696677de6e53a910dd9a6d63d07897e61a2b97f8ae2c5611",
+      "transformation": "identity"
+    },
+    "bundle_id": "x03",
+    "error": null,
+    "facts": [
+      {
+        "applicability_conditions": [
+          "unheated instrument shelter",
+          "temperature at minus 25 degrees Celsius",
+          "duration forty-eight hours",
+          "records one signed measurement every ten seconds",
+          "complete board and firmware combination"
+        ],
+        "citations": [
+          {
+            "quote": "At minus 25 degrees Celsius for forty-eight hours, F3 recorded every scheduled measurement and its maximum wake-to-record latency was 180 ms.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "temperature results",
+          "missing measurements",
+          "wake-to-record latency"
+        ],
+        "method_id": "F3",
+        "not_evaluated_scope": [],
+        "statement": "At minus 25 degrees Celsius for forty-eight hours, F3 recorded every scheduled measurement and its maximum wake-to-record latency was 180 ms."
+      },
+      {
+        "applicability_conditions": [
+          "unheated instrument shelter",
+          "temperature at minus 25 degrees Celsius",
+          "duration forty-eight hours",
+          "records one signed measurement every ten seconds",
+          "complete board and firmware combination"
+        ],
+        "citations": [
+          {
+            "quote": "At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "temperature results",
+          "missing measurements",
+          "wake-to-record latency"
+        ],
+        "method_id": "Lantern-P",
+        "not_evaluated_scope": [],
+        "statement": "At minus 25 degrees Celsius for forty-eight hours, Lantern-P recorded every scheduled measurement and its maximum wake-to-record latency was 140 ms."
+      },
+      {
+        "applicability_conditions": [
+          "unheated instrument shelter",
+          "temperature at minus 25 degrees Celsius",
+          "duration forty-eight hours",
+          "records one signed measurement every ten seconds",
+          "complete board and firmware combination"
+        ],
+        "citations": [
+          {
+            "quote": "At minus 25 degrees Celsius for forty-eight hours, Wisp8 missed seventeen scheduled measurements after a clock stall.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "temperature results",
+          "missing measurements"
+        ],
+        "method_id": "Wisp8",
+        "not_evaluated_scope": [],
+        "statement": "At minus 25 degrees Celsius for forty-eight hours, Wisp8 missed seventeen scheduled measurements after a clock stall."
+      },
+      {
+        "applicability_conditions": [
+          "room temperature",
+          "records one signed measurement every ten seconds",
+          "complete board and firmware combination"
+        ],
+        "citations": [
+          {
+            "quote": "A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms. The room-temperature result is useful for diagnosing the clock problem, but does not replace the cold-chamber result.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "missing measurements",
+          "wake-to-record latency"
+        ],
+        "method_id": "Wisp8",
+        "not_evaluated_scope": [
+          "cold-chamber result"
+        ],
+        "statement": "A room-temperature Wisp8 run had no missing measurements and a maximum latency of 95 ms."
+      },
+      {
+        "applicability_conditions": [
+          "chamber run",
+          "unheated instrument shelter"
+        ],
+        "citations": [
+          {
+            "quote": "The enclosure remained dry, and the connector was not sprayed with water. Consequently, completion of this chamber run cannot be cited as an ingress or corrosion result.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "ingress",
+          "corrosion"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Completion of the chamber run cannot be cited as an ingress or corrosion result because the enclosure remained dry and the connector was not sprayed with water."
+      },
+      {
+        "applicability_conditions": [
+          "after chamber run",
+          "recovered log over normal service port"
+        ],
+        "citations": [
+          {
+            "quote": "F3 and Lantern-P passed all three checks. Wisp8's retained records had valid signatures, which narrows the observed problem to missing acquisition intervals rather than undetected changes to the recorded payload.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "sequence numbers",
+          "signatures",
+          "timestamps"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "F3 and Lantern-P passed all three checks (sequence numbers, signatures, and timestamps) after the chamber run; Wisp8's retained records had valid signatures, which narrows the observed problem to missing acquisition intervals rather than undetected changes to the recorded payload."
+      },
+      {
+        "applicability_conditions": [
+          "first minute after a restart",
+          "until received a reference time"
+        ],
+        "citations": [
+          {
+            "quote": "All boards marked the unsynchronized interval in their logs until they received a reference time. The marker is a documented behavior rather than a failure because the shelter workflow permits that short interval to be flagged.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "log marking"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "All boards marked the unsynchronized interval in their logs until they received a reference time after a restart."
+      },
+      {
+        "applicability_conditions": [
+          "next chamber campaign"
+        ],
+        "citations": [
+          {
+            "quote": "The next chamber campaign may add rapid temperature cycling, but its schedule is tentative, and no cycling result is included in this release of the packet.",
+            "source_id": "x03s1"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "rapid temperature cycling"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "No rapid temperature cycling result is included in this release of the packet; the next chamber campaign may add rapid temperature cycling, but its schedule is tentative."
+      },
+      {
+        "applicability_conditions": [
+          "twenty degrees Celsius",
+          "sensor simulator requesting one measurement every ten seconds",
+          "full day",
+          "radio transmission disabled",
+          "entire logger board including regulator and storage"
+        ],
+        "citations": [
+          {
+            "quote": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "daily board energy"
+        ],
+        "method_id": "F3",
+        "not_evaluated_scope": [
+          "battery chemistry",
+          "self-discharge",
+          "months of unattended service"
+        ],
+        "statement": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3."
+      },
+      {
+        "applicability_conditions": [
+          "twenty degrees Celsius",
+          "sensor simulator requesting one measurement every ten seconds",
+          "full day",
+          "radio transmission disabled",
+          "entire logger board including regulator and storage"
+        ],
+        "citations": [
+          {
+            "quote": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "daily board energy"
+        ],
+        "method_id": "Lantern-P",
+        "not_evaluated_scope": [
+          "battery chemistry",
+          "self-discharge",
+          "months of unattended service"
+        ],
+        "statement": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 1.12 Wh for Lantern-P."
+      },
+      {
+        "applicability_conditions": [
+          "twenty degrees Celsius",
+          "sensor simulator requesting one measurement every ten seconds",
+          "full day",
+          "radio transmission disabled",
+          "entire logger board including regulator and storage"
+        ],
+        "citations": [
+          {
+            "quote": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "daily board energy"
+        ],
+        "method_id": "Wisp8",
+        "not_evaluated_scope": [
+          "battery chemistry",
+          "self-discharge",
+          "months of unattended service"
+        ],
+        "statement": "At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.68 Wh for Wisp8."
+      },
+      {
+        "applicability_conditions": [],
+        "citations": [
+          {
+            "quote": "The packet has no corresponding cold-temperature energy measurement.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "cold-temperature energy"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The packet has no corresponding cold-temperature energy measurement."
+      },
+      {
+        "applicability_conditions": [
+          "power removed during a metadata write",
+          "service cable absent"
+        ],
+        "citations": [
+          {
+            "quote": "F3 firmware 3.6 recovered its log automatically at the next boot, with no service tool required.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "log recovery"
+        ],
+        "method_id": "F3",
+        "not_evaluated_scope": [],
+        "statement": "F3 firmware 3.6 recovered its log automatically at the next boot after power removal during a metadata write, with no service tool required."
+      },
+      {
+        "applicability_conditions": [
+          "power removed during a metadata write",
+          "service cable absent"
+        ],
+        "citations": [
+          {
+            "quote": "Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "log recovery"
+        ],
+        "method_id": "Lantern-P",
+        "not_evaluated_scope": [],
+        "statement": "Lantern-P firmware 2.1 required the proprietary service tool to unlock its log after an interrupted metadata write."
+      },
+      {
+        "applicability_conditions": [
+          "power removed during a metadata write",
+          "service cable absent"
+        ],
+        "citations": [
+          {
+            "quote": "Wisp8 firmware 8.0 recovered automatically at the next boot.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "log recovery"
+        ],
+        "method_id": "Wisp8",
+        "not_evaluated_scope": [],
+        "statement": "Wisp8 firmware 8.0 recovered automatically at the next boot after power removal during a metadata write."
+      },
+      {
+        "applicability_conditions": [
+          "power removed during a metadata write",
+          "service cable absent"
+        ],
+        "citations": [
+          {
+            "quote": "Every board preserved already sealed measurements during the exercise, but accessibility differed: preserved data behind an operator lock is not automatically available to a visit team.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "preservation of sealed measurements",
+          "accessibility"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Every board preserved already sealed measurements during the interrupted-write exercise, but accessibility differed: preserved data behind an operator lock is not automatically available to a visit team."
+      },
+      {
+        "applicability_conditions": [
+          "shelter visit"
+        ],
+        "citations": [
+          {
+            "quote": "The shelter visit kit intentionally contains a generic serial terminal and no vendor-specific recovery application.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "recovery equipment"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The shelter visit kit intentionally contains a generic serial terminal and no vendor-specific recovery application."
+      },
+      {
+        "applicability_conditions": [
+          "proposed workaround",
+          "service tool permanently attached inside shelter"
+        ],
+        "citations": [
+          {
+            "quote": "A proposed workaround for Lantern-P would keep a service tool permanently attached inside the shelter. The team has not measured its energy draw or tested unattended recovery with that arrangement.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "energy draw",
+          "unattended recovery"
+        ],
+        "method_id": "Lantern-P",
+        "not_evaluated_scope": [],
+        "statement": "A proposed workaround for Lantern-P would keep a service tool permanently attached inside the shelter; the team has not measured its energy draw or tested unattended recovery with that arrangement."
+      },
+      {
+        "applicability_conditions": [
+          "recovery using only equipment visit team carries"
+        ],
+        "citations": [
+          {
+            "quote": "Maintenance frequency, battery replacement logistics, and connector durability remain planning considerations, but none can remove an explicit requirement to recover using only the equipment the visit team actually carries.",
+            "source_id": "x03s2"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "recovery requirement"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "None of the planning considerations (maintenance frequency, battery replacement logistics, connector durability) can remove an explicit requirement to recover using only the equipment the visit team actually carries."
+      },
+      {
+        "applicability_conditions": [
+          "enclosure review",
+          "dry assembly exercise"
+        ],
+        "citations": [
+          {
+            "quote": "F3 and Wisp8 use a removable terminal block for the sensor cable. Lantern-P uses a captive connector that requires opening the enclosure lid before disconnecting the board.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "connector style"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "environmental endurance"
+        ],
+        "statement": "F3 and Wisp8 use a removable terminal block for the sensor cable; Lantern-P uses a captive connector that requires opening the enclosure lid before disconnecting the board."
+      },
+      {
+        "applicability_conditions": [
+          "enclosure review",
+          "dry assembly exercise"
+        ],
+        "citations": [
+          {
+            "quote": "These are fit observations from drawings and a dry assembly exercise; they are not measurements of environmental endurance.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "environmental endurance"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "These are fit observations from drawings and a dry assembly exercise; they are not measurements of environmental endurance."
+      },
+      {
+        "applicability_conditions": [
+          "room temperature",
+          "attached to recommended four mounting points",
+          "specified vibration profile"
+        ],
+        "citations": [
+          {
+            "quote": "A vibration screening run was completed for F3 and Wisp8 at room temperature with each board attached to its recommended four mounting points. Both continued recording during the specified vibration profile.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "recording during vibration"
+        ],
+        "method_id": "F3",
+        "not_evaluated_scope": [
+          "combined vibration with cold exposure",
+          "field failure rate"
+        ],
+        "statement": "A vibration screening run was completed for F3 at room temperature with each board attached to its recommended four mounting points; it continued recording during the specified vibration profile."
+      },
+      {
+        "applicability_conditions": [
+          "room temperature",
+          "attached to recommended four mounting points",
+          "specified vibration profile"
+        ],
+        "citations": [
+          {
+            "quote": "A vibration screening run was completed for F3 and Wisp8 at room temperature with each board attached to its recommended four mounting points. Both continued recording during the specified vibration profile.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "recording during vibration"
+        ],
+        "method_id": "Wisp8",
+        "not_evaluated_scope": [
+          "combined vibration with cold exposure",
+          "field failure rate"
+        ],
+        "statement": "A vibration screening run was completed for Wisp8 at room temperature with each board attached to its recommended four mounting points; it continued recording during the specified vibration profile."
+      },
+      {
+        "applicability_conditions": [
+          "vibration screening run"
+        ],
+        "citations": [
+          {
+            "quote": "The team did not combine vibration with cold exposure, and the sample count was too small to estimate a field failure rate.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "vibration with cold exposure",
+          "field failure rate"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The team did not combine vibration with cold exposure, and the sample count was too small to estimate a field failure rate."
+      },
+      {
+        "applicability_conditions": [
+          "vibration screening run"
+        ],
+        "citations": [
+          {
+            "quote": "Lantern-P was not present in that screening run because its mounting adapter was still being fabricated. Its absence does not prove either passing or failing vibration performance.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "vibration performance"
+        ],
+        "method_id": "Lantern-P",
+        "not_evaluated_scope": [],
+        "statement": "Lantern-P was not present in the vibration screening run because its mounting adapter was still being fabricated."
+      },
+      {
+        "applicability_conditions": [],
+        "citations": [
+          {
+            "quote": "No salt-mist exposure test was performed for F3, Lantern-P, or Wisp8.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "salt-mist exposure"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "No salt-mist exposure test was performed for F3, Lantern-P, or Wisp8."
+      },
+      {
+        "applicability_conditions": [
+          "enclosure supplier drawing"
+        ],
+        "citations": [
+          {
+            "quote": "The enclosure supplier supplied a drawing with a gasket and a suggested coating, but neither item is a result for an assembled logger.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "salt-mist performance"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The enclosure supplier supplied a drawing with a gasket and a suggested coating, but neither item is a result for an assembled logger."
+      },
+      {
+        "applicability_conditions": [
+          "proposed salt-mist test"
+        ],
+        "citations": [
+          {
+            "quote": "The proposed salt-mist test would examine both electrical operation and post-exposure connector resistance after seventy-two hours. That protocol is merely a proposal, with no measured observations in the packet.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [
+          "electrical operation",
+          "post-exposure connector resistance"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The proposed salt-mist test would examine both electrical operation and post-exposure connector resistance after seventy-two hours; that protocol is merely a proposal, with no measured observations in the packet."
+      },
+      {
+        "applicability_conditions": [
+          "dry cold run",
+          "room-temperature vibration run"
+        ],
+        "citations": [
+          {
+            "quote": "A passing dry cold run or room-temperature vibration run cannot establish a salt-mist pass because it omits the specified exposure entirely.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [
+          "salt-mist pass"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "A passing dry cold run or room-temperature vibration run cannot establish a salt-mist pass because it omits the specified exposure entirely."
+      },
+      {
+        "applicability_conditions": [
+          "ordinary shutdown"
+        ],
+        "citations": [
+          {
+            "quote": "Service trials did establish that a technician could extract a sealed log through the normal port on all three boards after an ordinary shutdown. The interrupted-write behavior is documented separately in the recovery review, and the ordinary-shutdown trial does not override it.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "log extraction through normal port"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "interrupted-write behavior"
+        ],
+        "statement": "Service trials established that a technician could extract a sealed log through the normal port on all three boards after an ordinary shutdown."
+      },
+      {
+        "applicability_conditions": [
+          "future reports"
+        ],
+        "citations": [
+          {
+            "quote": "Future reports should name the exposure, duration, assembled configuration, and actual acceptance observation so that another person can tell which deployment requirement a result covers.",
+            "source_id": "x03s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "reporting requirements"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Future reports should name the exposure, duration, assembled configuration, and actual acceptance observation so that another person can tell which deployment requirement a result covers."
+      }
+    ]
+  },
+  {
+    "audit": null,
+    "bundle_id": "x04",
+    "error": "Citation not a unique original span",
+    "facts": null
+  },
+  {
+    "audit": null,
+    "bundle_id": "x05",
+    "error": "Expected 1-40 facts",
+    "facts": null
+  },
+  {
+    "audit": null,
+    "bundle_id": "x06",
+    "error": "Expected 1-40 facts",
+    "facts": null
+  },
+  {
+    "audit": {
+      "parsed_text_hash": "606b8a43d135fceb79ba7ab949be5fe552aff64e497ab907850ca33c2843a57b",
+      "raw_text_hash": "606b8a43d135fceb79ba7ab949be5fe552aff64e497ab907850ca33c2843a57b",
+      "transformation": "identity"
+    },
+    "bundle_id": "x07",
+    "error": null,
+    "facts": [
+      {
+        "applicability_conditions": [
+          "two-million-passage mixed-query workload",
+          "one query worker",
+          "background changes",
+          "warm indices after fixed warmup",
+          "ordinary index settings",
+          "latency includes metadata filtering and passage-identifier retrieval, excludes rendering document preview",
+          "includes zero-result queries"
+        ],
+        "citations": [
+          {
+            "quote": "On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "p95 latency",
+          "full query list"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "change visibility",
+          "exact-match semantics",
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "Dune-15 build 15.2 had p95 latency of 96 ms on the two-million-passage mixed-query workload with one query worker and background changes."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage mixed-query workload",
+          "one query worker",
+          "background changes",
+          "warm indices after fixed warmup",
+          "ordinary index settings",
+          "latency includes metadata filtering and passage-identifier retrieval, excludes rendering document preview",
+          "includes zero-result queries"
+        ],
+        "citations": [
+          {
+            "quote": "On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "p95 latency",
+          "full query list"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "change visibility",
+          "exact-match semantics",
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "Larch build 4.1 had p95 latency of 130 ms on the two-million-passage mixed-query workload with one query worker and background changes."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage mixed-query workload",
+          "one query worker",
+          "background changes",
+          "warm indices after fixed warmup",
+          "ordinary index settings",
+          "latency includes metadata filtering and passage-identifier retrieval, excludes rendering document preview",
+          "includes zero-result queries"
+        ],
+        "citations": [
+          {
+            "quote": "On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "p95 latency",
+          "full query list"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "change visibility",
+          "exact-match semantics",
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "P6 build 6.0 had p95 latency of 84 ms on the two-million-passage mixed-query workload with one query worker and background changes."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage corpus",
+          "ordinary index settings",
+          "includes mandatory metadata and lookup files",
+          "excludes original document archive"
+        ],
+        "citations": [
+          {
+            "quote": "Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "complete on-disk index size"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "original document archive size",
+          "power consumption"
+        ],
+        "statement": "Dune-15 build 15.2 had complete on-disk index size of 2.6 GiB for the two-million-passage corpus."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage corpus",
+          "ordinary index settings",
+          "includes mandatory metadata and lookup files",
+          "excludes original document archive"
+        ],
+        "citations": [
+          {
+            "quote": "Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "complete on-disk index size"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "original document archive size",
+          "power consumption"
+        ],
+        "statement": "Larch build 4.1 had complete on-disk index size of 1.8 GiB for the two-million-passage corpus."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage corpus",
+          "ordinary index settings",
+          "includes mandatory metadata and lookup files",
+          "excludes original document archive"
+        ],
+        "citations": [
+          {
+            "quote": "Complete on-disk index sizes for that corpus were 2.6 GiB for Dune-15 build 15.2, 1.8 GiB for Larch build 4.1, and 1.4 GiB for P6 build 6.0.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "complete on-disk index size"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "original document archive size",
+          "power consumption"
+        ],
+        "statement": "P6 build 6.0 had complete on-disk index size of 1.4 GiB for the two-million-passage corpus."
+      },
+      {
+        "applicability_conditions": [
+          "two-million-passage corpus",
+          "ordinary index settings",
+          "complete index includes mandatory files"
+        ],
+        "citations": [
+          {
+            "quote": "P6's compressed vector file alone occupied less than one GiB, but the rest of its mandatory index files raised the complete total to the stated figure.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "measurement",
+        "measurement_scope": [
+          "compressed vector file size",
+          "complete on-disk index size"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "original document archive size"
+        ],
+        "statement": "P6's compressed vector file alone occupied less than one GiB, but the rest of its mandatory index files raised the complete total to 1.4 GiB."
+      },
+      {
+        "applicability_conditions": [
+          "reference workload",
+          "complete index"
+        ],
+        "citations": [
+          {
+            "quote": "The appliance cannot delete those mandatory files and still execute the reference workload.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [],
+        "statement": "P6 build 6.0 cannot delete mandatory index files and still execute the reference workload."
+      },
+      {
+        "applicability_conditions": [
+          "passage retrieval appliance",
+          "two-million-passage corpus"
+        ],
+        "citations": [
+          {
+            "quote": "All three can return stable passage identifiers suitable for linking into the original archive.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "stable passage identifiers"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "withdrawn material disappearance timing",
+          "literal product-code filter capitalization preservation"
+        ],
+        "statement": "All three methods (Dune-15 build 15.2, Larch build 4.1, P6 build 6.0) can return stable passage identifiers suitable for linking into the original archive."
+      },
+      {
+        "applicability_conditions": [
+          "performance run",
+          "literal product-code filters"
+        ],
+        "citations": [
+          {
+            "quote": "Nor does the performance run establish whether literal product-code filters preserve capitalization.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "exact-match semantics"
+        ],
+        "statement": "The performance run does not establish whether literal product-code filters preserve capitalization."
+      },
+      {
+        "applicability_conditions": [
+          "performance run",
+          "withdrawn material"
+        ],
+        "citations": [
+          {
+            "quote": "That interface property is useful but does not establish that withdrawn material disappears at the required time.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "change visibility"
+        ],
+        "statement": "The performance run does not establish whether withdrawn material disappears at the required time."
+      },
+      {
+        "applicability_conditions": [
+          "descriptive passages",
+          "operational requirements"
+        ],
+        "citations": [
+          {
+            "quote": "A method can retrieve plausible descriptive passages quickly while violating either of those operational requirements.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "change visibility",
+          "exact-match semantics"
+        ],
+        "statement": "A method can retrieve plausible descriptive passages quickly while violating change visibility or exact-match operational requirements."
+      },
+      {
+        "applicability_conditions": [
+          "deletion API acknowledgement",
+          "different client session",
+          "same local service",
+          "no replica or external cache"
+        ],
+        "citations": [
+          {
+            "quote": "Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "retrieval ineligibility timing"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "disk reclamation"
+        ],
+        "statement": "Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion."
+      },
+      {
+        "applicability_conditions": [
+          "deletion API acknowledgement",
+          "different client session",
+          "same local service",
+          "no replica or external cache"
+        ],
+        "citations": [
+          {
+            "quote": "Larch build 4.1 made a withdrawn passage ineligible for retrieval before acknowledging deletion.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "retrieval ineligibility timing"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "disk reclamation"
+        ],
+        "statement": "Larch build 4.1 made a withdrawn passage ineligible for retrieval before acknowledging deletion."
+      },
+      {
+        "applicability_conditions": [
+          "deletion API acknowledgement",
+          "different client session",
+          "same local service",
+          "no replica or external cache"
+        ],
+        "citations": [
+          {
+            "quote": "P6 build 6.0 could return a withdrawn passage for up to thirty seconds after acknowledging deletion.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "retrieval ineligibility timing"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "disk reclamation"
+        ],
+        "statement": "P6 build 6.0 could return a withdrawn passage for up to thirty seconds after acknowledging deletion."
+      },
+      {
+        "applicability_conditions": [
+          "deletion API acknowledgement",
+          "background cleanup"
+        ],
+        "citations": [
+          {
+            "quote": "P6 eventually removed the passage during its ordinary background cleanup, but that behavior does not satisfy an acknowledgement-bound visibility rule.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [],
+        "statement": "P6's eventual removal of withdrawn passage during background cleanup does not satisfy an acknowledgement-bound visibility rule."
+      },
+      {
+        "applicability_conditions": [
+          "literal product-code filters",
+          "ordinary descriptive text"
+        ],
+        "citations": [
+          {
+            "quote": "Dune-15 build 15.2 also provides byte-exact product-code equality filtering.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "byte-exact equality"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "semantic match quality"
+        ],
+        "statement": "Dune-15 build 15.2 provides byte-exact product-code equality filtering, preserving letter case and punctuation."
+      },
+      {
+        "applicability_conditions": [
+          "literal product-code filters",
+          "ordinary descriptive text"
+        ],
+        "citations": [
+          {
+            "quote": "Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "byte-exact equality"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "semantic match quality"
+        ],
+        "statement": "Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation."
+      },
+      {
+        "applicability_conditions": [
+          "literal product-code filters",
+          "ordinary descriptive text"
+        ],
+        "citations": [
+          {
+            "quote": "P6 build 6.0 normalizes product-code filters by folding case and removing punctuation, merging distinct literal codes.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "normalization behavior"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "semantic match quality"
+        ],
+        "statement": "P6 build 6.0 normalizes product-code filters by folding case and removing punctuation, merging distinct literal codes."
+      },
+      {
+        "applicability_conditions": [
+          "product-code exercise",
+          "supplied applications"
+        ],
+        "citations": [
+          {
+            "quote": "The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself."
+      },
+      {
+        "applicability_conditions": [
+          "literal-code results",
+          "paragraph-length question"
+        ],
+        "citations": [
+          {
+            "quote": "These literal-code results do not imply anything about the quality of semantic matches for a paragraph-length question.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "semantic match quality"
+        ],
+        "statement": "Literal-code results do not imply anything about the quality of semantic matches for a paragraph-length question."
+      },
+      {
+        "applicability_conditions": [
+          "P6 build 6.0",
+          "byte-exact filtering"
+        ],
+        "citations": [
+          {
+            "quote": "No undocumented P6 flag for byte-exact filtering was evaluated.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "undocumented flags"
+        ],
+        "statement": "No undocumented P6 flag for byte-exact filtering was evaluated."
+      },
+      {
+        "applicability_conditions": [
+          "P6 build 6.0",
+          "documented product-code operation"
+        ],
+        "citations": [
+          {
+            "quote": "A future build might introduce a separate exact field, but the current build's documented product-code operation has the normalization behavior reported here.",
+            "source_id": "x07s2"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "future builds"
+        ],
+        "statement": "A future build might introduce a separate exact field, but the current build's documented product-code operation has the normalization behavior reported here."
+      },
+      {
+        "applicability_conditions": [
+          "disconnected for seven days",
+          "ordinary configurations",
+          "complete indices"
+        ],
+        "citations": [
+          {
+            "quote": "Dune-15 build 15.2 and Larch build 4.1 can build, update, and query their local indices indefinitely without a network service or license refresh.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "offline operation"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "power consumption"
+        ],
+        "statement": "Dune-15 build 15.2 can build, update, and query its local indices indefinitely without a network service or license refresh."
+      },
+      {
+        "applicability_conditions": [
+          "disconnected for seven days",
+          "ordinary configurations",
+          "complete indices"
+        ],
+        "citations": [
+          {
+            "quote": "Dune-15 build 15.2 and Larch build 4.1 can build, update, and query their local indices indefinitely without a network service or license refresh.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "offline operation"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "power consumption"
+        ],
+        "statement": "Larch build 4.1 can build, update, and query its local indices indefinitely without a network service or license refresh."
+      },
+      {
+        "applicability_conditions": [
+          "disconnected for seven days",
+          "ordinary configurations",
+          "complete indices"
+        ],
+        "citations": [
+          {
+            "quote": "P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [
+          "query allowance",
+          "calibration transaction"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "offline calibration package"
+        ],
+        "statement": "P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete."
+      },
+      {
+        "applicability_conditions": [
+          "P6 build 6.0",
+          "preloading documents and vectors"
+        ],
+        "citations": [
+          {
+            "quote": "Preloading documents and vectors does not remove that dependency.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [],
+        "statement": "Preloading documents and vectors does not remove P6's remote calibration dependency."
+      },
+      {
+        "applicability_conditions": [
+          "P6 build 6.0",
+          "inspected distribution"
+        ],
+        "citations": [
+          {
+            "quote": "There is no offline calibration package for build 6.0 in the inspected distribution.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": "P6",
+        "not_evaluated_scope": [],
+        "statement": "There is no offline calibration package for P6 build 6.0 in the inspected distribution."
+      },
+      {
+        "applicability_conditions": [
+          "index lifecycle",
+          "ordinary configurations"
+        ],
+        "citations": [
+          {
+            "quote": "Dune-15 performs compaction in a separate process and can pause it between segments.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "compaction behavior"
+        ],
+        "method_id": "Dune-15",
+        "not_evaluated_scope": [
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "Dune-15 performs compaction in a separate process and can pause it between segments."
+      },
+      {
+        "applicability_conditions": [
+          "index lifecycle",
+          "ordinary configurations"
+        ],
+        "citations": [
+          {
+            "quote": "Larch performs incremental compaction within its service and reports progress through a local status command.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "compaction behavior"
+        ],
+        "method_id": "Larch",
+        "not_evaluated_scope": [
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "Larch performs incremental compaction within its service and reports progress through a local status command."
+      },
+      {
+        "applicability_conditions": [
+          "index lifecycle",
+          "ordinary configurations"
+        ],
+        "citations": [
+          {
+            "quote": "P6 rewrites a compressed segment when its change threshold is reached.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "compaction behavior"
+        ],
+        "method_id": "P6",
+        "not_evaluated_scope": [
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "P6 rewrites a compressed segment when its change threshold is reached."
+      },
+      {
+        "applicability_conditions": [
+          "compaction",
+          "all three methods"
+        ],
+        "citations": [
+          {
+            "quote": "The team did not measure power consumption during compaction, and it did not establish which design gives the longest battery runtime.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "unreported_dimension",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "power consumption",
+          "battery runtime"
+        ],
+        "statement": "The team did not measure power consumption during compaction, and it did not establish which design gives the longest battery runtime."
+      },
+      {
+        "applicability_conditions": [
+          "index consistency check",
+          "ordinary configurations"
+        ],
+        "citations": [
+          {
+            "quote": "All three provide an index consistency check that can run without opening original documents.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "capability",
+        "measurement_scope": [
+          "internal file references"
+        ],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "archive contents accuracy"
+        ],
+        "statement": "All three methods provide an index consistency check that can run without opening original documents."
+      },
+      {
+        "applicability_conditions": [
+          "index consistency check",
+          "maintenance instruction"
+        ],
+        "citations": [
+          {
+            "quote": "The check verifies internal file references, not whether the archive contents accurately reflect a maintenance instruction.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "archive contents accuracy"
+        ],
+        "statement": "The index consistency check verifies internal file references, not whether the archive contents accurately reflect a maintenance instruction."
+      },
+      {
+        "applicability_conditions": [
+          "appliance workflow"
+        ],
+        "citations": [
+          {
+            "quote": "Original-document retention is therefore still required by the appliance workflow.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Original-document retention is still required by the appliance workflow."
+      },
+      {
+        "applicability_conditions": [
+          "procurement conclusion"
+        ],
+        "citations": [
+          {
+            "quote": "The operation guide recommends retaining the build identifier, full index manifest, and query-workload identity with any procurement conclusion.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "requirement",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "The operation guide recommends retaining the build identifier, full index manifest, and query-workload identity with any procurement conclusion."
+      },
+      {
+        "applicability_conditions": [
+          "procurement conclusion",
+          "records retention"
+        ],
+        "citations": [
+          {
+            "quote": "Those records allow a later engineer to distinguish a result for the supplied complete index from an attractive size claim about only one compressed component.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "Those records allow a later engineer to distinguish a result for the supplied complete index from an attractive size claim about only one compressed component."
+      },
+      {
+        "applicability_conditions": [
+          "records retention",
+          "integration workaround"
+        ],
+        "citations": [
+          {
+            "quote": "They also keep a planned integration workaround from being mistaken for behavior of a shipped method.",
+            "source_id": "x07s3"
+          }
+        ],
+        "fact_type": "explicit_denial",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [],
+        "statement": "They also keep a planned integration workaround from being mistaken for behavior of a shipped method."
+      },
+      {
+        "applicability_conditions": [
+          "performance run",
+          "change visibility",
+          "exact-match semantics"
+        ],
+        "citations": [
+          {
+            "quote": "The team therefore separated change visibility and exact-match semantics into another worksheet.",
+            "source_id": "x07s1"
+          }
+        ],
+        "fact_type": "unresolved_evidence",
+        "measurement_scope": [],
+        "method_id": null,
+        "not_evaluated_scope": [
+          "change visibility",
+          "exact-match semantics"
+        ],
+        "statement": "The team separated change visibility and exact-match semantics into another worksheet, indicating that performance results do not resolve those operational requirements."
+      }
+    ]
+  },
+  {
+    "audit": null,
+    "bundle_id": "x08",
+    "error": "Expected 1-40 facts",
+    "facts": null
+  }
+]

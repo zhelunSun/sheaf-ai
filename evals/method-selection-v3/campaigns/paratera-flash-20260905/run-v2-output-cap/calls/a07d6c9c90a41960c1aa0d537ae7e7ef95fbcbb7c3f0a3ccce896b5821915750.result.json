@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:44:28.627215+00:00",
+  "http_status": 200,
+  "intent_hash": "6e78a973ba1ea2a43a743cc30769696388f5452b8a4a57dd30c500ee61b5a532",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "91f4a79f416e1f9faced85b89b01e971c3d7373b658a76e547482915e1625c74",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 273,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1055,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1328
+  },
+  "raw_body": "{\"id\":\"6aa0cb5f-bcae-418b-bed8-07e1440c072d\",\"created\":1788590667,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x04s2\\\",\\\"quote\\\":\\\"Worksheet A reports that Vela build 5.0 with the standard rule pack rejected the stale saved plan before execution in the additive-column drift test.\\\"},{\\\"source_id\\\":\\\"x04s3\\\",\\\"quote\\\":\\\"The verification replay reports that Vela build 5.0 with the standard rule pack executed the stale saved plan without rejection in the additive-column drift test.\\\"},{\\\"source_id\\\":\\\"x04s3\\\",\\\"quote\\\":\\\"The two Vela reports use the same VD-12 configuration, remain active, and have no published reconciliation or designated precedence.\\\"}],\\\"reason\\\":\\\"The two sources directly conflict on whether Vela build 5.0 with the standard rule pack rejects the stale saved plan before execution in the additive-column drift test. Worksheet A (x04s2) states rejection occurred, while verification replay (x04s3) states execution without rejection. Both use the same VD-12 configuration and no reconciliation or precedence is published, so the conflict is unresolved. CedarPlan-6 is not a viable option because x04s2 explicitly states it executed the stale plan without rejection, failing the mandatory guard. However, the conflict on Vela blocks a decision for either option, so abstain.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":273,\"prompt_tokens\":1055,\"total_tokens\":1328,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "ec2b4021ebf43979d4a7c47b9e199c8b7412e48eeebbc15439ced8d1f95a81ae",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3265.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "91f4a79f416e1f9faced85b89b01e971c3d7373b658a76e547482915e1625c74",
+    "request_id": "answer-b04q03-raw_passages-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"x04s2\",\"quote\":\"Worksheet A reports that Vela build 5.0 with the standard rule pack rejected the stale saved plan before execution in the additive-column drift test.\"},{\"source_id\":\"x04s3\",\"quote\":\"The verification replay reports that Vela build 5.0 with the standard rule pack executed the stale saved plan without rejection in the additive-column drift test.\"},{\"source_id\":\"x04s3\",\"quote\":\"The two Vela reports use the same VD-12 configuration, remain active, and have no published reconciliation or designated precedence.\"}],\"reason\":\"The two sources directly conflict on whether Vela build 5.0 with the standard rule pack rejects the stale saved plan before execution in the additive-column drift test. Worksheet A (x04s2) states rejection occurred, while verification replay (x04s3) states execution without rejection. Both use the same VD-12 configuration and no reconciliation or precedence is published, so the conflict is unresolved. CedarPlan-6 is not a viable option because x04s2 explicitly states it executed the stale plan without rejection, failing the mandatory guard. However, the conflict on Vela blocks a decision for either option, so abstain.\"}",
+    "usage": {
+      "input_tokens": 1055,
+      "output_tokens": 273
+    }
+  },
+  "transport_error": false
+}

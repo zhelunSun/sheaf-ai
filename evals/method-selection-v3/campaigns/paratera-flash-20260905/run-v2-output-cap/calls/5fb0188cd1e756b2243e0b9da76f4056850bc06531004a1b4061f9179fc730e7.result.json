@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:46:24.866677+00:00",
+  "http_status": 200,
+  "intent_hash": "03520af670546c9b06e64d842e7d5fa8fcc552d533652d9a6f968a2428a6c0eb",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "ca3755aebf9a3973368c366690093a4a07e7f28a871d9779df11d79efd43a23b",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 312,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1092,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1404
+  },
+  "raw_body": "{\"id\":\"b4b4178e-eb2f-4a56-883e-07b7a111bb01\",\"created\":1788590783,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, CedarPlan-6 used 3.6 GiB peak workspace and finished in 74 seconds.\\\"},{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, Vela used 2.4 GiB peak workspace and finished in 69 seconds.\\\"},{\\\"source_id\\\":\\\"x04s1\\\",\\\"quote\\\":\\\"On S80 with the standard rule pack, Q2x used 2.1 GiB peak workspace but exceeded the ninety-second deadline, finishing in 128 seconds.\\\"},{\\\"source_id\\\":\\\"x04s2\\\",\\\"quote\\\":\\\"Q2x build 2.8 requires a remote catalog lookup before compiling each new schema.\\\"}],\\\"reason\\\":\\\"CedarPlan-6 exceeds the 2.5 GiB workspace limit (3.6 GiB). Vela meets both S80 workspace (2.4 GiB ≤ 2.5 GiB) and time (69s ≤ 90s), but the requirement to compile new schemas locally is not established for Vela; the audit only states Vela loads its rule pack locally, not that it compiles new schemas without remote services. Q2x fails the time limit (128s > 90s) and also requires remote catalog for new schema compilation. Since no option satisfies all requirements, explicit_negative is appropriate.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":312,\"prompt_tokens\":1092,\"total_tokens\":1404,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "f38eb298e48e1abbf9be7baa5807e77dbc90e9f65f22e37daa9d0d3288f0fba6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2516.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "ca3755aebf9a3973368c366690093a4a07e7f28a871d9779df11d79efd43a23b",
+    "request_id": "answer-b04q01-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, CedarPlan-6 used 3.6 GiB peak workspace and finished in 74 seconds.\"},{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, Vela used 2.4 GiB peak workspace and finished in 69 seconds.\"},{\"source_id\":\"x04s1\",\"quote\":\"On S80 with the standard rule pack, Q2x used 2.1 GiB peak workspace but exceeded the ninety-second deadline, finishing in 128 seconds.\"},{\"source_id\":\"x04s2\",\"quote\":\"Q2x build 2.8 requires a remote catalog lookup before compiling each new schema.\"}],\"reason\":\"CedarPlan-6 exceeds the 2.5 GiB workspace limit (3.6 GiB). Vela meets both S80 workspace (2.4 GiB ≤ 2.5 GiB) and time (69s ≤ 90s), but the requirement to compile new schemas locally is not established for Vela; the audit only states Vela loads its rule pack locally, not that it compiles new schemas without remote services. Q2x fails the time limit (128s > 90s) and also requires remote catalog for new schema compilation. Since no option satisfies all requirements, explicit_negative is appropriate.\"}",
+    "usage": {
+      "input_tokens": 1092,
+      "output_tokens": 312
+    }
+  },
+  "transport_error": false
+}

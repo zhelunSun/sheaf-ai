@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:42:58.804868+00:00",
+  "http_status": 200,
+  "intent_hash": "e436fc61d13e4461f8dd882506648034b3c1ed6b9fcd97a64ac9ea2b707739c2",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "5f1e2d7f771dd11ea64d0fccb370a6b5117d34887d887cd2c00640094e84595c",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 159,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1210,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1369
+  },
+  "raw_body": "{\"id\":\"c2595d01-c2b8-4aa9-8f92-a70d419d8501\",\"created\":1788590578,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x03s2\\\",\\\"quote\\\":\\\"At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8.\\\"}],\\\"reason\\\":\\\"The budget is at most 0.60 Wh. The only relevant measurement at twenty degrees Celsius with the ten-second schedule gives 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8. All three exceed 0.60 Wh, so every candidate is explicitly ruled out by the requirement.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":159,\"prompt_tokens\":1210,\"total_tokens\":1369,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "30ff82450827b2e69ad2384a3faefb1145bfe171a729cf21d8bc57875b1de969",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1656.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "5f1e2d7f771dd11ea64d0fccb370a6b5117d34887d887cd2c00640094e84595c",
+    "request_id": "answer-b03q02-all_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x03s2\",\"quote\":\"At twenty degrees Celsius with the specified ten-second schedule, daily board energy was 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8.\"}],\"reason\":\"The budget is at most 0.60 Wh. The only relevant measurement at twenty degrees Celsius with the ten-second schedule gives 0.84 Wh for F3, 1.12 Wh for Lantern-P, and 0.68 Wh for Wisp8. All three exceed 0.60 Wh, so every candidate is explicitly ruled out by the requirement.\"}",
+    "usage": {
+      "input_tokens": 1210,
+      "output_tokens": 159
+    }
+  },
+  "transport_error": false
+}

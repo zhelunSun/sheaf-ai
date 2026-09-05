@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:04.490500+00:00",
+  "http_status": 200,
+  "intent_hash": "cb895b048b8cbdf4da42fb66fc2ad0022763738dbc4687c1a49b0bc1fad0a6cf",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "bc4817c585c62659496ef478e3760f664d73abc45e7290498e899fb5a4676efc",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 209,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1227,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1436
+  },
+  "raw_body": "{\"id\":\"4d01cf62-900f-4a37-80d4-01c59c9fc89e\",\"created\":1788590703,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s1\\\",\\\"quote\\\":\\\"On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion.\\\"}],\\\"reason\\\":\\\"Only Dune-15 has evidence for both latency (96 ms ≤ 110 ms) and deletion visibility, but its latency measurement explicitly excludes rendering document preview, which may not match the documented mixed-query workload. Larch and P6 have latency measurements but no evidence for deletion visibility; their not_evaluated_scope includes change visibility. Thus no candidate is fully supported for both requirements.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":209,\"prompt_tokens\":1227,\"total_tokens\":1436,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "8b84b9b41edb30506b8d60e99c23e36236777ecc66b92aa5c0834d35b80324db",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4922.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "bc4817c585c62659496ef478e3760f664d73abc45e7290498e899fb5a4676efc",
+    "request_id": "answer-b07q01-all_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s1\",\"quote\":\"On the two-million-passage mixed-query workload with one query worker and background changes, p95 latency was 96 ms for Dune-15 build 15.2, 130 ms for Larch build 4.1, and 84 ms for P6 build 6.0.\"},{\"source_id\":\"x07s2\",\"quote\":\"Dune-15 build 15.2 made a withdrawn passage ineligible for retrieval before acknowledging deletion.\"}],\"reason\":\"Only Dune-15 has evidence for both latency (96 ms ≤ 110 ms) and deletion visibility, but its latency measurement explicitly excludes rendering document preview, which may not match the documented mixed-query workload. Larch and P6 have latency measurements but no evidence for deletion visibility; their not_evaluated_scope includes change visibility. Thus no candidate is fully supported for both requirements.\"}",
+    "usage": {
+      "input_tokens": 1227,
+      "output_tokens": 209
+    }
+  },
+  "transport_error": false
+}

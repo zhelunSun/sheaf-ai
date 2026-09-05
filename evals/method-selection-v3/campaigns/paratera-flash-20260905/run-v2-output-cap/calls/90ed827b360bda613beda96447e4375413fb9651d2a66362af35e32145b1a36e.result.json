@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:44:25.240531+00:00",
+  "http_status": 200,
+  "intent_hash": "14bafd218e091d8a37b3a1a1add8d09f240796d9acbe6d353b4a8c033223e874",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "5d680b94017df61c3e3a47f7296a1e922f50c6130695fb3aa4c65a423b614033",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 221,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1244,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1465
+  },
+  "raw_body": "{\"id\":\"dc2dd7d9-b776-4d17-a8a0-13d30129ef19\",\"created\":1788590664,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Dune-15 build 15.2 also provides byte-exact product-code equality filtering.\\\"},{\\\"source_id\\\":\\\"x07s3\\\",\\\"quote\\\":\\\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\\\"}],\\\"reason\\\":\\\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter. Larch is explicitly stated to provide byte-exact equality filtering, but no evidence establishes that Larch supports local index construction, changes, and queries. P6 is explicitly ruled out by the remote calibration requirement, which conflicts with indefinite disconnection. No evidence addresses local index construction, changes, and queries for either candidate, so the relevant ability is not established.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":221,\"prompt_tokens\":1244,\"total_tokens\":1465,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "a887bb69508faba7e2145a6320470ba693a0b27f673a7a6c88f3aae2c16fa459",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2328.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "5d680b94017df61c3e3a47f7296a1e922f50c6130695fb3aa4c65a423b614033",
+    "request_id": "answer-b07q03-all_facts-r1",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s2\",\"quote\":\"Dune-15 build 15.2 also provides byte-exact product-code equality filtering.\"},{\"source_id\":\"x07s3\",\"quote\":\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\"}],\"reason\":\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter. Larch is explicitly stated to provide byte-exact equality filtering, but no evidence establishes that Larch supports local index construction, changes, and queries. P6 is explicitly ruled out by the remote calibration requirement, which conflicts with indefinite disconnection. No evidence addresses local index construction, changes, and queries for either candidate, so the relevant ability is not established.\"}",
+    "usage": {
+      "input_tokens": 1244,
+      "output_tokens": 221
+    }
+  },
+  "transport_error": false
+}

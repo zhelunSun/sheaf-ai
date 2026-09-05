@@ -1,0 +1,64 @@
+{
+  "answer_output_cap": 1200,
+  "context_budget_measure": "exact JSON string literal embedded in answer message",
+  "context_cap": 800,
+  "currency_cost": null,
+  "draws": 2,
+  "endpoint": "https://llmapi.paratera.com/v1/chat/completions",
+  "evidence_grade": "agent_reviewed_synthetic",
+  "extraction_output_cap": 12000,
+  "lock": {
+    "code": {
+      "evals/method-selection-v3/DATASET-NOTES.md": "1b154d9c7ffd5bf84aab8e339b0afc599a78cf904c31517da36ad7290a0d682f",
+      "evals/method-selection-v3/PREFLIGHT-REVIEW.md": "019737b9ab3f8332a451dde1cae07a44293ee0a404efa1050b9013a0f2dce8a3",
+      "evals/method-selection-v3/experiment.py": "ee482536e4d41c9c31a776c5f1a722bfc268f99285e18d148b0e1b3e5a222ebe",
+      "evals/method-selection-v3/protocol.md": "4842a530ba4586f344023ef487fa180d6e4ba9c05fc6f15085f9a9ece6756875",
+      "evals/method-selection-v3/run.py": "668772cf6961268398e50a6cfffa9997eea8ddc89792b477208874115388db2d",
+      "evals/method-selection-v3/tokenizer.json.meta": "4412d9e7e8c9da4c91fd6e4242b41809e4c06730a03ef8e998e6c683c67aa301",
+      "evals/method-selection-v3/transport.py": "4b081ec5b8472f7fe9a865555369b68a52027788cf24aa64db7ee4a7bd0bd6bc",
+      "sheaf_ai/passage_selection.py": "c2981a07f051ee6f27468f353036d14ea535db3356b326831b5ba713ba4f8082",
+      "sheaf_ai/provenance_registry.py": "ed2b297b6d47b4131a1e3838eda4e3d195691c33b9bb9e6976a08b364ed1487f"
+    },
+    "evidence_grade": "independent_agent_authored_synthetic",
+    "files": {
+      "gold.json": "8f971056cc9598d4e74be0f968ae0bf637fc99bd5134912d9abe1afa4f12a4b9",
+      "inputs.json": "084c2bee916a5fc02eb4bf3814ccf663ebc1618904b0c97037c4fa395a539e2b"
+    },
+    "lock_hash": "1a6d139d6ac43d2de517b45cac29dd7215a16073db42ac89f9b50c5b0187dc8a",
+    "version": "method-selection-v3"
+  },
+  "manifest_hash": "241c61e390699fda559642f67acadfb03aeadbda6ffeebc48fd498b35083be02",
+  "max_requests": 170,
+  "max_tokens": 600000,
+  "model": "DeepSeek-V4-Flash",
+  "parent_manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "parent_revision_lock": {
+    "code": {
+      "protocol.md": "3094caab68110b2b2a8557fcefe1d7942bdc554a237d72fc4382e60f1cca4724",
+      "run.py": "2312276579c7df7cbed1f54c30c0deeaa7b258b4ac14b48d7545b85a640247ff",
+      "transport.py": "074f48e8ec80f365128538d1edf7ef2137d59b1ac78aa73bfdfc0c1e49129c97"
+    },
+    "parent_lock_hash": "1a6d139d6ac43d2de517b45cac29dd7215a16073db42ac89f9b50c5b0187dc8a",
+    "revision": "output-cap-v1",
+    "revision_lock_hash": "4b352725e8ad497b4ec946e8559afe3af0a208464826b8e3a3bd09b58c54f449"
+  },
+  "reused_parent_run": "run-v2-output-cap",
+  "reused_probe": {
+    "receipt_hash": "770b7066b8229621519b452f36b415f6a7275ac9b971599a51335108b1aca0cb",
+    "request_id": "probe",
+    "run": "run-v1"
+  },
+  "revision": "encoded-budget-v1",
+  "revision_lock": {
+    "code": {
+      "protocol.md": "cb0e8d2b1313c3ad6b3f8a65d5944615ec977011107ea194fd811eeefb500393",
+      "run.py": "fb3d8709b9c482069c232631739090fe68957755838ba78f78a86344d02f3d4e"
+    },
+    "parent_revision_lock_hash": "4b352725e8ad497b4ec946e8559afe3af0a208464826b8e3a3bd09b58c54f449",
+    "revision": "encoded-budget-v1",
+    "revision_lock_hash": "18c374bdcd74ff3b01bb33e7464287e2bc471f9f00fac4791f437e0867c87add"
+  },
+  "seed": 20260905,
+  "temperature": 0.2,
+  "timeout_seconds": 120
+}

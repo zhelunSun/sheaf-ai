@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:43:55.657296+00:00",
+  "http_status": 200,
+  "intent_hash": "c7fee882d4dfd878bdc4ccc4af8cd0506c7c1d9a9d6cb3ffa64ab7b024d28eee",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "5d680b94017df61c3e3a47f7296a1e922f50c6130695fb3aa4c65a423b614033",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 241,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1244,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 1485
+  },
+  "raw_body": "{\"id\":\"b91642b3-a545-4398-9121-0a654bbbfad5\",\"created\":1788590632,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\\\"},{\\\"source_id\\\":\\\"x07s2\\\",\\\"quote\\\":\\\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\\\"},{\\\"source_id\\\":\\\"x07s3\\\",\\\"quote\\\":\\\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\\\"}],\\\"reason\\\":\\\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter. Larch is stated to provide byte-exact equality filtering, but there is no evidence about Larch's ability to construct indices locally, handle changes, or perform queries while disconnected. P6 is explicitly ruled out by the remote calibration requirement, which conflicts with indefinite disconnection. However, the evidence does not establish that Larch meets all requirements, so the decision is abstain due to insufficient evidence.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":241,\"prompt_tokens\":1244,\"total_tokens\":1485,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "3d5cbf89d9c9a99e2f77833b2ae8e81d116c9275fbc7977ba2a5eae442c1b006",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 4844.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "5d680b94017df61c3e3a47f7296a1e922f50c6130695fb3aa4c65a423b614033",
+    "request_id": "answer-b07q03-all_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x07s2\",\"quote\":\"Larch build 4.1 provides byte-exact product-code equality filtering, preserving letter case and punctuation.\"},{\"source_id\":\"x07s2\",\"quote\":\"The supplied applications cannot add a post-filter because their stored results contain passage identifiers only; therefore the tested filter semantics must be supplied by the retrieval method itself.\"},{\"source_id\":\"x07s3\",\"quote\":\"P6 build 6.0 requires a remote calibration transaction after each thousand queries and refuses further queries if that transaction cannot complete.\"}],\"reason\":\"The task requires local index construction, changes, and queries plus byte-exact product-code equality with no post-filter. Larch is stated to provide byte-exact equality filtering, but there is no evidence about Larch's ability to construct indices locally, handle changes, or perform queries while disconnected. P6 is explicitly ruled out by the remote calibration requirement, which conflicts with indefinite disconnection. However, the evidence does not establish that Larch meets all requirements, so the decision is abstain due to insufficient evidence.\"}",
+    "usage": {
+      "input_tokens": 1244,
+      "output_tokens": 241
+    }
+  },
+  "transport_error": false
+}

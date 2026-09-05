@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:44:02.394972+00:00",
+  "http_status": 200,
+  "intent_hash": "df5412151f2cdbb235d69514b7b5a5cd9afb8da39f1bd6f23ee1ee75bcc04c27",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "2346c76d65fc1d4810fca58e874f84d39089fd2818ec3bcfe28e3d15d72ca806",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 293,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1079,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1372
+  },
+  "raw_body": "{\"id\":\"1b34169e-2b3a-44c3-8f7c-096552d5b660\",\"created\":1788590641,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"explicit_negative\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x05s3\\\",\\\"quote\\\":\\\"JettyS and Umbra-2 used the writable data volume with a read-only root; C4 used a writable root as required by its activation registry.\\\"},{\\\"source_id\\\":\\\"x05s2\\\",\\\"quote\\\":\\\"C4 version 4.0 requires writing its activation registry on the root filesystem during both replacement and rollback.\\\"}],\\\"reason\\\":\\\"The task requires the root to stay read-only. C4 is explicitly ruled out because it requires a writable root for its activation registry. Umbra-2 meets the read-only root requirement and has a rollback time of 22 seconds, which is within the 30-second limit, with compatible state and preloaded image, and no external controller. However, the evidence for Umbra-2's rollback timing is from a different source (x05s3) that does not explicitly state the readiness probe condition for Umbra-2's 22-second measurement, though the same source describes the general rollback procedure. The evidence is sufficient to rule out C4, but the support for Umbra-2 is not fully explicit in the same context, leading to an abstain with explicit_negative because C4 is ruled out but Umbra-2's full compliance is not clearly established in the cited evidence.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":293,\"prompt_tokens\":1079,\"total_tokens\":1372,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "2ec8286df6b856621884e0129706ecb75caa38c3c32f46f7d8ccad50d72288bf",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2875.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "2346c76d65fc1d4810fca58e874f84d39089fd2818ec3bcfe28e3d15d72ca806",
+    "request_id": "answer-b05q02-raw_passages-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"explicit_negative\",\"citations\":[{\"source_id\":\"x05s3\",\"quote\":\"JettyS and Umbra-2 used the writable data volume with a read-only root; C4 used a writable root as required by its activation registry.\"},{\"source_id\":\"x05s2\",\"quote\":\"C4 version 4.0 requires writing its activation registry on the root filesystem during both replacement and rollback.\"}],\"reason\":\"The task requires the root to stay read-only. C4 is explicitly ruled out because it requires a writable root for its activation registry. Umbra-2 meets the read-only root requirement and has a rollback time of 22 seconds, which is within the 30-second limit, with compatible state and preloaded image, and no external controller. However, the evidence for Umbra-2's rollback timing is from a different source (x05s3) that does not explicitly state the readiness probe condition for Umbra-2's 22-second measurement, though the same source describes the general rollback procedure. The evidence is sufficient to rule out C4, but the support for Umbra-2 is not fully explicit in the same context, leading to an abstain with explicit_negative because C4 is ruled out but Umbra-2's full compliance is not clearly established in the cited evidence.\"}",
+    "usage": {
+      "input_tokens": 1079,
+      "output_tokens": 293
+    }
+  },
+  "transport_error": false
+}

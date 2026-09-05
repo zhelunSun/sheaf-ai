@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:45:34.467853+00:00",
+  "http_status": 200,
+  "intent_hash": "547cd7a147af2a8ef8b97598308090353262dd6186eca6939d7d6b8a175b6226",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "68a9c42dadc886ce9ef4876c49df9cb95350a8d71f685998ad475477432feac9",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 264,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1084,
+    "prompt_tokens_details": {
+      "cached_tokens": 1024
+    },
+    "total_tokens": 1348
+  },
+  "raw_body": "{\"id\":\"4b7d364f-0101-48e8-8088-00a17789eb7a\",\"created\":1788590734,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"JettyS\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x05s1\\\",\\\"quote\\\":\\\"During the forty-session replacement test, JettyS version 1.8 drained all accepted transactions without loss or duplicate application.\\\"},{\\\"source_id\\\":\\\"x05s2\\\",\\\"quote\\\":\\\"The complete manager installation occupies 52 MiB for JettyS version 1.8, 43 MiB for C4 version 4.0, and 96 MiB for Umbra-2 version 2.5.\\\"},{\\\"source_id\\\":\\\"x05s2\\\",\\\"quote\\\":\\\"With a writable data volume, JettyS version 1.8 and Umbra-2 version 2.5 perform replacement and rollback while the root filesystem remains read-only.\\\"}],\\\"reason\\\":\\\"JettyS meets all requirements: it drained all accepted transactions without loss or duplicate application in the forty-session test, its complete manager installation is 52 MiB (under 70 MiB), and it supports replacement with a writable data volume and read-only root. C4 fails the no-loss requirement (dropped six accepted transactions) and requires writable root. Umbra-2 fails the size requirement (96 MiB exceeds 70 MiB).\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":264,\"prompt_tokens\":1084,\"total_tokens\":1348,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1024}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "d12cb398bf4fa7efef6d0511487f61a5f414507b47b622bb2d5b35fd040906ca",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2015.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "68a9c42dadc886ce9ef4876c49df9cb95350a8d71f685998ad475477432feac9",
+    "request_id": "answer-b05q01-raw_passages-r1",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"JettyS\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"x05s1\",\"quote\":\"During the forty-session replacement test, JettyS version 1.8 drained all accepted transactions without loss or duplicate application.\"},{\"source_id\":\"x05s2\",\"quote\":\"The complete manager installation occupies 52 MiB for JettyS version 1.8, 43 MiB for C4 version 4.0, and 96 MiB for Umbra-2 version 2.5.\"},{\"source_id\":\"x05s2\",\"quote\":\"With a writable data volume, JettyS version 1.8 and Umbra-2 version 2.5 perform replacement and rollback while the root filesystem remains read-only.\"}],\"reason\":\"JettyS meets all requirements: it drained all accepted transactions without loss or duplicate application in the forty-session test, its complete manager installation is 52 MiB (under 70 MiB), and it supports replacement with a writable data volume and read-only root. C4 fails the no-loss requirement (dropped six accepted transactions) and requires writable root. Umbra-2 fails the size requirement (96 MiB exceeds 70 MiB).\"}",
+    "usage": {
+      "input_tokens": 1084,
+      "output_tokens": 264
+    }
+  },
+  "transport_error": false
+}

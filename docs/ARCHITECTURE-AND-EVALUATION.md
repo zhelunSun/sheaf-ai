@@ -3,7 +3,30 @@
 > Status: working contract for the current alpha. It separates implemented
 > guarantees from hypotheses that still need experiments.
 
-### 2026-09-05 Flash experiment update
+### 2026-09-05 long-source experiment update
+
+The [long-source comparison](LONG-SOURCE-EXPERIMENT-2026-09-05.md) completed eight
+internally authored bundles, 24 tasks and two answer draws, with all 144 scoring
+slots retained. Five construction failures made 60 slots unavailable; 84 actual
+answers remain in the final table. A separate agent reviewed all 72 first-draw
+slots without arm labels. This is synthetic agent review, not human gold.
+
+The campaign retained the initial extraction truncations and two explicit revisions:
+an extraction output-cap repair and a post-run measurement correction that counts
+the actual JSON context literal. Full-payload identity allowed reuse of unchanged
+raw answers, not duplicate sampling. Total use was 132 calls / 253,378 tokens
+under the original 170 / 600,000 ceiling. The final 800-token delivered-context
+budget and replay were independently verified; original source freezes and results
+remain unchanged. It is not an untouched preregistration.
+
+Final full-denominator decision accuracy is 35/48 raw, 12/48 all facts and 13/48
+scoped facts. Only three of eight constructions passed the count/citation contract;
+the small accepted-construction subset does not establish a reliable quality/cost
+benefit. Do not promote these experimental adapters to a production default.
+Next: stabilize extraction and final-decision contracts, retaining raw evidence as
+a baseline. Do not widen the schema or start unrelated product work.
+
+### 2026-09-05 earlier Flash experiment
 
 Paratera's authenticated model inventory and an actual generation confirmed
 `DeepSeek-V4-Flash` availability. A default run was preserved after two extraction

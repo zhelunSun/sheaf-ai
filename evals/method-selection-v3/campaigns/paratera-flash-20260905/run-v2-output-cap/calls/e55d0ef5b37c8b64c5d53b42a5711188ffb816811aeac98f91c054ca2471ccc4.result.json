@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:42:57.041836+00:00",
+  "http_status": 200,
+  "intent_hash": "887660ea441878648f00c3c33bcf218317213c73a664ed6c22c5c5c70d938587",
+  "issues": [],
+  "manifest_hash": "66b5943edaeb6c737a940d2c38b6fe630f029b021fb5a1301ea69d21c93a369e",
+  "payload_hash": "a14a3f3f72d8aa077b39939b67d02e65ba8484805355ca4ce006924a042f1f22",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 202,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 1235,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "total_tokens": 1437
+  },
+  "raw_body": "{\"id\":\"3aa4a102-6520-4ba1-a864-8b06e67e65c9\",\"created\":1788590576,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"x01s3\\\",\\\"quote\\\":\\\"The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor.\\\"},{\\\"source_id\\\":\\\"x01s3\\\",\\\"quote\\\":\\\"The 512 MiB allowance on the transport rig was a process limit, not an observed peak, and it did not establish whether any client could operate below 128 MiB.\\\"}],\\\"reason\\\":\\\"The procurement requires a measured peak resident memory of at most 128 MiB on an ARM processor. The packet explicitly states that no measured peak resident memory exists for any of the three clients on any ARM processor, and the only memory-related figure (512 MiB) is a process limit, not an observed peak, and does not establish operation below 128 MiB. Therefore, the relevant ability is not reported for any candidate, so none can be approved.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":202,\"prompt_tokens\":1235,\"total_tokens\":1437,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":1152}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "72d1784a2d040d52db9ba3085ac6853dd00b6e6adb9b7c6916ffdbeac65010b7",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1594.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "a14a3f3f72d8aa077b39939b67d02e65ba8484805355ca4ce006924a042f1f22",
+    "request_id": "answer-b01q03-scoped_facts-r2",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"x01s3\",\"quote\":\"The current packet contains no measured peak resident memory for Tide-4, MicaX, or R7 on any ARM processor.\"},{\"source_id\":\"x01s3\",\"quote\":\"The 512 MiB allowance on the transport rig was a process limit, not an observed peak, and it did not establish whether any client could operate below 128 MiB.\"}],\"reason\":\"The procurement requires a measured peak resident memory of at most 128 MiB on an ARM processor. The packet explicitly states that no measured peak resident memory exists for any of the three clients on any ARM processor, and the only memory-related figure (512 MiB) is a process limit, not an observed peak, and does not establish operation below 128 MiB. Therefore, the relevant ability is not reported for any candidate, so none can be approved.\"}",
+    "usage": {
+      "input_tokens": 1235,
+      "output_tokens": 202
+    }
+  },
+  "transport_error": false
+}

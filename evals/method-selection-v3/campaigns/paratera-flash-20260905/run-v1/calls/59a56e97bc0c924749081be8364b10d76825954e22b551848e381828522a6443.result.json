@@ -1,0 +1,36 @@
+{
+  "finished_at": "2026-09-05T06:29:05.499398+00:00",
+  "http_status": 200,
+  "intent_hash": "ce358b84ad29aa2bff42e6001a897262e61ec8b447c96f76cf6687cdfccddc76",
+  "issues": [],
+  "manifest_hash": "7c51f06bc63e4e482031390038c3302b4e667d1869d52b11b39dfc4c8a42a99e",
+  "payload_hash": "2258b95e131a5b59d52f6b0134d4e9f900772e10a6208dad88913abff5e3949e",
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 5,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 28,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 33
+  },
+  "raw_body": "{\"id\":\"39b2604d-2b80-43c7-a313-11bd8fba897d\",\"created\":1788589746,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"ok\\\":true}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":5,\"prompt_tokens\":28,\"total_tokens\":33,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "770b7066b8229621519b452f36b415f6a7275ac9b971599a51335108b1aca0cb",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 843.0,
+    "model": "DeepSeek-V4-Flash",
+    "payload_hash": "2258b95e131a5b59d52f6b0134d4e9f900772e10a6208dad88913abff5e3949e",
+    "request_id": "probe",
+    "text": "{\"ok\":true}",
+    "usage": {
+      "input_tokens": 28,
+      "output_tokens": 5
+    }
+  },
+  "transport_error": false
+}
