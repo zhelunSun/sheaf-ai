@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:08.000656+00:00",
+  "http_status": 200,
+  "intent_hash": "0b3414450e220c7baef893dfcf507d59df500ab2c5e2cbc83709295fe5ca2e7a",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 85,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 321,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 406
+  },
+  "raw_body": "{\"id\":\"0f8a6cf9-fafe-4829-841a-d5309cd202b1\",\"created\":1788580925,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"K\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p05s1\\\",\\\"quote\\\":\\\"In version 1, Method K exports transparent PNG.\\\"}],\\\"reason\\\":\\\"The task specifies the system is fixed to version 1, and the evidence from p05s1 directly states that in version 1, Method K exports transparent PNG, covering all constraints without conflict.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":85,\"prompt_tokens\":321,\"total_tokens\":406,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "ecf42ddec3e87e50c18d5a72fa8e462b1cf39542e199a96b28e570351a95fb53",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 6078.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "8337b3edc309f1c57f3a47e43c43a0436ee25911131a220538c24620986ed45a",
+    "request_id": "answer-p05q2-raw",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"K\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p05s1\",\"quote\":\"In version 1, Method K exports transparent PNG.\"}],\"reason\":\"The task specifies the system is fixed to version 1, and the evidence from p05s1 directly states that in version 1, Method K exports transparent PNG, covering all constraints without conflict.\"}",
+    "usage": {
+      "input_tokens": 321,
+      "output_tokens": 85
+    }
+  },
+  "transport_error_type": null
+}

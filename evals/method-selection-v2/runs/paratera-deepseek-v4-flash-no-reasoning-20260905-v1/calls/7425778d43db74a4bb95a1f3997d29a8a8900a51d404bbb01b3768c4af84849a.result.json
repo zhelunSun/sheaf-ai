@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:51.126336+00:00",
+  "http_status": 200,
+  "intent_hash": "50787fbf8e95ba3e57ae75372552ac429b57d33aa13ea10591aca62120da8910",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 88,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 604,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 692
+  },
+  "raw_body": "{\"id\":\"06cbb584-b99a-4d5b-83c4-ee552338f5e8\",\"created\":1788580911,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"J\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p04s1\\\",\\\"quote\\\":\\\"Method J reached 85 percent accuracy on video in the same evaluation.\\\"}],\\\"reason\\\":\\\"Method J is the only option with a reported accuracy on video (85%), which meets the >=80% requirement. Method I was not evaluated on video, so it does not satisfy the task constraint.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":88,\"prompt_tokens\":604,\"total_tokens\":692,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e28945199143867113734bfaba142334da1b9cb8f75c2bbaf2dfabd8e56225af",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1375.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "7425778d43db74a4bb95a1f3997d29a8a8900a51d404bbb01b3768c4af84849a",
+    "request_id": "answer-p04q1-all_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"J\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p04s1\",\"quote\":\"Method J reached 85 percent accuracy on video in the same evaluation.\"}],\"reason\":\"Method J is the only option with a reported accuracy on video (85%), which meets the >=80% requirement. Method I was not evaluated on video, so it does not satisfy the task constraint.\"}",
+    "usage": {
+      "input_tokens": 604,
+      "output_tokens": 88
+    }
+  },
+  "transport_error_type": null
+}

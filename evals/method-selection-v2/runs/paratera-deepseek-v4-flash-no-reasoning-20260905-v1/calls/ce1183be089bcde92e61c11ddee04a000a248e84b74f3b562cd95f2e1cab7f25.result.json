@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:39.046474+00:00",
+  "http_status": 200,
+  "intent_hash": "bf4c115f5fd3a6913c73b58c43d448dedb779ff5faeceb1b0b327a66715baad2",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 109,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 655,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 764
+  },
+  "raw_body": "{\"id\":\"7febc075-5ef3-4d25-84e2-1a119a404b7a\",\"created\":1788580899,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\": \\\"choose\\\", \\\"method_id\\\": \\\"E\\\", \\\"evidence_state\\\": \\\"supported\\\", \\\"citations\\\": [{\\\"source_id\\\": \\\"p02s1\\\", \\\"quote\\\": \\\"Method E runs locally without a network and requires at least 12 GB of available RAM.\\\"}], \\\"reason\\\": \\\"Method E satisfies all constraints: runs locally without network and requires at least 12 GB RAM, which is within the 16 GB available. Method F is cloud-only and cannot run locally, so it is explicitly ruled out.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":109,\"prompt_tokens\":655,\"total_tokens\":764,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "b7e91e481538c357e2f81f0d4a09f22011422abdae629d7d12a9ee00a31322e7",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1172.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "ce1183be089bcde92e61c11ddee04a000a248e84b74f3b562cd95f2e1cab7f25",
+    "request_id": "answer-p02q2-all_facts",
+    "text": "{\"decision\": \"choose\", \"method_id\": \"E\", \"evidence_state\": \"supported\", \"citations\": [{\"source_id\": \"p02s1\", \"quote\": \"Method E runs locally without a network and requires at least 12 GB of available RAM.\"}], \"reason\": \"Method E satisfies all constraints: runs locally without network and requires at least 12 GB RAM, which is within the 16 GB available. Method F is cloud-only and cannot run locally, so it is explicitly ruled out.\"}",
+    "usage": {
+      "input_tokens": 655,
+      "output_tokens": 109
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:19.385607+00:00",
+  "http_status": 200,
+  "intent_hash": "567fe8d1b2793406bf3d2a87b2d69f2167b76af80b18aea64a6faf34196ed426",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 286,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 290,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 576
+  },
+  "raw_body": "{\"id\":\"35ac953c-a298-4a7c-ad1c-e04be8df7a10\",\"created\":1788580878,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"K\\\",\\n    \\\"fact_type\\\": \\\"capability\\\",\\n    \\\"statement\\\": \\\"Method K exports transparent PNG.\\\",\\n    \\\"applicability_conditions\\\": [\\\"version 1\\\"],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p05s1\\\", \\\"quote\\\": \\\"In version 1, Method K exports transparent PNG.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"K\\\",\\n    \\\"fact_type\\\": \\\"capability\\\",\\n    \\\"statement\\\": \\\"Method K exports opaque PNG only.\\\",\\n    \\\"applicability_conditions\\\": [\\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p05s2\\\", \\\"quote\\\": \\\"In version 2, Method K exports opaque PNG only\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"L\\\",\\n    \\\"fact_type\\\": \\\"capability\\\",\\n    \\\"statement\\\": \\\"Method L exports transparent PNG.\\\",\\n    \\\"applicability_conditions\\\": [\\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p05s2\\\", \\\"quote\\\": \\\"Method L exports transparent PNG\\\"}]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":286,\"prompt_tokens\":290,\"total_tokens\":576,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "661c2f0d016c5a10686215aa445e3090f66d362ee28e7fae0706ef25b465825f",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1906.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "df2f18b48902acebbaacea1c689e9bf7ed92a3e234f32e973b9318bf78958d66",
+    "request_id": "extract-p05",
+    "text": "```json\n[\n  {\n    \"method_id\": \"K\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method K exports transparent PNG.\",\n    \"applicability_conditions\": [\"version 1\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s1\", \"quote\": \"In version 1, Method K exports transparent PNG.\"}]\n  },\n  {\n    \"method_id\": \"K\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method K exports opaque PNG only.\",\n    \"applicability_conditions\": [\"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s2\", \"quote\": \"In version 2, Method K exports opaque PNG only\"}]\n  },\n  {\n    \"method_id\": \"L\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method L exports transparent PNG.\",\n    \"applicability_conditions\": [\"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s2\", \"quote\": \"Method L exports transparent PNG\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 290,
+      "output_tokens": 286
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:10.105432+00:00",
+  "http_status": 200,
+  "intent_hash": "1c70a201cb48d3a8247ac4b607bc0099564236848efc1b5f920c78a9bd5ef1e4",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 595,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 318,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 913
+  },
+  "raw_body": "{\"id\":\"59be15a5-7ed4-4f40-843d-f25d5b775565\",\"created\":1788580868,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"C\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\\\",\\n    \\\"applicability_conditions\\\": [\\\"workload Z\\\", \\\"version 4\\\"],\\n    \\\"measurement_scope\\\": [\\\"worst-case latency\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p01s1\\\", \\\"quote\\\": \\\"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"D\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Under workload Z and version 4, Method D had worst-case latency of 60 milliseconds.\\\",\\n    \\\"applicability_conditions\\\": [\\\"workload Z\\\", \\\"version 4\\\"],\\n    \\\"measurement_scope\\\": [\\\"worst-case latency\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p01s1\\\", \\\"quote\\\": \\\"Method D had worst-case latency of 60 milliseconds.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"C\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\\\",\\n    \\\"applicability_conditions\\\": [\\\"workload Z\\\", \\\"version 4\\\"],\\n    \\\"measurement_scope\\\": [\\\"worst-case latency\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p01s2\\\", \\\"quote\\\": \\\"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"D\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Under the same workload Z and version 4, Method D again had worst-case latency of 60 milliseconds.\\\",\\n    \\\"applicability_conditions\\\": [\\\"workload Z\\\", \\\"version 4\\\"],\\n    \\\"measurement_scope\\\": [\\\"worst-case latency\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p01s2\\\", \\\"quote\\\": \\\"Method D again had worst-case latency of 60 milliseconds.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"C\\\",\\n    \\\"fact_type\\\": \\\"unreported_dimension\\\",\\n    \\\"statement\\\": \\\"The difference for Method C remains unresolved.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p01s2\\\", \\\"quote\\\": \\\"The difference for Method C remains unresolved.\\\"}]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":595,\"prompt_tokens\":318,\"total_tokens\":913,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "6c87f768f7132f6d9d957edf92ce78fce52e7c983b09322bf08821460cdae339",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3266.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "b1251cc17c2f7aa924b199052821d685ecee2d85a0b1859dad29376e646fc95e",
+    "request_id": "extract-p01",
+    "text": "```json\n[\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s1\", \"quote\": \"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"D\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under workload Z and version 4, Method D had worst-case latency of 60 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s1\", \"quote\": \"Method D had worst-case latency of 60 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"D\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under the same workload Z and version 4, Method D again had worst-case latency of 60 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"Method D again had worst-case latency of 60 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"The difference for Method C remains unresolved.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"The difference for Method C remains unresolved.\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 318,
+      "output_tokens": 595
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "finish_reason": "stop",
+    "latency_ms": 3266.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "b1251cc17c2f7aa924b199052821d685ecee2d85a0b1859dad29376e646fc95e",
+    "request_id": "extract-p01",
+    "text": "```json\n[\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s1\", \"quote\": \"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"D\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under workload Z and version 4, Method D had worst-case latency of 60 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s1\", \"quote\": \"Method D had worst-case latency of 60 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"D\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Under the same workload Z and version 4, Method D again had worst-case latency of 60 milliseconds.\",\n    \"applicability_conditions\": [\"workload Z\", \"version 4\"],\n    \"measurement_scope\": [\"worst-case latency\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"Method D again had worst-case latency of 60 milliseconds.\"}]\n  },\n  {\n    \"method_id\": \"C\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"The difference for Method C remains unresolved.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p01s2\", \"quote\": \"The difference for Method C remains unresolved.\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 318,
+      "output_tokens": 595
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 2875.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "500e287a29d89e01cc84e0ac040607375ed87da070ca22a83810a8811c292d46",
+    "request_id": "extract-p02",
+    "text": "[\n  {\n    \"method_id\": \"E\",\n    \"fact_type\": \"requirement\",\n    \"statement\": \"Method E requires at least 12 GB of available RAM.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method E runs locally without a network and requires at least 12 GB of available RAM.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"E\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method E runs locally without a network.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method E runs locally without a network\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"F\",\n    \"fact_type\": \"requirement\",\n    \"statement\": \"Method F is cloud-only.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method F is cloud-only\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"F\",\n    \"fact_type\": \"explicit_denial\",\n    \"statement\": \"Method F cannot run locally.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"cannot run locally\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 260,
+      "output_tokens": 393
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 2250.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "3336ab41da223474fe8301ee09778da1cfd8ffb78b4488958227b021f9bc76b4",
+    "request_id": "extract-p03",
+    "text": "```json\n[\n  {\n    \"method_id\": \"G\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method G was measured at 12 hours of battery life.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"battery life\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p03s1\", \"quote\": \"Method G was measured at 12 hours of battery life.\"}]\n  },\n  {\n    \"method_id\": \"H\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method H was measured at 18 hours of battery life.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"battery life\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p03s1\", \"quote\": \"Method H was measured at 18 hours.\"}]\n  },\n  {\n    \"method_id\": null,\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"The comparison does not report whether either device is waterproof.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [\"waterproofness\"],\n    \"citations\": [{\"source_id\": \"p03s1\", \"quote\": \"The comparison does not report whether either device is waterproof.\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 255,
+      "output_tokens": 309
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 2157.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "ff67b73c128094d44abf2cfa18212fb4a92ee7484c42b4f8f0357212d8b5defd",
+    "request_id": "extract-p04",
+    "text": "```json\n[\n  {\n    \"method_id\": \"I\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method I reached 92 percent accuracy on still photos.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"still photos\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method I reached 92 percent accuracy on still photos.\"}]\n  },\n  {\n    \"method_id\": \"I\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"Method I was not evaluated on video, so this report makes no video-accuracy claim.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [\"video\"],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method I was not evaluated on video, so this report makes no video-accuracy claim.\"}]\n  },\n  {\n    \"method_id\": \"J\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method J reached 85 percent accuracy on video in the same evaluation.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"video\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method J reached 85 percent accuracy on video in the same evaluation.\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 266,
+      "output_tokens": 324
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 1906.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "df2f18b48902acebbaacea1c689e9bf7ed92a3e234f32e973b9318bf78958d66",
+    "request_id": "extract-p05",
+    "text": "```json\n[\n  {\n    \"method_id\": \"K\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method K exports transparent PNG.\",\n    \"applicability_conditions\": [\"version 1\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s1\", \"quote\": \"In version 1, Method K exports transparent PNG.\"}]\n  },\n  {\n    \"method_id\": \"K\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method K exports opaque PNG only.\",\n    \"applicability_conditions\": [\"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s2\", \"quote\": \"In version 2, Method K exports opaque PNG only\"}]\n  },\n  {\n    \"method_id\": \"L\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method L exports transparent PNG.\",\n    \"applicability_conditions\": [\"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p05s2\", \"quote\": \"Method L exports transparent PNG\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 290,
+      "output_tokens": 286
+    }
+  },
+  {
+    "finish_reason": "stop",
+    "latency_ms": 2953.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "3471e368750526afc79ef82fb32752490b3c011cb3f53e2c8cb653792f8ddaf9",
+    "request_id": "extract-p06",
+    "text": "```json\n[\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method M processed 100 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s1\", \"quote\": \"Method M processed 100 items per second\"}]\n  },\n  {\n    \"method_id\": \"N\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method N processed 120 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s1\", \"quote\": \"Method N processed 120 items per second\"}]\n  },\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method M processed 140 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"Method M processed 140 items per second\"}]\n  },\n  {\n    \"method_id\": \"N\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method N processed 120 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"Method N processed 120 items per second\"}]\n  },\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"No adjudication exists for the Method M disagreement.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"No adjudication exists for the Method M disagreement\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 311,
+      "output_tokens": 550
+    }
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:13.005704+00:00",
+  "http_status": 200,
+  "intent_hash": "9251a872ceaa25770ed376f56045f6b9291d005e2187ca08777ecc3e718e388f",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 393,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 260,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 653
+  },
+  "raw_body": "{\"id\":\"97c69846-ff6f-4854-9260-76b70ffe65e4\",\"created\":1788580871,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"[\\n  {\\n    \\\"method_id\\\": \\\"E\\\",\\n    \\\"fact_type\\\": \\\"requirement\\\",\\n    \\\"statement\\\": \\\"Method E requires at least 12 GB of available RAM.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"p02s1\\\",\\n        \\\"quote\\\": \\\"Method E runs locally without a network and requires at least 12 GB of available RAM.\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"E\\\",\\n    \\\"fact_type\\\": \\\"capability\\\",\\n    \\\"statement\\\": \\\"Method E runs locally without a network.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"p02s1\\\",\\n        \\\"quote\\\": \\\"Method E runs locally without a network\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"F\\\",\\n    \\\"fact_type\\\": \\\"requirement\\\",\\n    \\\"statement\\\": \\\"Method F is cloud-only.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"p02s1\\\",\\n        \\\"quote\\\": \\\"Method F is cloud-only\\\"\\n      }\\n    ]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"F\\\",\\n    \\\"fact_type\\\": \\\"explicit_denial\\\",\\n    \\\"statement\\\": \\\"Method F cannot run locally.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [\\n      {\\n        \\\"source_id\\\": \\\"p02s1\\\",\\n        \\\"quote\\\": \\\"cannot run locally\\\"\\n      }\\n    ]\\n  }\\n]\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":393,\"prompt_tokens\":260,\"total_tokens\":653,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "126e2557278acd246e243c307d46fab54327c0f6cf54b3ea443cbdf6fb4f3967",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2875.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "500e287a29d89e01cc84e0ac040607375ed87da070ca22a83810a8811c292d46",
+    "request_id": "extract-p02",
+    "text": "[\n  {\n    \"method_id\": \"E\",\n    \"fact_type\": \"requirement\",\n    \"statement\": \"Method E requires at least 12 GB of available RAM.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method E runs locally without a network and requires at least 12 GB of available RAM.\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"E\",\n    \"fact_type\": \"capability\",\n    \"statement\": \"Method E runs locally without a network.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method E runs locally without a network\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"F\",\n    \"fact_type\": \"requirement\",\n    \"statement\": \"Method F is cloud-only.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"Method F is cloud-only\"\n      }\n    ]\n  },\n  {\n    \"method_id\": \"F\",\n    \"fact_type\": \"explicit_denial\",\n    \"statement\": \"Method F cannot run locally.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [\n      {\n        \"source_id\": \"p02s1\",\n        \"quote\": \"cannot run locally\"\n      }\n    ]\n  }\n]",
+    "usage": {
+      "input_tokens": 260,
+      "output_tokens": 393
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:49.726294+00:00",
+  "http_status": 200,
+  "intent_hash": "f306451deed0caa189564da92f83c75be6c9e660c035292d75eff3a5c4a97dfc",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 86,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 307,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 393
+  },
+  "raw_body": "{\"id\":\"7b1e3a0e-fdb3-460e-b1da-dbbd9d2ef240\",\"created\":1788580909,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"J\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p04s1\\\",\\\"quote\\\":\\\"Method J reached 85 percent accuracy on video in the same evaluation.\\\"}],\\\"reason\\\":\\\"Method J is explicitly reported to have 85% accuracy on video, which meets the ≥80% requirement. Method I was not evaluated on video, so it is not a valid choice.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":86,\"prompt_tokens\":307,\"total_tokens\":393,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "08717f5ed884e6735374a31de836fa93f5834f90233356a103ad393fa4f7506e",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1328.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "dbc3eb76e33af09e9f56bc60a39cfc92aa97d611360cb57bcb0937bba963f59e",
+    "request_id": "answer-p04q1-raw",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"J\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p04s1\",\"quote\":\"Method J reached 85 percent accuracy on video in the same evaluation.\"}],\"reason\":\"Method J is explicitly reported to have 85% accuracy on video, which meets the ≥80% requirement. Method I was not evaluated on video, so it is not a valid choice.\"}",
+    "usage": {
+      "input_tokens": 307,
+      "output_tokens": 86
+    }
+  },
+  "transport_error_type": null
+}

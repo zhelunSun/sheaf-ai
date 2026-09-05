@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:48.367501+00:00",
+  "http_status": 200,
+  "intent_hash": "3bcd399541166d3ba3b65d4024a131c556e4214feaf74abb451e580d409e5fc9",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 95,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 588,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "total_tokens": 683
+  },
+  "raw_body": "{\"id\":\"e8bbe82f-98d7-4094-8cce-00fd6c01cbe0\",\"created\":1788580908,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"H\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p03s1\\\",\\\"quote\\\":\\\"Method H was measured at 18 hours.\\\"}],\\\"reason\\\":\\\"Method H is measured at 18 hours of battery life, which meets the requirement of no less than 15 hours. Method G is measured at 12 hours, which does not meet the requirement. The waterproofness statement is irrelevant to the battery life constraint.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":95,\"prompt_tokens\":588,\"total_tokens\":683,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":512}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "09ae8c98db43f0b65fdd22a5fb1c469b61544d1e47053a859b55b17121ab512f",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1281.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "499a0d44df8a3ccc4cc8037b7c78484d727b53a177c5f71df51f816a3c625702",
+    "request_id": "answer-p03q2-scoped_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"H\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p03s1\",\"quote\":\"Method H was measured at 18 hours.\"}],\"reason\":\"Method H is measured at 18 hours of battery life, which meets the requirement of no less than 15 hours. Method G is measured at 12 hours, which does not meet the requirement. The waterproofness statement is irrelevant to the battery life constraint.\"}",
+    "usage": {
+      "input_tokens": 588,
+      "output_tokens": 95
+    }
+  },
+  "transport_error_type": null
+}

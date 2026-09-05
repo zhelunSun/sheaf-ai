@@ -1,0 +1,13 @@
+{
+  "code": {
+    "evals/method-selection-v2/run_experiment.py": "78d77bf7cc82ffe6272d56469e2040ba25a2ba0bd2c40542a096d5551b73fe9d",
+    "evals/method-selection/run_experiment.py": "f2e8d81be6044d013a1978c0f8316e540cda05ec6c352891a6b5fee544f9d380"
+  },
+  "evidence_grade": "prospective_synthetic_development_only",
+  "files": {
+    "gold.json": "2abd54e8659b527592172c53a89e8562576696c23ecd4006bc0a8ff7a3d0e991",
+    "inputs.json": "3b6869f8d030638a1cf060e04f95716438ab55498ff44adccfb2085eaba85c90",
+    "protocol.md": "a28173ec6915a991870600c59d6eb4b374af473e4584a1b9e709eb47b2ae9bf6"
+  },
+  "version": "method-selection-v2"
+}

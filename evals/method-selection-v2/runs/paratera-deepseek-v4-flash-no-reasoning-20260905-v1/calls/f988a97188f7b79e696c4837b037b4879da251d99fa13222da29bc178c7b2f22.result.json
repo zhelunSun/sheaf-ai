@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:18.413590+00:00",
+  "http_status": 200,
+  "intent_hash": "bfc423e92cdd33d4aeae0233199cb3582eac5fa08af1f4124ba7fb8068cc8dfa",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 120,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 885,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 1005
+  },
+  "raw_body": "{\"id\":\"9eeb7a4e-3538-4340-915f-bbe27a1a1dd2\",\"created\":1788580938,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p06s1\\\",\\\"quote\\\":\\\"Method M processed 100 items per second\\\"},{\\\"source_id\\\":\\\"p06s2\\\",\\\"quote\\\":\\\"Method M processed 140 items per second\\\"}],\\\"reason\\\":\\\"Evidence for Method M in batch B and version 2 is contradictory: one source reports 100 items per second, another reports 140 items per second, and no adjudication resolves the disagreement. Therefore, the condition of at least 110 items per second cannot be established.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":120,\"prompt_tokens\":885,\"total_tokens\":1005,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "625be0fb83165ed40f17ea1e6e130ae1d4dc715fb22026d6de49a73ec9663bb6",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1547.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "f988a97188f7b79e696c4837b037b4879da251d99fa13222da29bc178c7b2f22",
+    "request_id": "answer-p06q2-all_facts",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"p06s1\",\"quote\":\"Method M processed 100 items per second\"},{\"source_id\":\"p06s2\",\"quote\":\"Method M processed 140 items per second\"}],\"reason\":\"Evidence for Method M in batch B and version 2 is contradictory: one source reports 100 items per second, another reports 140 items per second, and no adjudication resolves the disagreement. Therefore, the condition of at least 110 items per second cannot be established.\"}",
+    "usage": {
+      "input_tokens": 885,
+      "output_tokens": 120
+    }
+  },
+  "transport_error_type": null
+}

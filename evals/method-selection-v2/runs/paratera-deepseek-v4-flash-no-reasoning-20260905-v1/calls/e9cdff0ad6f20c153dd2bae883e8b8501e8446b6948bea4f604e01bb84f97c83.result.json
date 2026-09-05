@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:59.046739+00:00",
+  "http_status": 200,
+  "intent_hash": "47993eb397adff7f33bbf17db51fc6290bad28cb1e037f40acd7ab068228193a",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 82,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 317,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 399
+  },
+  "raw_body": "{\"id\":\"e1bb967d-899e-4d9c-96d2-1fab5b4a5bf1\",\"created\":1788580917,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"L\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p05s2\\\",\\\"quote\\\":\\\"In version 2, Method K exports opaque PNG only, while Method L exports transparent PNG.\\\"}],\\\"reason\\\":\\\"The task requires version 2 and transparent PNG. The version 2 guide explicitly states Method L exports transparent PNG, covering all constraints without conflict.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":82,\"prompt_tokens\":317,\"total_tokens\":399,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "89ac4eb2274946d106a83423c50498e19eb18f98d2bc4360ef0e78bde6a2f076",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 3000.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "e9cdff0ad6f20c153dd2bae883e8b8501e8446b6948bea4f604e01bb84f97c83",
+    "request_id": "answer-p05q1-raw",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"L\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p05s2\",\"quote\":\"In version 2, Method K exports opaque PNG only, while Method L exports transparent PNG.\"}],\"reason\":\"The task requires version 2 and transparent PNG. The version 2 guide explicitly states Method L exports transparent PNG, covering all constraints without conflict.\"}",
+    "usage": {
+      "input_tokens": 317,
+      "output_tokens": 82
+    }
+  },
+  "transport_error_type": null
+}

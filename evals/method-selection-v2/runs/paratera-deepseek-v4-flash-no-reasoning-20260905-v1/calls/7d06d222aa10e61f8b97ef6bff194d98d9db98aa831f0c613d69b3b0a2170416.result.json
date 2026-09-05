@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:53.543912+00:00",
+  "http_status": 200,
+  "intent_hash": "ce7ae0351e354a40334761ea238b207a85f753c5448c1450583edbaf330f5d7d",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 81,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 308,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 389
+  },
+  "raw_body": "{\"id\":\"c5c76f76-a27c-43e6-9e19-60f439a2e433\",\"created\":1788580913,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p04s1\\\",\\\"quote\\\":\\\"Method I was not evaluated on video, so this report makes no video-accuracy claim.\\\"}],\\\"reason\\\":\\\"The report explicitly states Method I was not evaluated on video, so no evidence establishes 90 percent accuracy on video for Method I.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":81,\"prompt_tokens\":308,\"total_tokens\":389,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "f1c15b92856f1c8867060f3c2aebb5807f0146d9120b75114bf73dcb906cd062",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1265.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "7d06d222aa10e61f8b97ef6bff194d98d9db98aa831f0c613d69b3b0a2170416",
+    "request_id": "answer-p04q2-raw",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"p04s1\",\"quote\":\"Method I was not evaluated on video, so this report makes no video-accuracy claim.\"}],\"reason\":\"The report explicitly states Method I was not evaluated on video, so no evidence establishes 90 percent accuracy on video for Method I.\"}",
+    "usage": {
+      "input_tokens": 308,
+      "output_tokens": 81
+    }
+  },
+  "transport_error_type": null
+}

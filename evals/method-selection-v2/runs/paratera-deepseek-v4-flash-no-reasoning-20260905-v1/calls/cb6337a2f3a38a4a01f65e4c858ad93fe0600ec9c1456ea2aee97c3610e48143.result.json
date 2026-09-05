@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:00.597079+00:00",
+  "http_status": 200,
+  "intent_hash": "9608e2bf13a947c9d4f38242d8d31a98472e70410a232d4858fb8550514aa7d8",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 57,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 568,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 625
+  },
+  "raw_body": "{\"id\":\"23c04e1f-b978-43c2-9d2f-5050c99a3010\",\"created\":1788580920,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"L\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p05s2\\\",\\\"quote\\\":\\\"Method L exports transparent PNG\\\"}],\\\"reason\\\":\\\"Method L is explicitly supported for version 2 and provides transparent PNG, satisfying both constraints.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":57,\"prompt_tokens\":568,\"total_tokens\":625,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "df3339e8d4792c35d9ad7a9754c15efab9fa252b18d56d9a19c690f30903b618",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1515.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "cb6337a2f3a38a4a01f65e4c858ad93fe0600ec9c1456ea2aee97c3610e48143",
+    "request_id": "answer-p05q1-all_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"L\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p05s2\",\"quote\":\"Method L exports transparent PNG\"}],\"reason\":\"Method L is explicitly supported for version 2 and provides transparent PNG, satisfying both constraints.\"}",
+    "usage": {
+      "input_tokens": 568,
+      "output_tokens": 57
+    }
+  },
+  "transport_error_type": null
+}

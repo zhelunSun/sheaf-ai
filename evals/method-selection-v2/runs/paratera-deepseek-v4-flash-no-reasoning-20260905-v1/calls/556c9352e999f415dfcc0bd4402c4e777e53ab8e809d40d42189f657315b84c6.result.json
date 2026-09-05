@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:41.739312+00:00",
+  "http_status": 200,
+  "intent_hash": "a35cbf460cf77a26f02934bac75f679ff6087951e2c5352ac5fcabc05578630a",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 74,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 294,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 368
+  },
+  "raw_body": "{\"id\":\"b36136f4-e2df-47e8-97df-62c38890db7c\",\"created\":1788580902,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"insufficient\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p03s1\\\",\\\"quote\\\":\\\"The comparison does not report whether either device is waterproof.\\\"}],\\\"reason\\\":\\\"The report explicitly states that waterproof operation is not reported for either method, so no method can be chosen based on verified waterproof capability.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":74,\"prompt_tokens\":294,\"total_tokens\":368,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "9ea01bef8836d09bebb5d56d5f977b3d211ea0c8d68dd8ea1f07c0dbaafdb197",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1203.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "556c9352e999f415dfcc0bd4402c4e777e53ab8e809d40d42189f657315b84c6",
+    "request_id": "answer-p03q1-raw",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"insufficient\",\"citations\":[{\"source_id\":\"p03s1\",\"quote\":\"The comparison does not report whether either device is waterproof.\"}],\"reason\":\"The report explicitly states that waterproof operation is not reported for either method, so no method can be chosen based on verified waterproof capability.\"}",
+    "usage": {
+      "input_tokens": 294,
+      "output_tokens": 74
+    }
+  },
+  "transport_error_type": null
+}

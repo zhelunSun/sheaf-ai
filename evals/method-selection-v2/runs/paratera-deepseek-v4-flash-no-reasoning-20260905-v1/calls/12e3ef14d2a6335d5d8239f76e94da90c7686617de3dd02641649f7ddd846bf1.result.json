@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:15.141143+00:00",
+  "http_status": 200,
+  "intent_hash": "8b533125e05d19999ea27c1d587c9baa862225709985bd0d2f831f1bcdc991f6",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 97,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 517,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 614
+  },
+  "raw_body": "{\"id\":\"f6458b29-6853-4169-90cc-a4d67620bafd\",\"created\":1788580935,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"N\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p06s1\\\",\\\"quote\\\":\\\"Method N processed 120 items per second\\\"},{\\\"source_id\\\":\\\"p06s2\\\",\\\"quote\\\":\\\"Method N processed 120 items per second\\\"}],\\\"reason\\\":\\\"Evidence states Method N processed 120 items per second for batch B and version 2, which is at least 110 items per second, covering all task constraints without conflict.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":97,\"prompt_tokens\":517,\"total_tokens\":614,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e0f80dcc2482c22ac34f02b1c5f0a8445745be4be61270eaa9731d8265e6965d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1297.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "12e3ef14d2a6335d5d8239f76e94da90c7686617de3dd02641649f7ddd846bf1",
+    "request_id": "answer-p06q1-scoped_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"N\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p06s1\",\"quote\":\"Method N processed 120 items per second\"},{\"source_id\":\"p06s2\",\"quote\":\"Method N processed 120 items per second\"}],\"reason\":\"Evidence states Method N processed 120 items per second for batch B and version 2, which is at least 110 items per second, covering all task constraints without conflict.\"}",
+    "usage": {
+      "input_tokens": 517,
+      "output_tokens": 97
+    }
+  },
+  "transport_error_type": null
+}

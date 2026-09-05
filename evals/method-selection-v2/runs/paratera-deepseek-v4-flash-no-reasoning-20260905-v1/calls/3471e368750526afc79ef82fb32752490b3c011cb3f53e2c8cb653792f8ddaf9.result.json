@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:22.361315+00:00",
+  "http_status": 200,
+  "intent_hash": "ae468301ca6be236b6ca645c8308b88febcdc4a99eecccec7561b9fc77ca9a1c",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 550,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 311,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 861
+  },
+  "raw_body": "{\"id\":\"b9e0bd4c-1778-4078-8bd6-7cbd0e39fa61\",\"created\":1788580880,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"M\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method M processed 100 items per second for batch B and version 2.\\\",\\n    \\\"applicability_conditions\\\": [\\\"batch B\\\", \\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [\\\"items per second\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p06s1\\\", \\\"quote\\\": \\\"Method M processed 100 items per second\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"N\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method N processed 120 items per second for batch B and version 2.\\\",\\n    \\\"applicability_conditions\\\": [\\\"batch B\\\", \\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [\\\"items per second\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p06s1\\\", \\\"quote\\\": \\\"Method N processed 120 items per second\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"M\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method M processed 140 items per second for batch B and version 2.\\\",\\n    \\\"applicability_conditions\\\": [\\\"batch B\\\", \\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [\\\"items per second\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p06s2\\\", \\\"quote\\\": \\\"Method M processed 140 items per second\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"N\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method N processed 120 items per second for batch B and version 2.\\\",\\n    \\\"applicability_conditions\\\": [\\\"batch B\\\", \\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [\\\"items per second\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p06s2\\\", \\\"quote\\\": \\\"Method N processed 120 items per second\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"M\\\",\\n    \\\"fact_type\\\": \\\"unreported_dimension\\\",\\n    \\\"statement\\\": \\\"No adjudication exists for the Method M disagreement.\\\",\\n    \\\"applicability_conditions\\\": [\\\"batch B\\\", \\\"version 2\\\"],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p06s2\\\", \\\"quote\\\": \\\"No adjudication exists for the Method M disagreement\\\"}]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":550,\"prompt_tokens\":311,\"total_tokens\":861,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "a1eb3f7e89685834a985157b7fffbf85ba813cbfc8dfbda3f7c90b957095c311",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2953.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "3471e368750526afc79ef82fb32752490b3c011cb3f53e2c8cb653792f8ddaf9",
+    "request_id": "extract-p06",
+    "text": "```json\n[\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method M processed 100 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s1\", \"quote\": \"Method M processed 100 items per second\"}]\n  },\n  {\n    \"method_id\": \"N\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method N processed 120 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s1\", \"quote\": \"Method N processed 120 items per second\"}]\n  },\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method M processed 140 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"Method M processed 140 items per second\"}]\n  },\n  {\n    \"method_id\": \"N\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method N processed 120 items per second for batch B and version 2.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [\"items per second\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"Method N processed 120 items per second\"}]\n  },\n  {\n    \"method_id\": \"M\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"No adjudication exists for the Method M disagreement.\",\n    \"applicability_conditions\": [\"batch B\", \"version 2\"],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p06s2\", \"quote\": \"No adjudication exists for the Method M disagreement\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 311,
+      "output_tokens": 550
+    }
+  },
+  "transport_error_type": null
+}

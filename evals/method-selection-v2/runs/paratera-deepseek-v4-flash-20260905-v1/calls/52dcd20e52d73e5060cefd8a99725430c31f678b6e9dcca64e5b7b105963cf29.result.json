@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T03:57:20.908963+00:00",
+  "http_status": 200,
+  "intent_hash": "dd15287470173174f7aee40a12c53daecf2dcf2b0487032d84a96a4a03510ce6",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 26,
+    "completion_tokens_details": {
+      "reasoning_tokens": 20
+    },
+    "prompt_tokens": 119,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 145
+  },
+  "raw_body": "{\"id\":\"756f1300-420f-4355-995a-06bb451fc8f2\",\"created\":1788580641,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"ok\\\":true}\",\"role\":\"assistant\",\"reasoning_content\":\"We need to respond with exactly {\\\"ok\\\":true} no analysis or markdown. So final.\",\"provider_specific_fields\":{\"refusal\":null,\"reasoning_content\":\"We need to respond with exactly {\\\"ok\\\":true} no analysis or markdown. So final.\"}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":26,\"prompt_tokens\":119,\"total_tokens\":145,\"completion_tokens_details\":{\"reasoning_tokens\":20},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "e7aea927ac57ffd0a7b429a26bad223eb07c309a23fc3277ee5955e4a6de775a",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1094.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "52dcd20e52d73e5060cefd8a99725430c31f678b6e9dcca64e5b7b105963cf29",
+    "request_id": "probe",
+    "text": "{\"ok\":true}",
+    "usage": {
+      "input_tokens": 119,
+      "output_tokens": 26
+    }
+  },
+  "transport_error_type": null
+}

@@ -3,6 +3,23 @@
 > Status: working contract for the current alpha. It separates implemented
 > guarantees from hypotheses that still need experiments.
 
+### 2026-09-05 Flash experiment update
+
+Paratera's authenticated model inventory and an actual generation confirmed
+`DeepSeek-V4-Flash` availability. A default run was preserved after two extraction
+calls consumed 4096 reasoning tokens each and returned empty content; an uncertain
+third request was not retried. A manifest-bound `reasoning_effort=none` revision
+then completed 43 calls and 27,028 provider-reported tokens with zero reported
+reasoning tokens.
+
+The v2 prospective synthetic development set tests requirement versus conflict,
+measurement scope versus prohibition, explicit missing reports, version conditions,
+and method-scoped conflicts. Raw sources, all extracted facts, and task-scoped facts
+all achieved 12/12 on the joint decision/state/citation/source criterion. This is a
+saturated development diagnostic, not evidence that structured facts improve quality.
+Task scoping reduced the fact arm's standalone tokens by 11.0% but still cost 2.46x
+the short raw sources. See the [Flash experiment](DEEPSEEK-V4-FLASH-EXPERIMENT-2026-09-05.md).
+
 ### 2026-09-04 consumption contract update
 
 Full-card rendering now preserves the whole claim and exposes original source-alias

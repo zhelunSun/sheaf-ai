@@ -1,0 +1,42 @@
+{
+  "concurrency": 1,
+  "context_budget_characters": 6000,
+  "endpoint": "https://llmapi.paratera.com/v1/chat/completions",
+  "executor_code": {
+    "evals/method-selection-v2/run_live.py": "e442aa1f1afc7e8e8176529e380cfac6fd81c13e6c98245744f6e4504e4c1278",
+    "evals/method-selection/run_live.py": "3d44188022d24515f17a4529b7df60cd201b1ce1cb5a0ecdf472a372c8e495e9"
+  },
+  "extension_code": {
+    "evals/method-selection-v2/reasoning_control_protocol.md": "e5a84c4f6a08cc1b6fbee899067857d23969bfc243a3ce72821b14fe32d395c1",
+    "evals/method-selection-v2/run_live_no_reasoning.py": "d61a068751f096082b52c46089e3cff65ab14739f33111722a95a6972ed21c41"
+  },
+  "input_reservation": "utf8(system+prompt) bytes + 512; operational estimate, not tokenizer",
+  "lock": {
+    "code": {
+      "evals/method-selection-v2/run_experiment.py": "78d77bf7cc82ffe6272d56469e2040ba25a2ba0bd2c40542a096d5551b73fe9d",
+      "evals/method-selection/run_experiment.py": "f2e8d81be6044d013a1978c0f8316e540cda05ec6c352891a6b5fee544f9d380"
+    },
+    "evidence_grade": "prospective_synthetic_development_only",
+    "files": {
+      "gold.json": "2abd54e8659b527592172c53a89e8562576696c23ecd4006bc0a8ff7a3d0e991",
+      "inputs.json": "3b6869f8d030638a1cf060e04f95716438ab55498ff44adccfb2085eaba85c90",
+      "protocol.md": "a28173ec6915a991870600c59d6eb4b374af473e4584a1b9e709eb47b2ae9bf6"
+    },
+    "version": "method-selection-v2"
+  },
+  "manifest_hash": "403b126129b9ee9fd787e116ef998e29120dbefdc55cbd028f0955ca40287495",
+  "max_requests": 50,
+  "max_tokens": 150000,
+  "model": "DeepSeek-V4-Flash",
+  "pricing": {
+    "amount": null,
+    "currency": "CNY",
+    "status": "provider_rate_not_verified"
+  },
+  "request_options": {
+    "reasoning_effort": "none"
+  },
+  "retries": 0,
+  "timeout_seconds": 120,
+  "version": "method-selection-v2-live-no-reasoning-v1"
+}

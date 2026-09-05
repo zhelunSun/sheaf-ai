@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:01.894723+00:00",
+  "http_status": 200,
+  "intent_hash": "53204b61c25631607e210142c5017fc9daef9b9b88aa4094641e22507ff3b400",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 67,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 568,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "total_tokens": 635
+  },
+  "raw_body": "{\"id\":\"dc1efb59-b609-4e9d-860c-7bac645d00cc\",\"created\":1788580922,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"L\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p05s2\\\",\\\"quote\\\":\\\"Method L exports transparent PNG\\\"}],\\\"reason\\\":\\\"Task requires version 2 and transparent PNG. Method L is explicitly supported for version 2 with transparent PNG, satisfying all constraints without conflict.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":67,\"prompt_tokens\":568,\"total_tokens\":635,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":512}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "c1f8546ae708aab9fa3d1ecda728eca6144ae12a4dbbc514cce33f04f58896d8",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1266.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "2f9b5ad5b3692faabd6b96901287a79230bece7fef6acc9b773337b1b68f9252",
+    "request_id": "answer-p05q1-scoped_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"L\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p05s2\",\"quote\":\"Method L exports transparent PNG\"}],\"reason\":\"Task requires version 2 and transparent PNG. Method L is explicitly supported for version 2 with transparent PNG, satisfying all constraints without conflict.\"}",
+    "usage": {
+      "input_tokens": 568,
+      "output_tokens": 67
+    }
+  },
+  "transport_error_type": null
+}

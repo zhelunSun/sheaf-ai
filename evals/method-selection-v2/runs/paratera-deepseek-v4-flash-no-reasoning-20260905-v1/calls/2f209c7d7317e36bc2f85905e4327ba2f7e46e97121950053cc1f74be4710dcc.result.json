@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:25.134097+00:00",
+  "http_status": 200,
+  "intent_hash": "013ad2ecfd1686c64b5964ddd21fcd5dc026edf485adc832773eaf133d77c716",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 118,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 915,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 1033
+  },
+  "raw_body": "{\"id\":\"b48dbbfd-7270-40b5-80ca-47326fad1bf4\",\"created\":1788580885,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"D\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p01s1\\\",\\\"quote\\\":\\\"Method D had worst-case latency of 60 milliseconds.\\\"},{\\\"source_id\\\":\\\"p01s2\\\",\\\"quote\\\":\\\"Method D again had worst-case latency of 60 milliseconds.\\\"}],\\\"reason\\\":\\\"Both relevant evidence entries for Method D under workload Z and version 4 report worst-case latency of 60 milliseconds, which is below the 70 millisecond threshold. No conflicting or insufficient evidence exists for Method D, so the condition is fully supported.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":118,\"prompt_tokens\":915,\"total_tokens\":1033,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "27ef27593b94071cff45b9e9f00d9e2b8c3473c088579bd2e36c0aef6182fa4a",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1359.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "2f209c7d7317e36bc2f85905e4327ba2f7e46e97121950053cc1f74be4710dcc",
+    "request_id": "answer-p01q1-all_facts",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"D\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p01s1\",\"quote\":\"Method D had worst-case latency of 60 milliseconds.\"},{\"source_id\":\"p01s2\",\"quote\":\"Method D again had worst-case latency of 60 milliseconds.\"}],\"reason\":\"Both relevant evidence entries for Method D under workload Z and version 4 report worst-case latency of 60 milliseconds, which is below the 70 millisecond threshold. No conflicting or insufficient evidence exists for Method D, so the condition is fully supported.\"}",
+    "usage": {
+      "input_tokens": 915,
+      "output_tokens": 118
+    }
+  },
+  "transport_error_type": null
+}

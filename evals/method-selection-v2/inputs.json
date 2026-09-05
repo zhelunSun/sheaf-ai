@@ -1,0 +1,41 @@
+[
+  {"bundle_id":"p01","method_ids":["C","D"],"sources":[
+    {"source_id":"p01s1","title":"Luma laboratory east","text":"Under workload Z and version 4, Method C had worst-case latency of 40 milliseconds. Method D had worst-case latency of 60 milliseconds."},
+    {"source_id":"p01s2","title":"Luma laboratory west","text":"Under the same workload Z and version 4, Method C had worst-case latency of 80 milliseconds. Method D again had worst-case latency of 60 milliseconds. The difference for Method C remains unresolved."}
+  ],"tasks":[
+    {"task_id":"p01q1","question":"For workload Z and version 4, is Method D established below 70 milliseconds? Choose D or abstain.","options":["D"]},
+    {"task_id":"p01q2","question":"For workload Z and version 4, is Method C established below 50 milliseconds? Choose C or abstain.","options":["C"]}
+  ]},
+  {"bundle_id":"p02","method_ids":["E","F"],"sources":[
+    {"source_id":"p02s1","title":"Noma deployment manual","text":"Method E runs locally without a network and requires at least 12 GB of available RAM. Method F is cloud-only and cannot run locally. Both statements are requirements, not benchmark measurements."}
+  ],"tasks":[
+    {"task_id":"p02q1","question":"The data must remain local, no network is allowed, and only 8 GB RAM is available. Choose E or F only if every constraint is met.","options":["E","F"]},
+    {"task_id":"p02q2","question":"The data must remain local, no network is allowed, and 16 GB RAM is available. Choose a supported method.","options":["E","F"]}
+  ]},
+  {"bundle_id":"p03","method_ids":["G","H"],"sources":[
+    {"source_id":"p03s1","title":"Sora device comparison","text":"Method G was measured at 12 hours of battery life. Method H was measured at 18 hours. The comparison does not report whether either device is waterproof."}
+  ],"tasks":[
+    {"task_id":"p03q1","question":"Choose a method with verified waterproof operation based only on the supplied report.","options":["G","H"]},
+    {"task_id":"p03q2","question":"Choose a method measured at no less than 15 hours of battery life.","options":["G","H"]}
+  ]},
+  {"bundle_id":"p04","method_ids":["I","J"],"sources":[
+    {"source_id":"p04s1","title":"Tero evaluation scope","text":"Method I reached 92 percent accuracy on still photos. Method I was not evaluated on video, so this report makes no video-accuracy claim. Method J reached 85 percent accuracy on video in the same evaluation."}
+  ],"tasks":[
+    {"task_id":"p04q1","question":"For video, choose a method with reported accuracy of at least 80 percent.","options":["I","J"]},
+    {"task_id":"p04q2","question":"Does the report establish Method I at 90 percent accuracy on video? Choose I or abstain.","options":["I"]}
+  ]},
+  {"bundle_id":"p05","method_ids":["K","L"],"sources":[
+    {"source_id":"p05s1","title":"Vero version 1 guide","text":"In version 1, Method K exports transparent PNG. This statement applies only to version 1."},
+    {"source_id":"p05s2","title":"Vero version 2 guide","text":"In version 2, Method K exports opaque PNG only, while Method L exports transparent PNG."}
+  ],"tasks":[
+    {"task_id":"p05q1","question":"The system runs version 2 and requires transparent PNG. Choose a supported method.","options":["K","L"]},
+    {"task_id":"p05q2","question":"The system is fixed to version 1. Is Method K supported for transparent PNG? Choose K or abstain.","options":["K"]}
+  ]},
+  {"bundle_id":"p06","method_ids":["M","N"],"sources":[
+    {"source_id":"p06s1","title":"Aster test alpha","text":"For batch B and version 2, Method M processed 100 items per second. Method N processed 120 items per second."},
+    {"source_id":"p06s2","title":"Aster test beta","text":"For the same batch B and version 2, Method M processed 140 items per second. Method N processed 120 items per second. No adjudication exists for the Method M disagreement."}
+  ],"tasks":[
+    {"task_id":"p06q1","question":"For batch B and version 2, is Method N established at no less than 110 items per second? Choose N or abstain.","options":["N"]},
+    {"task_id":"p06q2","question":"For batch B and version 2, is Method M established at no less than 110 items per second? Choose M or abstain.","options":["M"]}
+  ]}
+]

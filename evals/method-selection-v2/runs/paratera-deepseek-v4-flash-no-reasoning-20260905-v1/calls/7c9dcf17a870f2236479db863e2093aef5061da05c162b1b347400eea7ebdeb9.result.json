@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:16.839600+00:00",
+  "http_status": 200,
+  "intent_hash": "1cf5f2e06f37e2013b4e46299f78227c45ab09c6a9c23d2b7b3871908a968a60",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 133,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 345,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 478
+  },
+  "raw_body": "{\"id\":\"d7736773-b7c6-4f18-8eda-abda099f5113\",\"created\":1788580936,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p06s1\\\",\\\"quote\\\":\\\"For batch B and version 2, Method M processed 100 items per second.\\\"},{\\\"source_id\\\":\\\"p06s2\\\",\\\"quote\\\":\\\"For the same batch B and version 2, Method M processed 140 items per second.\\\"}],\\\"reason\\\":\\\"The two sources directly conflict on Method M's throughput for the same batch and version (100 vs 140 items per second), and no adjudication resolves the disagreement, so the evidence cannot establish whether it is at least 110 items per second.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":133,\"prompt_tokens\":345,\"total_tokens\":478,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "1dbd26d275cf9be445877aee9f0ffcab6b987c9d30ab14cb517f0c778313ac58",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1672.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "7c9dcf17a870f2236479db863e2093aef5061da05c162b1b347400eea7ebdeb9",
+    "request_id": "answer-p06q2-raw",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"p06s1\",\"quote\":\"For batch B and version 2, Method M processed 100 items per second.\"},{\"source_id\":\"p06s2\",\"quote\":\"For the same batch B and version 2, Method M processed 140 items per second.\"}],\"reason\":\"The two sources directly conflict on Method M's throughput for the same batch and version (100 vs 140 items per second), and no adjudication resolves the disagreement, so the evidence cannot establish whether it is at least 110 items per second.\"}",
+    "usage": {
+      "input_tokens": 345,
+      "output_tokens": 133
+    }
+  },
+  "transport_error_type": null
+}

@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:02:19.951492+00:00",
+  "http_status": 200,
+  "intent_hash": "cf6523f512420b1146b4350b0523da01069ed7b1bffe7d17a0dddb732219ee87",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 116,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 633,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "total_tokens": 749
+  },
+  "raw_body": "{\"id\":\"80e40d5f-8e09-4659-9db6-1e0fd56107da\",\"created\":1788580939,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p06s1\\\",\\\"quote\\\":\\\"Method M processed 100 items per second\\\"},{\\\"source_id\\\":\\\"p06s2\\\",\\\"quote\\\":\\\"Method M processed 140 items per second\\\"}],\\\"reason\\\":\\\"Two sources directly conflict on the same method, batch, version, and metric: one reports 100 items/s, the other 140 items/s. The threshold is 110 items/s, so the evidence is contradictory and no reliable decision can be made.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":116,\"prompt_tokens\":633,\"total_tokens\":749,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":256}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "f22a390425f97d71c8b8bb4193746a7346afc00125d3162a1a2dfd0e562306e4",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1516.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "04f3e59467c94709a90475da71b05be61a7d6a03e1df8c6c05bc4f0a8f8210a6",
+    "request_id": "answer-p06q2-scoped_facts",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"p06s1\",\"quote\":\"Method M processed 100 items per second\"},{\"source_id\":\"p06s2\",\"quote\":\"Method M processed 140 items per second\"}],\"reason\":\"Two sources directly conflict on the same method, batch, version, and metric: one reports 100 items/s, the other 140 items/s. The threshold is 110 items/s, so the evidence is contradictory and no reliable decision can be made.\"}",
+    "usage": {
+      "input_tokens": 633,
+      "output_tokens": 116
+    }
+  },
+  "transport_error_type": null
+}

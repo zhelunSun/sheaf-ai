@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:28.129158+00:00",
+  "http_status": 200,
+  "intent_hash": "0b93591e4f47fa1007152604a0453e7821b808effd5be883fbb0f6c0508b6770",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 110,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 349,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 459
+  },
+  "raw_body": "{\"id\":\"2a9cdcd4-d1b7-49bf-91b6-6955a57fa9f4\",\"created\":1788580888,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"abstain\\\",\\\"method_id\\\":null,\\\"evidence_state\\\":\\\"conflict\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p01s1\\\",\\\"quote\\\":\\\"Method C had worst-case latency of 40 milliseconds\\\"},{\\\"source_id\\\":\\\"p01s2\\\",\\\"quote\\\":\\\"Method C had worst-case latency of 80 milliseconds\\\"}],\\\"reason\\\":\\\"Conflicting evidence for Method C under workload Z and version 4: one source reports 40 ms (below 50), the other reports 80 ms (not below 50), preventing a decision.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":110,\"prompt_tokens\":349,\"total_tokens\":459,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "7b93e2344a0eee05353b62a93e9c7387ffdacc304d76fd4ca4556b929e7e1a6d",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1515.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "a6db34182886a6ab1de96f4d72efaa4c76cf93f0ecfedecf6e92a71ecb2ce406",
+    "request_id": "answer-p01q2-raw",
+    "text": "{\"decision\":\"abstain\",\"method_id\":null,\"evidence_state\":\"conflict\",\"citations\":[{\"source_id\":\"p01s1\",\"quote\":\"Method C had worst-case latency of 40 milliseconds\"},{\"source_id\":\"p01s2\",\"quote\":\"Method C had worst-case latency of 80 milliseconds\"}],\"reason\":\"Conflicting evidence for Method C under workload Z and version 4: one source reports 40 ms (below 50), the other reports 80 ms (not below 50), preventing a decision.\"}",
+    "usage": {
+      "input_tokens": 349,
+      "output_tokens": 110
+    }
+  },
+  "transport_error_type": null
+}

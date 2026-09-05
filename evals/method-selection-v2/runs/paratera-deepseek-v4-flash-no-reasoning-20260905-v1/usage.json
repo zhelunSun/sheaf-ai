@@ -1,0 +1,45 @@
+{
+  "actual_cost": null,
+  "actual_requests": 43,
+  "cost_status": "Provider prices/invoice not verified; token usage is not currency",
+  "currency": "CNY",
+  "groups": {
+    "all_facts": {
+      "calls": 12,
+      "input_tokens": 8441,
+      "output_tokens": 1231
+    },
+    "construction": {
+      "calls": 6,
+      "input_tokens": 1700,
+      "output_tokens": 2457
+    },
+    "probe": {
+      "calls": 1,
+      "input_tokens": 40,
+      "output_tokens": 5
+    },
+    "raw": {
+      "calls": 12,
+      "input_tokens": 3855,
+      "output_tokens": 1153
+    },
+    "scoped_facts": {
+      "calls": 12,
+      "input_tokens": 6952,
+      "output_tokens": 1194
+    }
+  },
+  "limitations": [
+    "Probe excluded from arm cost",
+    "Each deployed fact arm bears full construction cost",
+    "Provider-reported usage, not independently billed",
+    "No equal-token input"
+  ],
+  "standalone_arm_total_tokens": {
+    "all_facts": 13829,
+    "raw": 5008,
+    "scoped_facts": 12303
+  },
+  "total_tokens": 27028
+}

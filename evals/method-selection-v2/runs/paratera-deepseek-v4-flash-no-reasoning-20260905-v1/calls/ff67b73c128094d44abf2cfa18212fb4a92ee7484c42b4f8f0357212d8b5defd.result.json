@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:17.457854+00:00",
+  "http_status": 200,
+  "intent_hash": "030f258350e08c359349d38b2338acbe1b775df5917997966bb57b3648860132",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 324,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 266,
+    "prompt_tokens_details": {
+      "cached_tokens": 128
+    },
+    "total_tokens": 590
+  },
+  "raw_body": "{\"id\":\"809c5ea6-068b-4e99-a332-940520f57fef\",\"created\":1788580876,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"```json\\n[\\n  {\\n    \\\"method_id\\\": \\\"I\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method I reached 92 percent accuracy on still photos.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [\\\"still photos\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p04s1\\\", \\\"quote\\\": \\\"Method I reached 92 percent accuracy on still photos.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"I\\\",\\n    \\\"fact_type\\\": \\\"unreported_dimension\\\",\\n    \\\"statement\\\": \\\"Method I was not evaluated on video, so this report makes no video-accuracy claim.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [],\\n    \\\"not_evaluated_scope\\\": [\\\"video\\\"],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p04s1\\\", \\\"quote\\\": \\\"Method I was not evaluated on video, so this report makes no video-accuracy claim.\\\"}]\\n  },\\n  {\\n    \\\"method_id\\\": \\\"J\\\",\\n    \\\"fact_type\\\": \\\"measurement\\\",\\n    \\\"statement\\\": \\\"Method J reached 85 percent accuracy on video in the same evaluation.\\\",\\n    \\\"applicability_conditions\\\": [],\\n    \\\"measurement_scope\\\": [\\\"video\\\"],\\n    \\\"not_evaluated_scope\\\": [],\\n    \\\"citations\\\": [{\\\"source_id\\\": \\\"p04s1\\\", \\\"quote\\\": \\\"Method J reached 85 percent accuracy on video in the same evaluation.\\\"}]\\n  }\\n]\\n```\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":324,\"prompt_tokens\":266,\"total_tokens\":590,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":128}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "9164191d0489a8861201ee47b08437c231c905250660624f7305fb67a4d42332",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 2157.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "ff67b73c128094d44abf2cfa18212fb4a92ee7484c42b4f8f0357212d8b5defd",
+    "request_id": "extract-p04",
+    "text": "```json\n[\n  {\n    \"method_id\": \"I\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method I reached 92 percent accuracy on still photos.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"still photos\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method I reached 92 percent accuracy on still photos.\"}]\n  },\n  {\n    \"method_id\": \"I\",\n    \"fact_type\": \"unreported_dimension\",\n    \"statement\": \"Method I was not evaluated on video, so this report makes no video-accuracy claim.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [],\n    \"not_evaluated_scope\": [\"video\"],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method I was not evaluated on video, so this report makes no video-accuracy claim.\"}]\n  },\n  {\n    \"method_id\": \"J\",\n    \"fact_type\": \"measurement\",\n    \"statement\": \"Method J reached 85 percent accuracy on video in the same evaluation.\",\n    \"applicability_conditions\": [],\n    \"measurement_scope\": [\"video\"],\n    \"not_evaluated_scope\": [],\n    \"citations\": [{\"source_id\": \"p04s1\", \"quote\": \"Method J reached 85 percent accuracy on video in the same evaluation.\"}]\n  }\n]\n```",
+    "usage": {
+      "input_tokens": 266,
+      "output_tokens": 324
+    }
+  },
+  "transport_error_type": null
+}

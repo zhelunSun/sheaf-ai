@@ -1,0 +1,34 @@
+{
+  "finished_at": "2026-09-05T04:01:45.886333+00:00",
+  "http_status": 200,
+  "intent_hash": "8eaeb9abaff188d21c1ff92608b8d3cf0874c842b756cc1b3394ceca9631ed4e",
+  "issues": [],
+  "provider_model": "DeepSeek-V4-Flash",
+  "provider_usage": {
+    "completion_tokens": 58,
+    "completion_tokens_details": {
+      "reasoning_tokens": 0
+    },
+    "prompt_tokens": 295,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 353
+  },
+  "raw_body": "{\"id\":\"3b738b52-0efe-4943-ae83-4ca11d8b1be7\",\"created\":1788580906,\"model\":\"DeepSeek-V4-Flash\",\"object\":\"chat.completion\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"{\\\"decision\\\":\\\"choose\\\",\\\"method_id\\\":\\\"H\\\",\\\"evidence_state\\\":\\\"supported\\\",\\\"citations\\\":[{\\\"source_id\\\":\\\"p03s1\\\",\\\"quote\\\":\\\"Method H was measured at 18 hours.\\\"}],\\\"reason\\\":\\\"Method H meets the 15-hour minimum requirement based on the provided measurement.\\\"}\",\"role\":\"assistant\",\"provider_specific_fields\":{\"refusal\":null}},\"provider_specific_fields\":{}}],\"usage\":{\"completion_tokens\":58,\"prompt_tokens\":295,\"total_tokens\":353,\"completion_tokens_details\":{\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"cached_tokens\":0}}}",
+  "raw_body_credential_redacted": false,
+  "receipt_hash": "442e666780a40e375b928e1230971bf35fab1a550310d2a2ead482c39581da5a",
+  "response": {
+    "finish_reason": "stop",
+    "latency_ms": 1031.0,
+    "model": "DeepSeek-V4-Flash",
+    "request_hash": "8a233b26108f5cea36e79e7ba8701a7af39fb26e16ea0aa9c2a7854653fa545a",
+    "request_id": "answer-p03q2-raw",
+    "text": "{\"decision\":\"choose\",\"method_id\":\"H\",\"evidence_state\":\"supported\",\"citations\":[{\"source_id\":\"p03s1\",\"quote\":\"Method H was measured at 18 hours.\"}],\"reason\":\"Method H meets the 15-hour minimum requirement based on the provided measurement.\"}",
+    "usage": {
+      "input_tokens": 295,
+      "output_tokens": 58
+    }
+  },
+  "transport_error_type": null
+}
