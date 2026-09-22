@@ -8,9 +8,17 @@ import httpx
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("live_method", ROOT / "evals/method-selection/run_live.py")
-live = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(live)
+SPEC = importlib.util.spec_from_file_location(
+    "current_method_unit_fixture", Path(__file__).with_name("method_selection_live_fixture.py"))
+fixture_helper = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(fixture_helper)
+live = None
+
+
+@pytest.fixture(autouse=True)
+def current_code_unit_lock(tmp_path, monkeypatch):
+    # A new unit-test freeze is not a revision of the immutable live-model run.
+    monkeypatch.setitem(globals(), "live", fixture_helper.load_current_live_fixture(tmp_path, monkeypatch))
 
 
 def manifest():
@@ -28,6 +36,33 @@ def provider_body(payload, content='{"ok": true}', **changes):
 
 def client(handler):
     return httpx.Client(transport=httpx.MockTransport(handler), follow_redirects=False)
+
+
+def test_historical_lock_rejects_changed_current_card_store():
+    historical = live.experiment.read_json(ROOT / "evals/method-selection/lock.json")
+    current = manifest()["lock"]
+    assert current["code"]["sheaf_cards/base.py"] != historical["code"]["sheaf_cards/base.py"]
+    with pytest.raises(ValueError, match="Code drift:"):
+        live.experiment.verify_lock(historical)
+    # Isolate this specific changed dependency if other production modules evolve.
+    prior_base = deepcopy(current)
+    prior_base["code"]["sheaf_cards/base.py"] = historical["code"]["sheaf_cards/base.py"]
+    with pytest.raises(ValueError, match=r"Code drift: sheaf_cards/base.py"):
+        live.experiment.verify_lock(prior_base)
+
+
+@pytest.mark.parametrize("relative, message", [
+    ("sheaf_cards/base.py", "Code drift:"),
+    ("evals/method-selection/inputs.json", "Fixture/protocol drift:"),
+])
+def test_current_unit_lock_still_rejects_post_freeze_drift(relative, message):
+    cfg = manifest()
+    path = live.ROOT / relative
+    path.write_bytes(path.read_bytes() + b"\n# unit-test drift\n")
+    with pytest.raises(ValueError, match=message):
+        live.experiment.verify_lock(cfg["lock"])
+    with pytest.raises(ValueError, match=message):
+        manifest()
 
 
 def test_credential_reads_exact_profile_and_never_falls_back_to_anthropic(tmp_path, monkeypatch):

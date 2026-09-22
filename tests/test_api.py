@@ -7,6 +7,7 @@ from unittest.mock import ANY, patch
 pytest.importorskip("fastapi", reason="fastapi not installed (optional [server] dep)")
 from fastapi.testclient import TestClient  # noqa: E402
 from sheaf_cards.base import KnowledgeCard  # noqa: E402
+from sheaf_ai.card_extraction import CardExtractionResult  # noqa: E402
 
 
 @pytest.fixture
@@ -249,11 +250,11 @@ class TestCollectEndpoint:
 
 
 class TestCrystallizeEndpoint:
-    @patch("sheaf_ai.api.card_service.crystallize_cards")
+    @patch("sheaf_ai.api.card_service.crystallize_cards_result")
     def test_crystallize_success(self, mock_cryst, client):
-        mock_cryst.return_value = [
+        mock_cryst.return_value = CardExtractionResult(cards=[
             KnowledgeCard(card_id="card-1", title="Test Card", claim="Claim", evidence="Evidence")
-        ]
+        ])
         resp = client.post("/crystallize", json={"topic": "AI"})
         assert resp.status_code == 200
         data = resp.json()
@@ -263,7 +264,7 @@ class TestCrystallizeEndpoint:
         assert data["cards"][0]["id"] == "card-1"
         assert "result" in data
 
-    @patch("sheaf_ai.api.card_service.crystallize_cards")
+    @patch("sheaf_ai.api.card_service.crystallize_cards_result")
     def test_crystallize_error(self, mock_cryst, client):
         mock_cryst.side_effect = Exception("No API key")
         resp = client.post("/crystallize", json={"topic": "AI"})

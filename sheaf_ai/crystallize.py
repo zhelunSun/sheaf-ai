@@ -26,6 +26,7 @@ from sheaf_ai.config import (
 from sheaf_ai.card_extraction import (
     CRYSTALLIZE_SYSTEM_PROMPT,
     CardExtractionRequest,
+    CardExtractionResult,
     CardSource,
     LlmCardExtractionEngine,
     parse_card_extraction_response,
@@ -206,6 +207,21 @@ def crystallize_topic(
     model: str = None,
     provider: str = None,
 ) -> list[KnowledgeCard]:
+    """Compatibility list view; use ``crystallize_topic_result`` for diagnostics."""
+    return crystallize_topic_result(
+        topic=topic, min_entries=min_entries, max_entries=max_entries,
+        max_cards=max_cards, model=model, provider=provider,
+    ).cards
+
+
+def crystallize_topic_result(
+    topic: str,
+    min_entries: int = 3,
+    max_entries: int = 10,
+    max_cards: int = 5,
+    model: str = None,
+    provider: str = None,
+) -> CardExtractionResult:
     """Crystallize knowledge cards from entries on a given topic.
 
     This is the main entry point. It:
@@ -223,7 +239,7 @@ def crystallize_topic(
         provider: LLM provider to use (default from config).
 
     Returns:
-        List of KnowledgeCard objects.
+        Cards plus explicit empty/error/partial outcome and extraction warnings.
 
     Raises:
         ValueError: If not enough entries found for the topic.
@@ -232,7 +248,9 @@ def crystallize_topic(
     # Step 1: Find matching entries
     entries = find_entries_by_topic(topic, min_entries=min_entries, limit=max_entries)
     if not entries:
-        return []
+        return CardExtractionResult(
+            cards=[], status="empty", warnings=["Not enough matching entries to crystallize"],
+        )
 
     # Step 2: Build extraction request and delegate to the default engine.
     sources = _build_card_sources(entries, topic=topic)
@@ -268,8 +286,19 @@ def crystallize_topic(
         issues = validator.validate_schema(card, strict=True)
         if not issues:
             valid_cards.append(card)
+        else:
+            result.rejected_count += 1
+            result.warnings.extend(f"Skipped invalid card: {issue}" for issue in issues)
 
-    return valid_cards
+    valid_ids = {card.card_id for card in valid_cards}
+    for card in valid_cards:
+        card.associations = [related for related in card.associations if related in valid_ids]
+    result.cards = valid_cards
+    if cards and not valid_cards:
+        result.status = "error"
+    elif valid_cards and result.warnings:
+        result.status = "partial"
+    return result
 
 
 def _parse_crystallized_response(
@@ -321,6 +350,22 @@ def crystallize_and_save(
     provider: str = None,
     auto_embed: bool = True,
 ) -> list[KnowledgeCard]:
+    """Compatibility list view; use ``crystallize_and_save_result`` for diagnostics."""
+    return crystallize_and_save_result(
+        topic=topic, min_entries=min_entries, max_entries=max_entries,
+        max_cards=max_cards, model=model, provider=provider, auto_embed=auto_embed,
+    ).cards
+
+
+def crystallize_and_save_result(
+    topic: str,
+    min_entries: int = 3,
+    max_entries: int = 10,
+    max_cards: int = 5,
+    model: str = None,
+    provider: str = None,
+    auto_embed: bool = True,
+) -> CardExtractionResult:
     """Crystallize a topic and save cards to the store.
 
     Args:
@@ -329,9 +374,9 @@ def crystallize_and_save(
             Set to False in tests or when embedding API is unavailable.
 
     Returns:
-        List of saved KnowledgeCard objects.
+        Saved cards and diagnostics. Empty/model-invalid outputs do not open the store.
     """
-    cards = crystallize_topic(
+    result = crystallize_topic_result(
         topic=topic,
         min_entries=min_entries,
         max_entries=max_entries,
@@ -339,20 +384,36 @@ def crystallize_and_save(
         model=model,
         provider=provider,
     )
+    cards = result.cards
+    if not cards:
+        return result
 
     store = _get_card_store()
     saved = []
+    omitted_ids = set()
     for card in cards:
         # Dedup check
         existing = store.search(card.title, limit=5)
-        if _is_duplicate(card, existing):
+        if _is_duplicate(card, [*existing, *saved]):
+            omitted_ids.add(card.card_id)
             continue
-        store.save(card)
         saved.append(card)
+    if omitted_ids:
+        result.warnings.append(f"Skipped {len(omitted_ids)} duplicate card(s) before saving")
+    for card in saved:
+        # A generated duplicate has a fresh ID that will never be persisted.
+        # Do not save a relationship to that absent object.
+        card.associations = [related for related in card.associations if related not in omitted_ids]
+    # One card-store transaction: never publish a prefix of a related-card batch.
+    # Embeddings below are still an explicitly separate best-effort operation.
+    store.save_many(saved)
 
     # Update embedding index for newly saved cards
     if auto_embed and saved:
-        _embed_cards(saved)
+        embedded_count = _embed_cards(saved)
+        if embedded_count != len(saved):
+            result.warnings.append("Cards saved but the embedding index was not fully updated")
+            result.status = "partial"
 
     # Update gamification streak after crystallization
     if saved:
@@ -362,7 +423,10 @@ def crystallize_and_save(
         except Exception:
             pass  # Gamification is best-effort
 
-    return saved
+    result.cards = saved
+    if not saved and result.status != "partial":
+        result.status = "empty"
+    return result
 
 
 def _embed_cards(cards: list[KnowledgeCard]) -> int:
@@ -427,19 +491,26 @@ def count_cards() -> int:
 
 def _is_duplicate(card: KnowledgeCard, existing: list[KnowledgeCard],
                   threshold: float = 0.75) -> bool:
-    """Check if a card is too similar to existing cards."""
-    new_text = f"{card.title} {card.claim}".lower()
-    new_words = set(new_text.split())
-    if not new_words:
-        return False
+    """Collapse exact content copies, never infer semantic equivalence.
 
-    for ex in existing:
-        ex_text = f"{ex.title} {ex.claim}".lower()
-        ex_words = set(ex_text.split())
-        overlap = len(new_words & ex_words) / len(new_words)
-        if overlap >= threshold:
-            return True
-    return False
+    ``threshold`` remains accepted for call compatibility but has no effect.
+    Word overlap loses negation, scope and versions; identical prose with a new
+    source or input trace is also new evidence and must remain available.
+    """
+    def content(value: KnowledgeCard) -> dict:
+        output = value.to_dict()
+        for key in ("card_id", "created_at", "updated_at"):
+            output.pop(key, None)
+        # These timestamps record tag creation, not a different scientific claim
+        # or source. Keep tag names/ownership and every other extra field intact.
+        entries = output.get("extra", {}).get("tag_entries", [])
+        for entry in entries:
+            if isinstance(entry, dict):
+                entry.pop("attached_at", None)
+        return output
+
+    current = content(card)
+    return any(content(other) == current for other in existing)
 
 
 def get_topic_stats() -> dict[str, int]:

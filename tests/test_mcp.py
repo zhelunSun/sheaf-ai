@@ -15,6 +15,7 @@ from unittest.mock import patch
 import pytest
 from sheaf_ai.mcp_server import handle_request, TOOLS
 from sheaf_cards.base import KnowledgeCard
+from sheaf_ai.card_extraction import CardExtractionResult
 
 
 RUN_E2E = os.environ.get("SHEAF_RUN_E2E") == "1"
@@ -354,7 +355,8 @@ class TestMcpWithData:
             claim="Shared card shape",
             evidence="Evidence string",
         )
-        with patch("sheaf_ai.mcp.cards.card_service.crystallize_cards", return_value=[card]):
+        with patch("sheaf_ai.mcp.cards.card_service.crystallize_cards_result",
+                   return_value=CardExtractionResult(cards=[card])):
             resp = handle_request({
                 "jsonrpc": "2.0", "id": 30,
                 "method": "tools/call",

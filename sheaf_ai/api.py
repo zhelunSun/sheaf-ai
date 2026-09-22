@@ -351,15 +351,13 @@ def create_app(api_token: str | None = None) -> FastAPI:
     def crystallize(req: CrystallizeRequest):
         """Crystallize knowledge cards from a topic."""
         try:
-            cards = card_service.crystallize_cards(req.topic)
-            card_data = [card_service.card_to_public_dict(c) for c in cards]
-            return {
-                "success": True,
-                "topic": req.topic,
-                "count": len(card_data),
-                "cards": card_data,
-                "result": str(cards),
-            }
+            result = card_service.crystallize_cards_result(req.topic)
+            payload = card_service.crystallization_to_public_dict(req.topic, result)
+            # Preserve the legacy display field; structured consumers use cards.
+            payload["result"] = str(result.cards)
+            return payload
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 
@@ -393,7 +391,10 @@ def create_app(api_token: str | None = None) -> FastAPI:
     @app.get("/cards/{card_id}", tags=["knowledge"])
     def get_card_detail(card_id: str):
         """Get a specific knowledge card."""
-        card = card_service.get_card_detail(card_id)
+        try:
+            card = card_service.get_card_detail(card_id)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
         if card is None:
             raise HTTPException(status_code=404, detail=f"Card {card_id} not found")
         return card_service.card_to_public_dict(card)
@@ -408,6 +409,8 @@ def create_app(api_token: str | None = None) -> FastAPI:
             return {"success": True, "deleted": card_id}
         except HTTPException:
             raise
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
 

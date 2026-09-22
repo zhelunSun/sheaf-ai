@@ -303,6 +303,9 @@ class CardExtractionResult:
     raw_response: str = ""
     warnings: list[str] = field(default_factory=list)
     engine: str = "llm_v1"
+    # Execution/format outcome, not a claim-correctness or evidence score.
+    status: str = "success"
+    rejected_count: int = 0
 
 
 class CardExtractionEngine(Protocol):
@@ -340,11 +343,18 @@ class LlmCardExtractionEngine:
 
         Uses UUID→Integer mapping to prevent LLM from hallucinating entry IDs.
         """
+        if (
+            isinstance(request.max_cards, bool)
+            or not isinstance(request.max_cards, int)
+            or request.max_cards < 1
+        ):
+            raise ValueError("max_cards must be a positive integer")
         if not request.sources:
             return CardExtractionResult(
                 cards=[],
                 warnings=["No sources provided"],
                 engine=self.name,
+                status="empty",
             )
 
         # Build UUID mapper and create aliased sources for the prompt
@@ -376,12 +386,18 @@ class LlmCardExtractionEngine:
             uuid_mapper=mapper,
             citation_mode="strict",
         )
-        return CardExtractionResult(
-            cards=result.cards[: request.max_cards],
-            raw_response=raw,
-            warnings=result.warnings,
-            engine=self.name,
-        )
+        if len(result.cards) > request.max_cards:
+            result.warnings.append(
+                f"Card limit exceeded: retained {request.max_cards} of {len(result.cards)} valid cards"
+            )
+            result.cards = result.cards[:request.max_cards]
+            retained_ids = {card.card_id for card in result.cards}
+            for card in result.cards:
+                card.associations = [
+                    related for related in card.associations if related in retained_ids
+                ]
+            result.status = "partial"
+        return result
 
 
 def build_extraction_prompt(
@@ -445,11 +461,14 @@ def parse_card_extraction_response(
     warnings: list[str] = []
     parsed = _parse_json_payload(raw, warnings)
     if parsed is None:
+        if not warnings:
+            warnings.append("Extraction response was not a JSON list or object")
         return CardExtractionResult(
             cards=[],
             raw_response=raw,
             warnings=warnings,
             engine=engine,
+            status="error",
         )
 
     if isinstance(parsed, dict):
@@ -461,21 +480,26 @@ def parse_card_extraction_response(
             raw_response=raw,
             warnings=warnings,
             engine=engine,
+            status="error",
         )
 
     # First pass: parse all cards and collect raw related_to indices
     cards: list[KnowledgeCard] = []
     related_to_raw: list[tuple[int, list[int]]] = []
     card_id_by_raw_index: dict[int, str] = {}
+    card_id_by_content: dict[str, str] = {}
+    rejected_count = 0
 
     for raw_card_index, item in enumerate(parsed):
         if not isinstance(item, dict):
             warnings.append("Skipped non-object card item")
+            rejected_count += 1
             continue
 
         raw_issues = _validate_raw_card_item(item)
         if raw_issues:
             warnings.extend(f"Skipped invalid card: {issue}" for issue in raw_issues)
+            rejected_count += 1
             continue
 
         source_ids = _resolve_source_ids(
@@ -487,6 +511,7 @@ def parse_card_extraction_response(
         )
         if not source_ids:
             warnings.append("Skipped card without a resolvable source reference")
+            rejected_count += 1
             continue
 
         citation_issue = _validate_explicit_citations(
@@ -497,9 +522,21 @@ def parse_card_extraction_response(
         )
         if citation_issue:
             warnings.append(f"Skipped invalid card: {citation_issue}")
+            rejected_count += 1
             continue
 
         confidence = float(item["confidence"])
+        # Only exact duplicates are collapsed. Similar claims can have distinct
+        # qualifiers/evidence and must not be merged by a parser heuristic.
+        content_key = json.dumps(
+            [item["title"], item["claim"], item["evidence"], item["tags"],
+             confidence, sorted(source_ids)],
+            ensure_ascii=False,
+        )
+        if content_key in card_id_by_content:
+            card_id_by_raw_index[raw_card_index] = card_id_by_content[content_key]
+            warnings.append(f"Skipped exact duplicate card at output index {raw_card_index}")
+            continue
 
         # Bind the original prompt aliases, NOT positions in the cited subset.
         # These fields are computed from the request, never copied from model JSON.
@@ -532,6 +569,7 @@ def parse_card_extraction_response(
         # Collect related_to for second pass (indices → card IDs later)
         related_to_raw.append((raw_card_index, item.get("related_to", [])))
         card_id_by_raw_index[raw_card_index] = cards[-1].card_id
+        card_id_by_content[content_key] = cards[-1].card_id
 
         # Issue #53: Tag source tracking — crystallize tags are AI-generated
         card = cards[-1]
@@ -544,15 +582,21 @@ def parse_card_extraction_response(
 
     # Second pass: resolve related_to indices → card IDs
     for card, (raw_card_index, related_indices) in zip(cards, related_to_raw, strict=True):
+        if any(index not in card_id_by_raw_index for index in related_indices):
+            warnings.append(f"Dropped unavailable related_to reference from card {raw_card_index}")
         related_ids = [
             card_id_by_raw_index[index]
             for index in related_indices
-            if index != raw_card_index and index in card_id_by_raw_index
+            if index in card_id_by_raw_index and card_id_by_raw_index[index] != card.card_id
         ]
         if related_ids:
             card.associations = list(dict.fromkeys(related_ids))
 
-    return CardExtractionResult(cards=cards, raw_response=raw, warnings=warnings, engine=engine)
+    status = ("partial" if warnings else "success") if cards else ("error" if parsed else "empty")
+    return CardExtractionResult(
+        cards=cards, raw_response=raw, warnings=warnings, engine=engine,
+        status=status, rejected_count=rejected_count,
+    )
 
 
 def _source_input_trace(source: CardSource) -> dict:
@@ -657,9 +701,12 @@ def _validate_explicit_citations(
     and therefore fail closed when they point outside the bundle or outside the
     card's declared sources.
     """
-    citation_indices = {
-        int(match.group(1)) for match in _EXPLICIT_SOURCE_CITATION.finditer(evidence)
-    }
+    raw_indices = _EXPLICIT_SOURCE_CITATION.findall(evidence)
+    # A malformed model marker must produce a card rejection, not escape as
+    # Python's large-integer conversion exception and abort the whole batch.
+    if any(len(index) > 32 for index in raw_indices):
+        return "explicit citation index exceeds the supported length"
+    citation_indices = {int(index) for index in raw_indices}
     if not citation_indices:
         return (
             "evidence must contain at least one explicit [Source N] citation"
@@ -678,32 +725,44 @@ def _validate_explicit_citations(
 
 
 def _parse_json_payload(raw: str, warnings: list[str]):
-    cleaned = raw.strip() if raw else ""
+    cleaned = raw.strip() if isinstance(raw, str) else ""
     if not cleaned:
         warnings.append("Empty extraction response")
         return None
 
-    cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
-    cleaned = re.sub(r"\s*```$", "", cleaned)
+    # Accept a complete Markdown wrapper, never salvage an object from inside a
+    # truncated array. That would turn a failed generation into a partial success
+    # without knowing which trailing cards or relationships were lost.
+    fenced = re.fullmatch(r"```(?:json)?\s*([\s\S]*?)\s*```", cleaned, re.IGNORECASE)
+    if fenced:
+        cleaned = fenced.group(1)
+
+    def reject_duplicate_keys(pairs):
+        output = {}
+        for key, value in pairs:
+            if key in output:
+                raise ValueError("duplicate JSON object key")
+            output[key] = value
+        return output
+
+    def reject_constant(value):
+        raise ValueError(f"non-finite JSON number: {value}")
+
+    def finite_float(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError("non-finite JSON number after float conversion")
+        return number
 
     try:
-        return json.loads(cleaned)
+        return json.loads(
+            cleaned, object_pairs_hook=reject_duplicate_keys, parse_constant=reject_constant,
+            parse_float=finite_float,
+        )
     except json.JSONDecodeError:
-        array_match = re.search(r"\[[\s\S]*\]", cleaned)
-        if array_match:
-            try:
-                return json.loads(array_match.group())
-            except json.JSONDecodeError:
-                pass
-
-        object_match = re.search(r"\{[\s\S]*\}", cleaned)
-        if object_match:
-            try:
-                return json.loads(object_match.group())
-            except json.JSONDecodeError:
-                pass
-
-    warnings.append("Could not parse extraction response as JSON")
+        warnings.append("Could not parse extraction response as complete JSON")
+    except (ValueError, RecursionError) as error:
+        warnings.append(f"Could not parse extraction response as strict JSON: {error}")
     return None
 
 
@@ -743,20 +802,32 @@ def _resolve_source_ids(
     resolved: list[str] = []
     allowed_ids = {source.entry_id for source in sources if source.entry_id}
 
-    # Try source_ids (string aliases) with mapper first
-    if uuid_mapper and isinstance(source_ids_raw, list):
-        for sid in source_ids_raw:
+    # With a mapper the IDs are aliases; without one, only actual supplied IDs
+    # can resolve. Unknown IDs must remain visible even if indices rescue a card.
+    if isinstance(source_ids_raw, list):
+        for position, sid in enumerate(source_ids_raw):
             if isinstance(sid, str) and sid.strip():
-                real = uuid_mapper.decode(sid.strip())
-                if real in allowed_ids and real not in resolved:
-                    resolved.append(real)
+                real = uuid_mapper.decode(sid.strip()) if uuid_mapper else sid.strip()
+                if real in allowed_ids:
+                    if real not in resolved:
+                        resolved.append(real)
                 elif warnings is not None:
-                    warnings.append(f"Dropped unresolvable source reference: {sid.strip()}")
+                    warnings.append(
+                        f"Dropped unresolvable source reference at source_ids[{position}]"
+                    )
     # Integer indices are bounded by the supplied source bundle, so a model
     # cannot introduce an arbitrary Entry ID through this path. Union them with
     # valid aliases because some providers emit only one of the two fields or
     # partially truncate one list.
     indexed = _source_ids_from_indices(source_indices, sources)
+    if isinstance(source_indices, list) and warnings is not None:
+        for index in source_indices:
+            if not 0 <= index < len(sources) or not sources[index].entry_id:
+                warnings.append(
+                    f"Dropped unresolvable source index: {index}"
+                    if -10**12 < index < 10**12
+                    else "Dropped unresolvable source index (outside supplied bundle)"
+                )
     return list(dict.fromkeys([*resolved, *indexed]))
 
 

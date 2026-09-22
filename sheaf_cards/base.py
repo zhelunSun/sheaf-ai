@@ -320,6 +320,46 @@ class CardStore:
                 self._save_all(cards)
                 return card.card_id
 
+    def save_many(self, cards: list[KnowledgeCard]) -> list[str]:
+        """Upsert one card batch with a single durable file replacement.
+
+        A failed write leaves the previous card store intact. This transaction
+        covers only the card file, not embedding indexes or any other files.
+        Duplicate IDs inside a batch are rejected rather than silently losing
+        one input. Relationships must be prepared by the caller before saving.
+        """
+        batch = list(cards)
+        if not batch:
+            return []
+        if any(not isinstance(card, KnowledgeCard) for card in batch):
+            raise ValueError("Card batch must contain only KnowledgeCard objects")
+        ids = [card.card_id for card in batch]
+        if any(not isinstance(card_id, str) or not card_id.strip() for card_id in ids):
+            raise ValueError("Card batch IDs must be non-empty strings")
+        if len(set(ids)) != len(ids):
+            raise ValueError("Card batch must not contain duplicate IDs")
+
+        with self._lock:
+            with _exclusive_file_lock(self._lock_path):
+                stored = self._load_all()
+                positions = {}
+                for index, existing in enumerate(stored):
+                    positions.setdefault(existing.get("card_id"), index)
+                updated_at = _now_iso()
+                for card in batch:
+                    data = card.to_dict()
+                    data["updated_at"] = updated_at
+                    if card.card_id in positions:
+                        stored[positions[card.card_id]] = data
+                    else:
+                        stored.append(data)
+                self._save_all(stored)
+                # Failed serialization/replacement must not make the caller's
+                # cards appear to have a newly committed timestamp.
+                for card in batch:
+                    card.updated_at = updated_at
+        return ids
+
     def load(self, card_id: str) -> Optional[KnowledgeCard]:
         """Load a single card by ID."""
         with self._lock:

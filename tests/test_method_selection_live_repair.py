@@ -6,11 +6,19 @@ from pathlib import Path
 import httpx
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-SPEC = importlib.util.spec_from_file_location("method_repair", ROOT / "evals/method-selection/run_live_repair.py")
-repair = importlib.util.module_from_spec(SPEC)
-SPEC.loader.exec_module(repair)
-live = repair.live
+SPEC = importlib.util.spec_from_file_location(
+    "current_method_repair_fixture", Path(__file__).with_name("method_selection_live_fixture.py"))
+fixture_helper = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(fixture_helper)
+repair = None
+live = None
+
+
+@pytest.fixture(autouse=True)
+def current_code_unit_lock(tmp_path, monkeypatch):
+    module = fixture_helper.load_current_live_fixture(tmp_path, monkeypatch, repaired=True)
+    monkeypatch.setitem(globals(), "repair", module)
+    monkeypatch.setitem(globals(), "live", module.live)
 
 
 def reply(text):

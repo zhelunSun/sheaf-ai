@@ -14,6 +14,7 @@ from typing import Mapping, Optional, Sequence
 from urllib.parse import urlsplit
 
 from sheaf_ai import config, crystallize
+from sheaf_ai.card_extraction import CardExtractionResult
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path
 from sheaf_ai.evidence_memory import (
     VALID_ACTIONS,
@@ -994,18 +995,54 @@ def crystallize_cards(
     )
 
 
+def crystallize_cards_result(
+    topic: str,
+    min_entries: int = 3,
+    max_entries: int = 10,
+    max_cards: int = 5,
+    model: str = None,
+    provider: str = None,
+    auto_embed: bool = True,
+) -> CardExtractionResult:
+    """Persist cards without discarding extraction failures or partial results."""
+    topic = _request_string({"topic": topic}, "topic", required=True)
+    return crystallize.crystallize_and_save_result(
+        topic=topic, min_entries=min_entries, max_entries=max_entries,
+        max_cards=max_cards, model=model, provider=provider, auto_embed=auto_embed,
+    )
+
+
+def crystallization_to_public_dict(topic: str, result: CardExtractionResult) -> dict:
+    """Shared adapter envelope; raw model responses are deliberately excluded."""
+    return {
+        "success": result.status != "error",
+        "status": result.status,
+        "topic": topic,
+        "count": len(result.cards),
+        "cards_generated": len(result.cards),
+        "cards": [card_to_public_dict(card) for card in result.cards],
+        "warnings": list(result.warnings),
+        "rejected_count": result.rejected_count,
+    }
+
+
 def list_cards(topic: str = "", limit: int = 20) -> list[KnowledgeCard]:
     """List persisted knowledge cards."""
-    return crystallize.list_crystallized(topic=topic or "", limit=limit)
+    topic = _request_string({"topic": topic}, "topic")
+    if type(limit) is not int or limit < 1:
+        raise ValueError("limit must be a positive integer")
+    return crystallize.list_crystallized(topic=topic, limit=limit)
 
 
 def get_card_detail(card_id: str) -> Optional[KnowledgeCard]:
     """Get a single card by ID."""
+    card_id = _request_string({"card_id": card_id}, "card_id", required=True)
     return crystallize.get_card(card_id)
 
 
 def delete_card_by_id(card_id: str) -> bool:
     """Delete a card by ID."""
+    card_id = _request_string({"card_id": card_id}, "card_id", required=True)
     return crystallize.delete_card(card_id)
 
 

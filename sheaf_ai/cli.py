@@ -178,7 +178,11 @@ def main() -> NoReturn:
     debug = "--debug" in sys.argv
     argv = sys.argv[1:]
     is_tty = sys.stdout.isatty()
-    json_mode = "--json" in argv or (not is_tty and "--json" not in argv)
+    explicit_json_format = "--format=json" in argv or any(
+        arg == "--format" and index + 1 < len(argv) and argv[index + 1] == "json"
+        for index, arg in enumerate(argv)
+    )
+    json_mode = "--json" in argv or explicit_json_format or not is_tty
     try:
         _run()
     except KeyboardInterrupt:
@@ -1155,7 +1159,7 @@ def _crystallize(p: argparse.Namespace) -> None:
     from sheaf_cards.base import KnowledgeCard
 
     from sheaf_ai.card_service import (
-        crystallize_cards, list_cards, get_card_detail,
+        crystallize_cards_result, crystallization_to_public_dict, list_cards, get_card_detail,
         delete_card_by_id, get_card_topic_stats, search_cards_semantic,
         rebuild_card_embeddings,
     )
@@ -1170,7 +1174,7 @@ def _crystallize(p: argparse.Namespace) -> None:
         if fmt == "text" and not getattr(p, "fields", None):
             renderer = CardRenderer(CardOutputConfig.list_view())
         cards = list_cards()
-        if not cards:
+        if not cards and fmt != "json":
             print("No crystallized cards yet. Try: sheaf crystallize <topic>")
             return
         print(renderer.render_list(cards, format=fmt, title="Crystallized Knowledge Cards"))
@@ -1178,15 +1182,23 @@ def _crystallize(p: argparse.Namespace) -> None:
     if p.show:
         card = get_card_detail(p.show)
         if not card:
-            print(f"Card not found: {p.show}"); return
+            _die(f"Card not found: {p.show}", json_mode=fmt == "json")
         print(renderer.render(card, format=fmt))
         return
     if p.delete:
         ok = delete_card_by_id(p.delete)
+        if not ok:
+            _die(f"Card not found: {p.delete}", json_mode=fmt == "json")
+        if fmt == "json":
+            print(json.dumps({"success": True, "deleted": p.delete}, ensure_ascii=False))
+            return
         print(f"Card {'deleted' if ok else 'not found'}: {p.delete}")
         return
     if p.stats:
         stats = get_card_topic_stats()
+        if fmt == "json":
+            print(json.dumps({"total": sum(stats.values()), "topics": stats}, ensure_ascii=False))
+            return
         if not stats:
             print("No crystallized cards yet."); return
         for topic, count in sorted(stats.items(), key=lambda x: -x[1]):
@@ -1195,7 +1207,7 @@ def _crystallize(p: argparse.Namespace) -> None:
         return
     if hasattr(p, "semantic") and p.semantic:
         results = search_cards_semantic(p.semantic)
-        if not results:
+        if not results and fmt != "json":
             print("No results. Try crystallizing some topics first, or check embedding API.")
             return
         for r in results:
@@ -1209,24 +1221,37 @@ def _crystallize(p: argparse.Namespace) -> None:
         print(f"\n  {len(results)} results")
         return
     if hasattr(p, "rebuild_embeddings") and p.rebuild_embeddings:
-        print("Rebuilding embedding index...")
+        if fmt != "json":
+            print("Rebuilding embedding index...")
         count = rebuild_card_embeddings()
-        print(f"✅ Indexed {count} cards")
+        if fmt == "json":
+            print(json.dumps({"indexed": count}, ensure_ascii=False))
+        else:
+            print(f"✅ Indexed {count} cards")
         return
     # Default: crystallize a topic
     if not p.topic:
-        print("Usage: sheaf crystallize <topic>   or   sheaf crystallize --list")
-        return
-    print(f"Crystallizing '{p.topic}'...")
-    cards = crystallize_cards(p.topic)
-    if not cards:
-        print(f"No cards generated for '{p.topic}'. Not enough related entries (need 3+).")
-        return
-    print(f"✨ {len(cards)} knowledge cards crystallized:\n")
-    for c in cards:
-        print(renderer.render(c, format=fmt))
-        print()
-    print("Use 'sheaf crystallize --list' to see all cards.")
+        _die("Usage: sheaf crystallize <topic>   or   sheaf crystallize --list",
+             json_mode=fmt == "json")
+    if fmt != "json":
+        print(f"Crystallizing '{p.topic}'...")
+    result = crystallize_cards_result(p.topic)
+    payload = crystallization_to_public_dict(p.topic, result)
+    if fmt == "json":
+        if getattr(p, "fields", None):
+            payload["cards"] = [json.loads(renderer.render(c, format="json")) for c in result.cards]
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(f"Crystallization status: {result.status}; {len(result.cards)} cards saved.")
+        for warning in result.warnings:
+            print(f"Warning: {warning}")
+        for card in result.cards:
+            print(renderer.render(card, format=fmt))
+            print()
+        if result.cards:
+            print("Use 'sheaf crystallize --list' to see all cards.")
+    if result.status in {"partial", "error"}:
+        sys.exit(get_exit_code_from_key("PARTIAL" if result.status == "partial" else "QUALITY"))
 
 
 def _memory_command(p: argparse.Namespace) -> None:

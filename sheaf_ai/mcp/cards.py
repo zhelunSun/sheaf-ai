@@ -124,22 +124,26 @@ def _handle_crystallize(req_id: int | str, arguments: dict) -> str:
     if not topic:
         return jsonrpc_error(req_id, -32602, "Missing required parameter: topic")
     try:
-        cards = card_service.crystallize_cards(topic)
-        card_data = [card_service.card_to_public_dict(c) for c in cards]
+        result = card_service.crystallize_cards_result(topic)
+        payload = card_service.crystallization_to_public_dict(topic, result)
         return jsonrpc_response(req_id, {
-            "content": [{"type": "text", "text": json.dumps({
-                "topic": topic,
-                "cards_generated": len(cards),
-                "cards": card_data,
-            }, ensure_ascii=False, indent=2)}]
+            "content": [{"type": "text", "text": json.dumps(
+                payload, ensure_ascii=False, indent=2,
+            )}],
+            "isError": result.status == "error",
         })
+    except ValueError as e:
+        return jsonrpc_error(req_id, -32602, str(e))
     except Exception as e:
         return jsonrpc_error(req_id, -32603, f"Crystallization failed: {e}")
 
 
 def _handle_list_cards(req_id: int | str, arguments: dict) -> str:
-    topic = arguments.get("topic")
-    cards = card_service.list_cards(topic=topic)
+    topic = arguments.get("topic", "")
+    try:
+        cards = card_service.list_cards(topic=topic)
+    except ValueError as exc:
+        return jsonrpc_error(req_id, -32602, str(exc))
     card_data = [card_service.card_to_public_dict(c) for c in cards]
     return jsonrpc_response(req_id, {
         "content": [{"type": "text", "text": json.dumps({
@@ -151,7 +155,10 @@ def _handle_list_cards(req_id: int | str, arguments: dict) -> str:
 
 def _handle_get_card(req_id: int | str, arguments: dict) -> str:
     card_id = arguments.get("card_id", "")
-    card = card_service.get_card_detail(card_id)
+    try:
+        card = card_service.get_card_detail(card_id)
+    except ValueError as exc:
+        return jsonrpc_error(req_id, -32602, str(exc))
     if not card:
         return jsonrpc_error(req_id, -32602, f"Card not found: {card_id}")
     return jsonrpc_response(req_id, {

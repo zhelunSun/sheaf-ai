@@ -3,6 +3,22 @@
 > Status: working contract for the current alpha. It separates implemented
 > guarantees from hypotheses that still need experiments.
 
+### 2026-09-22 production contract hardening
+
+Production crystallization now rejects incomplete/ambiguous JSON and exposes
+`success`, `empty`, `partial`, or `error` with warnings through shared CLI/MCP/HTTP
+projection. Similar wording no longer authorizes dropping a card: persistence
+deduplication requires exact content, preserving negation, conditions and new
+evidence. Related cards are saved with one atomic card-file replacement; embedding
+index updates remain separate. This is not a cross-file transaction or semantic
+verification of a claim.
+
+The LLM profile runner is now tracked, explicitly opt-in, and restricted to fixed
+CLI argv and isolated test paths. It is not an OS sandbox or a user study. New
+offline diagnosis of known v3 responses does not change old scores. The next quality
+test should exercise production crystallization, not only its experimental adapter.
+See [the stage report](HARDENING-2026-09-22.md).
+
 ### 2026-09-05 long-source experiment update
 
 The [long-source comparison](LONG-SOURCE-EXPERIMENT-2026-09-05.md) completed eight

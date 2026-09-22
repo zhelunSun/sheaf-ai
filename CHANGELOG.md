@@ -2,6 +2,27 @@
 
 All notable changes to Sheaf.
 
+## [Unreleased]
+
+### Knowledge-card reliability (2026-09-22)
+
+- Reject incomplete JSON, duplicate keys and non-finite numbers in crystallization
+  output; report empty, partial and failed extraction distinctly across CLI/MCP/HTTP.
+- Keep CLI JSON output machine-readable, reject invalid card arguments, and expose
+  warnings without publishing raw model responses. Legacy list APIs remain available.
+- Replace fuzzy persistence deduplication with exact-content checks so negation,
+  conditions, versions and new evidence are not silently discarded.
+- Save related cards as one atomic card-file batch; embedding indexes remain a
+  separate operation. Preserve the prior file when serialization/replacement fails.
+- Track and harden the exploratory LLM profile runner: no shell, allowlisted argv,
+  isolated test paths, explicit model execution/environment, no fabricated fallback
+  actions or scores. `SHEAF_LOAD_DOTENV=0` disables automatic dotenv loading.
+- Preserve frozen evaluation bytes across Windows checkouts. Add offline failure
+  decomposition of the v3 receipts without changing historical model scores.
+
+The September development work does not change the published package version or
+production model defaults. See [current scope and evidence](docs/HARDENING-2026-09-22.md).
+
 ## [0.7.0] — 2026-06-21
 
 ### MCP Resources — browse the knowledge base (Issue #89, design Principle F)

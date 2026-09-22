@@ -1,6 +1,8 @@
 /evals/retrieval-frozen/*.jsonl text eol=lf
 /evals/retrieval-frozen/manifest.json text eol=lf
 /evals/retrieval-frozen/runs/*.json text eol=lf
+/evals/retrieval-frozen/revisions/**/*.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/evals/passage-selection/*.jsonl -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 
 # Frozen experiment manifests bind exact file bytes. Preserve their authored
 # endings on all platforms instead of letting core.autocrlf rewrite the data.
@@ -11,3 +13,4 @@
 /evals/method-selection/runs/**/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/method-selection-v2/**/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 /evals/method-selection-v3/**/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
+/evals/output-contract-regression/*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol

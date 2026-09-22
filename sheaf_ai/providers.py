@@ -13,6 +13,8 @@ from typing import Any
 
 def _load_env_file() -> None:
     """Load cwd/.env or repo .env without overriding real environment variables."""
+    if os.environ.get("SHEAF_LOAD_DOTENV", "1") == "0":
+        return
     env_paths = [
         Path.cwd() / ".env",
         Path(__file__).resolve().parent.parent / ".env",

@@ -14,6 +14,8 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def _load_env_file():
     """Load a local .env file once, without overriding real environment variables."""
+    if os.environ.get("SHEAF_LOAD_DOTENV", "1") == "0":
+        return
     for env_path in [Path.cwd() / ".env", PROJECT_ROOT / ".env"]:
         if not env_path.exists():
             continue

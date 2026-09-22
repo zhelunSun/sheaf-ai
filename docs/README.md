@@ -21,6 +21,7 @@
 | [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 当前产品定位、三条核心算法路径和管理方式 | 产品、工程、面试评审 |
 | [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) | 系统分层、测试阶梯、实验和声明边界 | 工程、研究、贡献者 |
 | [ENGINEERING-WORK-MODE.md](ENGINEERING-WORK-MODE.md) | 核心路径的审查、并行、交叉攻击和证据收口方式 | 研发执行、代码审核 |
+| [HARDENING-2026-09-22.md](HARDENING-2026-09-22.md) | 生产结晶、跨接口结果、批保存和模拟用户执行安全加固 | 工程、产品、面试评审 |
 | [LONG-SOURCE-EXPERIMENT-2026-09-05.md](LONG-SOURCE-EXPERIMENT-2026-09-05.md) | 最新真实模型实验、测量修订、失败分母与阶段决策 | 工程、研究、面试评审 |
 | [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | 历史探索：多来源事件理解，不是当前路线 | 历史参考 |
 

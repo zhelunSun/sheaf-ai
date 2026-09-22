@@ -1,0 +1,1809 @@
+{
+  "answers": [
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q03-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q02-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q02-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q01-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q02-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q03-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q02-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q02-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q01-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q02-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q02-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q03-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q03-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q02-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q03-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q03-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q02-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q02-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q01-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q03-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q01-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q03-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q01-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q01-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q03-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q01-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q02-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q01-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q03-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q03-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q01-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q03-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q03-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q03-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q03-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q01-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q01-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q02-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q01-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q02-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q02-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q01-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q02-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q03-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q02-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q02-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q03-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b04q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q03-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q02-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q01-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q01-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q01-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q03-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q03-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q02-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q02-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q02-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q01-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q03-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q03-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q03-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q02-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q03-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q01-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q02-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q02-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q01-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q02-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q01-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b04q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q01-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q01-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q01-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q01-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q03-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b03q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b05q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q01-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q03-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b08q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q03-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b06q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q03-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b06q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q01-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q01-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b08q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q02-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b07q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q03-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b05q03"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b07q01-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b07q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q02-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q02-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b06q02-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b06q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b03q02-raw_passages-r1",
+      "status": "field_consistent",
+      "task_id": "b03q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q01-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b01q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b01q02-all_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q01-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q03-all_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q03-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b03q03-scoped_facts-r2",
+      "status": "field_consistent",
+      "task_id": "b03q03"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q01-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q01"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b01q02-scoped_facts-r1",
+      "status": "field_consistent",
+      "task_id": "b01q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b04q01-scoped_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b04q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b02q02-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b02q02"
+    },
+    {
+      "arm": "raw_passages",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b07q03-raw_passages-r2",
+      "status": "field_consistent",
+      "task_id": "b07q03"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 1,
+      "issues": [],
+      "request_id": "answer-b05q02-all_facts-r1",
+      "status": "preparation_failed",
+      "task_id": "b05q02"
+    },
+    {
+      "arm": "scoped_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b08q01-scoped_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b08q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b02q01-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b02q01"
+    },
+    {
+      "arm": "all_facts",
+      "draw": 2,
+      "issues": [],
+      "request_id": "answer-b04q03-all_facts-r2",
+      "status": "preparation_failed",
+      "task_id": "b04q03"
+    }
+  ],
+  "audit_code_sha256": "b0ba02c81ff121400bd4f51ab492cd992c19cf58cb8828172b44468a99e4e470",
+  "automatic_repair": false,
+  "evidence_grade": "post_hoc_mechanical_diagnosis_of_known_synthetic_outputs",
+  "extractions": [
+    {
+      "batch_issues": [],
+      "bundle_id": "x01",
+      "emitted_facts": 31,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "rejected_facts": []
+    },
+    {
+      "batch_issues": [
+        "fact_count_exceeded"
+      ],
+      "bundle_id": "x02",
+      "emitted_facts": 47,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "rejected_facts": []
+    },
+    {
+      "batch_issues": [],
+      "bundle_id": "x03",
+      "emitted_facts": 31,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30
+      ],
+      "rejected_facts": []
+    },
+    {
+      "batch_issues": [
+        "invalid_facts"
+      ],
+      "bundle_id": "x04",
+      "emitted_facts": 39,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        36,
+        37,
+        38
+      ],
+      "rejected_facts": [
+        {
+          "index": 5,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        },
+        {
+          "index": 20,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        },
+        {
+          "index": 21,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        },
+        {
+          "index": 34,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        },
+        {
+          "index": 35,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        }
+      ]
+    },
+    {
+      "batch_issues": [
+        "fact_count_exceeded"
+      ],
+      "bundle_id": "x05",
+      "emitted_facts": 41,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "rejected_facts": []
+    },
+    {
+      "batch_issues": [
+        "fact_count_exceeded",
+        "invalid_facts"
+      ],
+      "bundle_id": "x06",
+      "emitted_facts": 41,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "rejected_facts": [
+        {
+          "index": 27,
+          "issues": [
+            "quote_not_verbatim"
+          ]
+        }
+      ]
+    },
+    {
+      "batch_issues": [],
+      "bundle_id": "x07",
+      "emitted_facts": 39,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38
+      ],
+      "rejected_facts": []
+    },
+    {
+      "batch_issues": [
+        "fact_count_exceeded"
+      ],
+      "bundle_id": "x08",
+      "emitted_facts": 41,
+      "mechanically_valid_indices": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40
+      ],
+      "rejected_facts": []
+    }
+  ],
+  "gold_loaded": false,
+  "limits": [
+    "Exact quotes do not establish entailment or correct fact types.",
+    "Field consistency does not establish a correct answer or coherent reason.",
+    "No altered contexts were sent to a model; old method scores are unchanged.",
+    "This audits the experiment adapter, not production crystallization accuracy."
+  ],
+  "new_model_calls": 0,
+  "partial_fact_policy": "diagnostic_only; overflow remains rejected; no silent truncation or promotion",
+  "reason_semantics": "not_assessed",
+  "source_code_commit": "063cd98",
+  "source_files": {
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/00a64541669487932f81e6d43db2199e9d0cba160627589e94ece742fe2ef8f6.intent.json": "9ae6822dd565ca02d220355bd4c01a8018629992847fef4c7c847a0a1df52aa5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/00a64541669487932f81e6d43db2199e9d0cba160627589e94ece742fe2ef8f6.result.json": "23c7bbc19b4ae7f0c7fc87685eaf18ee51216987e141495af1663cd3aa100594",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/08eaaad0d514c052373b3aff67cbace41065758c71257ace4835647ff36dc54a.intent.json": "7f0f0c7e637183de80c78035e9e41859af6cf211f979e98f5178a801d9edf3d4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/08eaaad0d514c052373b3aff67cbace41065758c71257ace4835647ff36dc54a.result.json": "814350e6cb7bc8199bcf51f57c54394eb9cb7aa127198a844f9d865e1c080466",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/0b8a19e6444d4c5bf8b513ffd795d7c52555380b6bc09e0b6be4f959e6de1ded.intent.json": "af918367455f112d13a944a283d4b8f99bb29e6a3e2082e8045c3668a79b837f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/0b8a19e6444d4c5bf8b513ffd795d7c52555380b6bc09e0b6be4f959e6de1ded.result.json": "9f0b2fe72e4cd7977f3356fbd6ad3227d55780cd2fef7e768a3ed38033b6df9e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/0ff29a1b26399313c4dac9dffdb574a9f67625674c5d6a533327b3b160e44abe.intent.json": "bbd650f512985ce3cdeeb7d4e3afe3a64fce9b3f50a8e28cb85bcce3bb6d49f8",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/0ff29a1b26399313c4dac9dffdb574a9f67625674c5d6a533327b3b160e44abe.result.json": "042bced6fef175ce5ade97fd3a09315dd40fc99f7c615fad7a52208e7075f37b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/1229db035c372b977b35c39ad9c3e4c473d2980b7ca362d29cccd2b021cb8a39.intent.json": "794384adbb26d63bfe4063e61b569f82e4de30f672a03737e692f78c6e883c8d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/1229db035c372b977b35c39ad9c3e4c473d2980b7ca362d29cccd2b021cb8a39.result.json": "a30ae4db346f4acc072b1a01920515689af824cf775479cd92daca0a602283cd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/159e025187d65cfd8c49233449ca0324887974bfe52fbcae0a7b81cf5ba6e864.intent.json": "6b1fd660c8ef45ad8cac8525a6bbd8cdca4be9c7827270ad6ace491bd8e83c12",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/159e025187d65cfd8c49233449ca0324887974bfe52fbcae0a7b81cf5ba6e864.result.json": "385b7490ce0174f7069437d5e3a0aafb17559f03bc555e705eb2eb2c4014f57f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/16ebf928bebc8c358a6da6064e5db2aab70520092ebe2a51a9a77e5185aafeb4.intent.json": "8a5a34182c8be3245c942655e8c0e484f0513b3a64a25fb7cc7150ec8383039c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/16ebf928bebc8c358a6da6064e5db2aab70520092ebe2a51a9a77e5185aafeb4.result.json": "e10f826b71259d66d99a9ed87f14b2241bc0b4b00e1e785de6efb3cfff5fdca4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/191e266240dbcd0fddda8a974a5d34bfcd1f827947292af938ae8e37a6c5f655.intent.json": "70fd801aa831099e5ebae93f9672ff1b6a4d2438b2b6975cad013f882a26d742",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/191e266240dbcd0fddda8a974a5d34bfcd1f827947292af938ae8e37a6c5f655.result.json": "63f60a34fe7eac22affebbbe93dc673092f96a9c1937ab49be90e9bc85613790",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/1fe9df8c7120922bac297b51369068064268eb58b6b8070aa212221a26bbdfb8.intent.json": "f58585b3214e2794b1f0197b1e521cd27d3a08e53d03c902ff67bb296eec4382",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/1fe9df8c7120922bac297b51369068064268eb58b6b8070aa212221a26bbdfb8.result.json": "2a551ca348e8b8c1954c952514932e964895311cb88960990f8e0d05871c514d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/25946cf3f5fc1f182e71419f3b36cd0a6664670f0945ac5bf0257b37970e0df0.intent.json": "2287f468533fffe2537f50d5d2de114392858d7a2ae0b5cd6e53c725c4473b66",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/25946cf3f5fc1f182e71419f3b36cd0a6664670f0945ac5bf0257b37970e0df0.result.json": "e36a54f64c473b08ca6706675b30bf861e8d6ddf31af7984cb2bab0a6b8f924c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/25dd0618eaabc616cec7939d99875e001d8f217c4287d6e6723208d8b3784e70.intent.json": "0ac55f4e67bcb8ae7101504f27579b76dc13796332d67e1e0c0b54535bee79c6",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/25dd0618eaabc616cec7939d99875e001d8f217c4287d6e6723208d8b3784e70.result.json": "2650741fa605549a69498b01e02864cff23fc2f394d9aa523afabd8b153524f0",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3230a3e3cf463ae124608ebbe81abba4d7bb631c3d07f420c63b6199c8a310b5.intent.json": "1815f118b0cd9593decaf51bbaba27f9bfd43e971f35bb8af397a3c209ab7ca4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3230a3e3cf463ae124608ebbe81abba4d7bb631c3d07f420c63b6199c8a310b5.result.json": "d06d8322f5b66941990f5ab1d87ee5ffbf542a6fda0b1b953b07ef88f1037530",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/32560400bc6b83f2605da630121fb5c3fcd7b02f0e74cea4961b584f8da0bc36.intent.json": "ada2ae5b75647efe98a7fb1ea4fc5f6349461aaffa9f94649bd8978de0d75833",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/32560400bc6b83f2605da630121fb5c3fcd7b02f0e74cea4961b584f8da0bc36.result.json": "e6e8ec7ee0b0460cc24393b89a0ef1494ede97c0d6019fd75c00560a1ffcfae6",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/35b227baa046100a6996ead210ceb9fcbfd9909d07d6823c02a8bbb8244c116c.intent.json": "da86314921c0e753e00d443e7a40dcde5a54bbabdc8b4186c25262ee51c9eec8",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/35b227baa046100a6996ead210ceb9fcbfd9909d07d6823c02a8bbb8244c116c.result.json": "907d5b322024a2e45251972d4ad21b0af0684af1188113003d432b32a04d1548",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3b4bd00d008735b04e794be0723128a1587d86db35b36e51d06d7f1eace2beef.intent.json": "72bfa8cec65ffe189c601fb9e4048aca7089e2eafabd31d7e04602b3f359f8ff",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3b4bd00d008735b04e794be0723128a1587d86db35b36e51d06d7f1eace2beef.result.json": "2ff12d1c48bfb22fabc720804ec983c57815f4edc5270355259d593098574b66",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3d83e63e56003be9bdbba77059d82e6036f85bfd2a0195e387feaff818c22cae.intent.json": "deea55301cc550f1ba9c96f59f1390b934c26f3880dde3f2fa23a3ca1f7cc29b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/3d83e63e56003be9bdbba77059d82e6036f85bfd2a0195e387feaff818c22cae.result.json": "eceab28adcc5278e995a01bcc7ad1a9cae8a37dc992c34a4e259099654ed9ea7",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/4d65dd5d9a16c4eda14436f5de776d6892ab9a74f67a04d2d50497633c7143db.intent.json": "61c107b5196a4fc594ad758ef381d25bf2c11b142bb7f4646b57f2766982a30d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/4d65dd5d9a16c4eda14436f5de776d6892ab9a74f67a04d2d50497633c7143db.result.json": "3166917b4dd36203314969b5426d23b2a2d4c22c53fd2407e982f41a87f262ac",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/51a26df79b9b44fff4137d0a84bfb49fbf99908f69e8d753d27c0ebcb05b3f08.intent.json": "24452ccff5de6c574c4e3212c8b3c3d5a2bac56279d332620c50842fdaf12587",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/51a26df79b9b44fff4137d0a84bfb49fbf99908f69e8d753d27c0ebcb05b3f08.result.json": "f7c6dc68ffe5f93f187a45bfd3ec8bf0e2722268f66a57991291a7190e62ae31",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/531985361092f55d77385b819f74ba39e5796def474d09c7cae3147783301784.intent.json": "fa168da0fffdcbdf6ab6758c1038de8d8250bca939550d9c6a36813545542278",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/531985361092f55d77385b819f74ba39e5796def474d09c7cae3147783301784.result.json": "a538b1b6a8bcdc5f6551ecc99731f6b5ca84ca59646f3d8707204ba2d49c8381",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/57e51975869d8fb338c046f740e4da93528d97ed6b4beffbf521b1ed95a20244.intent.json": "bb606c3ea9d1176fca0f3a5bbac02a5a6e159db88a46d19bef8c7b325703d830",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/57e51975869d8fb338c046f740e4da93528d97ed6b4beffbf521b1ed95a20244.result.json": "e59e630ba5ae62e2ff9d58d784bed2fe530834b5deda73497489e7f8578b4afc",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/5b55ccf38910d9c233341468c09907fbb253af75a99369c9c9b0d4a01214281d.intent.json": "8970b4eaa8068ea5fcae9b47ae7c5632ce29a99961cfbbab5b3fc3c58065902c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/5b55ccf38910d9c233341468c09907fbb253af75a99369c9c9b0d4a01214281d.result.json": "a1f7d2c2bf704955360f9e816a2949ae6aa713238ab33707363059b1b5575d2e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/5fb0188cd1e756b2243e0b9da76f4056850bc06531004a1b4061f9179fc730e7.intent.json": "ab616e35162bccf16ef97485b366543738a6a35f0dc9b1336665dc8d347886ff",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/5fb0188cd1e756b2243e0b9da76f4056850bc06531004a1b4061f9179fc730e7.result.json": "374c996af7500cc5c86a6753e17204e557aee7a106fa21d98e5be4d3036df014",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/616aeacdbef85a90b7e2dd018d53fa8b52c4adb795b0391948da60320e3f5d3d.intent.json": "99fe5c4861d37e7cd3e98061022d367ea700ba594b67748dcdebb2289a8699ed",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/616aeacdbef85a90b7e2dd018d53fa8b52c4adb795b0391948da60320e3f5d3d.result.json": "3f4d5b8c4b7e9b3e72d535732c8ace4e6bd74ca62bee25b5ec78dceccb049ed5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/64454a001adf7da0129fa1731ecac5817b87f2e9df096db4dd57980d93b7e5e1.intent.json": "e1fe51a441db18fb95ab25eb3c43fee4c9f607ed2824967d974dcb6cd84ea818",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/64454a001adf7da0129fa1731ecac5817b87f2e9df096db4dd57980d93b7e5e1.result.json": "a2a8f4a6c357562e127935f21ecbde8b997ff841848aba5997136ac361b2d80d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/66621b6d0a5e3454282fba55406a28d226af26cb140e553cfa23f0be4ea1de82.intent.json": "e272355a5fd00eb4099cd1d0f9aec21c82a0557c690fe36e615f7de26db12e32",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/66621b6d0a5e3454282fba55406a28d226af26cb140e553cfa23f0be4ea1de82.result.json": "116c7e4e8dcddf655c8144169500ca6ddabd27b93d0f0f2bd7dbee3701428498",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a0b63e7cfdd58b0584692c65461a1566cc690d538e90eb20e5ea1df72089cfb.intent.json": "1c238e2c7307b37bb5a97335101c70799036512e3cb3570bcd21b32a646cbcb2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a0b63e7cfdd58b0584692c65461a1566cc690d538e90eb20e5ea1df72089cfb.result.json": "26190168f78d8ede538120b4e8b1fbb5297ecf0b028c6a33d95163651fcb0a61",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a85b11361b7d9fe9ac37e127192368819c7c81d494b6ede29744816e2851044.intent.json": "2054bc935b8c6df16558ce167499328035e1344f441066885cde0d9c208a3992",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a85b11361b7d9fe9ac37e127192368819c7c81d494b6ede29744816e2851044.result.json": "6607d267dfaa79926025e6e4c03b8943ea5876dc9e26997ad20bff27d8f92667",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a9a6163cd8b7398a4c9b7a5fc5baa30c2c63b744f2b52f81a5f38e7c87da880.intent.json": "b0f4cc962eae9a295d34ee1d63aff8ea716751a01430d3b4025ee6e9ead65742",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/6a9a6163cd8b7398a4c9b7a5fc5baa30c2c63b744f2b52f81a5f38e7c87da880.result.json": "c80ecd2a74b3218de905960c5b96dd0842db20c5491be454bcb92bcddbe1130d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/7278b4c17e2c9a19c7845589b70f16790413945b47ade88ed6ed38a1d43f0b5a.intent.json": "26b66448d32edcee0bc58b99a000661682fccc20f4c5b14b31063756debbb6dd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/7278b4c17e2c9a19c7845589b70f16790413945b47ade88ed6ed38a1d43f0b5a.result.json": "9336371a885133dcbe6db7829c30901abd137e01696a21f464ce2566ba00f0a0",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/78f0ad59e2728bbe26fb5e0c6d203f3e8016136be197d52ed2ce8b921cc5bef9.intent.json": "4670078ccfb8f64613c42650f6d12a9ca903f6c9ad703912e91f2f5acf204314",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/78f0ad59e2728bbe26fb5e0c6d203f3e8016136be197d52ed2ce8b921cc5bef9.result.json": "56e194e83a9cfdd6b5fd768c397e14d413020fa51e01542d6d96a6341bfb0d3f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/7c5b0b7d0314ff15ff99ef8665d1cd9eda4415cd3e303627a579a09928fa7a19.intent.json": "1fa0e59899b1eab2aec73c2c0811385c12546b7c7eb464e1ae5abc61123f2560",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/7c5b0b7d0314ff15ff99ef8665d1cd9eda4415cd3e303627a579a09928fa7a19.result.json": "49b9a665a64fb8dc7dc290c58abf8df52a87f868ad45ca8a3b70676e1ce92f8e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/87c7307cce6f09a32267d1310de07deb9f650ee8ce9a1eeb1a4448c2f87bc8fe.intent.json": "c1fc0f4fdbe8acdfc9ff02d43068a07af1f3ca5cbeb1adab4015fd490036b7eb",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/87c7307cce6f09a32267d1310de07deb9f650ee8ce9a1eeb1a4448c2f87bc8fe.result.json": "adc737017ff44f3644aa45c42a6baf3c517ede968967137e7c86b17353cf86e2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/8bf5bc1270dea503fe15faa7167b4ccd988f100fb00a6d009ed9f2f91b7d4609.intent.json": "b73c2b166ebcb8b2099bc39373ac8d76118d4c6d973bad7796320167fb6bfebe",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/8bf5bc1270dea503fe15faa7167b4ccd988f100fb00a6d009ed9f2f91b7d4609.result.json": "df013e3e7ca13f3cb41fca28a375b0a5f57464f16acb673b7b04aa70534e1a98",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/8d2369de88becf005320322bd5389d071028b9210e0a5997b7cf20c51899348b.intent.json": "ee02e76dbcd0f090cfcc47b40e015ee6f366af4744fbd0b22e7b3afbd2745011",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/8d2369de88becf005320322bd5389d071028b9210e0a5997b7cf20c51899348b.result.json": "a373dd327684b1d9e275f7be8a2132f2abce5a2e3baf43f9cf6f0d89e4866c1a",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/9d8c1d0eac5ed7bb350d9ab025c1b9dd0afc14d39f79ac4ee58f3d029adef5ff.intent.json": "3b1b4c514e3c22c0ec97803da522e231a38dd52d3f732f6d0b7c4c031fd4944d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/9d8c1d0eac5ed7bb350d9ab025c1b9dd0afc14d39f79ac4ee58f3d029adef5ff.result.json": "9d2b6f95c695c56647fc455de5796c2b7ed97a1d0811a2ec1ae566b6026abccd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/9fa47c19b9157553a9b1939536e357d9b2e85886d649d84249668d0f6a2b2a25.intent.json": "7824371a4bb018fcd6acb0346f17b243c866c0b24441d75fb68b60ae026be276",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/9fa47c19b9157553a9b1939536e357d9b2e85886d649d84249668d0f6a2b2a25.result.json": "bee562fda22652368c50b1e8290ded1eced057b1e814c3c50e1821ca4089911e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a07d6c9c90a41960c1aa0d537ae7e7ef95fbcbb7c3f0a3ccce896b5821915750.intent.json": "cd9b8ab6132fa0f94d653c376e8ede5eb9eead490322724558edd9f00fc3f5c4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a07d6c9c90a41960c1aa0d537ae7e7ef95fbcbb7c3f0a3ccce896b5821915750.result.json": "3e8f07d01ec80606b8694fa364a5a940f35f3a546ada28607621a99eb0edf959",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a158035814e45ed16f04623235d213a930df4f78745fa113596a8e31432b2997.intent.json": "a3b8fb34b397b56b9b6eee07838c65f275db0723db7705263c77ff2da71c764b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a158035814e45ed16f04623235d213a930df4f78745fa113596a8e31432b2997.result.json": "c0c3d55d97f327eaeae3eb827b027e0a90fabdfe9c52b36b53f22a44d109c3aa",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a8ef69cc078a650c858aa17f7be1f0e04b1f89c8a1900a4dce05f7fc998a73af.intent.json": "d4f8d5c45faba93328776f9fd816d0f44a03b5469f86fde362b1ff1c5f9da8e2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/a8ef69cc078a650c858aa17f7be1f0e04b1f89c8a1900a4dce05f7fc998a73af.result.json": "21c05bf38830a3d5978088e0b11a706120b2608670da1f47f002983bfd68f8e7",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b0d4264b21a700280af7d26895cd83b032afa2ee9fcb1702a22bb3cd3c9953d8.intent.json": "b50009902192039de47906bcdb0eec788506e1f4365b88dfbd3ac7391ba273f2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b0d4264b21a700280af7d26895cd83b032afa2ee9fcb1702a22bb3cd3c9953d8.result.json": "c2c2618bc8025b0e449f297f09a9cec1399263c41197da143251095c5a2577af",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b47bfd5639805ac1b63adb7e3eeb74be9b10ff7b0926e2f6d69759311706a63a.intent.json": "026abbba07c128f2bcc90db4e8eb7c025fccce5998690c0b77103feb01c1f626",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b47bfd5639805ac1b63adb7e3eeb74be9b10ff7b0926e2f6d69759311706a63a.result.json": "4278699813d2a76bc19f470b8f23e6153a97d2b582dc22c1b194bdd5dae6bdc5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b5e9f77c9259ee937fc1b4ff43097fff797fcad979bae0b7e0d061b967727174.intent.json": "a0c3a3d9d9f1f1fb4d99dc2c3391cf0a20b63dd7ededc7ae05ebe738342e6258",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b5e9f77c9259ee937fc1b4ff43097fff797fcad979bae0b7e0d061b967727174.result.json": "f1a4de16db0cc1059cd64bd1b3ae1fb9332259d0a8e08f37f85b130370dd8175",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b973fb48f215b1b7d6f2a15fcea346a56edf6c7d36eaf75be1044877de0afe41.intent.json": "7cb71f5208f69e63d0a2d6c50a1394bbe900e4c6ffe186e81ba9e4e9313399c6",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/b973fb48f215b1b7d6f2a15fcea346a56edf6c7d36eaf75be1044877de0afe41.result.json": "dc3e7015c5d06514572bee0ce5f4ddcf28e9ecd2d9ff1d28bdb8d38cd1a98fdd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/c6db709d8f97ed2112f89414105b81eee75885a8a7df2f0943b7196487e7c222.intent.json": "6f4a88f41ec7a46cb891a6edfa0595c48235e9fd794558224b2e33af6d64f98c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/c6db709d8f97ed2112f89414105b81eee75885a8a7df2f0943b7196487e7c222.result.json": "b3df6358f0af2fc69c1b1e9d13a1c65bdb1e4b7cdfe06d20ee4f5f075d7095e6",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/cddbcb43b8b6329e74981b0bb3ecacd63e5f50a2ee56fb5d6f28cfa015c59102.intent.json": "2b8c704142c20ba279a8d7e3e14da90729753aca7503e867d31d8544bd7a1205",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/cddbcb43b8b6329e74981b0bb3ecacd63e5f50a2ee56fb5d6f28cfa015c59102.result.json": "9bc78d73d6758abfeb2bad58ab01f31ebfeb074eb2516a2d4b8e1d9c7fbbc623",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/ce63b399f6a7868afb2b2b5d9dc87abe8f625fe7ba91cf1bf64c8fadf9779c15.intent.json": "9fcdaa82ba5715ef4d90aca2c7052aa9f23974e2041d1e3ad3c49badd03d41f9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/ce63b399f6a7868afb2b2b5d9dc87abe8f625fe7ba91cf1bf64c8fadf9779c15.result.json": "5f96abb8a39b4990933dc6279dee65e5ffea485a2101ff1bf0b4906e6c1ce07f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d3f3b0149c5e24de611acba0fd89237c02b071d3e1a0bbf51764f6885f6186c7.intent.json": "7a456f224bdb0ddf920a0d0507a28dfe2b48ea95777a421e4550b81e20d68bf5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d3f3b0149c5e24de611acba0fd89237c02b071d3e1a0bbf51764f6885f6186c7.result.json": "6391d8c380a2ea453b659f8964f54b5e51acde3e6982c3ad7d12f371b2f52b21",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d73856444d6d06c068d8b9a97245aacc881d5ef972067995d5c29da10d32a5c6.intent.json": "71dbeb74048043ff12c8b971ae1a97343db19913ab5ec0ba884b3c432e2e32b4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d73856444d6d06c068d8b9a97245aacc881d5ef972067995d5c29da10d32a5c6.result.json": "6c781c5aa31944151dab7b697b7c4627796d15fbf9ee8ed6e952acb1a7a3caa9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d890a9b187fd041bf27572d45dbdc3b54bd92d986219c6b85b7b264fee1562d0.intent.json": "0db02d66297543553758f937a661965f200ae2d7ad883a66b0522192a2128b89",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d890a9b187fd041bf27572d45dbdc3b54bd92d986219c6b85b7b264fee1562d0.result.json": "3c50d5fdee4aec0833d789f2e84f27e85b9b0a904353cbc1fcf35d57e9708a5b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d8a8c4ba6dcfac3c03cfc7a6b39f818959bf80228437e9bc79103955c74cb29b.intent.json": "e119e0c549053bc387b2556bb9f26fb6a1c4c412c9e0a65e8ceb1bd71e26f271",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/d8a8c4ba6dcfac3c03cfc7a6b39f818959bf80228437e9bc79103955c74cb29b.result.json": "db35a0fefe4c012cc086e3923795605d605f11ec8d02337b563402e0b7edc87b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/de8e80c89b5488e5f19458b8a13a6d3ff2b5d44a57ddf88918e4f79723afc73b.intent.json": "b3653d090fe6b865963ad8364c5539640184a1d52c25fbb26985038ed5b8e974",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/de8e80c89b5488e5f19458b8a13a6d3ff2b5d44a57ddf88918e4f79723afc73b.result.json": "001add31518d4504ce846b97fd01054143460e39ed3571268cc739b468373b73",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/e65993f9fa5bfd0659fd6671d1ecc18662247edb4c36ad3b727f9e16c9b023d0.intent.json": "9f4b0e068aae481c14825ff377fc0c0a7c6955d8ff3c52cd85f796246f4e726f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/e65993f9fa5bfd0659fd6671d1ecc18662247edb4c36ad3b727f9e16c9b023d0.result.json": "2837300675486cd571e56bbdd2646aa4b0f5b8222a3ed0bc1f0a3376e02648e4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/e98a67123f0adb36504142b20eba14b872cedbf8e5941c696bac7598e361c8a8.intent.json": "866c24213776af993b72bd2b75de58f18a38b451b5ae9c1746483bd4737bfb20",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/e98a67123f0adb36504142b20eba14b872cedbf8e5941c696bac7598e361c8a8.result.json": "0d2717298a7732bafcb66aea8a9d77912e5568f5e23de28d08e62f1e2e5d7a54",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/f8855638bb61821bf01efa0078ea547c197fd9e2178516ee6c4987247100ab10.intent.json": "542213420b1ef5efe39ebcf1a1ed327661bb7c34f37f90331fd796a8d5a35783",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/f8855638bb61821bf01efa0078ea547c197fd9e2178516ee6c4987247100ab10.result.json": "5a19a7f629004ff10e5ea9bc42a4b4dfcf55ebcf4c9a87783ddf128e8ea7290d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/f8b0fa59defda4e564f6d73f849e8cde3d86c72e89505ced8386de937f95cc1b.intent.json": "ad93ac989786b2cc4197a83979f1aec18e483737548af71106394185bd7c76ee",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/f8b0fa59defda4e564f6d73f849e8cde3d86c72e89505ced8386de937f95cc1b.result.json": "8d54f6ced01e857de57256b5c561fd1f847f636e7ae1d668418fadbc8e544091",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/fa38d51672e02f27b5bb03799b303a977b9b4cc8835d444991323c5ffc33834b.intent.json": "d5e4dce8957d0e14cb60edea474c36e6ab0bfaf04c08067ccb8109f69c812f63",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/calls/fa38d51672e02f27b5bb03799b303a977b9b4cc8835d444991323c5ffc33834b.result.json": "386aa6b797a26c75a6eb061fe9c3dd3c35fd6976cebbec25b4d226e1507ce20d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v2-output-cap/manifest.json": "2d5cb9db6010f3bdb443c738dc94e4c2cd5dead3c607e106c6cf4abd372ad1a4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/answer-plan.json": "9ad4aad67e0f8edf1f572c629618b64a0090d54a260143d8d36d4c2b29643c2c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/008d9bdace854ad3934f04a8c65f7a1ef11879d8a55e6cc524db54789e973dc4.intent.json": "0b4351dc097779363fb04ce111044d207c09d11ad180f39a0ca809ce2fdbc005",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/008d9bdace854ad3934f04a8c65f7a1ef11879d8a55e6cc524db54789e973dc4.result.json": "dad261cf92977bf6e19d0dea41f9864ac78c8959a277d6dc0d9db59c4b010a39",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/10452eda2d2bd6a55cd40b9652345cabe64386d538364d56609d72ccacc45d14.intent.json": "de836e40129bec83588fcb8c75ba408ff264398f12c62b44c90076de29ec0e9e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/10452eda2d2bd6a55cd40b9652345cabe64386d538364d56609d72ccacc45d14.result.json": "365dede3885860608be7bcb8f6f70a38dc3054b866b66393a89df5e27dbbbb0c",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/1bd484210ee0173ca863fe6a15844291d375d1df54b608b533440b572b0725be.intent.json": "227dfec62c46128fac96b38514a415f6b6737a1cfd3df289209c6f973bb8dd77",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/1bd484210ee0173ca863fe6a15844291d375d1df54b608b533440b572b0725be.result.json": "c3256a187dc062604b54d614a8c320538e29d51b430948bf5c75d9a32e654ff4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/1d4d79bbca26e1d0fd244a553128e63c41bf185e744390ad8b4304ceecfe5d8b.intent.json": "b66324b5f1ca84927cd7fda7488dc1dee0dce8ce82176cdc0a7c4386c0ac62a2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/1d4d79bbca26e1d0fd244a553128e63c41bf185e744390ad8b4304ceecfe5d8b.result.json": "324e3e27c0e9ba5ebba600a06e76f79c878807238b48ea91bf9f6337c36c2a32",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/2262e03e8a018690148d16b26ea9522c959ed602b4e3710fe9c8418c7688d863.intent.json": "a83e422f26d0724f78c91e912d47727b3f147a8d7de6e3f09aded7520adac4d8",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/2262e03e8a018690148d16b26ea9522c959ed602b4e3710fe9c8418c7688d863.result.json": "2679fd09d724417d525c3c2386b91d210025fb7cb0884aa3ada45d8b6b7ac088",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/22763c81cf821ead3ab1ff34bf641d0ce01d9a5f8dd13b740a807bce700b29e8.intent.json": "0bb9d913e6a1f07445761d6c1f4f129301359f0f168a6318146717106adc3c82",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/22763c81cf821ead3ab1ff34bf641d0ce01d9a5f8dd13b740a807bce700b29e8.result.json": "1f078dd1108e3acfa8a7cb2e714a26d04469ae8d5aef4f1410116dd1c84534bd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/23e8e7f091eed4b3d1062e755a96e8e3169e8a3dce81d72d0007cc3bf2c0cb1b.intent.json": "fc300e109d54cd35b57a13328d74ef9e32bf0d771104a07bd6f00cf9517a5122",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/23e8e7f091eed4b3d1062e755a96e8e3169e8a3dce81d72d0007cc3bf2c0cb1b.result.json": "c00103812e2e809ebf0ccde0ce3427ad521f4e59b8a97500e1df73cc5244ddad",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/325d72ca968b87b85a4f4a1b42b3b82b34894202c6f42067ad48a29cf694edb3.intent.json": "0a34eac3e14bc394e49bf9e232ebd5fce089a6a478fe1056eef01b3085b7d74f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/325d72ca968b87b85a4f4a1b42b3b82b34894202c6f42067ad48a29cf694edb3.result.json": "d9702f87c8049130ba1fd7ad525a94117f8fb35000b308197cc93ef031a99145",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/3929a421c5f6dfb29d3c0e9c3cf637ad40a39d1e2b7396410bd7df0b95ddd188.intent.json": "2524c1b5de56461470b878292c2a8ac445102edde175c7d3e16cadac478aa846",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/3929a421c5f6dfb29d3c0e9c3cf637ad40a39d1e2b7396410bd7df0b95ddd188.result.json": "56ed7494244204cf184984750b82c36725307f143323625b96617117445135d5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4d372184364dfdbe0934248028380b34453e2961038a310a47a052a2028d97e7.intent.json": "0715358660cc308c4fc52a1c8d64686056d8edc73ffc416f46e88e453d334811",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4d372184364dfdbe0934248028380b34453e2961038a310a47a052a2028d97e7.result.json": "e21079f608f53db1acde6d4e82315cef94f836088b9b8f5b18dbefc380c8b759",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4faef0e1ca5d8d76eda3e16e54cb9a37ddf2712438bef4e7af8bc36e04b729c1.intent.json": "9bf7a2f689edcdc5ee6121359b3a3c0a70d0723347157fd119026540412a0e4d",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4faef0e1ca5d8d76eda3e16e54cb9a37ddf2712438bef4e7af8bc36e04b729c1.result.json": "d20756adacaa51ef3ab5f19936b2d44d2bd1fc979250639aeef2017b117671d0",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4fc30f133623328ec85ba582f29fd84084525559bee218a09858c43a906b284b.intent.json": "7cb088060651547f7964f3caa63b3842d3ec32d5d5ee3c5c43443e4201803e45",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/4fc30f133623328ec85ba582f29fd84084525559bee218a09858c43a906b284b.result.json": "b7f57cdb0ff145f209cef167fa8e0ce9290385a8912324625fe959c39f4913c9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/51f1c030951f2c2e061e24c794dc84ec81213a56a3b1b0e126b16cf5504da96e.intent.json": "9f9cdfa5de057fa6ebdd67d0f126e62c04592cc69d98be2a39b038af89d95dfc",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/51f1c030951f2c2e061e24c794dc84ec81213a56a3b1b0e126b16cf5504da96e.result.json": "da365f094ce7f8f5a4f593152abec0e917bf43450a71cbb95c2fd67b5553e720",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/554289a8ba8ca19aee05542274d5086a59ac429cdea3d7eba0f850de2c3d1295.intent.json": "3b6be58b6c74dbae576e87250def6e09a55030a64c75c95f2f9077f03896dcde",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/554289a8ba8ca19aee05542274d5086a59ac429cdea3d7eba0f850de2c3d1295.result.json": "ce65a9d636cefbd177247ded9e31330015eef8727aced21a2338426ff2a4d986",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/58521602a6a072b229c51de388e3fa5af2969d732a7538d9c99bbaaf7a1abbc9.intent.json": "3699a126658eb58814cca71fb8fb75ac16856894f6ef424d799fe9b7fd20dfad",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/58521602a6a072b229c51de388e3fa5af2969d732a7538d9c99bbaaf7a1abbc9.result.json": "b213e87401ec06f330f50034a74e23bb20bfb1700ec0c42dc22bc40907d60cf9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/613cc5399fdb8ccfc1b69bffe87625e859a520b395aedac8ca845604644a6d99.intent.json": "0a0600cd8d04c5bae56c642ed3fca4e847a067de93dbf74078e0a9af7bdcd1e7",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/613cc5399fdb8ccfc1b69bffe87625e859a520b395aedac8ca845604644a6d99.result.json": "0748670660a9936f1992c2afb3c7f4b68a694fe358dd855f39017bbb3fd4df60",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/837183866077e58f877ff2fc349bf1dbbebdd559f28eef69781f0f93e6525c5f.intent.json": "68ea2d157a43fa7930389cd09c0bc9d9c60ce438a7b1e131bcc9f2b8a1cfbcfa",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/837183866077e58f877ff2fc349bf1dbbebdd559f28eef69781f0f93e6525c5f.result.json": "17908bbee87ddf2efc6a55f70d7fb7aace7c1ac3fcbbf1d7b467908403bef4b3",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/8d111561f3310a6c590af2c2f374b766f75c29bac7ca733fab56fe6b0d357537.intent.json": "4a56a0d16ec626235f4ca025e56fa384f4b7ddb2e06cc3229c9aee8cf9ec6611",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/8d111561f3310a6c590af2c2f374b766f75c29bac7ca733fab56fe6b0d357537.result.json": "5ca6fe6f47b5dab28901df938f63588a0d2db92a63c4bee9c78047ad5fdab1a2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/8f9131f113135def3a35a71d00fba4b387f345ff480019658cd07d2c2b43d529.intent.json": "4c538c171a13e52c8dff0f98b113c05114950dd340422a7bb22cf5f968fda7cc",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/8f9131f113135def3a35a71d00fba4b387f345ff480019658cd07d2c2b43d529.result.json": "c5ac90dff93035dcd47d0ef3bbbcf903f2d129ddc808176c36357dd11913b391",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/90ed827b360bda613beda96447e4375413fb9651d2a66362af35e32145b1a36e.intent.json": "6bad50fcd2c90e5c77aa3f957c273f43aa01ca4af4e5f471af1913b3ba8b61fd",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/90ed827b360bda613beda96447e4375413fb9651d2a66362af35e32145b1a36e.result.json": "575749441737526bdb3b9c034fae235515ced71fc4a82cd2512364ae84020125",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/9ddf497fec023c78d66f131cbb1438061d4f6a5dfe48caa0c333bfd6edb3b2ab.intent.json": "2600d5616ca14d84e424c951200296cec5c64e95ed9996c87b4e4b91a80e3ad2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/9ddf497fec023c78d66f131cbb1438061d4f6a5dfe48caa0c333bfd6edb3b2ab.result.json": "922c1908b43d7347644bdf949c2f5866b143301c4e6e896b5aa8f26a26eea1f3",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a3b9cbc35eb18fcc9dfdb95078914855095033510eaeb6f74ba5003021ef0681.intent.json": "c77aec2690366935b0fcb5a67ac61a59afc48494bd4dbb302747226af8eed10a",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a3b9cbc35eb18fcc9dfdb95078914855095033510eaeb6f74ba5003021ef0681.result.json": "beef794f9aa0921e21fabf97ccc7f4a25c201ee78bf1db3f7b84ba81bbee7b7b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a85a18604f17544e4d32df4e92a1355fd7c2444c18b2edc3619a1dd29a95f4d7.intent.json": "cf96181f1bf1093d4f9caa14bd4ed7e62542f0977a77ad12c5a5dca23080f764",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a85a18604f17544e4d32df4e92a1355fd7c2444c18b2edc3619a1dd29a95f4d7.result.json": "61bd08d83a03061c73987839f94b227776ca48fa8ccef7d836d6d7827ee17b2e",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a9d934444f3eb00cec97d394841bf71aeac8a2774d50acb2f182f8ad0f0774de.intent.json": "ff978be9f54ea94980c0385593ec019c50bea5e8a38e9d058369d6a57224267b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/a9d934444f3eb00cec97d394841bf71aeac8a2774d50acb2f182f8ad0f0774de.result.json": "027110cf09dd522a9266611447f97409f69bd2afe022d49db869460dbe79ff7b",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/b2cb610327d571c0bbfe285698de54560d763dc60dea0777ce16b36e0a82ac7e.intent.json": "8bbcc9309757dab1b0fd2b1f93e068df84280eaef5cdc4db46599580a2b75cbc",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/b2cb610327d571c0bbfe285698de54560d763dc60dea0777ce16b36e0a82ac7e.result.json": "05a83691964c85ca5c2d93547666eec5e67163e8f440ecdafc0d59e0914ea826",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/bbd16ac2fd0d1516211a735512bd353fb3dc17e1c2015f611d29f0efe91c71a1.intent.json": "bf1bb395330b31e24004df6e4161a4a8c8254e0c70e0f17715dc6de85e58d782",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/bbd16ac2fd0d1516211a735512bd353fb3dc17e1c2015f611d29f0efe91c71a1.result.json": "d399a9b66b5a0e39dde1c1f8500f0cbe0de186dda50ea627f65f95162a0f5924",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d4dd427aca1af416de32ed915a87b0abd45078cbabf6b3b2f415f7db20c47527.intent.json": "02250437bfc4bc24497d63bef6694c9f55e6d88f41fb4f4908f1d4717127ca25",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d4dd427aca1af416de32ed915a87b0abd45078cbabf6b3b2f415f7db20c47527.result.json": "b84b9ac0e7c977bd140b968824eebf3243e292a2b83ab8af42ae425eda6f2472",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d84e73cf93e5c88eef33412634f43e5acef7cd94703d0e494729f5f26e75db30.intent.json": "f26432fe5cca0955cd5f65f984dd784fecf18375d0c6a7f0a403c808a0a0fbb4",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d84e73cf93e5c88eef33412634f43e5acef7cd94703d0e494729f5f26e75db30.result.json": "db723399a510772a45660e324207d0278c53af2849f5eff1aed946812f7448bf",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d9785c5762ccda2aff66e5c6d50f3755bd471874121f554ca2939134c4744541.intent.json": "a7e22d16259214bf8b94045de2aed20858a24e94546ff8f2724541d998eceac2",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/d9785c5762ccda2aff66e5c6d50f3755bd471874121f554ca2939134c4744541.result.json": "4fd46c68d962febf34cabb7f8eaae28c618f39d25540b6c9678312c07267c177",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/db3e43f71d558f2f52159db5c4a1c8817ecf7f1571ce553ee451eeeb274a5dd0.intent.json": "6ac8b560a79faf6f018ba04d0fa252a054743876595605f9ca306c36332c2a38",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/db3e43f71d558f2f52159db5c4a1c8817ecf7f1571ce553ee451eeeb274a5dd0.result.json": "9cb46af442fd96230793d75b4d3c258fbfa5fd7d450ee815bf7fcaf76ef3b237",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/de551ac14359a7280087cdb994ddb0f37db0229ab7e6c7049a8213f42a8fb6aa.intent.json": "eaeb0877b0fb08f6f975231e9bd192b99a22a5954a826c8109771a87410e948f",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/de551ac14359a7280087cdb994ddb0f37db0229ab7e6c7049a8213f42a8fb6aa.result.json": "9468396cf96b15b90037dd8ba550a01d0172a29a4efbc5ca9fba4b096c5c6ed7",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e004e77fe4566250859319ed92ecde484cb81e13c81dac60ffe9169ae7744078.intent.json": "474f3503d84ce529eeb47b67083258ad660aeecd471fe434aaba4dd150df88f5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e004e77fe4566250859319ed92ecde484cb81e13c81dac60ffe9169ae7744078.result.json": "70f4f9ec49bb3149c2b035868835197f6ddfed6696013ea60225e5ccfa659168",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e55d0ef5b37c8b64c5d53b42a5711188ffb816811aeac98f91c054ca2471ccc4.intent.json": "57c15dd7fe07973366da45e2fec3908fe19d9a740c9938b95a3fb6468dc302a9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e55d0ef5b37c8b64c5d53b42a5711188ffb816811aeac98f91c054ca2471ccc4.result.json": "78a964d9b0943712b8d5d28570704a11fb9555847cca3907dd904f3caf60b0ae",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e8f8b2298137eb30d37efa8f7ef1789b2e4bbe502273c303209d3634189091d1.intent.json": "a969a73999ed44b3500f71f7f86d27f3fd94f869c9685dd696b843a25859e7c9",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/e8f8b2298137eb30d37efa8f7ef1789b2e4bbe502273c303209d3634189091d1.result.json": "6b04c96f4c0854a2dfac9553ce467ea60902975e7700c857c53141120d1dfe47",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/ec7376732a4ed5c8d47276417116ea41d0eb1801dc1c9271e61f4b88ccdb45ec.intent.json": "7371262099acc08fb8a58bebd11144f0561a3025096dd06934b59e02d49ef7a8",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/ec7376732a4ed5c8d47276417116ea41d0eb1801dc1c9271e61f4b88ccdb45ec.result.json": "c08ed41bc0c15c141eb5be71af47c8b953ae60ba8f12c15dba48854779733af5",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/f67994a23452723aef654d08997343325ab43871bde43475402c03fd3cabe528.intent.json": "5579895ab2a05608c5b171715b4cfefbbf564735afb81be1d4341a546dcf0c90",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/calls/f67994a23452723aef654d08997343325ab43871bde43475402c03fd3cabe528.result.json": "3dd80d941f08ab31caf9fd368258e9fbe3a68b597cae09f315af95a6fb5c1bd3",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/contexts.json": "d634ef19d6176040961dc3ab08e731de6693c733b4b748ffbbdf76ac20289447",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/manifest.json": "e22be52f789635cf494241a8cbc9745f2c23047eb35fddd5bcdf07b5b0a90b97",
+    "evals/method-selection-v3/campaigns/paratera-flash-20260905/run-v3-encoded-budget/reused-calls.json": "8ee76140b1f8df3d29be85c4e59556c18fa33499a6382bd9be132a3f477bac68",
+    "evals/method-selection-v3/inputs.json": "084c2bee916a5fc02eb4bf3814ccf663ebc1618904b0c97037c4fa395a539e2b",
+    "evals/method-selection-v3/lock.json": "b38d8ef0aad082b82fb3566caa75d578f92e7215c53c0a5c9196197c7fc4a384"
+  },
+  "summary": {
+    "answer_issues": {},
+    "answer_positions": 144,
+    "answer_statuses": {
+      "field_consistent": 84,
+      "preparation_failed": 60
+    },
+    "batch_issues": {
+      "fact_count_exceeded": 4,
+      "invalid_facts": 2
+    },
+    "bounded_isolation_candidate": {
+      "bundles_with_remaining_facts": 4,
+      "quality_effect": "not_measured; missing evidence can change downstream decisions",
+      "remaining_facts": 135,
+      "scope": "Not executed; quarantine invalid facts only within the original count bound"
+    },
+    "bundles": 8,
+    "emitted_facts": 310,
+    "fact_issues": {
+      "quote_not_verbatim": 6
+    },
+    "mechanically_valid_facts": 304,
+    "original_contract_accepted": 3,
+    "rejected_facts": 6
+  },
+  "version": "output-contract-regression-v1"
+}
