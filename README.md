@@ -8,7 +8,7 @@
 
 <h1 align="center">Sheaf</h1>
 
-<p align="center"><b>Choose good sources. Turn them into knowledge your agents can verify.</b></p>
+<p align="center"><b>Your sources and judgments, ready for your agent. Help deciding what deserves your own reading.</b></p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
@@ -19,12 +19,11 @@
 
 ---
 
-Sheaf turns the technical sources you deliberately choose into a **searchable, inspectable knowledge base your AI agents can actually use**. Your selections carry your information taste into the agent's working context; source provenance keeps that taste from being mistaken for truth. Local-first and open-source.
+Sheaf is building **personal knowledge infrastructure for the agent era**. Today it organizes saved sources into a local, searchable, source-linked library that agents can access. Saving signals interest; it does not establish agreement, correctness, or a complete model of your judgment. Local-first and open-source.
 
 > A **sheaf** is a bundle of harvested grain. Sheaf gathers deliberately chosen sources into knowledge that remains tied to its evidence.
 
-> **Design note:** Sheaf is not meant to be another generic conversation-memory service. Deliberately curated sources are the input; the goal is a local, source-backed knowledge layer that coding and research agents can search, quote, challenge, and check.
-> Read the v0.7.0 discussion: [Sheaf v0.7.0: a local-first knowledge layer for coding agents](https://github.com/zhelunSun/sheaf-ai/discussions/94)
+> **Product direction:** Save naturally, let your existing agent reuse relevant material, and get help deciding what to read yourself. Value should not depend on questionnaires, mandatory tagging, or teaching a taste profile. Reading suggestions, preference reuse, and a smoother source-checking flow are [planned work](docs/PRODUCT-FEATURES.md); the complete experience is not yet validated. See the [current product direction](docs/PRODUCT-DESIGN-INDEX.md) and [development plan](docs/NEXT-PHASE-PLAN.md).
 
 
 ## Quick Start
@@ -47,9 +46,9 @@ sheaf setup            # auto-detects Claude Code / Codex / Cursor / Windsurf / 
 
 ```bash
 sheaf collect https://arxiv.org/abs/2401.00000   # save a link
-sheaf search-index --rebuild                     # opt in to Entry embeddings (provider call)
+sheaf search-index --rebuild                     # optional: Entry embeddings (provider call)
 sheaf search "transformer architecture"          # hybrid search; diagnostic keyword fallback
-sheaf crystallize AI                             # distill knowledge cards
+sheaf crystallize AI                             # optional: distill knowledge cards
 ```
 
 No Sheaf account or hosted storage is required. Your corpus lives locally — `./data/` inside a project, else `~/.sheaf/data` — as Markdown + JSON. Model inference is sent to the provider you configure. Override the data path with `SHEAF_DATA_DIR`.
@@ -66,35 +65,37 @@ Saved articles, papers, repositories, and tutorials are difficult to reuse in an
 agent workflow. A bookmark can tell you where a page was; it cannot tell an
 agent which source supports a claim or how that claim changed.
 
-Sheaf fixes this. Every link becomes a **structured entry**. Crystallize enough of them and you get **knowledge cards** — portable, searchable, agent-ready.
+The current alpha collects and searches sources, and can optionally turn them into source-linked cards. The next step is to show that this helps with real tasks, reduces repeated searching, and preserves the distinction between a source's claims and your own judgment. No minimum collection size or card generation is required to start using saved sources.
 
 ## Features
 
 | | What it does |
 |---|---|
-| 🌾 **Collect — foundation** | Paste a link or note. Sheaf fetches, cleans, classifies, and preserves its source. |
-| 🔎 **Retrieve — core path** | Hybrid retrieval combines BM25 with a direct Entry vector index, exposes stale/unavailable diagnostics, and falls back to keyword search without hiding the degradation. |
-| ✨ **Crystallize — core path** | Distill multiple entries into knowledge cards with resolvable source links. |
-| 🧭 **Evolve — core path** | Apply schema-constrained create, update, merge, contest, resolve, and retire transitions with immutable history. Evidence strength is an explainable ordinal heuristic, not a probability. |
-| 🤖 **Agent-ready** | Built-in MCP server — any agent searches, cites, and reasons over your knowledge base. |
+| 🌾 **Save sources** | Paste a link or note. Sheaf fetches, cleans, classifies, and preserves its source. Existing quality/source checks are heuristic signals, not fact verification. |
+| 🔎 **Find material again** | Keyword and optional semantic retrieval, with explicit diagnostics when indexes are stale or unavailable. |
+| 🤖 **Use your agent** | Supported MCP clients can search the library and read saved sources. Whether an agent uses them correctly still needs task-level checking. |
+| ✨ **Optional knowledge cards** | Distill related entries into source-linked cards; original entries remain usable on their own. |
+| 🧭 **Experimental version governance** | Constrained knowledge transitions and immutable history. This is separate from ordinary card generation; evidence strength is a heuristic, not a probability. |
 | 🔒 **Local-first** | Knowledge files stay local; no Sheaf account or telemetry. Model-backed steps use the provider you configure. |
 
 ### Crystallize — curated sources into reusable claims
 
-Crystallization is one of Sheaf's three core algorithm paths. Instead of leaving
-sources as disconnected bookmarks, `sheaf crystallize` produces reusable,
-source-linked claims:
+`sheaf crystallize` organizes related sources into reusable, source-linked cards.
+Generated claims still need checking for the intended task. Example output:
 
 ```
 $ sheaf crystallize AI
 ✨ 5 knowledge cards crystallized:
-  📌 RAG faces retrieval relevance challenges (90%)
+  📌 RAG faces retrieval relevance challenges
      RAG systems heavily depend on retrieval quality; errors degrade output reliability.
-  📌 CRAG framework improves RAG robustness (95%)
+  📌 CRAG framework improves RAG robustness
      CRAG introduces a retrieval evaluator, web search augmentation, and document decomposition.
 ```
 
 Each batch card carries **evidence tracing** (which sources contributed), **topic provenance**, and **tags**. Semantic-search across all of them with `sheaf crystallize --semantic "query"`.
+
+<details>
+<summary>Technical guarantees and experimental evidence</summary>
 
 The experimental evidence-governed path is deliberately stricter. Ledger
 schema 3 verifies quote or character-span evidence identity and replays older
@@ -132,8 +133,9 @@ decision and evidence ledgers remain separate files: receipt-first
 reconciliation makes that boundary recoverable, not a cross-file transaction.
 
 The broader [architecture and evaluation contract](docs/ARCHITECTURE-AND-EVALUATION.md)
-defines the three core algorithm paths, their current maturity, the no-user
-test ladder, and the experiments still required for comparative claims.
+describes supporting algorithms, their maturity, and the experiments still
+required for comparative claims. Product priorities follow the
+[current plan](docs/NEXT-PHASE-PLAN.md).
 
 ### Retrieval evidence snapshot
 
@@ -151,6 +153,8 @@ credentials were unavailable. See the [frozen retrieval report](evals/retrieval-
 The current relevance gate is a backend/version-specific experimental signal,
 not a probability or portable threshold. If semantic retrieval degrades,
 production search returns to the keyword-coverage scale.
+
+</details>
 
 ## Connect Your Agent
 
@@ -215,7 +219,7 @@ In `--json` mode, error payloads carry `exit_code`, `exit_code_name`, `error_typ
 - All content stored locally — `./data/` inside a project, otherwise `~/.sheaf/data` (override: `SHEAF_DATA_DIR`)
 - LLM calls go to **your** chosen API provider — nothing routed through Sheaf
 - No telemetry, no analytics, no accounts
-- Markdown + JSONL format — fully portable, zero lock-in
+- Open local Markdown and JSON/JSONL files you can inspect directly; supported export and recovery are [planned separately](docs/PRODUCT-FEATURES.md#pf-06--export-and-restore-a-minimal-local-library).
 
 ## Configuration
 
@@ -288,18 +292,15 @@ Extras: `.[dev]` for local dev, `.[server]` for the HTTP API, `.[browser]` for P
 
 ## Status & Chrome Extension
 
-Sheaf is early alpha. The local collect-to-agent loop works and is covered by
-CI. The current development stage is [**core algorithm evidence**](docs/NEXT-PHASE-PLAN.md).
-The production retrieval path, content-bound provenance registry, atomic
-evidence-ledger SPLIT adapter, and deterministic long-document passage selector
-are now in place. The next evidence milestone is a newly sealed retrieval set,
-a real embedding run, claim-entailment/conflict evaluation, automatic action
-selection, and cross-file recovery. Comparative quality and user-value claims
-remain hypotheses.
+Sheaf is early alpha. Collection, retrieval, and agent interfaces are implemented;
+their engineering checks do not establish continued user adoption. The current
+focus is a [low-effort, source-checkable product loop](docs/NEXT-PHASE-PLAN.md):
+save material, reuse it in real tasks, and test lightweight reading suggestions.
+Comparative quality, user value, and willingness to pay remain hypotheses.
 
 A Chrome extension (`extension/`) adds one-click collect + search from any page: start the local API with `sheaf serve`, load `extension/` unpacked (Chrome → Manage Extensions → Developer mode), then `Alt+Shift+S` or right-click any page → "🌾 Collect with Sheaf".
 
-**Try it:** save 20+ links, run `sheaf crystallize <topic>`, then ask your agent to find them. If it clicks for you, open an issue or discussion and tell us what you'd change.
+**Try it:** choose a question you are already working on, save a few relevant sources, and ask your agent to use them for a comparison or explanation. Check whether the sources and conclusions help. Share friction or useful outcomes in an issue or discussion.
 
 > ⭐ If Sheaf saves you time, a star on [GitHub](https://github.com/zhelunSun/sheaf-ai) helps others find it.
 

@@ -1,7 +1,9 @@
 # Sheaf — 公开文档索引
 
-> 当前共识以 [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) 和
-> [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) 为准。
+> 产品定位以 [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) 为准，功能状态见
+> [PRODUCT-FEATURES.md](PRODUCT-FEATURES.md)，推进顺序见
+> [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md)。架构与技术证据边界见
+> [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md)。
 > 其他产品文档可能记录历史探索，不等同于当前路线或已实现承诺。
 
 ---
@@ -18,18 +20,19 @@
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 当前产品定位、三条核心算法路径和管理方式 | 产品、工程、面试评审 |
+| [PRODUCT-DESIGN-INDEX.md](PRODUCT-DESIGN-INDEX.md) | 个人知识基础设施定位、零额外教学的使用方式、研发取舍与技术证据 | 用户、产品、工程 |
+| [PRODUCT-FEATURES.md](PRODUCT-FEATURES.md) | 收藏、筛选、核查与 Agent 复用的功能状态、缺口和验收边界 | 用户、产品、贡献者 |
 | [ARCHITECTURE-AND-EVALUATION.md](ARCHITECTURE-AND-EVALUATION.md) | 系统分层、测试阶梯、实验和声明边界 | 工程、研究、贡献者 |
 | [ENGINEERING-WORK-MODE.md](ENGINEERING-WORK-MODE.md) | 核心路径的审查、并行、交叉攻击和证据收口方式 | 研发执行、代码审核 |
-| [HARDENING-2026-09-22.md](HARDENING-2026-09-22.md) | 生产结晶、跨接口结果、批保存和模拟用户执行安全加固 | 工程、产品、面试评审 |
-| [LONG-SOURCE-EXPERIMENT-2026-09-05.md](LONG-SOURCE-EXPERIMENT-2026-09-05.md) | 最新真实模型实验、测量修订、失败分母与阶段决策 | 工程、研究、面试评审 |
+| [HARDENING-2026-09-22.md](HARDENING-2026-09-22.md) | 生产结晶、跨接口结果、批保存和模拟用户执行安全加固 | 工程、产品、贡献者 |
+| [LONG-SOURCE-EXPERIMENT-2026-09-05.md](LONG-SOURCE-EXPERIMENT-2026-09-05.md) | 长来源真实模型诊断、测量修订、失败分母与结论边界 | 工程、研究、贡献者 |
 | [MATRIX-PRODUCT-DESIGN.md](MATRIX-PRODUCT-DESIGN.md) | 历史探索：多来源事件理解，不是当前路线 | 历史参考 |
 
-### 🌐 暂停的远期探索
+### 🌐 保留的远景探索（未启动交付）
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [KNOWLEDGE-MARKETPLACE-VISION.md](KNOWLEDGE-MARKETPLACE-VISION.md) | 历史探索：知识市场，不是当前产品承诺 | 历史参考 |
+| [KNOWLEDGE-MARKETPLACE-VISION.md](KNOWLEDGE-MARKETPLACE-VISION.md) | 历史探索：知识授权交易与链上主权，不是近期功能承诺 | 历史参考 |
 
 ### 🔧 技术文档
 
@@ -41,7 +44,7 @@
 
 | 文档 | 内容 | 目标读者 |
 |------|------|----------|
-| [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md) | 当前 P0、六个里程碑、评测资产和并行开发安排 | 产品、工程、研究 |
+| [NEXT-PHASE-PLAN.md](NEXT-PHASE-PLAN.md) | 产品推进：零反馈复用循环、必要质量修复与真实使用验证 | 产品、工程、贡献者 |
 | [RELEASE-LIFECYCLE.md](RELEASE-LIFECYCLE.md) | 发布生命周期 — 版本策略、合并门槛、公共契约 | 贡献者、用户 |
 
 ### 🎨 其他
@@ -58,8 +61,9 @@
 我要...                              → 看这里
 ──────────────────────────────────────────────────
 了解 Sheaf 是什么 / 为什么存在        → PRODUCT-DESIGN-INDEX.md
+看哪些功能已实现 / 还缺什么            → PRODUCT-FEATURES.md
 看技术架构 / 评测边界                 → ARCHITECTURE-AND-EVALUATION.md
-看下一阶段开发                        → NEXT-PHASE-PLAN.md
+看下一阶段产品推进                    → NEXT-PHASE-PLAN.md
 看过去的 Matrix / 知识市场探索         → 对应历史文档
 把 Sheaf 接入我的 AI 助手             → mcp-setup.md
 开发 Agent 集成 / MCP 调用           → agent-query-spec.md

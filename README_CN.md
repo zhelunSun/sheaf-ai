@@ -8,7 +8,7 @@
 
 <h1 align="center">Sheaf</h1>
 
-<p align="center"><b>选择好来源，把它们变成 Agent 可以核验的知识</b></p>
+<p align="center"><b>让你的 Agent 用上你挑选的资料和形成的判断，并帮助你决定哪些内容值得亲自读。</b></p>
 
 <p align="center">
   <a href="https://www.python.org/downloads/"><img src="https://img.shields.io/badge/python-3.10%2B-blue.svg" alt="Python 3.10+"></a>
@@ -19,9 +19,11 @@
 
 ---
 
-**Sheaf**（/ʃiːf/，麦穗束）把你主动选择的技术来源，变成 **AI Agent 真正能用、也能核验的知识库**。你的收藏选择把信息品味传给 Agent；来源溯源则防止系统把“你选择了它”偷换成“它必然正确”。本地优先，开源免费。
+**Sheaf**（/ʃiːf/，麦穗束）希望成为 **Agent 时代的个人知识基础设施**。当前版本把主动保存的来源整理为本地、可检索并可追溯的资料库，供 Agent 查找与引用。收藏表达关注，不等于认可来源结论，也不等于完整的个人判断。本地优先，开源。
 
 > **Sheaf** 是一束收获的谷物。Sheaf 把用户主动选择的来源聚成知识，同时保留知识与证据的联系。
+
+> **产品方向：** 随手收藏，让已有 Agent 在实际任务中用上相关资料，并帮助选择值得亲读的内容。零额外反馈也应该有用，不要求填写问卷、逐条标注或先教系统品味。阅读建议、偏好复用和更顺畅的来源核查仍是[计划中的功能](docs/PRODUCT-FEATURES.md)，完整体验尚未验证。见[当前定位](docs/PRODUCT-DESIGN-INDEX.md)和[推进计划](docs/NEXT-PHASE-PLAN.md)。
 
 ## 快速开始
 
@@ -43,9 +45,9 @@ sheaf setup            # 自动识别 Claude Code / Codex / Cursor / Windsurf / 
 
 ```bash
 sheaf collect https://arxiv.org/abs/2401.00000   # 收藏链接
-sheaf search-index --rebuild                     # 显式选择构建 Entry embedding
+sheaf search-index --rebuild                     # 可选：构建 Entry embedding，会调用提供商
 sheaf search "transformer architecture"          # 混合搜索；降级时给出诊断
-sheaf crystallize AI                             # 结晶知识卡片
+sheaf crystallize AI                             # 可选：结晶知识卡片
 ```
 
 无需 Sheaf 账号或托管存储。语料本地保存 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`，格式 Markdown + JSON；模型推理发送到你配置的提供商。可用 `SHEAF_DATA_DIR` 覆盖数据路径。
@@ -61,42 +63,46 @@ sheaf crystallize AI                             # 结晶知识卡片
 收藏的文章、论文、仓库和教程很难直接进入 Agent 工作流。书签能告诉你网页在哪里，
 却不能告诉 Agent 哪个来源支持某个结论，也不能解释这个结论后来为什么改变。
 
-Sheaf 解决这个问题。每条链接都变成一个**结构化条目**。积累足够多后，结晶为**知识卡片** — 可携带、可搜索、Agent 可消费。
+当前 Alpha 已有采集、检索和生成带来源链接的卡片等基础。下一步要验证它们能否帮助完成真实任务、减少重复查找，并保留来源观点与用户判断的区别。开始使用已有来源不需要先攒够收藏或生成卡片。
 
 ## 核心功能
 
 | | 它做什么 |
 |---|---|
-| 🌾 **收藏——基础能力** | 粘贴链接或笔记，完成抓取、清洗、分类并保留来源。 |
-| 🔎 **检索——核心路径** | 混合检索把 BM25 与直接 Entry 向量索引结合；索引过期或不可用会显式诊断，并可降级到关键词检索。 |
-| ✨ **结晶——核心路径** | 把多条收藏变成来源可解析的知识卡片。 |
-| 🧭 **增量演化——核心路径** | 用受约束的 create/update/merge/contest/resolve/retire 转移维护知识，并保留不可变历史；证据强度是可解释的序数启发式，不是概率。 |
-| 🤖 **Agent 就绪** | 内置 MCP 服务器 —— 任何 agent 都能搜索、引用、推理你的知识库。 |
+| 🌾 **保存资料** | 粘贴链接或笔记，完成抓取、清洗、分类并保留来源。已有质量与来源判断是启发式线索，不是事实核查。 |
+| 🔎 **找回资料** | 关键词和可选语义检索；索引过期或不可用会明确提示。 |
+| 🤖 **接入已有 Agent** | 支持 MCP 的客户端可检索资料并读取原文；是否正确使用仍需在具体任务中检查。 |
+| ✨ **按需生成卡片** | 把相关条目整理为带来源链接的卡片；原始条目可以直接使用。 |
+| 🧭 **实验性版本治理** | 受约束的知识变更与不可变历史，和普通卡片生成分开；证据强度是启发式信号，不是概率。 |
 | 🔒 **本地优先** | 知识文件保存在本地，无 Sheaf 账号和遥测；模型处理步骤使用你配置的提供商。 |
 
 ### 结晶 —— 把精选来源变成可复用主张
 
-结晶是 Sheaf 三条核心算法路径之一。`sheaf crystallize` 不把来源留作彼此孤立的
-书签，而是形成可以复用、仍与来源相连的结论：
+`sheaf crystallize` 把相关来源整理为可复用、可返回原文检查的卡片。
+生成结果仍需按具体用途核查。以下是输出示例：
 
 ```
 $ sheaf crystallize AI
 ✨ 5 张知识卡片已结晶:
-  📌 RAG 面临检索相关性挑战 (90%)
+  📌 RAG 面临检索相关性挑战
      RAG 系统高度依赖检索质量；错误会降低输出可靠性。
-  📌 CRAG 框架提升 RAG 鲁棒性 (95%)
+  📌 CRAG 框架提升 RAG 鲁棒性
      CRAG 引入检索评估器、网页搜索增强和文档分解。
 ```
 
 每张 batch 卡片含 **证据溯源**（哪些来源贡献了它）、**主题归属**、**标签**。用 `sheaf crystallize --semantic "查询"` 跨所有卡片做向量语义搜索。
 
+<details>
+<summary>技术保证与实验依据</summary>
+
 实验性的证据治理路径更严格。ledger schema 3 会验证 `quote` 或字符区间证据身份，
 并可重放旧 ledger。`evidence-rule-v3` 只按相同 `source_key`、可信的完整 SHA-256
 evidence digest、或已持久化的 `exact` / `near_duplicate` 关系形成 non-duplicate
 group；普通自声明 provenance 绝不能覆盖去重。这些 group 还不等于可信的独立确认：
-在 trusted provenance registry 缺位时，只要有证据，`independent_source_count` 就保守
-记为 `1`，corroboration bonus 关闭；v1/v2 历史评分按原算法重放。官方纠错还要求
-primary、覆盖当前 topic/fact key 的 authority scope，以及持久化的 `corrects` 关系。
+`independent_source_count` 仍保守记为 `1`，corroboration bonus 关闭。已有本地追加式
+provenance registry，将管理员声明绑定到具体 Entry、来源与完整 evidence digest；
+缺失、冲突、损坏或撤销记录时降到 tier `U`。有效记录可授予来源等级、primary/authority
+范围和纠正关系；SHA-256 链提供完整性线索，不构成身份认证。v1/v2 历史评分按原算法重放。
 它不宣称 LLM 决策策略或置信概率已经校准：
 
 ```bash
@@ -110,13 +116,13 @@ sheaf memory history --topic "Agent memory"
 确定性执行器验收；它验证来源约束、幂等、冲突保留、官方更正与审计历史，但不冒充
 LLM 策略质量 benchmark。
 
-SPLIT 和 NOOP 已有 preview-first 的可审计 decision trace。SPLIT 会规划共享一个
-`decision_id` 的 UPDATE + CREATE，并在 apply 前检查 target head；没有外部 atomic
-batch executor 就失败关闭。仓内尚无 production atomic SPLIT adapter，测试使用的是
-atomic fake，因此这只是集成协议，不是已经交付的端到端原子执行器。
+SPLIT 和 NOOP 已有 preview-first 的可审计 decision trace。生产 evidence-ledger
+adapter 通过一次文件替换提交 SPLIT 的 UPDATE + CREATE、receipt 和 head 检查；
+执行 manifest 绑定具体操作、证据、目标 head、策略版本与幂等身份，防止重试换计划。
+decision 与 evidence ledger 仍是独立文件，可通过 receipt-first 对账恢复，不是跨文件事务。
 
-[架构与评测约定](docs/ARCHITECTURE-AND-EVALUATION.md)进一步明确了三条核心算法路径、
-当前成熟度、无需真实用户的测试阶梯，以及比较性结论仍需完成的实验。
+[架构与评测约定](docs/ARCHITECTURE-AND-EVALUATION.md)说明支撑算法、成熟度和比较性
+结论仍需完成的实验。产品开发顺序以[当前计划](docs/NEXT-PHASE-PLAN.md)为准。
 
 ### 检索证据快照
 
@@ -129,6 +135,8 @@ no-answer FPR `1.0`。它没有优于 keyword，也没有解决 abstention。真
 
 当前 relevance gate 是 backend/version-specific 实验信号，不是概率或通用阈值；
 语义检索降级时，生产路径回到 keyword coverage 标尺。
+
+</details>
 
 ## 接入你的 Agent
 
@@ -193,7 +201,7 @@ Sheaf 返回带类型的退出码，让 Agent 可按错误类型编程式分支�
 - 所有内容本地存储 —— 项目目录内为 `./data/`，否则为 `~/.sheaf/data`（可用 `SHEAF_DATA_DIR` 覆盖）
 - LLM 调用发送到**你选择的** API 提供商 —— 不经 Sheaf 中转
 - 无遥测、无分析、无账号
-- Markdown + JSONL 格式 — 完全可迁移，零锁定
+- 开放的本地 Markdown 和 JSON/JSONL 文件，可直接读取；受支持的导出与恢复范围见[功能计划](docs/PRODUCT-FEATURES.md#pf-06--export-and-restore-a-minimal-local-library)。
 
 ## 配置
 
@@ -266,15 +274,13 @@ python -m ruff check sheaf_ai/ tests/ sheaf_cards/
 
 ## 当前状态 & 浏览器扩展
 
-Sheaf 处于早期 Alpha，本地收藏到 Agent 的闭环已经可用并由 CI 覆盖。当前研发阶段是
-[**核心算法证据**](docs/NEXT-PHASE-PLAN.md)。生产检索路径与首份经典冻结基线已经
-打通；负结果把下一轮重点指向无答案/实体歧义、真实 embedding 和长文 passage。
-其余关键缺口是可信 provenance registry、真实 atomic SPLIT adapter 与跨文件事务。
-比较性效果仍是假设而不是产品结论。
+Sheaf 处于早期 Alpha，已实现采集、检索和 Agent 接口；工程检查不能证明持续采纳。
+当前重点是[低负担、来源可查的产品流程](docs/NEXT-PHASE-PLAN.md)：保存资料、在
+真实任务中复用，并试验轻量阅读建议。比较性效果、用户价值和付费意愿仍待验证。
 
 Chrome 扩展（`extension/`）提供任意网页的一键收藏与搜索：用 `sheaf serve` 启动本地 API，在 Chrome → 管理扩展 → 开发者模式中加载 `extension/`，然后 `Alt+Shift+S` 或右键任意页面 → "🌾 Collect with Sheaf"。
 
-**试试看**：收藏 20+ 条链接，运行 `sheaf crystallize <主题>`，然后让你的 Agent 来查询。如果对你有用，欢迎开 Issue 或 Discussion 告诉我们你的想法。
+**试试看**：选一个正在处理的问题，保存几份相关来源，让 Agent 据此做一次比较或解释，检查返回的出处和结论是否有用。欢迎通过 Issue 或 Discussion 告诉我们阻碍和实际收益。
 
 > ⭐ 如果 Sheaf 帮到了你，在 [GitHub](https://github.com/zhelunSun/sheaf-ai) 点个 Star 能帮更多人发现它。
 

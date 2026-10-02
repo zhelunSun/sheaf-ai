@@ -1,5 +1,10 @@
 # Sheaf Architecture and Evaluation
 
+> Product-priority update (2026-09-26): implemented guarantees and experimental limitations
+> below remain in force. Dated experiment sequences are historical, not prerequisites for
+> every product improvement. Current priorities follow the [product plan](NEXT-PHASE-PLAN.md)
+> and [feature queue](PRODUCT-FEATURES.md).
+
 > Status: working contract for the current alpha. It separates implemented
 > guarantees from hypotheses that still need experiments.
 
