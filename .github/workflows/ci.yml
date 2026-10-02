@@ -8,10 +8,14 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ubuntu-latest]
         python-version: ["3.10", "3.11", "3.12"]
+        include:
+          - os: windows-latest
+            python-version: "3.12"
 
     steps:
       - uses: actions/checkout@v4
@@ -27,21 +31,28 @@ jobs:
           pip install -e ".[dev]"
 
       - name: Run tests
-        run: python -m pytest tests -q --ignore=tests/test_pdf_collector.py --ignore=tests/llm_depth_test.py
+        run: python -m pytest tests -q -ra --basetemp .pytest-tmp-ci
 
       - name: Run core algorithm offline acceptance
         run: python evals/core-algorithms/run_offline_eval.py --compact
 
       - name: Lint
-        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory evals/core-algorithms
+        run: python -m ruff check --config pyproject.toml sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/llm_depth_test.py scripts/release evals/evidence-governed-memory evals/core-algorithms evals/output-contract-regression
 
       - name: Build check
         run: python -m build
 
       - name: Fresh wheel smoke
-        if: matrix.python-version == '3.11'
-        shell: bash
+        if: matrix.python-version == '3.11' || runner.os == 'Windows'
+        shell: python
         run: |
-          wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
-          test -n "$wheel"
-          python scripts/release/smoke_fresh_wheel.py --wheel "$wheel"
+          from pathlib import Path
+          import subprocess
+          import sys
+          wheels = list(Path("dist").glob("*.whl"))
+          if len(wheels) != 1:
+              raise SystemExit(f"Expected one wheel, found {len(wheels)}")
+          subprocess.run([
+              sys.executable, "scripts/release/smoke_fresh_wheel.py",
+              "--wheel", str(wheels[0]),
+          ], check=True)

@@ -9,13 +9,23 @@ import logging
 from datetime import datetime
 from typing import Optional
 
+from sheaf_ai import _entry_storage
 from sheaf_ai.config import (
     DATA_DIR, ENTRIES_DIR, SUMMARIES_DIR, RAW_DIR, INDEX_FILE,  # noqa: F401
     BJT, CLASSIFY_MODEL, SUMMARIZE_MODEL, load_prompt, ensure_data_dirs,
     SCHEMA_VERSION,
 )
-from sheaf_ai.utils import extract_timeliness, atomic_write
+from sheaf_ai.utils import extract_timeliness
 from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry  # noqa: F401
+from sheaf_ai.storage import (
+    StorageStateError,
+    _merge_tags_into_registry,
+    commit_storage_files,
+    index_projection,
+    load_tags_registry,
+    read_storage_index,
+    storage_write_boundary,
+)
 from sheaf_ai.query import check_duplicate
 
 logger = logging.getLogger(__name__)
@@ -479,34 +489,43 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
 def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = False) -> dict:
     """Re-run classify+summarize on legacy entries that lack topics/content_type."""
     all_entries = []
-    if ENTRIES_DIR.exists():
-        for month_dir in sorted(ENTRIES_DIR.iterdir()):
-            if month_dir.is_dir() and month_dir.name.startswith("202"):
-                for f in month_dir.glob("*.json"):
-                    try:
-                        entry = json.loads(f.read_text(encoding="utf-8"))
-                        all_entries.append((f, entry))
-                    except (json.JSONDecodeError, Exception):
-                        continue
+    snapshot_boundary = (
+        _entry_storage.writer_lock(DATA_DIR) if dry_run else storage_write_boundary()
+    )
+    with snapshot_boundary:
+        if dry_run and (DATA_DIR / _entry_storage.JOURNAL_NAME).exists():
+            raise StorageStateError(
+                "Pending storage recovery; recover explicitly before a reclassification dry-run"
+            )
+        if ENTRIES_DIR.exists():
+            for month_dir in sorted(ENTRIES_DIR.iterdir()):
+                if month_dir.is_dir() and month_dir.name.startswith("202"):
+                    for f in month_dir.glob("*.json"):
+                        try:
+                            entry_text = f.read_text(encoding="utf-8")
+                            entry = json.loads(entry_text)
+                            all_entries.append((f, entry, entry_text))
+                        except (json.JSONDecodeError, OSError):
+                            continue
 
     targets = []
-    for path, entry in all_entries:
+    for path, entry, entry_text in all_entries:
         eid = entry.get("id", "")
         has_topics = bool(entry.get("topics"))
         has_ct = bool(entry.get("content_type"))
 
         if entry_ids:
             if eid in entry_ids:
-                targets.append((path, entry))
+                targets.append((path, entry, entry_text))
         else:
             if not has_topics or not has_ct:
-                targets.append((path, entry))
+                targets.append((path, entry, entry_text))
 
     logger.info("Reclassifying %d entries...", len(targets))
 
     results = {"updated": 0, "skipped": 0, "errors": []}
 
-    for entry_path, entry in targets:
+    for entry_path, entry, original_entry_text in targets:
         eid = entry.get("id", "?")
         title = entry.get("title", "?")[:40]
 
@@ -581,19 +600,47 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
             }
             entry["timeliness"] = extract_timeliness(summary_result.get("structured", {}))
 
-        atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
-
-        summary_md = build_summary_md(entry, summary_result.get("structured", {}))
-        summary_path = SUMMARIES_DIR / f"{eid}.md"
-        if summary_path.exists():
-            atomic_write(summary_path, summary_md)
-
-        now = datetime.now(BJT).isoformat()
-        update_tags_registry(tags, now)
+        with storage_write_boundary():
+            # Model work happens outside the lock. Never replace a correction or
+            # new source body that arrived while the model was running.
+            if (
+                not entry_path.exists()
+                or entry_path.read_text(encoding="utf-8") != original_entry_text
+                or not raw_path.exists()
+                or raw_path.read_text(encoding="utf-8") != raw_text
+            ):
+                results["errors"].append({
+                    "id": eid,
+                    "error": "Entry or raw source changed during reclassification; retry explicitly",
+                })
+                continue
+            registry = load_tags_registry()
+            _merge_tags_into_registry(registry, tags, datetime.now(BJT).isoformat())
+            rows = read_storage_index()
+            projection = index_projection(entry)
+            matched = False
+            for row in rows:
+                if row.get("id") == eid:
+                    prior_metadata = row.get("metadata", {})
+                    merged_metadata = dict(prior_metadata) if isinstance(prior_metadata, dict) else {}
+                    merged_metadata.update(projection.get("metadata", {}))
+                    row.update(projection)
+                    row["metadata"] = merged_metadata
+                    matched = True
+            if not matched:
+                rows.append(projection)
+            updates = {
+                entry_path: json.dumps(entry, ensure_ascii=False, indent=2),
+                DATA_DIR / "tags_registry.json": json.dumps(registry, ensure_ascii=False, indent=2),
+                INDEX_FILE: "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
+            }
+            summary_path = SUMMARIES_DIR / f"{eid}.md"
+            if summary_path.exists():
+                updates[summary_path] = build_summary_md(
+                    entry, summary_result.get("structured", {})
+                )
+            commit_storage_files(updates)
 
         results["updated"] += 1
-
-    if not dry_run and results["updated"] > 0:
-        rebuild_index()
 
     return results

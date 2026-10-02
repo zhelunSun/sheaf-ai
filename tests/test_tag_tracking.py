@@ -216,9 +216,9 @@ class TestTagsRegistryTracking:
     """Tests for tags_registry.json ai_count/human_count (Issue #53)."""
 
     @pytest.fixture(autouse=True)
-    def _setup(self, tmp_path):
-        """Use temp directory for registry."""
-        self.reg_file = tmp_path / "tags_registry.json"
+    def _setup(self, isolated_data_dir):
+        """Keep the registry inside the same isolated storage root."""
+        self.reg_file = isolated_data_dir / "tags_registry.json"
         self._patcher = patch("sheaf_ai.storage.TAGS_REGISTRY_FILE", self.reg_file)
         self._patcher.start()
         yield

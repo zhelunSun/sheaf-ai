@@ -10,13 +10,23 @@ from datetime import datetime
 
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path
-from sheaf_ai.utils import atomic_write
+from sheaf_ai.storage import (
+    StorageStateError,
+    commit_storage_files,
+    read_storage_index,
+    storage_write_boundary,
+)
 
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
 
 
 def submit_feedback(entry_id: str, corrections: dict, user_note: str = "") -> dict:
-    """Submit a correction for an entry."""
+    """Submit a correction with one recoverable entry/index/history write."""
+    with storage_write_boundary():
+        return _submit_feedback_locked(entry_id, corrections, user_note)
+
+
+def _submit_feedback_locked(entry_id: str, corrections: dict, user_note: str) -> dict:
     now = datetime.now(BJT)
 
     entry = _load_entry(entry_id)
@@ -43,11 +53,33 @@ def submit_feedback(entry_id: str, corrections: dict, user_note: str = "") -> di
     if "summary" in corrections:
         feedback["before"]["summary"] = entry.get("summary", "")
 
-    _apply_corrections(entry_id, entry, corrections)
-
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with open(FEEDBACK_FILE, "a", encoding="utf-8") as f:
-        f.write(json.dumps(feedback, ensure_ascii=False) + "\n")
+    _apply_corrections(entry, corrections)
+    history = FEEDBACK_FILE.read_text(encoding="utf-8") if FEEDBACK_FILE.exists() else ""
+    for line in history.splitlines():
+        if not line.strip():
+            continue
+        try:
+            record = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise StorageStateError("Feedback history is corrupt; refusing to overwrite it") from exc
+        if not isinstance(record, dict):
+            raise StorageStateError("Feedback history must contain JSON objects")
+    if history and not history.endswith("\n"):
+        history += "\n"
+    updates = {
+        resolve_entry_json_path(ENTRIES_DIR, entry_id): json.dumps(
+            entry, ensure_ascii=False, indent=2
+        ),
+        FEEDBACK_FILE: history + json.dumps(feedback, ensure_ascii=False) + "\n",
+    }
+    index_file = DATA_DIR / "index.jsonl"
+    if index_file.exists():
+        rows = read_storage_index()
+        for row in rows:
+            if row.get("id") == entry_id:
+                row.update(_feedback_projection(entry))
+        updates[index_file] = "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows)
+    commit_storage_files(updates)
 
     return {
         "success": True,
@@ -117,8 +149,8 @@ def _load_entry(entry_id: str) -> dict | None:
         return json.load(f)
 
 
-def _apply_corrections(entry_id: str, entry: dict, corrections: dict) -> None:
-    """Apply corrections to entry file and update index."""
+def _apply_corrections(entry: dict, corrections: dict) -> None:
+    """Prepare corrections in memory; the caller commits all affected files."""
     if "category_primary" in corrections:
         entry["category"]["primary"] = corrections["category_primary"]
     if "category_sub" in corrections:
@@ -130,41 +162,18 @@ def _apply_corrections(entry_id: str, entry: dict, corrections: dict) -> None:
     if "summary" in corrections:
         entry["summary"] = corrections["summary"]
 
-    entry_path = resolve_entry_json_path(ENTRIES_DIR, entry_id)
-    atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
 
-    _update_index_entry(entry_id, entry)
-
-
-def _update_index_entry(entry_id: str, entry: dict) -> None:
-    """Update a single entry in index.jsonl."""
-    index_file = DATA_DIR / "index.jsonl"
-    if not index_file.exists():
-        return
-
-    lines = []
-    with open(index_file, "r", encoding="utf-8") as f:
-        for line in f:
-            line_stripped = line.strip()
-            if not line_stripped:
-                continue
-            try:
-                idx_entry = json.loads(line_stripped)
-                if idx_entry.get("id") == entry_id:
-                    timeliness = entry.get("timeliness", {})
-                    idx_entry["title"] = entry.get("title", "")
-                    idx_entry["primary_category"] = entry.get("category", {}).get("primary", "")
-                    idx_entry["sub_category"] = entry.get("category", {}).get("sub", "")
-                    idx_entry["tags"] = entry.get("tags", [])
-                    idx_entry["importance"] = entry.get("importance", "medium")
-                    idx_entry["summary"] = entry.get("summary", "")
-                    idx_entry["has_deadline"] = timeliness.get("has_deadline", False)
-                    idx_entry["deadline_date"] = timeliness.get("deadline_date")
-                    idx_entry["urgency"] = timeliness.get("urgency", "evergreen")
-                lines.append(json.dumps(idx_entry, ensure_ascii=False))
-            except json.JSONDecodeError:
-                continue
-
-    with open(index_file, "w", encoding="utf-8") as f:
-        for line in lines:
-            f.write(line + "\n")
+def _feedback_projection(entry: dict) -> dict:
+    """Update the original correction fields without migrating legacy Entries."""
+    timeliness = entry.get("timeliness", {})
+    return {
+        "title": entry.get("title", ""),
+        "primary_category": entry.get("category", {}).get("primary", ""),
+        "sub_category": entry.get("category", {}).get("sub", ""),
+        "tags": entry.get("tags", []),
+        "importance": entry.get("importance", "medium"),
+        "summary": entry.get("summary", ""),
+        "has_deadline": timeliness.get("has_deadline", False),
+        "deadline_date": timeliness.get("deadline_date"),
+        "urgency": timeliness.get("urgency", "evergreen"),
+    }

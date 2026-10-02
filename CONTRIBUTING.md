@@ -7,8 +7,16 @@ Thanks for helping improve Sheaf. The project is early alpha, so small, focused 
 ```bash
 git clone https://github.com/zhelunSun/sheaf-ai.git
 cd sheaf-ai
+python -m venv .venv
+# Activate .venv with the command for your shell before installing.
 python -m pip install -e ".[dev]"
 ```
+
+On PowerShell, activate with `.venv\Scripts\Activate.ps1`; on a POSIX shell,
+use `source .venv/bin/activate`. Alternatively, invoke the environment's Python
+directly. The `dev` extra includes the classical retrieval benchmark backend
+(scikit-learn), optional-template test support (Jinja2), HTTP tests, and build tools.
+Installing only the runtime package is not sufficient for the complete test suite.
 
 Optional extras:
 
@@ -22,8 +30,8 @@ python -m pip install -e ".[browser]"  # Playwright fetch fallback
 Run these before opening a PR:
 
 ```bash
-python -m pytest tests -q
-python -m ruff check sheaf_ai sheaf_cards tests
+python -m pytest tests -q -ra
+python -m ruff check --config pyproject.toml sheaf_ai sheaf_cards tests
 python -m build
 ```
 
@@ -32,6 +40,24 @@ On locked-down Windows environments, pytest may need an explicit workspace temp 
 ```bash
 python -m pytest tests -q --basetemp .pytest-tmp
 ```
+
+CI covers Python 3.10–3.12 on Linux and Python 3.12 on Windows, including fresh-wheel
+installation and stdio MCP smoke on both platforms. Tests isolate their data; do
+not point test commands at a personal knowledge library. Do not globally disable
+dotenv loading for the entire suite: an installation test intentionally checks
+loading a temporary `.env`. Run in a clean checkout without personal credentials.
+
+Skipped checks remain visible with `-ra`. Live-model experiments and the opt-in
+legacy subprocess journeys are separate from the default suite. A pinned
+tokenizer asset and directory-symlink support also depend on the environment;
+missing prerequisites are not passing results. For a validation receipt, retain
+the full test summary together with `python --version` and
+`python -m pip list --format=freeze --exclude-editable`, plus the source commit and
+working-tree diff. Explicit Ruff configuration prevents unrelated parent-directory
+settings from changing the repository's checks.
+
+For the file-write protocol, recovery procedure and deployment limits, see
+[Local reliability and recovery](docs/LOCAL-RELIABILITY.md).
 
 ## Pull Requests
 

@@ -106,6 +106,9 @@ def _isolated_env(home: Path) -> dict[str, str]:
     env.pop("PYTHONPATH", None)
     env.pop("PYTHONHOME", None)
     env.pop("SHEAF_MCP_TOOLS", None)
+    for key in list(env):
+        if key.endswith("API_KEY"):
+            env.pop(key)
     env.update(
         {
             "HOME": str(home),
@@ -113,6 +116,7 @@ def _isolated_env(home: Path) -> dict[str, str]:
             "SHEAF_DATA_DIR": str(home / "sheaf-data"),
             "NO_COLOR": "1",
             "PYTHONUTF8": "1",
+            "SHEAF_LOAD_DOTENV": "0",
             "PIP_DISABLE_PIP_VERSION_CHECK": "1",
         }
     )
@@ -189,6 +193,13 @@ def _assert_stdio_mcp(
             "params": {},
         },
         {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}},
+        {
+            "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+            "params": {
+                "name": "sheaf_search",
+                "arguments": {"query": "isolated installation smoke", "mode": "quick"},
+            },
+        },
     ]
     input_text = "".join(json.dumps(request) + "\n" for request in requests)
     completed = _run(
@@ -210,9 +221,9 @@ def _assert_stdio_mcp(
         if "id" in response:
             responses[response["id"]] = response
 
-    if set(responses) != {1, 2}:
+    if set(responses) != {1, 2, 3}:
         raise SmokeFailure(
-            f"Expected MCP responses for request ids 1 and 2, got {set(responses)}"
+            f"Expected MCP responses for request ids 1, 2 and 3, got {set(responses)}"
         )
     for request_id, response in responses.items():
         if "error" in response:
@@ -235,6 +246,13 @@ def _assert_stdio_mcp(
             f"Default MCP tool surface mismatch: expected {sorted(CORE_TOOLS)}, "
             f"got {sorted(name for name in tool_names if name)}"
         )
+
+    search_result = responses[3].get("result", {})
+    search_data = search_result.get("structuredContent", {})
+    if search_result.get("isError") or search_data.get("results") != []:
+        raise SmokeFailure(f"Isolated read-only MCP search failed: {search_result}")
+    if search_data.get("semantic_backend") != "disabled":
+        raise SmokeFailure("Read-only smoke must not invoke an embedding provider")
 
 
 def parse_args() -> argparse.Namespace:

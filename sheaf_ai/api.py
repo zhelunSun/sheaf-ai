@@ -22,6 +22,7 @@ from ipaddress import ip_address
 from typing import Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Query, Request, Response
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -477,7 +478,9 @@ def create_app(api_token: str | None = None) -> FastAPI:
 
         # Delegate to existing MCP handler
         from sheaf_ai.mcp_server import handle_request
-        response_str = handle_request(body)
+        # Tools perform blocking I/O; keep the event loop available for other
+        # requests. Cancellation does not stop or roll back a running tool.
+        response_str = await run_in_threadpool(handle_request, body)
 
         # No response for notifications
         if response_str is None:

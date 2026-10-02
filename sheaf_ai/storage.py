@@ -4,7 +4,8 @@ Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 import json
 import logging
 import re
-import threading
+from contextlib import contextmanager
+from typing import Mapping
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -14,7 +15,6 @@ from sheaf_ai.config import (
     TAGS_REGISTRY_FILE, BJT, SCHEMA_VERSION,
 )
 from sheaf_ai.utils import (
-    atomic_write,
     content_hash,
     detect_platform,
     evidence_digest,
@@ -26,14 +26,46 @@ from sheaf_ai.source_independence import (
     assess_source_pair,
 )
 
+from sheaf_ai import _entry_storage
+from sheaf_ai._entry_storage import StorageStateError, StorageRecoveryRequired  # noqa: F401
+
 logger = logging.getLogger(__name__)
 
-# Serialize read-modify-write on the shared JSONL/JSON state files.
-# ``batch collect`` runs ThreadPoolExecutor across URLs; without this guard two
-# threads can both load tags_registry.json, mutate, and the second save clobbers
-# the first (lost-update race). Also protects append_index line interleaving on
-# Windows. In-process only (batch uses threads, not processes).
-_STORAGE_LOCK = threading.RLock()
+
+@contextmanager
+def storage_write_boundary():
+    """Serialize a complete cooperative RMW and finish any durable intent first.
+
+    Reentrant within one thread. Callers must acquire this boundary BEFORE
+    reading files that inform a write; locking a setter alone cannot protect a
+    stale read. Unlocked readers do not get a multi-file snapshot.
+    """
+    with _entry_storage.writer_lock(DATA_DIR) as root:
+        _entry_storage.recover(root)
+        yield
+
+
+def recover_pending_storage() -> str | None:
+    """Explicitly roll a pending write forward without calling any model."""
+    with _entry_storage.writer_lock(DATA_DIR) as root:
+        return _entry_storage.recover(root)
+
+
+def commit_storage_files(updates: Mapping[Path, str]) -> str | None:
+    """Durably publish prepared after-images; callers hold the RMW boundary."""
+    with storage_write_boundary():
+        return _entry_storage.commit(Path(DATA_DIR), updates)
+
+
+def _checked_storage_path(path: Path) -> Path:
+    return _entry_storage.target_for_path(DATA_DIR, path)
+
+
+def read_storage_index() -> list[dict]:
+    """Read valid complete JSONL; never skip corrupt rows or duplicate IDs."""
+    return _entry_storage.parse_jsonl(
+        _entry_storage.read_text(_checked_storage_path(INDEX_FILE))
+    )
 
 
 def _extract_entities_for_index(title: str, summary: str) -> list[dict]:
@@ -55,22 +87,23 @@ def _extract_entities_for_index(title: str, summary: str) -> list[dict]:
 # ============================================================
 
 def load_tags_registry() -> dict:
-    """Load tags registry. Returns {tag: {count, first_seen, last_seen}}."""
-    if TAGS_REGISTRY_FILE.exists():
-        try:
-            return json.loads(TAGS_REGISTRY_FILE.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, Exception):
-            return {}
-    return {}
+    """Read tags in the legacy shape; corrupt state is never an empty registry."""
+    path = _checked_storage_path(TAGS_REGISTRY_FILE)
+    if not path.exists():
+        return {}
+    return _entry_storage.validate_tags(
+        _entry_storage.strict_json(_entry_storage.read_text(path), "tags registry")
+    )
 
 
 def save_tags_registry(registry: dict) -> None:
-    """Save tags registry."""
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    atomic_write(
-        TAGS_REGISTRY_FILE,
-        json.dumps(registry, ensure_ascii=False, indent=2),
-    )
+    """Replace tags under the writer boundary; external RMW needs an outer lock."""
+    with storage_write_boundary():
+        load_tags_registry()  # refuse to replace corrupt pre-existing state
+        _entry_storage.validate_tags(registry)
+        commit_storage_files({
+            TAGS_REGISTRY_FILE: json.dumps(registry, ensure_ascii=False, indent=2),
+        })
 
 
 def _merge_tags_into_registry(registry: dict, tags: list, now_iso: str, attached_by: str = "ai") -> None:
@@ -137,9 +170,7 @@ def update_tags_registry(tags: list, now_iso: str, attached_by: str = "ai") -> N
         now_iso: Current ISO timestamp
         attached_by: "ai" (auto-generated) or "human" (manual) — Issue #53
     """
-    # Lock the full read-modify-write so concurrent batch-collect threads don't
-    # clobber each other's tag updates (lost-update race on tags_registry.json).
-    with _STORAGE_LOCK:
+    with storage_write_boundary():
         registry = load_tags_registry()
         _merge_tags_into_registry(registry, tags, now_iso, attached_by)
         save_tags_registry(registry)
@@ -362,7 +393,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
     }
 
     raw_text = str(fetch_result.get("text", ""))
-    with _STORAGE_LOCK:
+    with storage_write_boundary():
         try:
             existing_sources, loading_errors = _load_existing_sources()
             duplicate_relations, duplicate_diagnostic = _assess_duplicate_relations(
@@ -378,22 +409,27 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
         entry["metadata"]["duplicate_detection"] = duplicate_diagnostic
         entry["metadata"]["duplicate_relations"] = duplicate_relations
 
-        # Persist the relation snapshot with the Entry before exposing it in the
-        # index. Detection failures are data, not collection failures.
-        month_dir = ENTRIES_DIR / now.strftime("%Y-%m")
-        month_dir.mkdir(parents=True, exist_ok=True)
-        entry_path = month_dir / f"{entry_id}.json"
-        atomic_write(entry_path, json.dumps(entry, ensure_ascii=False, indent=2))
-
+        # Prepare everything before the durable intent. Recovery writes these
+        # exact after-images, rather than repeating tags/index increments.
+        entry_path = ENTRIES_DIR / now.strftime("%Y-%m") / f"{entry_id}.json"
         raw_path = RAW_DIR / f"{entry_id}.txt"
-        atomic_write(raw_path, raw_text)
-
-        summary_md = build_summary_md(entry, summary_result.get("structured", {}))
         summary_path = SUMMARIES_DIR / f"{entry_id}.md"
-        atomic_write(summary_path, summary_md)
-
-        update_tags_registry(tags, now.isoformat())
-        append_index(entry)
+        for path in (entry_path, raw_path, summary_path):
+            if _checked_storage_path(path).exists():
+                raise StorageStateError(f"New Entry artifact already exists: {path.name}")
+        registry = load_tags_registry()
+        _merge_tags_into_registry(registry, tags, now.isoformat())
+        records = read_storage_index()
+        if any(record["id"] == entry_id for record in records):
+            raise StorageStateError(f"New Entry ID already exists in index: {entry_id}")
+        records.append(index_projection(entry))
+        commit_storage_files({
+            raw_path: raw_text,
+            summary_path: build_summary_md(entry, summary_result.get("structured", {})),
+            entry_path: json.dumps(entry, ensure_ascii=False, indent=2),
+            TAGS_REGISTRY_FILE: json.dumps(registry, ensure_ascii=False, indent=2),
+            INDEX_FILE: _index_text(records),
+        })
 
     # Entry embeddings are opt-in to bootstrap because they may call a paid
     # provider. Once the user has explicitly built the index, keep it current
@@ -478,8 +514,8 @@ def build_summary_md(entry: dict, structured: dict) -> str:
 # Index Management
 # ============================================================
 
-def append_index(entry: dict) -> None:
-    """Append a lightweight index entry (for search)."""
+def index_projection(entry: dict) -> dict:
+    """Project one Entry into the existing search-index shape."""
     timeliness = entry.get("timeliness", {})
     # Issue #58: Extract entities at index time for search boosting
     title = entry.get("title", "")
@@ -521,9 +557,25 @@ def append_index(entry: dict) -> None:
         "source": entry.get("source", {}),
         "entities": entities,  # Issue #58
     }
-    with _STORAGE_LOCK:
-        with open(INDEX_FILE, "a", encoding="utf-8") as f:
-            f.write(json.dumps(index_entry, ensure_ascii=False) + "\n")
+    return index_entry
+
+
+def _index_text(records: list[dict]) -> str:
+    return "".join(json.dumps(record, ensure_ascii=False) + "\n" for record in records)
+
+
+def append_index(entry: dict) -> None:
+    """Add an ID once; publish a complete file under the cross-process lock."""
+    projected = index_projection(entry)
+    with storage_write_boundary():
+        records = read_storage_index()
+        for record in records:
+            if record["id"] == projected["id"]:
+                if record == projected:
+                    return
+                raise StorageStateError("Index ID already exists with different content")
+        records.append(projected)
+        commit_storage_files({INDEX_FILE: _index_text(records)})
 
 
 def rebuild_duplicate_relations() -> dict[str, int]:
@@ -539,7 +591,7 @@ def rebuild_duplicate_relations() -> dict[str, int]:
         "degraded_entries": 0,
         "invalid_entries": 0,
     }
-    with _STORAGE_LOCK:
+    with storage_write_boundary():
         records: list[tuple[Path, dict, str | None, str]] = []
         if ENTRIES_DIR.exists():
             for entry_path in sorted(ENTRIES_DIR.glob("20*/*.json")):
@@ -604,10 +656,9 @@ def rebuild_duplicate_relations() -> dict[str, int]:
                     }
             metadata["duplicate_relations"] = relations
             metadata["duplicate_detection"] = diagnostic
-            atomic_write(
-                entry_path,
-                json.dumps(entry, ensure_ascii=False, indent=2),
-            )
+            commit_storage_files({
+                entry_path: json.dumps(entry, ensure_ascii=False, indent=2),
+            })
             report["relations_found"] += len(relations)
             if diagnostic["status"] != "ok":
                 report["degraded_entries"] += 1
@@ -617,30 +668,34 @@ def rebuild_duplicate_relations() -> dict[str, int]:
 
 
 def rebuild_index() -> int:
-    """Rebuild index.jsonl from all entry JSON files."""
-    entries = []
-    if ENTRIES_DIR.exists():
-        for month_dir in sorted(ENTRIES_DIR.iterdir()):
-            if month_dir.is_dir() and month_dir.name.startswith("202"):
-                for f in sorted(month_dir.glob("*.json")):
-                    try:
-                        entry = json.loads(f.read_text(encoding="utf-8"))
+    """Build a complete replacement under the writer lock; fail on bad Entries.
+
+    This explicit repair may replace a corrupt derived index, but never guesses
+    missing/corrupt source Entries or truncates the old index before building.
+    """
+    with storage_write_boundary():
+        entries = []
+        if ENTRIES_DIR.exists():
+            for month_dir in sorted(ENTRIES_DIR.iterdir()):
+                if month_dir.is_dir() and month_dir.name.startswith("202"):
+                    for path in sorted(month_dir.glob("*.json")):
+                        path = _checked_storage_path(path)
+                        entry = _entry_storage.strict_json(
+                            _entry_storage.read_text(path), f"Entry {path.name}"
+                        )
+                        if not isinstance(entry, dict) or entry.get("id") != path.stem:
+                            raise StorageStateError(f"Invalid Entry identity: {path.name}")
                         if entry.get("status") != "deleted":
                             entries.append(entry)
-                    except Exception:
-                        continue
 
-    def _get_collected_at(e):
-        meta = e.get("metadata", {})
-        if isinstance(meta, dict) and meta.get("collected_at"):
-            return meta["collected_at"]
-        return e.get("collected_at", "")
+        def collected_at(entry):
+            metadata = entry.get("metadata", {})
+            if isinstance(metadata, dict) and metadata.get("collected_at"):
+                return metadata["collected_at"]
+            return entry.get("collected_at", "")
 
-    entries.sort(key=_get_collected_at)
-
-    atomic_write(INDEX_FILE, "")
-    for entry in entries:
-        append_index(entry)
-
+        entries.sort(key=collected_at)
+        payload = _index_text([index_projection(entry) for entry in entries])
+        commit_storage_files({INDEX_FILE: payload})
     logger.info("Index rebuilt: %d entries", len(entries))
     return len(entries)
