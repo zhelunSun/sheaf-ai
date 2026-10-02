@@ -23,6 +23,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
+from sheaf_ai.collection_projection import collection_diagnostics, unexpected_collection_error
 
 
 @dataclass
@@ -33,14 +34,26 @@ class BatchResult:
     failed: int = 0
     skipped: int = 0  # duplicates
     results: list[dict] = field(default_factory=list)
+    partial: int = 0  # saved sources with incomplete enrichment
+    unassessed: int = 0  # legacy producers without processing diagnostics
 
     def to_dict(self) -> dict:
         return {
-            "ok": self.failed == 0,
+            "ok": self.failed == 0 and self.partial == 0,
+            "status": "error" if self.failed and not self.succeeded else (
+                "partial" if self.failed or self.partial else (
+                    "unknown" if self.unassessed else "success"
+                )
+            ),
+            "processing_complete": self.failed == 0 and self.partial == 0 and self.unassessed == 0,
             "total": self.total,
             "succeeded": self.succeeded,
             "failed": self.failed,
             "skipped": self.skipped,
+            "partial": self.partial,
+            "unassessed": self.unassessed,
+            "complete": max(0, self.succeeded - self.partial - self.unassessed),
+            "not_completed": max(0, self.total - self.succeeded - self.failed - self.skipped),
             "results": self.results,
         }
 
@@ -51,15 +64,11 @@ def _collect_single(url: str, force: bool = False) -> dict:
 
     try:
         result = process_url(url, force=force)
+        result.update(collection_diagnostics(result))
         result["url"] = url
         return result
-    except Exception as e:
-        return {
-            "success": False,
-            "url": url,
-            "error": str(e),
-            "stage": "unknown",
-        }
+    except Exception:
+        return {**unexpected_collection_error(), "url": url}
 
 
 def batch_collect(
@@ -105,9 +114,12 @@ def batch_collect(
 
                 if result.get("success"):
                     batch.succeeded += 1
+                    batch.partial += result.get("status") == "partial"
+                    batch.unassessed += result.get("status", "unknown") == "unknown"
                     if not quiet:
                         entry_id = result.get("entry_id", "?")
-                        print(f"  ✓ {entry_id}")
+                        label = "⚠ Saved; processing partial" if result.get("status") == "partial" else "✓"
+                        print(f"  {label} {entry_id}")
                 elif result.get("stage") == "dedup":
                     batch.skipped += 1
                     if not quiet:
@@ -118,14 +130,18 @@ def batch_collect(
                     stage = result.get("stage", "?")
                     if not quiet:
                         print(f"  ✗ Failed [{stage}]: {err}")
-                    if on_error == "stop":
-                        if not quiet:
-                            print(f"  Stopped at URL {i}/{len(urls)} (on_error=stop)")
-                        break
 
                 if jsonl_file:
                     jsonl_file.write(json.dumps(result, ensure_ascii=False) + "\n")
                     jsonl_file.flush()
+                if on_error == "stop" and (
+                    result.get("status") == "partial" or (
+                        not result.get("success") and result.get("stage") != "dedup"
+                    )
+                ):
+                    if not quiet:
+                        print(f"  Stopped at URL {i}/{len(urls)} (on_error=stop)")
+                    break
         else:
             # Concurrent processing
             with ThreadPoolExecutor(max_workers=concurrency) as pool:
@@ -135,20 +151,25 @@ def batch_collect(
                 }
                 completed_count = 0
                 for future in as_completed(futures):
+                    if future.cancelled():
+                        continue
                     idx, url = futures[future]
                     completed_count += 1
                     try:
                         result = future.result()
-                    except Exception as e:
-                        result = {"success": False, "url": url, "error": str(e), "stage": "unknown"}
+                    except Exception:
+                        result = {**unexpected_collection_error(), "url": url}
 
                     result["index"] = idx
                     batch.results.append(result)
 
                     if result.get("success"):
                         batch.succeeded += 1
+                        batch.partial += result.get("status") == "partial"
+                        batch.unassessed += result.get("status", "unknown") == "unknown"
                         if not quiet:
-                            print(f"  [{completed_count}/{len(urls)}] ✓ {url}")
+                            label = "⚠ Saved; processing partial" if result.get("status") == "partial" else "✓"
+                            print(f"  [{completed_count}/{len(urls)}] {label} {url}")
                     elif result.get("stage") == "dedup":
                         batch.skipped += 1
                         if not quiet:
@@ -158,13 +179,19 @@ def batch_collect(
                         err = result.get("error", "unknown")
                         if not quiet:
                             print(f"  [{completed_count}/{len(urls)}] ✗ {url}: {err}")
-                        if on_error == "stop":
-                            pool.shutdown(wait=False, cancel_futures=True)
-                            break
 
                     if jsonl_file:
                         jsonl_file.write(json.dumps(result, ensure_ascii=False) + "\n")
                         jsonl_file.flush()
+                    if on_error == "stop" and (
+                        result.get("status") == "partial" or (
+                            not result.get("success") and result.get("stage") != "dedup"
+                        )
+                    ):
+                        # Cancel queued work; drain running work so saved sources
+                        # always have a result receipt and are counted exactly once.
+                        for pending in futures:
+                            pending.cancel()
 
             # Sort results by original index for consistent output
             batch.results.sort(key=lambda r: r.get("index", 0))
@@ -205,6 +232,8 @@ def format_batch_summary(result: BatchResult) -> str:
         f"{'='*50}",
         f"  Total:    {result.total}",
         f"  Success:  {result.succeeded}",
+        f"  Partial:  {result.partial} (included in saved successes)",
+        f"  Unassessed: {result.unassessed} (legacy processing status)",
         f"  Skipped:  {result.skipped} (duplicates)",
         f"  Failed:   {result.failed}",
     ]

@@ -6,6 +6,7 @@ Also contains the reclassify (legacy migration) logic.
 from __future__ import annotations
 import json
 import logging
+import math
 from datetime import datetime
 from typing import Optional
 
@@ -16,7 +17,7 @@ from sheaf_ai.config import (
     SCHEMA_VERSION,
 )
 from sheaf_ai.utils import extract_timeliness
-from sheaf_ai.storage import store_article, rebuild_index, append_index, build_summary_md, update_tags_registry  # noqa: F401
+from sheaf_ai.storage import store_article, rebuild_index, append_index, update_tags_registry  # noqa: F401
 from sheaf_ai.storage import (
     StorageStateError,
     _merge_tags_into_registry,
@@ -200,12 +201,117 @@ def _extract_tags_from_text(title: str, text: str) -> list[str]:
     return list(tags)
 
 
+def _validate_classification(parsed: object, title: str, text: str) -> dict:
+    """Validate fields consumed by storage; do not mistake any JSON for success."""
+    if not isinstance(parsed, dict):
+        raise ValueError("Classification must be an object")
+    topics = parsed.get("topics")
+    if topics is None:
+        # Keep the previous primary_category/sub_category model format readable.
+        primary = parsed.get("primary_category")
+        sub = parsed.get("sub_category", "")
+        if not isinstance(primary, str) or not primary.strip() or not isinstance(sub, str):
+            raise ValueError("Classification has no topics")
+        topics = [{"name": primary, "confidence": 0.9}]
+        if sub:
+            topics.append({"name": sub, "confidence": 0.6})
+    if not isinstance(topics, list) or not topics:
+        raise ValueError("Classification topics must be a nonempty list")
+    clean_topics = []
+    for topic in topics:
+        if not isinstance(topic, dict) or not isinstance(topic.get("name"), str) or not topic["name"].strip():
+            raise ValueError("Invalid classification topic")
+        confidence = topic.get("confidence", 0.5)
+        if (isinstance(confidence, bool) or not isinstance(confidence, (int, float))
+                or not math.isfinite(confidence) or not 0 <= confidence <= 1):
+            raise ValueError("Invalid topic confidence")
+        clean_topics.append({"name": topic["name"], "confidence": confidence})
+    tags = parsed.get("tags", [])
+    if not isinstance(tags, list) or any(not isinstance(tag, str) or not tag.strip() for tag in tags):
+        raise ValueError("Classification tags must be strings")
+    content_type = parsed.get("content_type", "reference")
+    importance = parsed.get("importance", "medium")
+    relevance_note = parsed.get("relevance_note", "")
+    if not isinstance(content_type, str) or not content_type.strip():
+        raise ValueError("Invalid content type")
+    if not isinstance(importance, str) or importance not in {"high", "medium", "low"}:
+        raise ValueError("Invalid importance")
+    if not isinstance(relevance_note, str):
+        raise ValueError("Invalid relevance note")
+    clean = {
+        "topics": clean_topics, "tags": tags or _extract_tags_from_text(title, text)[:8],
+        "content_type": content_type, "importance": importance, "relevance_note": relevance_note,
+    }
+    assessment = parsed.get("source_assessment")
+    if assessment is not None:
+        if not isinstance(assessment, dict):
+            raise ValueError("Invalid source assessment")
+        for key in ("is_primary_source", "has_verifiable_claims"):
+            if key in assessment and not isinstance(assessment[key], bool):
+                raise ValueError("Invalid source assessment flag")
+        expertise = assessment.get("domain_expertise", "low")
+        if not isinstance(expertise, str) or expertise not in {"high", "medium", "low"}:
+            raise ValueError("Invalid source expertise")
+        if not isinstance(assessment.get("reasoning", ""), str):
+            raise ValueError("Invalid source reasoning")
+        clean["source_assessment"] = assessment
+    return clean
+
+
+def _validate_summary(parsed: object) -> dict:
+    if not isinstance(parsed, dict):
+        raise ValueError("Summary must be an object")
+    if not isinstance(parsed.get("one_liner"), str) or not parsed["one_liner"].strip():
+        raise ValueError("Summary must include a nonempty one-liner")
+    structured = parsed.get("structured")
+    if not isinstance(structured, dict):
+        raise ValueError("Structured summary must be an object")
+    fields = ("core_argument", "key_data", "relevance_to_user", "action_items")
+    for key in fields:
+        if not isinstance(structured.get(key, ""), str):
+            raise ValueError("Invalid structured summary field")
+    timing = structured.get("deadline_or_timing")
+    if timing is not None and not isinstance(timing, str):
+        raise ValueError("Invalid summary timing")
+    for key in ("original_title", "source_author"):
+        if not isinstance(parsed.get(key, ""), str):
+            raise ValueError("Invalid summary source field")
+    return {
+        "one_liner": parsed["one_liner"],
+        "structured": {**{key: structured.get(key, "") for key in fields}, "deadline_or_timing": timing},
+        "original_title": parsed.get("original_title", ""),
+        "source_author": parsed.get("source_author", ""),
+    }
+
+
+def _collection_meta(classify_result: dict | None = None, summary_result: dict | None = None) -> dict:
+    """Fixed diagnostics only: provider error messages must never become knowledge."""
+    processing = {}
+    warnings = []
+    for stage, result in (("classify", classify_result), ("summarize", summary_result)):
+        processing[stage] = (
+            dict(result.get("_processing", {"status": "success", "method": "llm"}))
+            if result is not None else {"status": "not_run", "method": "none"}
+        )
+    if processing["classify"]["status"] == "fallback":
+        warnings.append("自动分类未完成，已使用规则分类；请核查主题和标签。")
+    if processing["summarize"]["status"] == "error":
+        warnings.append("自动摘要未完成，原文已保留；可查看原文，不必重复收藏。")
+    completed = all(value["status"] == "success" for value in processing.values())
+    return {"status": "success" if completed else "partial", "processing": processing, "warnings": warnings}
+
+
+def _collection_rejected() -> dict:
+    return {**_collection_meta(), "status": "error", "stored": False}
+
+
 def classify_article(title: str, text: str) -> dict:
     """LLM classify: dynamic topics + tags + content_type + importance."""
     from sheaf_ai.llm_client import chat
 
-    classify_prompt = load_prompt("classify.md")
-    prompt = f"""{classify_prompt}
+    try:
+        classify_prompt = load_prompt("classify.md")
+        prompt = f"""{classify_prompt}
 
 Now classify this article:
 
@@ -215,7 +321,6 @@ Content:
 {text[:6000]}
 
 Respond with ONLY a valid JSON object (no markdown, no explanation)."""
-    try:
         result = chat(
             prompt=prompt,
             system="You are a precise article classifier. Output ONLY valid JSON. ALL text fields must be in Chinese (中文), except proper nouns.",
@@ -224,27 +329,14 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
             max_tokens=800,
         )
         result = _clean_json_response(result)
-        parsed = json.loads(result)
-
-        if "topics" not in parsed or not isinstance(parsed["topics"], list):
-            primary = parsed.get("primary_category", "AI")
-            sub = parsed.get("sub_category", "")
-            parsed["topics"] = [{"name": primary, "confidence": 0.9}]
-            if sub:
-                parsed["topics"].append({"name": sub, "confidence": 0.6})
-
-        if "content_type" not in parsed:
-            parsed["content_type"] = "reference"
-
-        # Validate tags are non-empty — if empty, use rule-based fallback
-        if not parsed.get("tags"):
-            parsed["tags"] = _extract_tags_from_text(title, text)[:8]
-
+        parsed = _validate_classification(json.loads(result), title, text)
+        parsed["_processing"] = {"status": "success", "method": "llm"}
         return parsed
-    except Exception as e:
+    except Exception:
         # Use rule-based fallback instead of hardcoded "AI" / empty tags (Issue #74, #76)
         fallback = _rule_based_classify(title, text)
-        fallback["relevance_note"] = f"LLM classification failed ({type(e).__name__}), using rule-based fallback"
+        fallback["relevance_note"] = "LLM classification unavailable or invalid; using rule-based fallback"
+        fallback["_processing"] = {"status": "fallback", "method": "rules"}
         return fallback
 
 
@@ -252,8 +344,9 @@ def summarize_article(title: str, text: str) -> dict:
     """LLM summarize: one-liner + structured summary."""
     from sheaf_ai.llm_client import chat
 
-    summarize_prompt = load_prompt("summarize.md")
-    prompt = f"""{summarize_prompt}
+    try:
+        summarize_prompt = load_prompt("summarize.md")
+        prompt = f"""{summarize_prompt}
 
 Now summarize this article:
 
@@ -263,7 +356,6 @@ Content:
 {text[:6000]}
 
 Respond with ONLY a valid JSON object (no markdown, no explanation)."""
-    try:
         result = chat(
             prompt=prompt,
             system="You are a precise article summarizer. Output ONLY valid JSON. ALL text fields must be in Chinese (中文), except for proper nouns (model names, company names, framework names).",
@@ -272,11 +364,12 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
             max_tokens=1200,
         )
         result = _clean_json_response(result)
-        parsed = json.loads(result)
+        parsed = _validate_summary(json.loads(result))
+        parsed["_processing"] = {"status": "success", "method": "llm"}
         return parsed
-    except Exception as e:
+    except Exception:
         return {
-            "one_liner": f"Summary failed: {e}",
+            "one_liner": "",
             "structured": {
                 "core_argument": "",
                 "key_data": "",
@@ -286,6 +379,7 @@ Respond with ONLY a valid JSON object (no markdown, no explanation)."""
             },
             "original_title": title,
             "source_author": "",
+            "_processing": {"status": "error", "method": "none"},
         }
 
 
@@ -317,6 +411,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
             logger.warning("Duplicate detected (%s): %s", dup['type'], existing.get('title', '?'))
             return {
                 "success": False,
+                **_collection_rejected(),
                 "error": f"Duplicate ({dup['type']})",
                 "stage": "dedup",
                 "existing_id": existing.get("id"),
@@ -343,7 +438,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
         if not fetch_result["success"]:
             err = fetch_result.get("error", "Fetch failed")
             fetch_err = fetch_result.get("fetch_error", {})
-            result: dict = {"success": False, "error": err, "stage": "fetch"}
+            result: dict = {"success": False, "error": err, "stage": "fetch", **_collection_rejected()}
             if fetch_err:
                 result["fetch_error"] = fetch_err
             return result
@@ -371,6 +466,7 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
     if not quality_report.passed:
         return {
             "success": False,
+            **_collection_rejected(),
             "error": quality_report.reason,
             "stage": "quality",
             "quality": quality_report.to_dict(),
@@ -446,11 +542,13 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
 
     # Step 4: Store
     logger.info("Storing...")
+    collection_meta = _collection_meta(classify_result, summary_result)
     entry_id = store_article(
         url, fetch_result, classify_result, summary_result,
         extra_meta=conversation_meta if is_ai_conversation else None,
         quality_tier=quality_report.quality_tier,
         source_info=source_info,
+        collection_meta={**collection_meta, "quality": quality_report.to_dict()},
     )
     logger.info("Stored as: %s", entry_id)
 
@@ -467,6 +565,8 @@ def process_url(url: str, manual_text: Optional[str] = None, force: bool = False
 
     return {
         "success": True,
+        "stored": True,
+        **collection_meta,
         "entry_id": entry_id,
         "url": url,
         "topics": topics,
@@ -523,7 +623,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
 
     logger.info("Reclassifying %d entries...", len(targets))
 
-    results = {"updated": 0, "skipped": 0, "errors": []}
+    results = {"updated": 0, "complete": 0, "partial": 0, "skipped": 0, "errors": [], "items": []}
 
     for entry_path, entry, original_entry_text in targets:
         eid = entry.get("id", "?")
@@ -544,10 +644,26 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
         try:
             classify_result = classify_article(title, raw_text)
             summary_result = summarize_article(title, raw_text)
-        except Exception as e:
-            logger.error("LLM failed for %s: %s", eid, e)
-            results["errors"].append({"id": eid, "error": str(e)})
+        except Exception:
+            logger.error("Enrichment failed for %s", eid)
+            results["errors"].append({"id": eid, "error": "Enrichment failed; existing entry retained"})
             continue
+
+        collection_meta = _collection_meta(classify_result, summary_result)
+        classify_ok = collection_meta["processing"]["classify"]["status"] == "success"
+        summary_ok = collection_meta["processing"]["summarize"]["status"] == "success"
+        if not summary_ok:
+            collection_meta["warnings"][-1] = "自动摘要未完成；已有摘要和原文均保留。"
+
+        if not classify_ok:
+            # A retry failure must not replace an already useful classification.
+            # Legacy missing fields can still receive the explicit rules fallback.
+            for key in ("topics", "tags", "content_type", "importance"):
+                if entry.get(key):
+                    classify_result[key] = entry[key]
+            collection_meta["warnings"][0] = (
+                "自动分类未完成；保留已有分类，仅为缺失字段使用规则分类。"
+            )
 
         topics = classify_result.get("topics", [])
         tags = classify_result.get("tags", [])
@@ -564,6 +680,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
 
         if dry_run:
             results["skipped"] += 1
+            results["items"].append({"id": eid, **collection_meta, "applied": False})
             continue
 
         # Migrate legacy flat structure -> metadata wrapper
@@ -586,9 +703,14 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
         entry["content_type"] = content_type
         entry["importance"] = importance
         entry["metadata"]["schema_version"] = SCHEMA_VERSION
+        previous_collection = entry["metadata"].get("collection", {})
+        entry["metadata"]["collection"] = {
+            **(previous_collection if isinstance(previous_collection, dict) else {}),
+            **collection_meta,
+        }
 
         new_summary = summary_result.get("one_liner", "")
-        if new_summary:
+        if summary_ok and new_summary:
             entry["summary"] = new_summary
             entry["structured_summary"] = {
                 k: v for k, v in {
@@ -596,6 +718,7 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
                     "key_data": summary_result.get("structured", {}).get("key_data", ""),
                     "relevance_to_user": summary_result.get("structured", {}).get("relevance_to_user", ""),
                     "action_items": summary_result.get("structured", {}).get("action_items", ""),
+                    "deadline_or_timing": summary_result.get("structured", {}).get("deadline_or_timing"),
                 }.items() if v
             }
             entry["timeliness"] = extract_timeliness(summary_result.get("structured", {}))
@@ -634,13 +757,10 @@ def reclassify_entries(entry_ids: Optional[list[str]] = None, dry_run: bool = Fa
                 DATA_DIR / "tags_registry.json": json.dumps(registry, ensure_ascii=False, indent=2),
                 INDEX_FILE: "".join(json.dumps(row, ensure_ascii=False) + "\n" for row in rows),
             }
-            summary_path = SUMMARIES_DIR / f"{eid}.md"
-            if summary_path.exists():
-                updates[summary_path] = build_summary_md(
-                    entry, summary_result.get("structured", {})
-                )
             commit_storage_files(updates)
 
         results["updated"] += 1
+        results["partial" if collection_meta["status"] == "partial" else "complete"] += 1
+        results["items"].append({"id": eid, **collection_meta, "applied": True})
 
     return results

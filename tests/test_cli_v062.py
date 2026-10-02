@@ -183,7 +183,7 @@ class TestNotePipeline:
                     "structured": {}}
 
         def fake_store(url, fetch_result, classify_result, summary_result,
-                       extra_meta=None, quality_tier="", source_info=None):
+                       extra_meta=None, quality_tier="", source_info=None, collection_meta=None):
             captured["content_type"] = classify_result.get("content_type")
             captured["tags"] = classify_result.get("tags", [])
             return "2026-06-20_note0001"

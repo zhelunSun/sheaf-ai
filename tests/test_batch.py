@@ -266,7 +266,9 @@ class TestBatchCollectException:
         result = batch_collect(["https://a.com"], quiet=True)
         assert result.failed == 1
         assert result.results[0]["success"] is False
-        assert "Unexpected crash" in result.results[0]["error"]
+        assert "Unexpected crash" not in result.results[0]["error"]
+        assert "check existing entries" in result.results[0]["error"]
+        assert result.results[0]["stored"] is None
 
 
 # ============================================================

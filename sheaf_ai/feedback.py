@@ -15,6 +15,7 @@ from sheaf_ai.storage import (
     commit_storage_files,
     read_storage_index,
     storage_write_boundary,
+    summary_projection_status,
 )
 
 FEEDBACK_FILE = DATA_DIR / "feedback.jsonl"
@@ -86,6 +87,7 @@ def _submit_feedback_locked(entry_id: str, corrections: dict, user_note: str) ->
         "feedback_id": feedback["feedback_id"],
         "entry_id": entry_id,
         "corrections_applied": list(corrections.keys()),
+        "derived": {"summary": summary_projection_status(_load_entry(entry_id))},
     }
 
 

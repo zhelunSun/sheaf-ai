@@ -1,6 +1,7 @@
 """
 Sheaf Storage — save entries, manage index, build summary MD, tags registry.
 """
+import hashlib
 import json
 import logging
 import re
@@ -54,7 +55,93 @@ def recover_pending_storage() -> str | None:
 def commit_storage_files(updates: Mapping[Path, str]) -> str | None:
     """Durably publish prepared after-images; callers hold the RMW boundary."""
     with storage_write_boundary():
-        return _entry_storage.commit(Path(DATA_DIR), updates)
+        return _entry_storage.commit(Path(DATA_DIR), _prepare_summary_updates(updates))
+
+
+def _text_digest(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def _prepare_summary_updates(updates: Mapping[Path, str]) -> dict[Path, str]:
+    """Keep owned Markdown in the same redo transaction as its Entry.
+
+    A digest is evidence of the bytes we generated, not permission to replace
+    arbitrary user files. Legacy files have no ownership evidence and remain
+    untouched. This central boundary covers feedback and reclassification.
+    """
+    prepared = {_checked_storage_path(path): text for path, text in updates.items()}
+    entries_root = Path(ENTRIES_DIR).resolve()
+    for path, text in list(prepared.items()):
+        if path.suffix != ".json" or not path.is_relative_to(entries_root):
+            continue
+        entry = _entry_storage.strict_json(text, "Entry")
+        if not isinstance(entry, dict) or entry.get("id") != path.stem:
+            raise StorageStateError("Invalid Entry after-image identity")
+        summary_path = _checked_storage_path(SUMMARIES_DIR / f"{path.stem}.md")
+        old_entry = _entry_storage.strict_json(path.read_text(encoding="utf-8"), "Entry") if path.exists() else None
+        old_state = _summary_state(old_entry or {})
+        if "metadata" in entry and not isinstance(entry["metadata"], dict):
+            raise StorageStateError("Entry metadata must be an object")
+        if not isinstance(entry.get("metadata", {}).get("derived", {}), dict):
+            raise StorageStateError("Entry derived metadata must be an object")
+        if old_entry is None and summary_path in prepared and not summary_path.exists():
+            generated = prepared[summary_path]
+            state = {"status": "current", "content_hash": _text_digest(generated)}
+        elif summary_path.exists() and old_state.get("content_hash") == hashlib.sha256(
+            summary_path.read_bytes()
+        ).hexdigest():
+            generated = build_summary_md(entry, entry.get("structured_summary", {}))
+            prepared[summary_path] = generated
+            state = {"status": "current", "content_hash": _text_digest(generated)}
+        else:
+            # Even a caller supplying a new render cannot claim an existing
+            # unowned or handwritten file. Preserve it, exposing the mismatch.
+            prepared.pop(summary_path, None)
+            state = {
+                "status": "stale",
+                "reason_code": "content_modified" if old_state.get("content_hash") else "ownership_unknown",
+                **({"content_hash": old_state["content_hash"]} if old_state.get("content_hash") else {}),
+            }
+        # Legacy flat Entries keep their shape; the read helper reports unknown
+        # ownership rather than silently migrating them during a correction.
+        if "metadata" in entry or state["status"] == "current":
+            entry.setdefault("metadata", {}).setdefault("derived", {})["summary"] = state
+        prepared[path] = json.dumps(entry, ensure_ascii=False, indent=2)
+    return prepared
+
+
+def _summary_state(entry: Mapping) -> Mapping:
+    value = entry
+    for key in ("metadata", "derived", "summary"):
+        if not isinstance(value, Mapping):
+            return {}
+        value = value.get(key, {})
+    return value if isinstance(value, Mapping) else {}
+
+
+def summary_projection_status(entry: Mapping) -> dict[str, str]:
+    """Inspect generated Markdown without overwriting user edits or legacy files."""
+    from sheaf_ai.entry_paths import resolve_entry_summary_path
+
+    state = _summary_state(entry)
+    if not state.get("content_hash"):
+        return {"status": state.get("status", "unknown"), "reason_code": "ownership_unknown"}
+    path = resolve_entry_summary_path(SUMMARIES_DIR, str(entry.get("id", "")))
+    try:
+        digest = hashlib.sha256(path.read_bytes()).hexdigest()
+    except (OSError, UnicodeError):
+        return {"status": "stale", "reason_code": "summary_unavailable"}
+    if digest != state["content_hash"]:
+        return {"status": "stale", "reason_code": "content_modified"}
+    if state.get("status") == "current":
+        try:
+            expected = _text_digest(build_summary_md(entry, entry.get("structured_summary", {})))
+        except (KeyError, TypeError, AttributeError, ValueError):
+            return {"status": "stale", "reason_code": "source_unavailable"}
+        if digest != expected:
+            return {"status": "stale", "reason_code": "source_changed"}
+        return {"status": "current", "reason_code": "ok"}
+    return {"status": "stale", "reason_code": "ownership_unknown"}
 
 
 def _checked_storage_path(path: Path) -> Path:
@@ -326,7 +413,7 @@ def _failed_duplicate_detection(exc: Exception) -> dict[str, object]:
 
 def store_article(url: str, fetch_result: dict, classify_result: dict, summary_result: dict,
                    extra_meta: dict = None, quality_tier: str = "",
-                   source_info: dict = None) -> str:
+                   source_info: dict = None, collection_meta: dict | None = None) -> str:
     """Store processed article to data/ directory. Returns entry_id."""
     now = datetime.now(BJT)
     date_str = now.strftime("%Y-%m-%d")
@@ -375,6 +462,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
                 "key_data": summary_result.get("structured", {}).get("key_data", ""),
                 "relevance_to_user": summary_result.get("structured", {}).get("relevance_to_user", ""),
                 "action_items": summary_result.get("structured", {}).get("action_items", ""),
+                "deadline_or_timing": summary_result.get("structured", {}).get("deadline_or_timing", ""),
             }.items() if v
         },
         "timeliness": timeliness,
@@ -388,6 +476,7 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             "content_hash": content_h,
             "evidence_digest": full_evidence_digest,
             **({"conversation": extra_meta} if extra_meta else {}),
+            **({"collection": collection_meta} if collection_meta is not None else {}),
         },
         "status": "active",
     }
@@ -430,6 +519,11 @@ def store_article(url: str, fetch_result: dict, classify_result: dict, summary_r
             TAGS_REGISTRY_FILE: json.dumps(registry, ensure_ascii=False, indent=2),
             INDEX_FILE: _index_text(records),
         })
+        # The commit boundary adds optional projection metadata. Carry the exact
+        # committed Entry to downstream work, rather than the pre-commit draft.
+        entry = _entry_storage.strict_json(
+            _checked_storage_path(entry_path).read_text(encoding="utf-8"), "Entry"
+        )
 
     # Entry embeddings are opt-in to bootstrap because they may call a paid
     # provider. Once the user has explicitly built the index, keep it current
@@ -506,7 +600,8 @@ def build_summary_md(entry: dict, structured: dict) -> str:
         lines.append("")
 
     lines.append("---")
-    lines.append(f"*由 Sheaf 自动处理 | {datetime.now(BJT).strftime('%Y-%m-%d %H:%M')}*")
+    collected_at = str(entry.get("metadata", {}).get("collected_at", ""))
+    lines.append(f"*由 Sheaf 自动处理 | {collected_at[:16].replace('T', ' ')}*")
     return "\n".join(lines)
 
 

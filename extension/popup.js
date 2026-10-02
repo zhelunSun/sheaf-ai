@@ -1,6 +1,5 @@
 /**
- * Sheaf Extension — Popup logic v2.
- * Features: search, collect with feedback, connection wizard, offline handling.
+ * Sheaf Extension — collect, inspect saved sources, and search.
  */
 
 const DEFAULT_API = 'http://localhost:8321';
@@ -25,11 +24,18 @@ const statTopics = document.getElementById('statTopics');
 const contentLabel = document.getElementById('contentLabel');
 const contentList = document.getElementById('contentList');
 const settingsBtn = document.getElementById('settingsBtn');
+const overview = document.getElementById('overview');
+const detailView = document.getElementById('detailView');
+const detailBody = document.getElementById('detailBody');
+const detailBack = document.getElementById('detailBack');
+const view = SheafPresentation;
 
 // ---- State ----
 let apiUrl = DEFAULT_API;
 let currentPage = null;
 let apiConnected = false;
+let detailRequest = 0;
+let detailOriginFocus = null;
 
 // ============================================================
 // Init
@@ -59,6 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   collectBtn.addEventListener('click', doCollect);
   retryBtn.addEventListener('click', checkHealth);
   settingsBtn.addEventListener('click', () => chrome.runtime.openOptionsPage());
+  detailBack.addEventListener('click', closeDetail);
 });
 
 // ============================================================
@@ -87,7 +94,7 @@ async function checkHealth() {
 
     // Enable controls
     searchBtn.disabled = false;
-    if (currentPage && currentPage.url && currentPage.url.startsWith('http')) {
+    if (currentPage && view.safeSourceUrl(currentPage.url)) {
       collectBtn.disabled = false;
     }
 
@@ -132,21 +139,13 @@ async function doSearch() {
     contentLabel.textContent = `Search: "${query}" (${data.total})`;
 
     if (!data.results || data.results.length === 0) {
-      contentList.innerHTML = '<div class="empty-msg">No results found.</div>';
+      showListMessage('No results found.');
     } else {
-      contentList.innerHTML = data.results.map(r => `
-        <div class="content-item">
-          <div class="dot search"></div>
-          <div>
-            <div class="text">${escapeHtml(r.title || r.url || 'Untitled')}</div>
-            <div class="meta">${(r.topics || []).slice(0, 3).join(', ')} ${r.collected_at ? '· ' + r.collected_at.slice(0, 10) : ''}</div>
-          </div>
-        </div>
-      `).join('');
+      renderEntries(data.results, true);
     }
   } catch {
     contentLabel.textContent = 'Search';
-    contentList.innerHTML = '<div class="empty-msg">Search failed. Check your connection.</div>';
+    showListMessage('Search failed. Check your connection.');
   } finally {
     searchBtn.disabled = false;
     searchBtn.textContent = '🔍';
@@ -158,7 +157,7 @@ async function doSearch() {
 // ============================================================
 
 async function doCollect() {
-  if (!currentPage) return;
+  if (!currentPage || !view.safeSourceUrl(currentPage.url)) return;
 
   collectBtn.disabled = true;
   collectBtn.className = 'collect-btn loading';
@@ -173,74 +172,46 @@ async function doCollect() {
       body: JSON.stringify({ url: currentPage.url }),
     }, 15000);
     const data = await resp.json();
+    const state = view.collectionState(data);
 
-    if (data.success) {
-      // Success — show detailed feedback
-      const topics = (data.topics || []).slice(0, 3).join(', ');
-      const oneLiner = data.one_liner || '';
-
-      collectBtn.className = 'collect-btn collected';
-      collectBtn.textContent = topics ? `✅ ${topics}` : '✅ Collected!';
-
-      if (oneLiner) {
-        showCollectInfo(oneLiner);
-      }
-
+    if (resp.ok && state.stored) {
+      collectBtn.className = state.kind === 'success' ? 'collect-btn collected' : 'collect-btn partial';
+      collectBtn.textContent = state.label;
+      renderCollectionFeedback(data);
       // Refresh stats & recent
       await loadStats();
       await loadRecent();
-
-      // Auto-reset after 4s
-      setTimeout(() => {
-        collectBtn.className = 'collect-btn ready';
-        collectBtn.textContent = '📥 Collect this page';
-        collectBtn.disabled = false;
-        hideCollectInfo();
-      }, 4000);
-
+      // Keep saved feedback and its detail action visible; recollecting is unnecessary.
     } else {
-      // Server returned failure
       collectBtn.className = 'collect-btn error';
-      collectBtn.textContent = '❌ Failed';
-
-      const reason = data.error || 'Unknown error';
-      const hint = getErrorHint(reason);
-      showCollectInfo(`${reason}${hint}`, true);
-
-      setTimeout(() => {
-        collectBtn.className = 'collect-btn ready';
-        collectBtn.textContent = '📥 Collect this page';
-        collectBtn.disabled = false;
-        hideCollectInfo();
-      }, 5000);
+      collectBtn.textContent = 'Try collection again';
+      collectBtn.disabled = false;
+      showCollectInfo(view.failureNotice(data), true);
+      collectInfo.appendChild(renderDiagnostics(data));
     }
   } catch (err) {
-    // Network / connection error
     collectBtn.className = 'collect-btn error';
-    collectBtn.textContent = '❌ Connection Error';
-
-    const hint = err.message && err.message.includes('timeout')
-      ? ' Request timed out.'
-      : '';
-    showCollectInfo(`Cannot reach Sheaf API.${hint} Make sure \`sheaf serve\` is running.`, true);
-
-    setTimeout(() => {
-      collectBtn.className = 'collect-btn ready';
-      collectBtn.textContent = '📥 Collect this page';
-      collectBtn.disabled = false;
-      hideCollectInfo();
-    }, 5000);
+    collectBtn.textContent = 'Try collection again';
+    collectBtn.disabled = false;
+    showCollectInfo('No collection result received. Saving may still finish; check Recent or Search before retrying. Make sure your local Sheaf service is running.', true);
   }
 }
 
-function getErrorHint(error) {
-  if (!error) return '';
-  const e = error.toLowerCase();
-  if (e.includes('duplicate') || e.includes('already')) return ' This URL is already in your collection.';
-  if (e.includes('quality') || e.includes('insufficient')) return ' Page content was too short to process.';
-  if (e.includes('fetch') || e.includes('all strategies')) return ' Could not fetch page content. Try again later.';
-  if (e.includes('timeout')) return ' The request timed out. Try again.';
-  return '';
+function renderCollectionFeedback(data) {
+  const state = view.collectionState(data);
+  collectInfo.replaceChildren();
+  collectInfo.className = state.kind === 'success' ? 'collect-info' : 'collect-info warning-info';
+  collectInfo.style.display = 'block';
+  const summary = view.text(data.one_liner);
+  if (summary) collectInfo.appendChild(element('p', 'saved-summary', summary));
+  collectInfo.appendChild(element('p', '', view.primaryNotice(data)));
+  collectInfo.appendChild(renderDiagnostics(data));
+  if (view.text(data.entry_id)) {
+    const button = element('button', 'secondary-btn', 'View saved source');
+    button.type = 'button';
+    button.addEventListener('click', () => openDetail(data.entry_id));
+    collectInfo.appendChild(button);
+  }
 }
 
 // ============================================================
@@ -274,36 +245,139 @@ async function loadRecent() {
     contentLabel.textContent = 'Recent';
 
     if (entries.length === 0) {
-      contentList.innerHTML = '<div class="empty-msg">No entries yet. Collect your first page!</div>';
+      showListMessage('No entries yet. Collect your first page!');
       return;
     }
 
-    contentList.innerHTML = entries.map(e => `
-      <div class="content-item">
-        <div class="dot"></div>
-        <div>
-          <div class="text">${escapeHtml(e.title || e.url || 'Untitled')}</div>
-          <div class="meta">${(e.topics || []).slice(0, 2).join(', ')} ${e.collected_at ? '· ' + e.collected_at.slice(0, 10) : ''}</div>
-        </div>
-      </div>
-    `).join('');
+    renderEntries(entries);
   } catch {
     contentLabel.textContent = 'Recent';
-    contentList.innerHTML = '<div class="empty-msg">Failed to load entries.</div>';
+    showListMessage('Failed to load entries.');
   }
+}
+
+function renderEntries(entries, search = false) {
+  contentList.replaceChildren();
+  for (const entry of entries) {
+    const id = view.text(entry.id) || view.text(entry.entry_id);
+    const item = element('button', 'content-item');
+    item.type = 'button';
+    item.disabled = !id;
+    item.appendChild(element('span', search ? 'dot search' : 'dot'));
+    const info = element('span', 'item-info');
+    info.appendChild(element('span', 'text', view.text(entry.title) || view.text(entry.url) || 'Untitled'));
+    const date = view.text(entry.collected_at).slice(0, 10);
+    const topics = view.topicNames(entry.topics).slice(0, 3).join(', ');
+    info.appendChild(element('span', 'meta', [topics, date].filter(Boolean).join(' · ')));
+    if (!id) info.appendChild(element('span', 'meta', 'Details unavailable from this service.'));
+    item.appendChild(info);
+    if (id) item.addEventListener('click', () => openDetail(id));
+    contentList.appendChild(item);
+  }
+}
+
+// All entry points share this view. Loading detail never refetches the source webpage.
+async function openDetail(id) {
+  const request = ++detailRequest;
+  detailOriginFocus = document.activeElement;
+  overview.classList.add('hidden');
+  searchBar.classList.add('hidden');
+  detailView.classList.remove('hidden');
+  detailBody.replaceChildren(element('p', 'detail-note', 'Loading saved source…'));
+  detailBack.focus();
+  try {
+    const resp = await fetchWithTimeout(`${apiUrl}/entries/${encodeURIComponent(id)}`, {}, 5000);
+    if (request !== detailRequest) return;
+    if (!resp.ok) {
+      detailBody.replaceChildren(element('p', 'detail-note', resp.status === 404
+        ? 'This saved entry is no longer available.' : 'Could not load this saved entry. Try again from the list.'));
+      return;
+    }
+    const entry = await resp.json();
+    if (request !== detailRequest) return;
+    renderDetail(entry, id);
+  } catch {
+    if (request !== detailRequest) return;
+    detailBody.replaceChildren(element('p', 'detail-note', 'Cannot reach your local Sheaf service. Return to the list and try again.'));
+  }
+}
+
+function closeDetail() {
+  ++detailRequest;
+  detailView.classList.add('hidden');
+  overview.classList.remove('hidden');
+  if (apiConnected) searchBar.classList.remove('hidden');
+  if (detailOriginFocus && detailOriginFocus.isConnected) detailOriginFocus.focus();
+}
+
+function renderDetail(entry, id) {
+  detailBody.replaceChildren();
+  detailBody.appendChild(element('h2', 'detail-title', view.text(entry.title) || 'Untitled'));
+  const state = view.collectionState(entry, true);
+  detailBody.appendChild(element('p', `detail-state ${state.kind}`, state.label));
+  detailBody.appendChild(element('h3', 'detail-label', 'Saved summary'));
+  detailBody.appendChild(element('p', 'detail-summary', view.text(entry.summary) || view.text(entry.one_liner)
+    || 'No saved summary is available. Ask your connected Agent to inspect the saved raw source.'));
+  detailBody.appendChild(element('p', 'detail-note', view.primaryNotice(entry, true)));
+  detailBody.appendChild(renderDiagnostics(entry));
+  detailBody.appendChild(element('h3', 'detail-label', 'Source'));
+  const rawUrl = view.text(entry.url);
+  const sourceUrl = view.safeSourceUrl(rawUrl);
+  if (rawUrl.toLowerCase().startsWith('manual://')) {
+    detailBody.appendChild(element('p', 'detail-note', 'Saved note · no webpage to open.'));
+  } else {
+    if (rawUrl) detailBody.appendChild(element('p', 'detail-url', rawUrl));
+    if (sourceUrl) {
+      const open = element('button', 'secondary-btn', 'Open source webpage');
+      open.type = 'button';
+      open.addEventListener('click', () => {
+        chrome.tabs.create({ url: sourceUrl }).catch(() => {
+          showError('The source webpage could not be opened.');
+        });
+      });
+      detailBody.appendChild(open);
+      detailBody.appendChild(element('p', 'detail-note', 'Opens the current webpage, which may have changed or become unavailable since collection.'));
+    } else {
+      detailBody.appendChild(element('p', 'detail-note', 'No valid HTTP(S) source link is available.'));
+    }
+  }
+  detailBody.appendChild(element('p', 'detail-note raw-note', 'To check the saved version, ask your connected Agent to read this Entry’s raw resource. Its availability is checked by the Agent.'));
+  detailBody.appendChild(element('code', 'raw-resource', `sheaf://entries/${id}/raw`));
+}
+
+function renderDiagnostics(data) {
+  const details = element('details', 'diagnostics');
+  details.appendChild(element('summary', '', 'Processing and source notes'));
+  for (const section of view.diagnosticSections(data)) {
+    details.appendChild(element('h4', '', section.title));
+    for (const line of section.lines) details.appendChild(element('p', '', line));
+  }
+  return details;
+}
+
+function element(tag, className = '', text = '') {
+  const node = document.createElement(tag);
+  node.className = className;
+  node.textContent = text;
+  return node;
+}
+
+function showListMessage(message) {
+  contentList.replaceChildren(element('div', 'empty-msg', message));
 }
 
 // ============================================================
 // Helpers
 // ============================================================
 
-function fetchWithTimeout(url, options = {}, timeout = 5000) {
-  return Promise.race([
-    fetch(url, options),
-    new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Request timeout')), timeout)
-    ),
-  ]);
+async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 function showError(msg) {
@@ -321,10 +395,4 @@ function showCollectInfo(msg, isError = false) {
 }
 function hideCollectInfo() {
   collectInfo.style.display = 'none';
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }

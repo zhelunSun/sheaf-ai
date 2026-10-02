@@ -48,8 +48,19 @@ Entry and card embeddings remain separate, rebuildable indexes. Recovery does
 not spend model tokens rebuilding them. A crash can therefore require a later,
 explicit index rebuild. Ordinary cards also remain separate from the governed
 memory ledger; creating a card does not automatically enroll it in versioned
-memory governance. Feedback updates Entry/index/history; it does not claim to
-refresh every previously generated Markdown view or embedding.
+memory governance.
+
+Semantic retrieval compares the current Entry and captured raw text with the
+committed vector fingerprints before returning scores. Changed or unavailable
+sources are withheld and reported as degraded, including after restart and
+recovery. Rebuilding remains explicit; ordinary reads do not pay to repair an
+index. A second source check rejects changes during a query. This adds local
+file reads, and external editors still do not participate in the write lock.
+
+Generated Markdown is updated with its Entry only when an ownership digest
+matches the existing bytes. User edits, including newline changes, and legacy
+files without ownership evidence are preserved and reported stale or unknown.
+This does not refresh ordinary knowledge cards or the versioned memory ledger.
 
 ## HTTP work
 

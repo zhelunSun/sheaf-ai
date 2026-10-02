@@ -434,9 +434,15 @@ def _run_collect(url: str, force: bool = False, json_output: bool = False,
 
     # Only pass manual_text when set, so the common (no-text) call signature
     # stays process_url(url, force=...) — backward compatible with existing mocks.
-    if manual_text:
-        return process_url(url, manual_text=manual_text, force=force)
-    return process_url(url, force=force)
+    from sheaf_ai.collection_projection import collection_diagnostics, unexpected_collection_error
+    try:
+        if manual_text:
+            result = process_url(url, manual_text=manual_text, force=force)
+        else:
+            result = process_url(url, force=force)
+    except Exception:
+        result = unexpected_collection_error()
+    return {**result, **collection_diagnostics(result)}
 
 
 def _print_collect_result(result: dict, json_output: bool = False) -> None:
@@ -460,7 +466,10 @@ def _print_collect_result(result: dict, json_output: bool = False) -> None:
 
     topics = result.get("topics", [])
     one_liner = result.get("one_liner", "")
-    print(f"✓ 已收集: {result.get('entry_id', '?')[:12]}...")
+    label = "⚠ 原文已保存，处理部分完成" if result.get("status") == "partial" else "✓ 已收集"
+    print(f"{label}: {result.get('entry_id', '?')[:12]}...")
+    for warning in result.get("warnings", []):
+        print(f"  ⚠ {warning}")
     if topics:
         print(f"  分类: {', '.join(topics)}")
     print(f"  类型: {result.get('content_type', '?')}")
@@ -481,6 +490,8 @@ def _exit_on_collect_failure(result: dict) -> None:
     Fixes ERROR_LEAKED (Issue #82): failed collects must not exit with 0.
     Dedup is *not* treated as a failure — the entry already exists.
     """
+    if result.get("status") == "partial":
+        sys.exit(get_exit_code_from_key("PARTIAL"))
     if result.get("success"):
         return
     stage = result.get("stage", "")
@@ -520,6 +531,7 @@ def _batch_collect_cli(
         concurrency=concurrency,
         on_error=on_error,  # type: ignore[arg-type]
         jsonl_output=jsonl_output,
+        quiet=json_output,
     )
 
     if json_output:
@@ -530,7 +542,7 @@ def _batch_collect_cli(
     # Exit with appropriate code
     if batch_result.failed > 0 and batch_result.succeeded == 0:
         sys.exit(get_exit_code_from_key("NETWORK"))
-    elif batch_result.failed > 0:
+    elif batch_result.failed > 0 or batch_result.partial > 0:
         sys.exit(get_exit_code_from_key("PARTIAL"))
 
 
@@ -734,6 +746,10 @@ def _reclassify(p: argparse.Namespace) -> None:
     from sheaf_ai.pipeline import reclassify_entries
     r = reclassify_entries(dry_run=p.dry_run)
     print(f"\nResult: {r['updated']} updated, {r['skipped']} skipped, {len(r['errors'])} errors")
+    if r.get("partial"):
+        print(f"⚠ {r['partial']} entries partially processed; existing usable summaries were preserved.")
+    if r.get("partial") or r.get("errors"):
+        sys.exit(get_exit_code_from_key("PARTIAL"))
 
 def _mcp():
     from sheaf_ai.mcp_server import main as mcp_main; mcp_main()

@@ -530,6 +530,13 @@ class TestHandlerRegistry:
             "success": False,
             "error": "specialised collector failed",
             "stage": "fetch",
+            "status": "error",
+            "stored": False,
+            "processing": {
+                "classify": {"status": "not_run", "method": "none"},
+                "summarize": {"status": "not_run", "method": "none"},
+            },
+            "warnings": [],
         }
 
     @patch("sheaf_ai.fetch_article.fetch_article")

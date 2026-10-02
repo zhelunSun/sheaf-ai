@@ -137,7 +137,11 @@ def test_reclassification_publishes_matching_entry_summary_and_index(monkeypatch
         "one_liner": "Revised summary", "structured": {"core_argument": "Requires consent"},
     })
     result = pipeline.reclassify_entries([entry_id])
-    assert result == {"updated": 1, "skipped": 0, "errors": []}
+    assert {key: result[key] for key in ("updated", "skipped", "errors")} == {
+        "updated": 1, "skipped": 0, "errors": [],
+    }
+    assert result["complete"] == 1 and result["partial"] == 0
+    assert result["items"][0]["status"] == "success"
     entry = json.loads(resolve_entry_json_path(storage.ENTRIES_DIR, entry_id).read_text("utf-8"))
     row = storage.read_storage_index()[0]
     assert row["summary"] == entry["summary"] == "Revised summary"

@@ -6,6 +6,7 @@ import uuid
 
 from sheaf_ai.mcp.protocol import jsonrpc_response, jsonrpc_error
 from sheaf_ai.pipeline import process_url
+from sheaf_ai.collection_projection import collection_diagnostics, unexpected_collection_error
 
 
 # ── Tool definitions ─────────────────────────────────────────
@@ -99,14 +100,21 @@ def _handle_collect(req_id: int | str, arguments: dict) -> str:
     if not url and not text:
         return jsonrpc_error(req_id, -32602, "Missing required parameter: provide 'url' (to fetch) or 'text' (to store a note).")
 
-    if text:
-        # Freeform note: synthesize a manual:// key (pipeline needs a url), bypass fetch.
-        url = f"manual://{uuid.uuid4().hex[:8]}"
-        result = process_url(url, manual_text=text, force=force)
-    else:
-        result = process_url(url, force=force)
+    try:
+        if text:
+            # Freeform note: synthesize a manual:// key (pipeline needs a url), bypass fetch.
+            url = f"manual://{uuid.uuid4().hex[:8]}"
+            result = process_url(url, manual_text=text, force=force)
+        else:
+            result = process_url(url, force=force)
+    except Exception:
+        result = unexpected_collection_error()
+    result.update(collection_diagnostics(result))
     return jsonrpc_response(req_id, {
-        "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}]
+        "content": [{"type": "text", "text": json.dumps(result, ensure_ascii=False, indent=2)}],
+        "isError": result.get("status") == "partial" or (
+            not result.get("success") and result.get("stage") != "dedup"
+        ),
     })
 
 
@@ -127,7 +135,8 @@ def _handle_collect_batch(req_id: int | str, arguments: dict) -> str:
         quiet=True,
     )
     return jsonrpc_response(req_id, {
-        "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}]
+        "content": [{"type": "text", "text": json.dumps(batch_result.to_dict(), ensure_ascii=False, indent=2)}],
+        "isError": not batch_result.to_dict()["ok"],
     })
 
 

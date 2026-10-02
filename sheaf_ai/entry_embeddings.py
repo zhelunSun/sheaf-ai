@@ -208,6 +208,8 @@ class EntrySemanticIndex:
         *,
         top_k: int = 10,
         min_score: float = 0.0,
+        expected_generation: str | None = None,
+        exclude_entry_ids: Sequence[str] = (),
     ) -> list[EntrySemanticHit]:
         """Return positive cosine-similarity matches with deterministic ties."""
         query = str(query).strip()
@@ -216,6 +218,11 @@ class EntrySemanticIndex:
         with self._lock:
             manifest, vectors = self._load_committed()
             self._require_model(manifest)
+            if expected_generation is not None and manifest["generation"] != expected_generation:
+                raise EntryIndexUnavailable(
+                    "Entry index changed after its freshness check; retry the search",
+                    reason_code="generation_changed",
+                )
             if not manifest["entries"]:
                 return []
             query_vector = self._embed([query], expected_dim=int(manifest["dim"]))[0]
@@ -226,18 +233,25 @@ class EntrySemanticIndex:
         row_norms = np.linalg.norm(vectors, axis=1)
         denominators = np.maximum(row_norms * query_norm, 1e-12)
         scores = (vectors @ query_vector) / denominators
+        excluded = set(exclude_entry_ids)
         hits = [
             EntrySemanticHit(
                 entry_id=str(record["entry_id"]),
                 score=float(scores[int(record["row"])]),
             )
             for record in manifest["entries"]
-            if float(scores[int(record["row"])]) > min_score
+            if str(record["entry_id"]) not in excluded
+            and float(scores[int(record["row"])]) > min_score
         ]
         hits.sort(key=lambda hit: (-hit.score, hit.entry_id))
         return hits[:top_k]
 
-    def status(self) -> EntryIndexStatus:
+    def status(
+        self,
+        entries: Sequence[Mapping[str, object]] | None = None,
+        *,
+        raw_texts: Mapping[str, str] | None = None,
+    ) -> EntryIndexStatus:
         """Inspect availability without embedding a query or mutating state."""
         with self._lock:
             try:
@@ -265,6 +279,20 @@ class EntrySemanticIndex:
                     dim=int(manifest["dim"]),
                     generation=str(manifest["generation"]),
                 )
+            if entries is not None:
+                committed = {
+                    str(item["entry_id"]): str(item["content_hash"])
+                    for item in manifest["entries"]
+                }
+                # The immutable manifest already records the exact embedding
+                # input hash. Recheck it rather than trusting every writer to
+                # remember an invalidation hook (including redo recovery).
+                for entry_id, digest, _ in self._prepare(entries, raw_texts=raw_texts):
+                    if committed.get(entry_id) != digest:
+                        stale[entry_id] = {"reason": "current source differs from indexed input"}
+                for entry in entries:
+                    if entry.get("status") in {"deleted", "source_unavailable"}:
+                        stale[str(entry["id"])] = {"reason": "current source is unavailable"}
         stale_ids = tuple(sorted(stale))
         if stale_ids:
             detail = "; ".join(

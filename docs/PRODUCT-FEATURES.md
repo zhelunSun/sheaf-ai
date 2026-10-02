@@ -1,8 +1,9 @@
 # Sheaf Product Feature Queue
 
-> Updated: 2026-09-28. This document specifies proposed work; it does not announce shipped features.
+> Updated: 2026-10-03. This document distinguishes candidate implementation from shipped features.
 >
-> All items below have planning status `planned` and implementation status `not-started`.
+> PF-01 and PF-02 have local candidate implementations; integrated acceptance and real use are separate gates.
+> PF-03 through PF-07 remain `planned / not-started`.
 > Existing mechanisms are identified separately. Queue position is a priority, not a delivery promise.
 
 ## Product outcome
@@ -36,12 +37,12 @@
 2026-09-28 依赖澄清：先保证收藏的保存/整理阶段结果真实，再经 PF-01 展示；当前条目
 纠正后派生数据的失效与恢复是可靠性修补，不等于 PF-04 偏好应用。PF-03 可从现有接口
 开始有界自用，但已知降级和未验证效果须分别记录。最小备份/恢复先保障资料安全，
-PF-06 负责之后的产品化。这些依赖不改变以下未开始状态。
+PF-06 负责之后的产品化。10/3 实现进展按下表分别记录，不提升尚未开始的项目。
 
 | ID | User-visible outcome | Planning status | Implementation status | Queue position |
 |---|---|---|---|---|
-| PF-01 | 收藏后看见已有处理提醒与来源线索 | planned | not-started | First sprint |
-| PF-02 | 从收藏结果、最近列表或搜索结果查看来源并打开原文 | planned | not-started | First sprint |
+| PF-01 | 收藏后看见已有处理提醒与来源线索 | in-progress | candidate-implemented | First sprint; acceptance pending |
+| PF-02 | 从收藏结果、最近列表或搜索结果查看来源并打开原文 | in-progress | candidate-implemented | First sprint; acceptance pending |
 | PF-03 | 已有 Agent 在一个真实任务中复用可查来源 | planned | not-started | First sprint, start immediately with existing interfaces |
 | PF-04 | 一句可选纠正影响以后同类处理 | planned | not-started | After first sprint |
 | PF-05 | 按需给出简短阅读建议，先验证有用性 | planned | not-started | After first sprint |
@@ -55,15 +56,16 @@ PF-06 负责之后的产品化。这些依赖不改变以下未开始状态。
 
 ## PF-01 — Show collection quality and source signals
 
-**Status:** planned / not-started.
+**Status:** in-progress / candidate-implemented. Local contract and isolated browser checks exist;
+installed-extension use and user acceptance remain pending.
 
 **用户价值：** 收藏仍是一键操作，用户能立刻知道正文是否完整、图片是否未被读取，及
 来源判断的有限依据。无需为了得到这些结果额外填写信息。
 
-**当前锚点：** [pipeline.py:458](../sheaf_ai/pipeline.py#L458) 已返回 `quality` 与 `source`；
-[api.py:77](../sheaf_ai/api.py#L77) 的 `CollectResponse` 和
-[api.py:229](../sheaf_ai/api.py#L229) 的投影未传递它们；
-[popup.js:177](../extension/popup.js#L177) 当前主要显示主题及一句话摘要。
+**候选实现：** [pipeline.py](../sheaf_ai/pipeline.py) 区分保存与整理，持久化阶段状态；
+[公共投影](../sheaf_ai/collection_projection.py)和 [HTTP](../sheaf_ai/api.py) 传递必要诊断；
+[扩展展示](../extension/presentation.js) 区分完成、部分完成、未评估和保存结果未知。
+CLI/MCP/批量接口也保留部分完成记录。详细字段语义见[采集结果契约](COLLECTION-RESULTS.md)。
 
 **最小范围：** 将已有质量诊断和来源分项经 HTTP 传给扩展，显示一条必要提醒及可展开
 的来源说明。区分“正文不足/图片未读”“模型整理失败”和“来源线索较弱”；缺失字段
@@ -80,15 +82,15 @@ PF-06 负责之后的产品化。这些依赖不改变以下未开始状态。
 
 ## PF-02 — Inspect and reopen a collected source
 
-**Status:** planned / not-started.
+**Status:** in-progress / candidate-implemented. All three entry paths share one detail view;
+real installed-extension use remains pending.
 
 **用户价值：** 收藏后能够查看保存的来源信息与摘要，也能从搜索结果继续阅读。
 本项不提供完整正文阅读器，保存正文的核查由 PF-03 的已有 MCP Resource 路径承担。
 
-**当前锚点：** [popup.js:137](../extension/popup.js#L137) 和
-[popup.js:281](../extension/popup.js#L281) 渲染搜索/最近条目，但没有来源打开动作；
-[api.py:338](../sheaf_ai/api.py#L338) 已提供 Entry 详情；
-[storage.py:329](../sheaf_ai/storage.py#L329) 保存 URL、摘要与来源信息。
+**候选实现：** [popup.js](../extension/popup.js) 从收藏、最近和搜索进入同一详情页；
+[api.py](../sheaf_ai/api.py) 的已有 Entry 详情接口提供保存版本信息。
+来源按钮仅在用户点击后打开 HTTP(S) 网页；笔记与无效链接不提供网页动作。
 
 **最小范围：** 让收藏成功结果、最近条目和搜索结果进入同一种轻量详情视图，显示
 标题、保存的摘要、来源 URL 和 PF-01 的可用提醒，并提供“打开来源网页”。明确这会

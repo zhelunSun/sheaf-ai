@@ -35,6 +35,7 @@ from sheaf_ai.pipeline import process_url
 from sheaf_ai.feedback import submit_feedback
 from sheaf_ai.mcp_server import MCP_PROTOCOL_VERSION
 from sheaf_ai import card_service
+from sheaf_ai.collection_projection import collection_diagnostics, unexpected_collection_error
 
 # Ensure Windows UTF-8 output
 fix_windows_encoding()
@@ -83,6 +84,15 @@ class CollectResponse(BaseModel):
     topics: Optional[list[str]] = None
     one_liner: Optional[str] = None
     error: Optional[str] = None
+    status: Literal["success", "partial", "error", "unknown"] = "unknown"
+    stored: Optional[bool] = None
+    processing: dict = Field(default_factory=dict)
+    warnings: list[str] = Field(default_factory=list)
+    quality: dict = Field(default_factory=dict)
+    source: dict = Field(default_factory=dict)
+    stage: Optional[str] = None
+    existing_id: Optional[str] = None
+    existing_title: Optional[str] = None
 
 
 class CardResponse(BaseModel):
@@ -227,21 +237,16 @@ def create_app(api_token: str | None = None) -> FastAPI:
                 manual_text=req.manual_text,
                 force=req.force,
             )
-            if result.get("success"):
-                return CollectResponse(
-                    success=True,
-                    entry_id=result.get("entry_id"),
-                    url=result.get("url"),
-                    topics=result.get("topics", []),
-                    one_liner=result.get("one_liner", ""),
-                )
-            else:
-                return CollectResponse(
-                    success=False,
-                    error=result.get("error", "Unknown error"),
-                )
-        except Exception as e:
-            return CollectResponse(success=False, error=str(e))
+        except Exception:
+            result = unexpected_collection_error()
+        payload = {key: result.get(key) for key in (
+            "entry_id", "url", "topics", "one_liner", "error", "stage",
+            "existing_id", "existing_title",
+        )}
+        return CollectResponse(
+            success=bool(result.get("success")), **payload,
+            **collection_diagnostics(result),
+        )
 
     @app.get("/search", response_model=SearchResponse, tags=["search"])
     def search(
@@ -346,6 +351,13 @@ def create_app(api_token: str | None = None) -> FastAPI:
         if not entry_path.exists():
             raise HTTPException(status_code=404, detail=f"Entry {entry_id} not found")
         data = json.loads(entry_path.read_text(encoding="utf-8"))
+        from sheaf_ai.storage import summary_projection_status
+        derived = {"summary": summary_projection_status(data)}
+        diagnostics = collection_diagnostics(data, persisted=True)
+        data["collection_status"] = diagnostics.pop("status")
+        data["source_signals"] = diagnostics.pop("source")
+        data.update(diagnostics)
+        data["derived"] = derived
         return data
 
     @app.post("/crystallize", tags=["knowledge"])
