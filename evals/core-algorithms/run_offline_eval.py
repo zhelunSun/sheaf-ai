@@ -19,7 +19,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 if str(REPOSITORY_ROOT) not in sys.path:
     sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from sheaf_ai import search  # noqa: E402
+from sheaf_ai import config, search  # noqa: E402
 from sheaf_ai.card_extraction import (  # noqa: E402
     CardSource,
     UUIDMapper,
@@ -162,6 +162,15 @@ def evaluate_retrieval() -> dict[str, object]:
         hybrid_rankings: list[list[str]] = []
         per_query: list[dict[str, object]] = []
         with (
+            # Retrieval now verifies canonical Entry/raw inputs as well as the
+            # caller's search rows. Isolate every config path, not only the two
+            # historical search-module aliases, from any configured user library.
+            patch.object(config, "DATA_DIR", root),
+            patch.object(config, "ENTRIES_DIR", root / "entries"),
+            patch.object(config, "SUMMARIES_DIR", root / "summaries"),
+            patch.object(config, "RAW_DIR", raw_dir),
+            patch.object(config, "INDEX_FILE", index_path),
+            patch.object(config, "TAGS_REGISTRY_FILE", root / "tags_registry.json"),
             patch.object(search, "INDEX_FILE", index_path),
             patch.object(search, "RAW_DIR", raw_dir),
             patch.object(search, "EntryRetrievalService", return_value=retrieval_service),

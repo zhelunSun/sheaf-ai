@@ -1,0 +1,60 @@
+{
+  "schema": 1,
+  "evidence_kind": "synthetic-mechanism",
+  "k": 2,
+  "corpus": [
+    {
+      "id": "fixture_v2",
+      "title": "Atlas version two",
+      "summary": "Approval required",
+      "tags": [
+        "Atlas"
+      ],
+      "raw_text": "Atlas version two requires explicit approval.",
+      "source_group": "atlas",
+      "split": "dev"
+    },
+    {
+      "id": "fixture_v1",
+      "title": "Atlas version one",
+      "summary": "Approval optional",
+      "tags": [
+        "Atlas"
+      ],
+      "raw_text": "Atlas version one makes approval optional.",
+      "source_group": "atlas",
+      "split": "dev"
+    },
+    {
+      "id": "fixture_b",
+      "title": "Birch offline mode",
+      "summary": "Offline mode available",
+      "tags": [
+        "Birch"
+      ],
+      "raw_text": "Birch supports local offline indexing.",
+      "source_group": "birch",
+      "split": "final"
+    }
+  ],
+  "queries": [
+    {
+      "id": "q_version",
+      "text": "Atlas version two approval",
+      "group": "atlas",
+      "split": "dev"
+    },
+    {
+      "id": "q_offline",
+      "text": "Birch offline indexing",
+      "group": "birch",
+      "split": "final"
+    },
+    {
+      "id": "q_absent",
+      "text": "Birch quantum acceleration",
+      "group": "birch",
+      "split": "final"
+    }
+  ]
+}

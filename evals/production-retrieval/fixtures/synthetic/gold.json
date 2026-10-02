@@ -1,0 +1,27 @@
+{
+  "q_version": {
+    "evidence": "present",
+    "relevance": {
+      "fixture_v2": 3
+    },
+    "wrong_version_ids": [
+      "fixture_v1"
+    ],
+    "required_conditions": {
+      "approval": [
+        "fixture_v2"
+      ]
+    }
+  },
+  "q_offline": {
+    "evidence": "present",
+    "relevance": {
+      "fixture_b": 3
+    }
+  },
+  "q_absent": {
+    "evidence": "absent",
+    "relevance": {},
+    "checked_entire_corpus": true
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "kind": "synthetic-mechanism",
+  "model": "synthetic-fixture-v1",
+  "provenance": "Hand-specified vectors for mechanism tests; not model output.",
+  "vectors": [
+    {
+      "text": "Title: Atlas version two\nTags: Atlas\nSummary: Approval required\nContent: Atlas version two requires explicit approval.",
+      "text_sha256": "4dd36aca2955b2965d91dc5c5b62cef8abec4a72baea982fcc5bcf41f1edc78b",
+      "vector": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "text": "Title: Atlas version one\nTags: Atlas\nSummary: Approval optional\nContent: Atlas version one makes approval optional.",
+      "text_sha256": "2503bd35ab20837ab56c58449a97c502429067efb29123087bf30ef8d59ad8bd",
+      "vector": [
+        0.8,
+        0.2,
+        0.0
+      ]
+    },
+    {
+      "text": "Title: Birch offline mode\nTags: Birch\nSummary: Offline mode available\nContent: Birch supports local offline indexing.",
+      "text_sha256": "0b1a2889543e96d6ffcaf7322c2c3c00dca2b472583f893263101f7e4fc38421",
+      "vector": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "text": "Atlas version two approval",
+      "text_sha256": "ec8b24845597e127f43a8faf1f1ef5c913485f5b19b5c3720790e1de77a3f713",
+      "vector": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "text": "Birch offline indexing",
+      "text_sha256": "4191e9abadd0af451838d5898a825817638cfc9198e789d4e7291a3fb6c9b59b",
+      "vector": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "text": "Birch quantum acceleration",
+      "text_sha256": "9ae0876b1026604fcb13b0550e6eb6424da27d670db9e9a419fe3a9f962f3713",
+      "vector": [
+        0.0,
+        0.3,
+        0.7
+      ]
+    }
+  ]
+}
