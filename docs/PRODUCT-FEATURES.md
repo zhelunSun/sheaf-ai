@@ -39,6 +39,9 @@
 开始有界自用，但已知降级和未验证效果须分别记录。最小备份/恢复先保障资料安全，
 PF-06 负责之后的产品化。10/3 实现进展按下表分别记录，不提升尚未开始的项目。
 
+浏览器的安装修补、收藏任务状态恢复和最小页面整理见[浏览器工作包](BROWSER-EXTENSION-PLAN.md)。
+它们属于 PF-01/02/03 的入口建设，不新增一套功能优先队列；侧栏与 New Tab 仍待需求触发。
+
 | ID | User-visible outcome | Planning status | Implementation status | Queue position |
 |---|---|---|---|---|
 | PF-01 | 收藏后看见已有处理提醒与来源线索 | in-progress | candidate-implemented | First sprint; acceptance pending |
