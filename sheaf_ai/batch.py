@@ -38,14 +38,18 @@ class BatchResult:
     unassessed: int = 0  # legacy producers without processing diagnostics
 
     def to_dict(self) -> dict:
+        not_completed = max(0, self.total - self.succeeded - self.failed - self.skipped)
+        # Dedup proves that a source exists, not that its previous enrichment
+        # completed. Keep skips non-errors without inventing a processing result.
+        processing_unknown = bool(self.unassessed or self.skipped or not_completed)
         return {
             "ok": self.failed == 0 and self.partial == 0,
             "status": "error" if self.failed and not self.succeeded else (
                 "partial" if self.failed or self.partial else (
-                    "unknown" if self.unassessed else "success"
+                    "unknown" if processing_unknown else "success"
                 )
             ),
-            "processing_complete": self.failed == 0 and self.partial == 0 and self.unassessed == 0,
+            "processing_complete": self.failed == 0 and self.partial == 0 and not processing_unknown,
             "total": self.total,
             "succeeded": self.succeeded,
             "failed": self.failed,
@@ -53,7 +57,7 @@ class BatchResult:
             "partial": self.partial,
             "unassessed": self.unassessed,
             "complete": max(0, self.succeeded - self.partial - self.unassessed),
-            "not_completed": max(0, self.total - self.succeeded - self.failed - self.skipped),
+            "not_completed": not_completed,
             "results": self.results,
         }
 

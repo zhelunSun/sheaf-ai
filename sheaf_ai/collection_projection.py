@@ -34,7 +34,7 @@ def collection_diagnostics(result: dict, *, persisted: bool = False) -> dict:
     saved = saved if isinstance(saved, dict) else {}
     data = saved if persisted else result
     status = data.get("status", "unknown")
-    if status not in {"success", "partial", "error", "unknown"}:
+    if not isinstance(status, str) or status not in {"success", "partial", "error", "unknown"}:
         status = "unknown"
     stages = data.get("processing")
     stages = stages if isinstance(stages, dict) else {}
@@ -45,11 +45,19 @@ def collection_diagnostics(result: dict, *, persisted: bool = False) -> dict:
         stage_status = stage.get("status", "unknown")
         method = stage.get("method", "none")
         processing[name] = {
-            "status": stage_status if stage_status in {
+            "status": stage_status if isinstance(stage_status, str) and stage_status in {
                 "success", "fallback", "error", "not_run", "unknown",
             } else "unknown",
-            "method": method if method in {"llm", "rules", "none"} else "none",
+            "method": method if isinstance(method, str) and method in {"llm", "rules", "none"} else "none",
         }
+        if processing[name]["status"] == "success" and processing[name]["method"] == "none":
+            processing[name]["status"] = "unknown"
+    if status == "success":
+        stage_states = {stage["status"] for stage in processing.values()}
+        if stage_states & {"fallback", "error", "not_run"}:
+            status = "partial"
+        elif "unknown" in stage_states:
+            status = "unknown"
     warnings = data.get("warnings", [])
     warnings = [w[:1000] for w in warnings[:10] if isinstance(w, str)] if isinstance(warnings, list) else []
     stored = True if persisted else result.get("stored", bool(result.get("success")))

@@ -58,8 +58,12 @@ index. A second source check rejects changes during a query. This adds local
 file reads, and external editors still do not participate in the write lock.
 
 Generated Markdown is updated with its Entry only when an ownership digest
-matches the existing bytes. User edits, including newline changes, and legacy
-files without ownership evidence are preserved and reported stale or unknown.
+matches the existing bytes. User edits already present at that check, including
+newline changes, and legacy files without ownership evidence are preserved and
+reported stale or unknown. An external editor saving after the check can still
+be overwritten during the update; the cooperative lock does not guarantee
+cross-editor concurrency safety. The semantic checks likewise do not provide a
+transactional snapshot of every lexical, display and vector projection.
 This does not refresh ordinary knowledge cards or the versioned memory ledger.
 
 ## HTTP work

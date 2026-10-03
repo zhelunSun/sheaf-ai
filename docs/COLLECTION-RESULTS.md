@@ -33,11 +33,25 @@ no operational failure, not proof that enrichment was assessed. `not_completed`
 counts queued inputs without a receipt. With stop-on-error, queued work is cancelled
 but already-running work is drained and included in the JSONL receipts.
 
+A duplicate skip also leaves aggregate processing completion unknown: finding an
+existing source does not reassess its earlier enrichment. Skips remain non-errors
+and do not reduce the count of newly completed sources. Malformed persisted enum
+fields are treated as unknown; an overall success cannot override failed or
+unknown processing stages.
+
 Entries persist these fields under `metadata.collection`. GET `/entries/{id}`
 keeps the Entry lifecycle `status` (`active`, etc.) and existing `source` object;
 it adds `collection_status`, `source_signals`, processing and warnings. Legacy
 entries remain unknown. `derived.summary` describes generated Markdown freshness,
 which is distinct from collection processing and the Entry's saved summary text.
+
+Markdown ownership checks preserve edits already present before an automatic
+update. An external editor writing concurrently after that check can still be
+overwritten; the cooperative writer lock is not a cross-editor transaction.
+Likewise, vector freshness checks do not make the whole multi-file search a
+transactional snapshot. Normal summary corrections refresh their lexical entity
+projection as well as marking affected semantic data stale; older inconsistent
+index projections may still need an explicit index rebuild.
 
 The extension offers one shared detail view from collection, recent and search
 results. Opening a source webpage is user-initiated and shows its current version.

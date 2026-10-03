@@ -189,3 +189,103 @@ def test_http_pipeline_persistence_detail_and_agent_raw_roundtrip(monkeypatch, i
     assert resource["result"]["contents"][0]["text"] == raw
     persisted = json.loads((isolated_data_dir / "entries" / entry_id[:7] / f"{entry_id}.json").read_text("utf-8"))
     assert "author" in detail["source"] and detail["source"] == persisted["source"]
+
+
+@pytest.mark.parametrize("workers", [1, 2])
+def test_duplicate_retry_does_not_complete_previous_partial_enrichment(monkeypatch, workers):
+    from sheaf_ai import llm_client, pipeline, retrieval_service, storage
+    from sheaf_ai.mcp import collect
+    monkeypatch.setattr(storage, "_extract_entities_for_index", lambda *_: [])
+    monkeypatch.setattr(retrieval_service, "update_entry_index_if_initialized", lambda *a, **kw: None)
+
+    def fail(**kw):
+        raise RuntimeError("Injected offline model failure")
+
+    monkeypatch.setattr(llm_client, "chat", fail)
+    url = "manual://retry-partial"
+    saved = pipeline.process_url(url, manual_text="Version two requires explicit consent. " * 5)
+    assert saved["status"] == "partial" and saved["stored"] is True
+    result = batch_collect([url], concurrency=workers, quiet=True).to_dict()
+    assert result["skipped"] == 1 and result["succeeded"] == result["complete"] == 0
+    assert result["ok"] is True  # A duplicate is still an operational non-error.
+    assert result["status"] == "unknown" and result["processing_complete"] is False
+    assert result["not_completed"] == 0  # The request ran; prior enrichment was not reassessed.
+    response = json.loads(collect._handle_collect_batch(1, {"urls": [url], "concurrency": workers}))["result"]
+    assert response["isError"] is False
+    assert json.loads(response["content"][0]["text"])["processing_complete"] is False
+
+
+def test_duplicate_does_not_reduce_newly_completed_batch_count(monkeypatch):
+    def process(url, **kw):
+        if url.endswith("existing"):
+            return {"success": False, "status": "error", "stage": "dedup", "stored": False}
+        return {"success": True, "status": "success", "stored": True, "processing": {
+            "classify": {"status": "success", "method": "llm"},
+            "summarize": {"status": "success", "method": "llm"},
+        }}
+
+    monkeypatch.setattr("sheaf_ai.pipeline.process_url", process)
+    result = batch_collect(["https://new", "https://existing"], quiet=True).to_dict()
+    assert result["succeeded"] == result["complete"] == result["skipped"] == 1
+    assert result["unassessed"] == 0 and result["ok"] is True
+    assert result["status"] == "unknown" and result["processing_complete"] is False
+
+
+@pytest.mark.parametrize("collection", [
+    {"status": []},
+    {"status": "success", "processing": {"classify": {"status": []}}},
+    {"status": "success", "processing": {"classify": {"status": "success", "method": {}}}},
+])
+def test_http_detail_tolerates_wrong_collection_enum_types(monkeypatch, isolated_data_dir, collection):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from sheaf_ai import api
+    monkeypatch.setattr(api, "ENTRIES_DIR", isolated_data_dir / "entries")
+    path = isolated_data_dir / "entries" / "legacy-" / "legacy-entry.json"
+    path.parent.mkdir()
+    before = json.dumps({"id": "legacy-entry", "status": "active", "metadata": {"collection": collection}})
+    path.write_text(before, encoding="utf-8")
+    with TestClient(api.create_app(), base_url="http://localhost") as client:
+        response = client.get("/entries/legacy-entry")
+    assert response.status_code == 200
+    result = response.json()
+    assert result["collection_status"] == "unknown" and result["stored"] is True
+    assert result["processing"]["classify"]["method"] == "none"
+    assert path.read_text("utf-8") == before
+
+
+def test_summary_failure_overrides_inconsistent_overall_success():
+    result = collection_diagnostics({"success": True, "status": "success", "processing": {
+        "classify": {"status": "success", "method": "llm"},
+        "summarize": {"status": "error", "method": "none"},
+    }})
+    assert result["stored"] is True and result["status"] == "partial"
+
+
+@pytest.mark.parametrize("stage_name", ["classify", "summarize"])
+@pytest.mark.parametrize("method_field", [{}, {"method": {}}, {"method": "none"}])
+def test_http_detail_success_requires_assessed_stage_method(
+    monkeypatch, isolated_data_dir, stage_name, method_field,
+):
+    pytest.importorskip("fastapi")
+    from fastapi.testclient import TestClient
+    from sheaf_ai import api
+    monkeypatch.setattr(api, "ENTRIES_DIR", isolated_data_dir / "entries")
+    processing = {
+        "classify": {"status": "success", "method": "llm"},
+        "summarize": {"status": "success", "method": "llm"},
+    }
+    processing[stage_name] = {"status": "success", **method_field}
+    path = isolated_data_dir / "entries" / "legacy-" / "legacy-entry.json"
+    path.parent.mkdir()
+    before = json.dumps({"id": "legacy-entry", "metadata": {"collection": {
+        "status": "success", "processing": processing,
+    }}})
+    path.write_text(before, encoding="utf-8")
+    with TestClient(api.create_app(), base_url="http://localhost") as client:
+        response = client.get("/entries/legacy-entry")
+    assert response.status_code == 200
+    result = response.json()
+    assert result["stored"] is True and result["collection_status"] == "unknown"
+    assert result["processing"][stage_name] == {"status": "unknown", "method": "none"}
+    assert path.read_text("utf-8") == before

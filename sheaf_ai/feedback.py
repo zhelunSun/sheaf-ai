@@ -8,6 +8,7 @@ Usage:
 import json
 from datetime import datetime
 
+from sheaf_ai import storage
 from sheaf_ai.config import DATA_DIR, ENTRIES_DIR, BJT
 from sheaf_ai.entry_paths import InvalidEntryId, resolve_entry_json_path
 from sheaf_ai.storage import (
@@ -175,6 +176,12 @@ def _feedback_projection(entry: dict) -> dict:
         "tags": entry.get("tags", []),
         "importance": entry.get("importance", "medium"),
         "summary": entry.get("summary", ""),
+        # Entities are derived from title/summary, just as in collection-index
+        # rebuilds. Leaving the previous entities would keep boosting a corrected
+        # away person/product even after its text and semantic input changed.
+        "entities": storage._extract_entities_for_index(
+            entry.get("title", ""), entry.get("summary", "")
+        ),
         "has_deadline": timeliness.get("has_deadline", False),
         "deadline_date": timeliness.get("deadline_date"),
         "urgency": timeliness.get("urgency", "evergreen"),
