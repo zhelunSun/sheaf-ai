@@ -1,9 +1,10 @@
 # Sheaf Product Feature Queue
 
-> Updated: 2026-10-03. This document distinguishes candidate implementation from shipped features.
+> Updated: 2026-10-07. This document distinguishes candidate implementation from shipped features.
 >
 > PF-01 and PF-02 have local candidate implementations; integrated acceptance and real use are separate gates.
-> PF-03 through PF-07 remain `planned / not-started`.
+> PF-03 has an isolated developer workflow trial; author use and value remain unverified.
+> PF-04 through PF-07 remain `planned / not-started`.
 > Existing mechanisms are identified separately. Queue position is a priority, not a delivery promise.
 
 ## Product outcome
@@ -46,7 +47,7 @@ PF-06 负责之后的产品化。10/3 实现进展按下表分别记录，不提
 |---|---|---|---|---|
 | PF-01 | 收藏后看见已有处理提醒与来源线索 | in-progress | candidate-implemented | First sprint; acceptance pending |
 | PF-02 | 从收藏结果、最近列表或搜索结果查看来源并打开原文 | in-progress | candidate-implemented | First sprint; acceptance pending |
-| PF-03 | 已有 Agent 在一个真实任务中复用可查来源 | planned | not-started | First sprint, start immediately with existing interfaces |
+| PF-03 | 已有 Agent 在一个真实任务中复用可查来源 | in-progress | developer-trial-only | First sprint; recurring author use still pending |
 | PF-04 | 一句可选纠正影响以后同类处理 | planned | not-started | After first sprint |
 | PF-05 | 按需给出简短阅读建议，先验证有用性 | planned | not-started | After first sprint |
 | PF-06 | 导出、隔离恢复一个最小本地知识库 | planned | not-started | After reuse is demonstrated |
@@ -111,7 +112,9 @@ real installed-extension use remains pending.
 
 ## PF-03 — Reuse sources inside an existing agent task
 
-**Status:** planned / not-started.
+**Status:** in-progress / developer-trial-only. A bounded stdio search/raw trial uses
+manually loaded official excerpts in an isolated library. It is not author
+acceptance, full-page collection or an embedding quality experiment.
 
 **用户价值：** 用户在自己的 Agent 里完成方法比较、技术选择或资料解释时，已收藏
 资料能被找回、检查并用于回答，无需另开一个 Sheaf 聊天产品。

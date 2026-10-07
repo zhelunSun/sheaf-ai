@@ -1,6 +1,6 @@
 # Browser extension: next usable milestone
 
-Updated: 2026-10-03. This is a bounded extension work plan within PF-01/02/03,
+Updated: 2026-10-07. This is a bounded extension work plan within PF-01/02/03,
 not a second product roadmap. The extension and Python package have independent
 versions. The current source declares extension 0.4.0 and core 0.7.0; no new
 release or store submission is implied by this plan.
@@ -38,7 +38,9 @@ of real use acceptance or store publication.
 | B1: capture lifecycle | One background request path for popup, shortcut and context menu; bounded stored operation receipts | Close/reopen popup; terminate worker; timeout; duplicate click; stale result; partial save all retain truthful outcomes |
 | B2: small UI pass | Popup prioritizes current page and last result, search exposes existing degradation diagnostics, detail retains saved-version distinction, settings explain connection failure | Keyboard/focus/overflow plus empty, pending, partial, unknown, duplicate, degraded search and disconnected views; installed-browser checks |
 
-B0 is the first repair. B1/B2 are planned. The backend and UI can develop against
+B0 has an installed settings check. B1a short-request receipts and B2a search
+degradation display now have candidate implementations; final integration and
+user acceptance are recorded separately. The backend and UI can develop against
 fixed fixtures in parallel, but the UI must not invent `stored=true` from a sent
 request, a running job or a timeout. An interrupted operation is unknown until
 the server provides a receipt. No blind automatic resubmission is planned.
@@ -46,6 +48,21 @@ the server provides a receipt. No blind automatic resubmission is planned.
 If long-running collection needs a new backend job contract, split that work into
 its own reviewed increment; the 3–5 day estimate does not promise a durable job
 queue. A short-request receipt prototype must retain that limitation explicitly.
+
+The B1a candidate uses one background path for popup, shortcut and context menu.
+It records pending before sending; a 15-second timeout or interrupted worker leaves
+the outcome unknown without automatically replaying the request. A new worker
+cannot establish whether the server completed an interrupted operation. Receipts
+can survive browser restart, but requests are not thereby resumed.
+
+Browser metadata is separate from the Sheaf library: up to ten recent operations,
+with entries older than 24 hours removed on the next receipt read/write. The
+stored display URL omits query and fragment; a SHA-256 of the normalized full
+target binds receipts to the correct page without copying its query into storage.
+Headers, credentials and article text are not receipt fields. URL paths remain
+visible. Clearing browser receipts neither cancels server work nor deletes sources.
+Current service support is `http://localhost:8321` and `http://127.0.0.1:8321`;
+changing service settings must not open an old receipt's Entry in a different library.
 
 ### Minimal screen contract
 
