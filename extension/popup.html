@@ -215,6 +215,10 @@
     }
     .footer .settings-btn:hover { border-color: #555; color: #aaa; }
 
+    .receipts { padding: 10px 20px; border-top: 1px solid #333; }
+    .receipt-item { margin: 8px 0; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+    .receipt-item button { margin-top: 4px; }
+    #searchNotice { margin: 8px 0; color: #fbbf24; font-size: 11px; line-height: 1.5; }
     /* Hide sections */
     .hidden { display: none !important; }
   </style>
@@ -283,6 +287,7 @@
     <!-- Content: search results or recent entries -->
     <div class="content" id="contentArea">
       <div class="section-label" id="contentLabel">Recent</div>
+      <p id="searchNotice" class="hidden" role="status"></p>
       <div id="contentList">
         <div class="empty-msg">Loading...</div>
       </div>
@@ -294,6 +299,14 @@
     </section>
   </div>
 
+  <section class="receipts" aria-label="Recent collection operations">
+    <div class="section-label">Recent operations</div>
+    <p class="detail-note">Browser receipts only; saving here does not mean Sheaf saved the source. Up to 10 operations from the past 24 hours, trimmed when used.</p>
+    <div id="receiptList" role="status" aria-live="polite">Loading operations…</div>
+    <button id="clearReceipts" class="secondary-btn" type="button">Clear browser receipts</button>
+    <p class="detail-note">Clearing does not cancel a request or delete saved sources.</p>
+  </section>
+
   <!-- Error message -->
   <div class="error-msg" id="errorMsg"></div>
 
@@ -304,6 +317,7 @@
   </div>
 
   <script src="presentation.js"></script>
+  <script src="receipts.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

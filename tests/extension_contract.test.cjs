@@ -1,8 +1,5 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const fs = require('node:fs');
-const path = require('node:path');
-const vm = require('node:vm');
 const view = require('../extension/presentation.js');
 
 const complete = {
@@ -94,97 +91,4 @@ test('topic normalization treats strings and current topic objects as plain text
   assert.deepEqual(view.topicNames(['safe', { name: '<img src=x onerror=alert(1)>' }, null]),
     ['safe', '<img src=x onerror=alert(1)>']);
   assert.deepEqual(view.topicNames('<b>not an array</b>'), []);
-});
-
-function backgroundFixture(payload, ok = true) {
-  const badge = [];
-  const titles = [];
-  const timers = [];
-  const events = {};
-  const context = {
-    console, URL, setTimeout: callback => { timers.push(callback); return timers.length; },
-    fetch: async () => ({ ok, json: async () => payload }),
-    chrome: {
-      storage: { local: { get: async () => ({}) } },
-      action: {
-        setBadgeText: value => badge.push(value.text), setBadgeBackgroundColor: () => {},
-        setTitle: value => titles.push(value.title),
-      },
-      runtime: { onInstalled: { addListener: () => {} }, onMessage: {
-        addListener: callback => { events.message = callback; },
-      } },
-      contextMenus: { create: () => {}, onClicked: { addListener: () => {} } },
-      commands: { onCommand: { addListener: () => {} } },
-    },
-  };
-  vm.createContext(context);
-  context.importScripts = name => vm.runInContext(fs.readFileSync(
-    path.join(__dirname, '../extension', name), 'utf8'), context);
-  vm.runInContext(fs.readFileSync(path.join(__dirname, '../extension/background.js'), 'utf8'), context);
-  return { context, badge, titles, events, timers };
-}
-
-test('background context-menu collection distinguishes partial, legacy and failure', async () => {
-  for (const [payload, badgeText, title] of [
-    [complete, '✓', /processing complete/],
-    [{ ...complete, status: 'partial' }, '!', /Raw saved/],
-    [{ success: true }, '?', /not assessed/],
-    [{ success: false, error: 'duplicate' }, '!', /already saved/],
-  ]) {
-    const fixture = backgroundFixture(payload);
-    const result = await vm.runInContext("collectPage('https://example.org')", fixture.context);
-    assert.equal(fixture.badge[0], badgeText);
-    assert.match(fixture.titles[0], title);
-    assert.equal(result.stored, payload.success);
-  }
-});
-
-test('background messages report actual save failure instead of unconditional ok', async () => {
-  const fixture = backgroundFixture({ success: false, error: 'failed' });
-  const response = await new Promise(resolve => fixture.events.message(
-    { type: 'collect', url: 'https://example.org' }, {}, resolve));
-  assert.equal(response.ok, false);
-  assert.equal(response.stored, false);
-});
-
-test('background keeps unknown storage outcome and makes no false retry claim', async () => {
-  const fixture = backgroundFixture({ success: false, stored: null, status: 'error' }, false);
-  const result = await vm.runInContext("collectPage('https://example.org')", fixture.context);
-  assert.equal(result.ok, false);
-  assert.equal(result.stored, null);
-  assert.equal(fixture.badge[0], '?');
-  assert.match(fixture.titles[0], /could not be confirmed/);
-});
-
-test('an older success timer cannot clear a later partial, unknown, rejection or network warning', async () => {
-  for (const payload of [
-    { ...complete, status: 'partial' },
-    { success: false, stored: null, status: 'error' },
-    { success: false, stored: false, status: 'error' },
-    null,
-  ]) {
-    const fixture = backgroundFixture(complete);
-    await vm.runInContext("collectPage('https://example.org/first')", fixture.context);
-    assert.equal(fixture.timers.length, 1);
-    fixture.context.fetch = async () => {
-      if (payload === null) throw new Error('Simulated connection failure');
-      return { ok: true, json: async () => payload };
-    };
-    await vm.runInContext("collectPage('https://example.org/second')", fixture.context);
-    const beforeTimer = fixture.badge.slice();
-    fixture.timers[0]();
-    assert.deepEqual(fixture.badge, beforeTimer);
-    assert.notEqual(fixture.badge.at(-1), '');
-  }
-});
-
-test('only the timer belonging to the current success may clear its badge', async () => {
-  const fixture = backgroundFixture(complete);
-  await vm.runInContext("collectPage('https://example.org/first')", fixture.context);
-  await vm.runInContext("collectPage('https://example.org/second')", fixture.context);
-  assert.equal(fixture.timers.length, 2);
-  fixture.timers[0]();
-  assert.equal(fixture.badge.at(-1), '✓');
-  fixture.timers[1]();
-  assert.equal(fixture.badge.at(-1), '');
 });

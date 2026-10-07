@@ -29,13 +29,22 @@ const detailView = document.getElementById('detailView');
 const detailBody = document.getElementById('detailBody');
 const detailBack = document.getElementById('detailBack');
 const view = SheafPresentation;
+const receiptPolicy = SheafReceipts;
+const receiptList = document.getElementById('receiptList');
+const clearReceiptsBtn = document.getElementById('clearReceipts');
+const searchNotice = document.getElementById('searchNotice');
 
 // ---- State ----
 let apiUrl = DEFAULT_API;
 let currentPage = null;
+let currentTargetHash = null;
 let apiConnected = false;
 let detailRequest = 0;
 let detailOriginFocus = null;
+let listRequest = 0;
+let receiptRefresh = 0;
+let receiptTimer;
+let currentReceipt = null;
 
 // ============================================================
 // Init
@@ -43,19 +52,19 @@ let detailOriginFocus = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Load saved API URL
-  const stored = await chrome.storage.local.get(['sheafApiUrl']);
-  if (stored.sheafApiUrl) apiUrl = stored.sheafApiUrl;
+  try {
+    const stored = await chrome.storage.local.get(['sheafApiUrl']);
+    apiUrl = receiptPolicy.server(stored.sheafApiUrl || DEFAULT_API);
+  } catch { apiUrl = null; }
 
   // Get current tab info
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true }).catch(() => []);
   if (tab) {
     currentPage = { url: tab.url, title: tab.title };
     pageTitle.textContent = tab.title || 'Untitled';
     pageUrl.textContent = tab.url || '';
+    currentTargetHash = await receiptPolicy.targetHash(tab.url);
   }
-
-  // Check API health
-  await checkHealth();
 
   // Wire up events
   searchBtn.addEventListener('click', doSearch);
@@ -66,6 +75,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   retryBtn.addEventListener('click', checkHealth);
   settingsBtn.addEventListener('click', () => chrome.runtime.openOptionsPage());
   detailBack.addEventListener('click', closeDetail);
+  clearReceiptsBtn.addEventListener('click', async () => {
+    try {
+      const response = await chrome.runtime.sendMessage({ type: 'receipts:clear' });
+      if (!response || response.ok !== true) throw new Error('unavailable');
+      await refreshReceipts();
+    } catch { showError('Browser receipts could not be cleared. No saved sources were deleted.'); }
+  });
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== 'local') return;
+    if (changes.sheafApiUrl) {
+      // Dispose all old requests and detail actions when the service changes.
+      location.reload();
+    } else if (changes[receiptPolicy.KEY]) void refreshReceipts(false);
+  });
+  // Receipts and their clear action also work while the service is offline.
+  await Promise.all([refreshReceipts(), checkHealth()]);
 });
 
 // ============================================================
@@ -78,6 +103,7 @@ async function checkHealth() {
   hideError();
 
   try {
+    if (!apiUrl) throw new Error('Unsupported service address');
     const resp = await fetchWithTimeout(`${apiUrl}/health`, {}, 3000);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
@@ -94,13 +120,12 @@ async function checkHealth() {
 
     // Enable controls
     searchBtn.disabled = false;
-    if (currentPage && view.safeSourceUrl(currentPage.url)) {
-      collectBtn.disabled = false;
-    }
+    renderCurrentReceipt(currentReceipt);
 
     // Load data
     await loadStats();
     await loadRecent();
+    await refreshReceipts();
   } catch {
     // Offline — show connection wizard
     apiConnected = false;
@@ -109,6 +134,8 @@ async function checkHealth() {
     connectionWizard.classList.remove('hidden');
     mainUI.classList.add('hidden');
     searchBar.classList.add('hidden');
+    collectBtn.disabled = true;
+    if (!apiUrl) showError('Use http://localhost:8321 or http://127.0.0.1:8321 in Settings. Other service addresses are not supported by this extension.');
   }
 }
 
@@ -124,6 +151,7 @@ async function doSearch() {
     return;
   }
 
+  const request = ++listRequest;
   searchBtn.disabled = true;
   searchBtn.textContent = '⏳';
 
@@ -135,8 +163,14 @@ async function doSearch() {
     );
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     const data = await resp.json();
+    if (request !== listRequest) return;
 
     contentLabel.textContent = `Search: "${query}" (${data.total})`;
+    const diagnostics = data.diagnostics && typeof data.diagnostics === 'object' ? data.diagnostics : {};
+    const degraded = data.degraded === true || diagnostics.degraded === true;
+    const reason = view.text(data.reason) || view.text(diagnostics.reason);
+    searchNotice.textContent = degraded ? `Search is degraded. ${reason.slice(0, 300) || 'Some search capabilities are unavailable.'}` : '';
+    searchNotice.classList.toggle('hidden', !degraded);
 
     if (!data.results || data.results.length === 0) {
       showListMessage('No results found.');
@@ -144,11 +178,15 @@ async function doSearch() {
       renderEntries(data.results, true);
     }
   } catch {
+    if (request !== listRequest) return;
+    searchNotice.classList.add('hidden');
     contentLabel.textContent = 'Search';
     showListMessage('Search failed. Check your connection.');
   } finally {
-    searchBtn.disabled = false;
-    searchBtn.textContent = '🔍';
+    if (request === listRequest) {
+      searchBtn.disabled = false;
+      searchBtn.textContent = '🔍';
+    }
   }
 }
 
@@ -157,47 +195,106 @@ async function doSearch() {
 // ============================================================
 
 async function doCollect() {
-  if (!currentPage || !view.safeSourceUrl(currentPage.url)) return;
-
+  if (!currentPage || !receiptPolicy.target(currentPage.url) || !apiUrl) return;
   collectBtn.disabled = true;
   collectBtn.className = 'collect-btn loading';
-  collectBtn.textContent = '⏳ Collecting...';
-  hideCollectInfo();
+  collectBtn.textContent = 'Starting collection…';
   hideError();
-
   try {
-    const resp = await fetchWithTimeout(`${apiUrl}/collect`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: currentPage.url }),
-    }, 15000);
-    const data = await resp.json();
-    const state = view.collectionState(data);
-
-    if (resp.ok && state.stored) {
-      collectBtn.className = state.kind === 'success' ? 'collect-btn collected' : 'collect-btn partial';
-      collectBtn.textContent = state.label;
-      renderCollectionFeedback(data);
-      // Refresh stats & recent
-      await loadStats();
-      await loadRecent();
-      // Keep saved feedback and its detail action visible; recollecting is unnecessary.
-    } else {
-      collectBtn.className = 'collect-btn error';
-      collectBtn.textContent = 'Try collection again';
-      collectBtn.disabled = false;
-      showCollectInfo(view.failureNotice(data), true);
-      collectInfo.appendChild(renderDiagnostics(data));
+    const response = await chrome.runtime.sendMessage({ type: 'collect', url: currentPage.url, server: apiUrl });
+    if (!response || response.ok !== true) {
+      const message = response && response.error === 'settings_changed'
+        ? 'Service settings changed. Reopen the popup before collecting.'
+        : response && response.error === 'already_pending'
+          ? 'This collection is still running. Its browser receipt was cleared; check Recent before retrying.'
+          : response && response.error === 'busy'
+            ? 'Ten collections are still pending. Wait and check Recent before trying again.'
+            : 'A browser receipt could not be recorded. No new collection was sent. Check extension storage and Settings.';
+      showError(message);
     }
-  } catch (err) {
-    collectBtn.className = 'collect-btn error';
-    collectBtn.textContent = 'Try collection again';
-    collectBtn.disabled = false;
-    showCollectInfo('No collection result received. Saving may still finish; check Recent or Search before retrying. Make sure your local Sheaf service is running.', true);
+    await refreshReceipts();
+  } catch {
+    showError('No response from the extension worker. Saving may still finish; check Recent before retrying.');
+    renderCurrentReceipt(null);
   }
 }
 
-function renderCollectionFeedback(data) {
+async function refreshReceipts(reconcile = true) {
+  const request = ++receiptRefresh;
+  try {
+    const response = reconcile ? await chrome.runtime.sendMessage({ type: 'receipts:list' }) : null;
+    if (reconcile && (!response || response.ok !== true)) throw new Error('unavailable');
+    const stored = reconcile ? receiptPolicy.envelope(response.receipts)
+      : (await chrome.storage.local.get([receiptPolicy.KEY]))[receiptPolicy.KEY];
+    if (!stored || stored.version !== 1 || !Array.isArray(stored.receipts)) throw new Error('unavailable');
+    if (request !== receiptRefresh) return;
+    const items = receiptPolicy.sanitize(stored).filter(item => item.server === apiUrl);
+    receiptList.replaceChildren();
+    if (!items.length) receiptList.appendChild(element('p', 'detail-note', 'No recent operations for this service.'));
+    for (const item of items) {
+      const row = element('div', 'receipt-item');
+      row.appendChild(element('strong', '', item.phase === 'pending' ? 'Pending · save not confirmed'
+        : view.collectionState(item.summary).label));
+      row.appendChild(element('p', '', item.url));
+      row.appendChild(element('p', 'detail-note', `${item.server} · ${new Date(item.createdAt).toLocaleTimeString()}`));
+      if (item.entryId && item.summary.stored === true) {
+        const inspect = element('button', 'secondary-btn', 'Inspect saved entry');
+        inspect.type = 'button';
+        inspect.disabled = !apiConnected;
+        inspect.addEventListener('click', () => openDetail(item.entryId, item.server));
+        row.appendChild(inspect);
+      } else if (item.phase === 'unknown') {
+        row.appendChild(element('p', 'detail-note', 'The server may still finish. Check Recent or Search before explicitly collecting again. No automatic retry.'));
+      }
+      receiptList.appendChild(row);
+    }
+    const previous = currentReceipt;
+    currentReceipt = items.find(item => currentTargetHash && item.targetHash === currentTargetHash) || null;
+    renderCurrentReceipt(currentReceipt);
+    clearTimeout(receiptTimer);
+    const pending = items.filter(item => item.phase === 'pending');
+    if (pending.length) {
+      const delay = Math.max(1, Math.min(...pending.map(item => item.createdAt + receiptPolicy.TIMEOUT + 1100 - Date.now())));
+      receiptTimer = setTimeout(() => void refreshReceipts(), delay);
+    }
+    if (apiConnected && currentReceipt && currentReceipt.summary && currentReceipt.summary.stored === true
+      && (!previous || previous.phase === 'pending')) {
+      void loadStats();
+      if (!searchInput.value.trim()) void loadRecent();
+    }
+  } catch {
+    if (request !== receiptRefresh) return;
+    receiptList.replaceChildren(element('p', 'detail-note', 'Browser receipts unavailable or from an unsupported version. Existing data was kept.'));
+    renderCurrentReceipt(null);
+  }
+}
+
+function renderCurrentReceipt(item) {
+  const canCollect = apiConnected && currentPage && receiptPolicy.target(currentPage.url);
+  collectBtn.disabled = !canCollect;
+  collectBtn.className = 'collect-btn ready';
+  collectBtn.textContent = '📥 Collect this page';
+  hideCollectInfo();
+  if (!item) return;
+  if (item.phase === 'pending') {
+    collectBtn.disabled = true;
+    collectBtn.className = 'collect-btn loading';
+    collectBtn.textContent = 'Pending · save not confirmed';
+    showCollectInfo('You can close this popup. This short request may finish in the background; an interruption can leave its outcome unknown.');
+    return;
+  }
+  const data = { ...item.summary, entry_id: item.entryId };
+  const state = view.collectionState(data);
+  collectBtn.className = state.stored ? state.kind === 'success' ? 'collect-btn collected' : 'collect-btn partial' : 'collect-btn error';
+  collectBtn.textContent = state.stored ? state.label : 'Collect again (after checking Recent)';
+  collectBtn.disabled = state.stored || !canCollect;
+  if (state.stored) renderCollectionFeedback(data, item.server);
+  else {
+    showCollectInfo(view.failureNotice(data), true);
+    collectInfo.appendChild(renderDiagnostics(data));
+  }
+}
+function renderCollectionFeedback(data, server = apiUrl) {
   const state = view.collectionState(data);
   collectInfo.replaceChildren();
   collectInfo.className = state.kind === 'success' ? 'collect-info' : 'collect-info warning-info';
@@ -209,7 +306,7 @@ function renderCollectionFeedback(data) {
   if (view.text(data.entry_id)) {
     const button = element('button', 'secondary-btn', 'View saved source');
     button.type = 'button';
-    button.addEventListener('click', () => openDetail(data.entry_id));
+    button.addEventListener('click', () => openDetail(data.entry_id, server));
     collectInfo.appendChild(button);
   }
 }
@@ -237,12 +334,18 @@ async function loadStats() {
 // ============================================================
 
 async function loadRecent() {
+  const request = ++listRequest;
+  searchBtn.disabled = !apiConnected;
+  searchBtn.textContent = '🔍';
   try {
     const resp = await fetchWithTimeout(`${apiUrl}/entries?limit=5`, {}, 3000);
+    if (!resp.ok) throw new Error('unavailable');
     const data = await resp.json();
+    if (request !== listRequest) return;
     const entries = data.entries || [];
 
     contentLabel.textContent = 'Recent';
+    searchNotice.classList.add('hidden');
 
     if (entries.length === 0) {
       showListMessage('No entries yet. Collect your first page!');
@@ -251,6 +354,8 @@ async function loadRecent() {
 
     renderEntries(entries);
   } catch {
+    if (request !== listRequest) return;
+    searchNotice.classList.add('hidden');
     contentLabel.textContent = 'Recent';
     showListMessage('Failed to load entries.');
   }
@@ -277,7 +382,8 @@ function renderEntries(entries, search = false) {
 }
 
 // All entry points share this view. Loading detail never refetches the source webpage.
-async function openDetail(id) {
+async function openDetail(id, server = apiUrl) {
+  if (!server || server !== apiUrl || !apiConnected) return;
   const request = ++detailRequest;
   detailOriginFocus = document.activeElement;
   overview.classList.add('hidden');

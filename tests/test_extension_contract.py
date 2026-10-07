@@ -13,7 +13,8 @@ def test_extension_response_and_background_contract():
         pytest.skip("Node is required for extension contract checks")
     root = Path(__file__).resolve().parents[1]
     result = subprocess.run(
-        [node, "--test", "tests/extension_contract.test.cjs"],
+        [node, "--test", "tests/extension_contract.test.cjs",
+         "tests/extension_receipts.test.cjs"],
         cwd=root, capture_output=True, text=True, encoding="utf-8", timeout=30,
         check=False,
     )
