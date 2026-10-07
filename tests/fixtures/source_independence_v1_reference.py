@@ -126,7 +126,6 @@ class SourceIndependenceGraph:
 class _PreparedSource:
     source_id: str
     text: str
-    normalized_text: str
     domain: str
     provenance_identity: str
     fingerprint: str
@@ -162,11 +161,6 @@ def content_similarity(left_text: object, right_text: object) -> float:
     """
     left = normalize_source_text(left_text)
     right = normalize_source_text(right_text)
-    return _normalized_content_similarity(left, right)
-
-
-def _normalized_content_similarity(left: str, right: str) -> float:
-    """Reuse normalization within one decision without retaining source state."""
     if not left or not right:
         return 0.0
     if left == right:
@@ -213,9 +207,9 @@ def assess_source_pair(
     if prepared_right.source_id < prepared_left.source_id:
         prepared_left, prepared_right = prepared_right, prepared_left
 
-    normalized_left = prepared_left.normalized_text
-    normalized_right = prepared_right.normalized_text
-    similarity = _normalized_content_similarity(normalized_left, normalized_right)
+    similarity = content_similarity(prepared_left.text, prepared_right.text)
+    normalized_left = normalize_source_text(prepared_left.text)
+    normalized_right = normalize_source_text(prepared_right.text)
     if not normalized_left or not normalized_right:
         return _decision(
             prepared_left,
@@ -377,12 +371,11 @@ def _prepare_source(source: Mapping[str, object]) -> _PreparedSource:
     text = _source_text(source)
     domain = _source_domain(source)
     provenance_identity = independent_provenance_identity(source)
-    normalized_text = normalize_source_text(text)
     fingerprint = hashlib.sha256(
         json.dumps(
             {
                 "id": source_id,
-                "text": normalized_text,
+                "text": normalize_source_text(text),
                 "domain": domain,
                 "provenance_identity": provenance_identity,
             },
@@ -394,7 +387,6 @@ def _prepare_source(source: Mapping[str, object]) -> _PreparedSource:
     return _PreparedSource(
         source_id=source_id,
         text=text,
-        normalized_text=normalized_text,
         domain=domain,
         provenance_identity=provenance_identity,
         fingerprint=fingerprint,
