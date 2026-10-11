@@ -77,7 +77,7 @@ jobs:
         run: |
           python -m pytest tests -q --basetemp .pytest-tmp
           python evals/core-algorithms/run_offline_eval.py --compact
-          python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory evals/core-algorithms
+          python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/llm_depth_test.py scripts/release evals/evidence-governed-memory evals/core-algorithms
           python -m build
           wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
           test -n "$wheel"
@@ -90,9 +90,9 @@ jobs:
             echo "$tracked"
             exit 1
           fi
-          unexpected_scripts="$(git ls-files scripts | grep -Ev '^(scripts/smoke-pre-release\.py|scripts/release/)' || true)"
+          unexpected_scripts="$(git ls-files scripts | grep -Ev '^(scripts/(smoke-pre-release|llm_depth_test)\.py$|scripts/release/)' || true)"
           if [ -n "$unexpected_scripts" ]; then
-            echo "Only reviewed release helpers may be tracked under scripts/:"
+            echo "Only reviewed release helpers and the profile driver may be tracked under scripts/:"
             echo "$unexpected_scripts"
             exit 1
           fi

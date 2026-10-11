@@ -21,7 +21,7 @@ Before a nightly branch can merge to `main`, maintainers should run:
 
 ```bash
 python -m pytest tests -q --basetemp .pytest-tmp
-python -m ruff check sheaf_ai sheaf_cards tests scripts/release
+python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/llm_depth_test.py scripts/release
 python -m build
 wheel="$(find dist -maxdepth 1 -type f -name '*.whl' -print -quit)"
 python scripts/release/smoke_fresh_wheel.py --wheel "$wheel"
@@ -30,7 +30,9 @@ git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env req
 git ls-files scripts
 ```
 
-The first `git ls-files` command must print nothing. The second may only list the reviewed release helpers `scripts/smoke-pre-release.py` and files under `scripts/release/`. Local data, private planning docs, agent memory, build artifacts, secrets, and ad hoc scripts must not be tracked.
+The first `git ls-files` command must print nothing. The second may only list the reviewed `scripts/smoke-pre-release.py` helper, `scripts/llm_depth_test.py` profile driver, and files under `scripts/release/`. Local data, private planning docs, agent memory, build artifacts, secrets, and ad hoc scripts must not be tracked.
+
+The profile driver is linted here, but running it is a separate exploratory activity that requires an explicit model budget; even its dry-run mode can make model calls.
 
 For the full pre-release checklist, see [RELEASE-CHECKLIST.md](RELEASE-CHECKLIST.md).
 
