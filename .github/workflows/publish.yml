@@ -58,7 +58,7 @@ jobs:
         run: python evals/core-algorithms/run_offline_eval.py --compact
 
       - name: Run lint
-        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/release evals/evidence-governed-memory evals/core-algorithms
+        run: python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/llm_depth_test.py scripts/release evals/evidence-governed-memory evals/core-algorithms
 
       - name: Build package
         run: python -m build

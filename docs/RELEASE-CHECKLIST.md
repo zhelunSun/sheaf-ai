@@ -16,7 +16,7 @@ Complete every item below before tagging a release. This list applies to all ver
 ## 2. Code Health
 
 - [ ] `python -m pytest tests -q --basetemp .pytest-tmp` — **0 failures, 0 warnings**
-- [ ] `python -m ruff check sheaf_ai sheaf_cards tests scripts/release` — **0 errors**
+- [ ] `python -m ruff check sheaf_ai sheaf_cards tests scripts/smoke-pre-release.py scripts/llm_depth_test.py scripts/release` — **0 errors**
 - [ ] `python -m build` — produces `dist/sheaf_ai-<version>-py3-none-any.whl` without errors
 - [ ] `python scripts/release/smoke_fresh_wheel.py --wheel dist/sheaf_ai-<version>-py3-none-any.whl --expected-version <version>` — creates a new venv, installs the wheel without editable mode, and passes installed metadata, `sheaf --version`, `sheaf --help`, and stdio `sheaf-mcp` JSON-RPC checks
 - [ ] The smoke script runs outside the repository with an isolated data/home directory; a source-tree import cannot satisfy the gate
@@ -25,7 +25,7 @@ Complete every item below before tagging a release. This list applies to all ver
 
 - [ ] `git diff --check` — no whitespace errors
 - [ ] `git ls-files internal .workbuddy .learnings data dist sheaf_ai.egg-info .env requirements.txt` — **prints nothing** (no tracked private files)
-- [ ] `git ls-files scripts` — only shows the existing reviewed `scripts/smoke-pre-release.py` helper and files under `scripts/release/`; other local scripts remain ignored
+- [ ] `git ls-files scripts` — only shows the reviewed `scripts/smoke-pre-release.py` helper, `scripts/llm_depth_test.py` profile driver, and files under `scripts/release/`; other local scripts remain ignored
 - [ ] Verify `sheaf_ai/synonyms.py` (user-customizable) is NOT in the sdist if it contains personal data
 - [ ] `__pycache__` / `.pytest-tmp` / `test_debug_data` — not tracked
 
